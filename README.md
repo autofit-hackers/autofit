@@ -4,8 +4,9 @@
 * Unity: 2020.3.23f1
 
 ## prefix のルール
-|初めてのコミット（Initial Commit）|🎉|
+|内容|絵文字|
 | ---- | ---- |
+|初めてのコミット（Initial Commit）|🎉|
 |バージョンタグ（Version Tag）|🔖|
 |新機能（New Feature）|✨|
 |バグ修正（Bugfix）|🐛|
