@@ -5,6 +5,7 @@
 
 type	emoji
 |初めてのコミット（Initial Commit）|🎉|
+| ---- | ---- |
 |バージョンタグ（Version Tag）|🔖|
 |新機能（New Feature）	✨|
 |バグ修正（Bugfix）|🐛|
