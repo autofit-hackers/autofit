@@ -3,7 +3,7 @@
 ## Requirements
 * Unity: 2020.3.23f1
 
-type	emoji
+## prefix のルール
 |初めてのコミット（Initial Commit）|🎉|
 | ---- | ---- |
 |バージョンタグ（Version Tag）|🔖|
