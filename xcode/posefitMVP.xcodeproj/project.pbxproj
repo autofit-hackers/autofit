@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E9ED306E275B43D00033146C /* StartRecView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9ED306D275B43D00033146C /* StartRecView.swift */; };
+		E9ED3070275B43FE0033146C /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9ED306F275B43FE0033146C /* CameraView.swift */; };
+		E9ED3073275B45390033146C /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9ED3072275B45390033146C /* CameraService.swift */; };
 		F26CBA80275460EE00569876 /* posefitMVPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26CBA7F275460EE00569876 /* posefitMVPApp.swift */; };
 		F26CBA82275460EE00569876 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26CBA81275460EE00569876 /* ContentView.swift */; };
 		F26CBA84275460EF00569876 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F26CBA83275460EF00569876 /* Assets.xcassets */; };
@@ -35,6 +38,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E9ED306D275B43D00033146C /* StartRecView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartRecView.swift; sourceTree = "<group>"; };
+		E9ED306F275B43FE0033146C /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		E9ED3072275B45390033146C /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		F26CBA7C275460EE00569876 /* posefitMVP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = posefitMVP.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F26CBA7F275460EE00569876 /* posefitMVPApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = posefitMVPApp.swift; sourceTree = "<group>"; };
 		F26CBA81275460EE00569876 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -76,6 +82,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E9ED306B275B43A00033146C /* Trash */ = {
+			isa = PBXGroup;
+			children = (
+				F26CBA81275460EE00569876 /* ContentView.swift */,
+			);
+			path = Trash;
+			sourceTree = "<group>";
+		};
+		E9ED306C275B43A40033146C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				E9ED306D275B43D00033146C /* StartRecView.swift */,
+				E9ED306F275B43FE0033146C /* CameraView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E9ED3071275B45010033146C /* SupportFiles */ = {
+			isa = PBXGroup;
+			children = (
+				E9ED3072275B45390033146C /* CameraService.swift */,
+			);
+			path = SupportFiles;
+			sourceTree = "<group>";
+		};
 		F26CBA73275460EE00569876 = {
 			isa = PBXGroup;
 			children = (
@@ -100,7 +131,9 @@
 			isa = PBXGroup;
 			children = (
 				F26CBA7F275460EE00569876 /* posefitMVPApp.swift */,
-				F26CBA81275460EE00569876 /* ContentView.swift */,
+				E9ED306C275B43A40033146C /* Views */,
+				E9ED3071275B45010033146C /* SupportFiles */,
+				E9ED306B275B43A00033146C /* Trash */,
 				F26CBA83275460EF00569876 /* Assets.xcassets */,
 				F26CBA88275460EF00569876 /* Persistence.swift */,
 				F26CBA8D275460EF00569876 /* Info.plist */,
@@ -265,10 +298,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9ED306E275B43D00033146C /* StartRecView.swift in Sources */,
 				F26CBA8C275460EF00569876 /* posefitMVP.xcdatamodeld in Sources */,
 				F26CBA89275460EF00569876 /* Persistence.swift in Sources */,
+				E9ED3070275B43FE0033146C /* CameraView.swift in Sources */,
 				F26CBA82275460EE00569876 /* ContentView.swift in Sources */,
 				F26CBA80275460EE00569876 /* posefitMVPApp.swift in Sources */,
+				E9ED3073275B45390033146C /* CameraService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -427,6 +463,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"posefitMVP/Preview Content\"";
+				DEVELOPMENT_TEAM = V93AVS3B2L;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = posefitMVP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -448,6 +485,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"posefitMVP/Preview Content\"";
+				DEVELOPMENT_TEAM = V93AVS3B2L;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = posefitMVP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
