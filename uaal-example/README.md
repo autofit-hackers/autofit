@@ -2,6 +2,23 @@
 # Unity as a Library integration example to iOS and Android #
 ## 参考
 * [公式ドキュメント](https://docs.unity3d.com/2020.3/Documentation/Manual/UnityasaLibrary.html)
+* [元レポジトリ](https://github.com/hrkd/uaal-example)
+  * 公式のサンプルプロジェクトはObjective-Cで書かれているため、Swiftで書き直されている本レポジトリを利用する。
+
+## 使用方法
+* `UnityProject/Assets/Plugins` をUaaLとして利用したいプロジェクトの `Assets`配下にコピーする
+* UnityでiOSのビルドをする -> `iOSbuild`
+* 新しいXcode projectを作成し、`nativeOSApp.xcodeproj` と　`iOSbuild/Unity-iPhone.xcodeproj` を追加する
+* Xcodeのメニューバーから
+  * `nativeOSApp` を選択し、Generalタブ -> Frameworks, Libraries, and Embedded Content から `UnityFramework.framework` を追加
+  * `Unity-iPhone/Libraries/Plugins/iOS/NativeCallProxy.h` を選択し、Target Membership から UnityFramework にチェックを入れて Private -> Public に変更
+  * `Unity-iPhone/Data` を選択し、Target Membership のチェックを Unity-iPhone から UnityFrameworkに変更する
+  * `Unity-iPhone/MainApp/main.mm` のメイン関数内に `[ufw setDataBundleID:"com.unity3d.framework];`を追記
+  * ```id = ufw = UnityFrameworkLoad();
+[ufw setDataBundleId:"com.unity3d.framework"];
+[ufw runUIApplicationMainWithArgc: argc argv: argv];
+```
+* Xcode project をビルドする
 
 In some scenario developers using native platform technologies (like Android/Java & iOS/Objective C) want to include in their apps/games features powered by Unity for 3D/2D Real Time Rendering, AR experience, interaction with 3D models, 2D mini games and more.
 
