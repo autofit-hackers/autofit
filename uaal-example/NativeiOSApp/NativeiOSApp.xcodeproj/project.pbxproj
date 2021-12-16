@@ -316,14 +316,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 6L37U542J5;
+				DEVELOPMENT_TEAM = V93AVS3B2L;
 				INFOPLIST_FILE = NativeiOSApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.unity.nativeiOSApp;
+				PRODUCT_BUNDLE_IDENTIFIER = unitySample.posefitMVP;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "NativeiOSApp/NativeiOSApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -338,14 +338,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 6L37U542J5;
+				DEVELOPMENT_TEAM = V93AVS3B2L;
 				INFOPLIST_FILE = NativeiOSApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.unity.nativeiOSApp;
+				PRODUCT_BUNDLE_IDENTIFIER = unitySample.posefitMVP;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "NativeiOSApp/NativeiOSApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
