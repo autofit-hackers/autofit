@@ -43,15 +43,17 @@ class nose : MonoBehaviour
         Vector3 pos = myTransform.position;
         Dictionary<int, Joint> deserializedFrame = deserializedFrames[frameCount];
 
+        // 各関節点の座標を取得
         foreach(KeyValuePair<int, Joint> jointItem in deserializedFrame) {
             int jointIdx = jointItem.Key;
             Joint joint = jointItem.Value;
 
             // typeof
             Debug.Log(joint.X); // , joint.Y, joint.Z);
-            pos.x = joint.X / 10000;
-            pos.y = joint.Y / 10000;
-            pos.z = joint.X / 10000;
+            pos.x = joint.X / 100;
+            pos.y = joint.Y / 100;
+            pos.z = joint.X / 100;
+            myTransform.position = pos;
         }
 
         // var a = 0;
