@@ -36,7 +36,7 @@ class nose : MonoBehaviour
     public List<Vector3> lastFramePoses = new List<Vector3>(33);
     public float timeOut = 0.05f;
     private float timeElapsed = 0.0f;
-    public float lpf_rate = 0.1f;
+    private float lpf_rate = 0.9f;
 
     void Start() {
         // deserializedFramesに各行をparseして格納
@@ -66,7 +66,7 @@ class nose : MonoBehaviour
         //以下FPS関連
         timeElapsed += Time.deltaTime;
         //FPSを制御
-        if(timeElapsed >= 0.1f) {//この中でアニメーション描画
+        if(timeElapsed >= 0.05f) {//この中でアニメーション描画
             Dictionary<int, Joint> deserializedFrame = deserializedFrames[frameCount];
 
             // 各関節点の座標を取得
@@ -77,9 +77,12 @@ class nose : MonoBehaviour
                 // Joint joint = deserializedFrame[jointIdx];
                 Transform myTransform = myTransforms[jointIdx];
                 
-                // if (frameCount == 0){
-                //     lastFramePoses[jointIdx] = myTransform.position;
-                // }
+                if (frameCount == 0){
+                    Debug.Log("ここだぜ");
+                    Debug.Log(jointIdx);
+                    Debug.Log(lastFramePoses.Count);
+                    lastFramePoses[jointIdx] = myTransform.position;
+                }
                 
                 Vector3 pos = myTransform.position;
 
@@ -89,11 +92,9 @@ class nose : MonoBehaviour
                 pos.z = joint.Z / 100;
 
                 // LPF
-                // pos = pos_tmp * (1-lpf_rate) + pos * lpf_rate;
-                // pos = lastFramePoses[jointIdx] * (1 - lpf_rate) + pos * lpf_rate;
+                pos = lastFramePoses[jointIdx] * lpf_rate + pos * (1 - lpf_rate);
                 myTransform.position = pos; // 各座標に直接値を代入することはできない
-                                            // pos_tmp = pos;
-                // lastFramePoses[jointIdx] = pos;
+                lastFramePoses[jointIdx] = pos;
             }
 
             // カウンタをインクリメント
