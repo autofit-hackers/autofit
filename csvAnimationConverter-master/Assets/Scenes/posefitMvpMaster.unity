@@ -1204,6 +1204,8 @@ MonoBehaviour:
   frameCountMax: 0
   loopCount: 0
   filename: narrow.json
+  startFrame: 1
+  endFrame: 156
   targetJointIndices: 000000000b0000000c0000000d0000000e0000000f000000100000001700000018000000190000001a0000001b0000001c000000
   myTransforms:
   - {fileID: 469086801}
@@ -1239,7 +1241,9 @@ MonoBehaviour:
   - {fileID: 156926299}
   - {fileID: 1985489735}
   - {fileID: 1649323995}
+  lastFramePoses: []
   timeOut: 50
+  lpf_rate: 0.1
 --- !u!135 &469086798
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2017,6 +2021,8 @@ MonoBehaviour:
   frameCountMax: 0
   loopCount: 0
   filename: wide.json
+  startFrame: 18
+  endFrame: 173
   targetJointIndices: 000000000b0000000c0000000d0000000e0000000f000000100000001700000018000000190000001a0000001b0000001c000000
   myTransforms:
   - {fileID: 696142374}
@@ -2052,7 +2058,9 @@ MonoBehaviour:
   - {fileID: 768088574}
   - {fileID: 1842978264}
   - {fileID: 1513770931}
+  lastFramePoses: []
   timeOut: 50
+  lpf_rate: 0.1
 --- !u!135 &696142371
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -4865,7 +4873,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1585046396}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

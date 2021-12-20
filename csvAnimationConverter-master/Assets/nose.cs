@@ -20,43 +20,53 @@ class Joint
 class nose : MonoBehaviour
 {
     // Start is called before the first frame update
-
+    private static int numOfJoints = 33;
     public int frameCount = 0;
     public int frameCountMax;
     public int loopCount = 0;
     public string filename;
+    public int startFrame = 1;
+    public int endFrame = 10;
     public List<int> targetJointIndices = new List<int>() {0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28};
     public List<Dictionary<int, Joint>> deserializedFrames = new List<Dictionary<int, Joint>>();
     public List<Transform> myTransforms = new List<Transform>(33);
     // public List<int> targetJointIndices2 = new List<int>() {0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28};
     // public List<Dictionary<int, Joint>> deserializedFrames2 = new List<Dictionary<int, Joint>>();
     // public List<Transform> myTransforms2 = new List<Transform>(32);
+    public List<Vector3> lastFramePoses = new List<Vector3>(33);
     public float timeOut = 0.05f;
     private float timeElapsed = 0.0f;
+    public float lpf_rate = 0.1f;
 
     void Start() {
         // deserializedFramesに各行をparseして格納
-        var lines = System.IO.File.ReadLines(@"./"+filename);
+        var lines = System.IO.File.ReadLines(@"./" + filename);
         foreach (string line in lines) {
             Dictionary<int, Joint> deserializedFrame = JsonConvert.DeserializeObject<Dictionary<int, Joint>>(line);
             deserializedFrames.Add(deserializedFrame);
             Debug.Log(deserializedFrame);
         }
         frameCountMax = deserializedFrames.Count;
+        if  (frameCountMax <= endFrame) {
+            endFrame = frameCountMax - 1;
+        } 
+        var slicedFrames = endFrame - startFrame;
+        // [startFrame:endFrame] をスライス
+        // TODO: update内で処理する
+        deserializedFrames = deserializedFrames.GetRange(startFrame, slicedFrames);
+        frameCountMax = deserializedFrames.Count;
+        Debug.Log("numOfJoints");
+        Debug.Log(numOfJoints);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
 
-        Debug.Log(Time.deltaTime);
-        Debug.Log(timeElapsed);
-        Debug.Log(timeElapsed >= timeOut);
         //以下FPS関連
         timeElapsed += Time.deltaTime;
         //FPSを制御
-        if(timeElapsed >= 0.05f) {//この中でアニメーション描画
+        if(timeElapsed >= 0.1f) {//この中でアニメーション描画
             Dictionary<int, Joint> deserializedFrame = deserializedFrames[frameCount];
 
             // 各関節点の座標を取得
@@ -66,13 +76,24 @@ class nose : MonoBehaviour
                 Joint joint = jointItem.Value;
                 // Joint joint = deserializedFrame[jointIdx];
                 Transform myTransform = myTransforms[jointIdx];
+                
+                // if (frameCount == 0){
+                //     lastFramePoses[jointIdx] = myTransform.position;
+                // }
+                
                 Vector3 pos = myTransform.position;
-            
+
                 //Debug.Log(joint.X); // , joint.Y, joint.Z);
-                pos.y = - ((joint.X-250f) / 100);
-                pos.x = (joint.Y-165.2f) / 100;
+                pos.x = (joint.Y - 165.2f) / 100;
+                pos.y = -((joint.X - 250f) / 100);
                 pos.z = joint.Z / 100;
+
+                // LPF
+                // pos = pos_tmp * (1-lpf_rate) + pos * lpf_rate;
+                // pos = lastFramePoses[jointIdx] * (1 - lpf_rate) + pos * lpf_rate;
                 myTransform.position = pos; // 各座標に直接値を代入することはできない
+                                            // pos_tmp = pos;
+                // lastFramePoses[jointIdx] = pos;
             }
 
             // カウンタをインクリメント
@@ -89,8 +110,6 @@ class nose : MonoBehaviour
                 } 
             }            
             
-            Debug.Log(timeElapsed);
-            Debug.Log("I'm happy!!");
 
             timeElapsed = 0.0f;
         }
@@ -98,6 +117,10 @@ class nose : MonoBehaviour
     }
 }
 
+
+// void 
+//
+//
 
 
 // "23":{"x":91.858306884765625,"y":261.29248046875,"z":-263.82925415039062}
