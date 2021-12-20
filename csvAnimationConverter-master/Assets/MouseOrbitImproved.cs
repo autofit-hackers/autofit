@@ -6,7 +6,7 @@ public class MouseOrbitImproved : MonoBehaviour
 {
  
     public Transform target;
-    public float distance = 5.0f;
+    public float distance = 15.0f;
     public float xSpeed = 120.0f;
     public float ySpeed = 120.0f;
  
@@ -14,7 +14,7 @@ public class MouseOrbitImproved : MonoBehaviour
     public float yMaxLimit = 80f;
  
     public float distanceMin = .5f;
-    public float distanceMax = 15f;
+    public float distanceMax = 50f;
  
     private Rigidbody rigidbody;
  

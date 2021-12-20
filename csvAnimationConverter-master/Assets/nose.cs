@@ -24,6 +24,7 @@ class nose : MonoBehaviour
     public int frameCount = 0;
     public int frameCountMax;
     public int loopCount = 0;
+    public string filename;
     public List<int> targetJointIndices = new List<int>() {0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28};
     public List<Dictionary<int, Joint>> deserializedFrames = new List<Dictionary<int, Joint>>();
     public List<Transform> myTransforms = new List<Transform>(33);
@@ -35,7 +36,7 @@ class nose : MonoBehaviour
 
     void Start() {
         // deserializedFramesに各行をparseして格納
-        var lines = System.IO.File.ReadLines(@"./wide.json");
+        var lines = System.IO.File.ReadLines(@"./"+filename);
         foreach (string line in lines) {
             Dictionary<int, Joint> deserializedFrame = JsonConvert.DeserializeObject<Dictionary<int, Joint>>(line);
             deserializedFrames.Add(deserializedFrame);
@@ -68,9 +69,9 @@ class nose : MonoBehaviour
                 Vector3 pos = myTransform.position;
             
                 //Debug.Log(joint.X); // , joint.Y, joint.Z);
-                pos.y = - ((joint.X-250) / 100);
+                pos.y = - ((joint.X-250f) / 100);
                 pos.x = (joint.Y-165.2f) / 100;
-                pos.z = joint.X / 100;
+                pos.z = joint.Z / 100;
                 myTransform.position = pos; // 各座標に直接値を代入することはできない
             }
 

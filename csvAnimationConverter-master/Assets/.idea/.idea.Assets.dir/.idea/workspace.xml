@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MouseOrbitImproved.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MouseOrbitImproved.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nose.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nose.cs" afterDir="false" />
     </list>
@@ -9,6 +11,9 @@
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/MouseOrbitImproved.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -34,6 +39,7 @@
       <option name="presentableId" value="Default" />
       <updated>1639999738681</updated>
       <workItem from="1639999740318" duration="1000" />
+      <workItem from="1640003380838" duration="2525000" />
     </task>
     <servers />
   </component>
@@ -41,7 +47,7 @@
     <option name="version" value="3" />
   </component>
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
-  <component name="UnityProjectConfiguration" hasMinimizedUI="null" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
