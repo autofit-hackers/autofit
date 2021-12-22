@@ -270,25 +270,20 @@ class CameraViewController: UIViewController {
                     )
                     // 可視化
                     strongSelf.annotationOverlayView.addSubview(poseOverlayView)
-                    var oneFrame: [Int: JointPos] = [:]
+                    var oneFrame: [String: JointPos] = [:]
 
                     // JSON化
-                    for (idx, landmarkType) in landmarkTypes.enumerated() {
+                    for landmarkType in landmarkTypes {
                         let poseLandmark = pose.landmark(ofType: landmarkType)
-
-//                    }
-
-//                    let landmarks = pose.landmarks
-                        ////                    for (idx, poseLandmark) in landmarks.enumerated() {
-//                    for (idx, poseLandmark) in landmarks.enumerated() {
+                        let jointName = landmarkType.rawValue
                         let jointPos = JointPos(
                             x: Float(poseLandmark.position.x),
                             y: Float(poseLandmark.position.y),
                             z: Float(poseLandmark.position.z)
                         )
-//                        print(poseLandmark.self)
+                        print(jointName)
                         print(jointPos)
-                        oneFrame.updateValue(jointPos, forKey: idx)
+                        oneFrame.updateValue(jointPos, forKey: jointName)
                     }
                     // JSON化
                     // one line json にするためにpretty printはしない
@@ -301,10 +296,9 @@ class CameraViewController: UIViewController {
                     }
                     let jsonString = String(data: encodedData, encoding: .utf8)! + "\n"
                     // 書き出し
-//                    let now = getNowStr()
-//                    print(now)
-//                    let outputFilename = "jointFrames" + now + ".json"
-                    addTextToFile(text: jsonString, outputFilename: "standing.json")
+                    let outputFilename = getNowStr() + ".json"
+                    print(outputFilename)
+                    addTextToFile(text: jsonString, outputFilename: outputFilename)
                 }
             }
         }
@@ -346,9 +340,9 @@ class CameraViewController: UIViewController {
         PoseLandmarkType.rightToe,
     ]
 
-    private func getJointNames -> [String] {
-        let hoge = Pose.landmark()
-    }
+//    private func getJointNames() -> [String] {
+//        let hoge = Pose.landmark(<#Pose#>)
+//    }
 
     private func getNowStr() -> String {
         // 現在時間をStringとして取得する
