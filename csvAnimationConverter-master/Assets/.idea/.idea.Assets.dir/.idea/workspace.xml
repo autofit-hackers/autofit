@@ -2,9 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/CSVMotionDataImporter.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cyl.prefab" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cyl.prefab.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CylinderBetweenTwoPoints.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CylinderBetweenTwoPoints.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MeshCombiner.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MeshCombiner.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/posefitMvpMaster.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/posefitMvpMaster/Cylinder.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/posefitMvpMaster/Cylinder/Default-Material.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/posefitMvpMaster/Cylinder/Default-Material.asset.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MouseOrbitImproved.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MouseOrbitImproved.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Scripts/CSVMotionDataImporter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/CSVMotionDataImporter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Scripts/CSVMotionDataImporter.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/material-A.mat" beforeDir="false" afterPath="$PROJECT_DIR$/material-A.mat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nose.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nose.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -14,17 +27,22 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/MouseOrbitImproved.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/MeshCombiner.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/CylinderBetweenTwoPoints.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="22Y1WXWbuz0mXAJJtWagaTPE7Ox" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -40,6 +58,8 @@
       <updated>1639999738681</updated>
       <workItem from="1639999740318" duration="1000" />
       <workItem from="1640003380838" duration="2525000" />
+      <workItem from="1640010289398" duration="1197000" />
+      <workItem from="1640172357824" duration="3501000" />
     </task>
     <servers />
   </component>
@@ -49,7 +69,19 @@
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
   </component>
 </project>

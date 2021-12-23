@@ -1206,76 +1206,14 @@ MonoBehaviour:
   filename: narrow.json
   startFrame: 1
   endFrame: 156
-  targetJointIndices: 000000000b0000000c0000000d0000000e0000000f000000100000001700000018000000190000001a0000001b0000001c000000
-  myTransforms:
-  - {fileID: 469086801}
-  - {fileID: 1502368192}
-  - {fileID: 907498631}
-  - {fileID: 650582409}
-  - {fileID: 1290168451}
-  - {fileID: 1177442878}
-  - {fileID: 1102681833}
-  - {fileID: 2017843869}
-  - {fileID: 628451192}
-  - {fileID: 1716352063}
-  - {fileID: 661545209}
-  - {fileID: 2062465410}
-  - {fileID: 1094221866}
-  - {fileID: 936046003}
-  - {fileID: 964372843}
-  - {fileID: 1605270048}
-  - {fileID: 974184112}
-  - {fileID: 2049465738}
-  - {fileID: 1769478038}
-  - {fileID: 832575463}
-  - {fileID: 778248487}
-  - {fileID: 415811572}
-  - {fileID: 108475525}
-  - {fileID: 1092207328}
-  - {fileID: 1464552807}
-  - {fileID: 1956242742}
-  - {fileID: 621478111}
-  - {fileID: 97843219}
-  - {fileID: 1796142776}
-  - {fileID: 677278122}
-  - {fileID: 156926299}
-  - {fileID: 1985489735}
-  - {fileID: 1649323995}
-  lastFramePoses:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
+  spherePrefab: {fileID: 8181101526125902083, guid: 1f85015d9c718423bbb73dfea8788439,
+    type: 3}
   timeOut: 50
+  offset1: 0
+  offset2: 0
+  cylinderPrefab: {fileID: 1439162038340422739, guid: 3b40fcbd651a74a94acf46dc9a011cb2,
+    type: 3}
+  cylinderPrefabs: []
 --- !u!135 &469086798
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2055,76 +1993,14 @@ MonoBehaviour:
   filename: wide.json
   startFrame: 18
   endFrame: 173
-  targetJointIndices: 000000000b0000000c0000000d0000000e0000000f000000100000001700000018000000190000001a0000001b0000001c000000
-  myTransforms:
-  - {fileID: 696142374}
-  - {fileID: 1937561194}
-  - {fileID: 1481483020}
-  - {fileID: 817206131}
-  - {fileID: 1853714638}
-  - {fileID: 1252877236}
-  - {fileID: 1136302660}
-  - {fileID: 2074308757}
-  - {fileID: 155856311}
-  - {fileID: 132820591}
-  - {fileID: 1652967797}
-  - {fileID: 448472985}
-  - {fileID: 665935919}
-  - {fileID: 229705671}
-  - {fileID: 589479071}
-  - {fileID: 1127637507}
-  - {fileID: 1415858498}
-  - {fileID: 177467717}
-  - {fileID: 773845684}
-  - {fileID: 1932034755}
-  - {fileID: 1733193407}
-  - {fileID: 1548673165}
-  - {fileID: 1300364818}
-  - {fileID: 2042600955}
-  - {fileID: 744819130}
-  - {fileID: 2123840847}
-  - {fileID: 979001166}
-  - {fileID: 176738562}
-  - {fileID: 15958747}
-  - {fileID: 1042032464}
-  - {fileID: 768088574}
-  - {fileID: 1842978264}
-  - {fileID: 1513770931}
-  lastFramePoses:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
+  spherePrefab: {fileID: 8181101526125902083, guid: 1f85015d9c718423bbb73dfea8788439,
+    type: 3}
   timeOut: 50
+  offset1: 0
+  offset2: 0
+  cylinderPrefab: {fileID: 1439162038340422739, guid: 3b40fcbd651a74a94acf46dc9a011cb2,
+    type: 3}
+  cylinderPrefabs: []
 --- !u!135 &696142371
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2866,6 +2742,90 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 16
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &911684238
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 911684241}
+  - component: {fileID: 911684240}
+  - component: {fileID: 911684239}
+  - component: {fileID: 911684242}
+  m_Layer: 0
+  m_Name: Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &911684239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 911684238}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10c0ed9208b0448c89bcfd92480481ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cylinderPrefab: {fileID: 1439162038340422739, guid: 3b40fcbd651a74a94acf46dc9a011cb2,
+    type: 3}
+--- !u!114 &911684240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 911684238}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c56e26ca9ea43ac8b8ad67fb46a498, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  generatedObject: {fileID: 0}
+--- !u!4 &911684241
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 911684238}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.19495498, y: 0.68762213, z: -0.078733444}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 69
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &911684242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 911684238}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a8f6cc80f0b4d66bd3ae79e6af12e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  frameCount: 0
+  frameCountMax: 0
+  loopCount: 0
+  filename: 
+  startFrame: 1
+  endFrame: 10
+  spherePrefab: {fileID: 0}
+  timeOut: 0.05
+  offset1: 0
+  offset2: 0
+  cylinderPrefab: {fileID: 0}
+  cylinderPrefabs: []
 --- !u!1 &936045999
 GameObject:
   m_ObjectHideFlags: 0
