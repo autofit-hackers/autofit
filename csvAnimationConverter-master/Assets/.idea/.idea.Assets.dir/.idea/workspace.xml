@@ -2,28 +2,23 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/CSVMotionDataImporter.cs.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cyl.prefab" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cyl.prefab.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CylinderBetweenTwoPoints.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CylinderBetweenTwoPoints.cs.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MeshCombiner.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MeshCombiner.cs.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/posefitMvpMaster.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/posefitMvpMaster/Cylinder.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/posefitMvpMaster/Cylinder/Default-Material.asset" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/posefitMvpMaster/Cylinder/Default-Material.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../strKey.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/CSVMotionDataImporter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/CSVMotionDataImporter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/CSVMotionDataImporter.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/material-A.mat" beforeDir="false" afterPath="$PROJECT_DIR$/material-A.mat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nose.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nose.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/MouseOrbitImproved.cs" root0="SKIP_HIGHLIGHTING" />
@@ -60,6 +55,8 @@
       <workItem from="1640003380838" duration="2525000" />
       <workItem from="1640010289398" duration="1197000" />
       <workItem from="1640172357824" duration="3501000" />
+      <workItem from="1640257863384" duration="2959000" />
+      <workItem from="1640261297015" duration="4000" />
     </task>
     <servers />
   </component>
