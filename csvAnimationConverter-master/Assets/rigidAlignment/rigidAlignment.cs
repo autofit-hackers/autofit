@@ -8,7 +8,7 @@ namespace rigidAlignment
 {
     public class RigidAlignment
     {
-        static List<double[]> Main(Dictionary<string, Vector3> fromJoints, Dictionary<string, Vector3> toJoints)
+        static List<float[]> Main(Dictionary<string, Vector3> fromJoints, Dictionary<string, Vector3> toJoints)
         {
             // NOTE: cast to np.array
             float[][] fromJointsArr = new float[jointNames.GetLength(0)][3];
@@ -89,7 +89,7 @@ namespace rigidAlignment
 
             c = mufrom - b * np.dot(muto, T);
 
-            return List<double[]>(d.GetData<double>(), Z.GetData<double>(), T.GetData<double>(), b.GetData<double>(), c.GetData<double>());
+            return List<float[]>(d.GetData<float>(), Z.GetData<float>(), T.GetData<float>(), b.GetData<float>(), c.GetData<float>());
         }
 
         List<string> jointNames = new List<string> {
