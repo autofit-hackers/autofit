@@ -27,13 +27,15 @@ class nose : MonoBehaviour
     public Transform spherePrefab;
     public Color jointColor;
     public List<Dictionary<string, Joint>> deserializedFrames = new List<Dictionary<string, Joint>>();
+    public List<Dictionary<string, Vector3>> jointPositions = new List<Dictionary<string, Vector3>>();
+    public List<Dictionary<string, Vector3>> jointSpeeds = new List<Dictionary<string, Vector3>>();
     public Dictionary<string, GameObject> jointGameObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, GameObject> boneGameObjects = new Dictionary<string, GameObject>();
 
     public Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
     private float timeOut = 0.05f;
     private float timeElapsed = 0.0f;
-    private float lpf_rate = 0.001f;
+    private float lpf_rate = 0.1f;
     public float offset1 = 0;
     public float offset2 = 0;
 
@@ -48,24 +50,67 @@ class nose : MonoBehaviour
     {
         // deserializedFramesに各行をparseして格納
         var lines = System.IO.File.ReadLines(@"./" + filename);
+        // var Dictionary<string, Vector3> lastJointPostion = new List<Dictionary<string, Vector3>>();
+        int lineCount = 0;
         foreach (string line in lines)
         {
             Dictionary<string, Joint> deserializedFrame = JsonConvert.DeserializeObject<Dictionary<string, Joint>>(line);
             deserializedFrames.Add(deserializedFrame);
-            Debug.Log(deserializedFrame);
+            // Debug.Log(deserializedFrame);
+
+            Dictionary<string, Vector3> tmpPos = new Dictionary<string, Vector3>();
+            Dictionary<string, Vector3> tmpSpd = new Dictionary<string, Vector3>();
+            // ローパスをかける & 瞬間速度を計算する
+            foreach (KeyValuePair<string, Joint> jointItem in deserializedFrame) {
+                string jointName = jointItem.Key;
+                Joint joint = jointItem.Value;
+                
+                //Joint の 中身を vector3 に格納
+                Vector3 latestPosition = new Vector3();
+                latestPosition.x = (joint.Y - 165.2f) / 100;
+                latestPosition.y = -((joint.X - 250f) / 100);
+                latestPosition.z = joint.Z / 100;
+                if (lineCount == 0) { lastFramePoses.Add(jointName, latestPosition); } // 1ループ目の時はdicに要素を追加
+                // LPF
+                Vector3 lowpassFilteredPosition = new Vector3();
+                lowpassFilteredPosition = lastFramePoses[jointName] * lpf_rate + latestPosition * (1 - lpf_rate); // ローパス後のposを計算
+                Vector3 jointSpeed = lowpassFilteredPosition - lastFramePoses[jointName];
+                lastFramePoses[jointName] = lowpassFilteredPosition;
+                tmpPos.Add(jointName, lowpassFilteredPosition);
+                tmpSpd.Add(jointName, jointSpeed);
+                if (jointName == "Nose")
+                {
+                    // Debug.Log(lowpassFilteredPosition);
+                }
+            }
+            jointPositions.Add(tmpPos); // JointPos=Dic<string,Vector3>()にローパス済みのposをAdd
+            jointSpeeds.Add(tmpSpd);
+
+            //キーフレーム抽出
+            // if (lineCount > 0)
+            // {
+            //     
+            // }
+            lineCount += 1;
+            
+        }
+        foreach (var jointPosition in jointPositions) {
+            foreach (KeyValuePair<string, Vector3> kvp in jointPosition)
+            {
+                if (kvp.Key == "Nose")
+                {
+                    Debug.Log("" + kvp.Key + kvp.Value);
+                }
+            }
         }
         frameCountMax = deserializedFrames.Count;
-        if (frameCountMax <= endFrame)
-        {
-            endFrame = frameCountMax - 1;
-        }
+        if (frameCountMax <= endFrame) { endFrame = frameCountMax - 1; } //frameCountMaxがendFrameを超えてしまわないようにする
+        
         var slicedFrames = endFrame - startFrame;
         // [startFrame:endFrame] をスライス
         // TODO: update内で処理する
         deserializedFrames = deserializedFrames.GetRange(startFrame, slicedFrames);
         frameCountMax = deserializedFrames.Count;
-        Debug.Log("numOfJoints");
-        Debug.Log(numOfJoints);
 
         // Initialize joint objects
         // NOTE: get joint names from 0 frame of deserializedFrames
@@ -105,12 +150,6 @@ class nose : MonoBehaviour
                 );
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
         }
-        Debug.Log("boneName");
-        foreach (var boneName in boneGameObjects.Keys)
-        {
-            // Debug.Log(boneName);
-        }
-        Debug.Log("boneName");
     }
 
     // Update is called once per frame
@@ -121,37 +160,35 @@ class nose : MonoBehaviour
         //FPSを制御
         if (timeElapsed >= timeOut)
         {//この中でアニメーション描画
-            Dictionary<string, Joint> deserializedFrame = deserializedFrames[frameCount];
+            // Dictionary<string, Joint> deserializedFrame = deserializedFrames[frameCount];
+            Dictionary<string, Vector3> jointFrame = jointPositions[frameCount];
 
             // 各関節点の座標を取得
-            foreach (KeyValuePair<string, Joint> jointItem in deserializedFrame)
-            {
-                string jointName = jointItem.Key;
-                Joint joint = jointItem.Value;
-                // Joint joint = deserializedFrame[jointIdx];
-                // XXX: ?
-                Transform jointTransform = jointGameObjects[jointName].transform;
-                // Transform myTransform = myTransforms[jointIdx];
+            foreach (KeyValuePair<string, Vector3> jointPosition in jointFrame) {
+                string jointName = jointPosition.Key;
+                // Joint joint = jointPostion.Value;
+                Vector3 pos = jointPosition.Value;
 
-                if (frameCount == 0 && loopCount == 0)
-                {
-                    // Debug.Log("ここだぜ");
-                    lastFramePoses.Add(jointName, jointTransform.position);
-                }
-
-                // Vector3 pos = jointGameObject.position;
-                Vector3 pos = jointTransform.position;
-
-                //Debug.Log(joint.X); // , joint.Y, joint.Z);
-                pos.x = (joint.Y - 165.2f) / 100 + offset1;
-                pos.y = -((joint.X - 250f) / 100) + offset2;
-                pos.z = joint.Z / 100;
+                // if (frameCount == 0 && loopCount == 0) { // lastFarme の初期化
+                //     lastFramePoses.Add(jointName, jointTransform.position);
+                // }
+                //
+                // Vector3 pos = jointTransform.position;
+                //
+                // pos.x = (joint.Y - 165.2f) / 100 + offset1;
+                // pos.y = -((joint.X - 250f) / 100) + offset2;
+                // pos.z = joint.Z / 100;
 
                 // LPF
-                pos = lastFramePoses[jointName] * lpf_rate + pos * (1 - lpf_rate);
-                jointGameObjects[jointName].transform.position = pos; // 各座標に直接値を代入することはできない
-                lastFramePoses[jointName] = pos;
-
+                // pos = lastFramePoses[jointName] * lpf_rate + pos * (1 - lpf_rate);
+                // jointGameObjects[jointName].transform.position = pos; // 各座標に直接値を代入することはできない
+                // lastFramePoses[jointName] = pos;
+                jointGameObjects[jointName].transform.position = pos;
+                if (jointName == "Nose")
+                {
+                    // Debug.Log(pos);
+                }
+                // Debug.Log(jointName);
             }
             //ここでcylのupdate
             foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
@@ -159,7 +196,7 @@ class nose : MonoBehaviour
                 string boneName = boneEdgeName.Key;
                 string startJointName = boneEdgeName.Value.Item1;
                 string endJointName = boneEdgeName.Value.Item2;
-                Debug.Log(boneName);
+                // Debug.Log(boneName);
                 // Debug.Log(jointGameObjects[startJointName].transform.position);
                 // Debug.Log(startJointName);
                 UpdateCylinderPosition(

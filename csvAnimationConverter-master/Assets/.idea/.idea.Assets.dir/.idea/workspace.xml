@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../strKey.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/detectKeyframe.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nose.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nose.cs" afterDir="false" />
@@ -23,7 +23,8 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/MouseOrbitImproved.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MeshCombiner.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/CylinderBetweenTwoPoints.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/nose.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/CylinderBetweenTwoPoints.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -57,6 +58,8 @@
       <workItem from="1640172357824" duration="3501000" />
       <workItem from="1640257863384" duration="2959000" />
       <workItem from="1640261297015" duration="4000" />
+      <workItem from="1640444570245" duration="599000" />
+      <workItem from="1640519990828" duration="8475000" />
     </task>
     <servers />
   </component>
