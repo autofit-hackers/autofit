@@ -5,12 +5,6 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-class Joint
-{
-    public float X { get; set; }
-    public float Y { get; set; }
-    public float Z { get; set; }
-}
 
 class nose : MonoBehaviour
 {
@@ -26,7 +20,7 @@ class nose : MonoBehaviour
 
     public Transform spherePrefab;
     public Color jointColor;
-    public List<Dictionary<string, Joint>> deserializedFrames = new List<Dictionary<string, Joint>>();
+    public List<Dictionary<string, Vector3>> deserializedFrames = new List<Dictionary<string, Vector3>>();
     public List<Dictionary<string, Vector3>> jointPositions = new List<Dictionary<string, Vector3>>();
     public List<Dictionary<string, Vector3>> jointSpeeds = new List<Dictionary<string, Vector3>>();
     public Dictionary<string, GameObject> jointGameObjects = new Dictionary<string, GameObject>();
@@ -54,22 +48,23 @@ class nose : MonoBehaviour
         int lineCount = 0;
         foreach (string line in lines)
         {
-            Dictionary<string, Joint> deserializedFrame = JsonConvert.DeserializeObject<Dictionary<string, Joint>>(line);
+            Dictionary<string, Vector3> deserializedFrame = JsonConvert.DeserializeObject<Dictionary<string, Vector3>>(line);
             deserializedFrames.Add(deserializedFrame);
             // Debug.Log(deserializedFrame);
 
             Dictionary<string, Vector3> tmpPos = new Dictionary<string, Vector3>();
             Dictionary<string, Vector3> tmpSpd = new Dictionary<string, Vector3>();
             // ローパスをかける & 瞬間速度を計算する
-            foreach (KeyValuePair<string, Joint> jointItem in deserializedFrame) {
+            foreach (KeyValuePair<string, Vector3> jointItem in deserializedFrame)
+            {
                 string jointName = jointItem.Key;
-                Joint joint = jointItem.Value;
-                
+                Vector3 joint = jointItem.Value;
+
                 //Joint の 中身を vector3 に格納
                 Vector3 latestPosition = new Vector3();
-                latestPosition.x = (joint.Y - 165.2f) / 100;
-                latestPosition.y = -((joint.X - 250f) / 100);
-                latestPosition.z = joint.Z / 100;
+                latestPosition.x = (joint.y - 165.2f) / 100;
+                latestPosition.y = -((joint.x - 250f) / 100);
+                latestPosition.z = joint.z / 100;
                 if (lineCount == 0) { lastFramePoses.Add(jointName, latestPosition); } // 1ループ目の時はdicに要素を追加
                 // LPF
                 Vector3 lowpassFilteredPosition = new Vector3();
@@ -92,9 +87,10 @@ class nose : MonoBehaviour
             //     
             // }
             lineCount += 1;
-            
+
         }
-        foreach (var jointPosition in jointPositions) {
+        foreach (var jointPosition in jointPositions)
+        {
             foreach (KeyValuePair<string, Vector3> kvp in jointPosition)
             {
                 if (kvp.Key == "Nose")
@@ -105,7 +101,7 @@ class nose : MonoBehaviour
         }
         frameCountMax = deserializedFrames.Count;
         if (frameCountMax <= endFrame) { endFrame = frameCountMax - 1; } //frameCountMaxがendFrameを超えてしまわないようにする
-        
+
         var slicedFrames = endFrame - startFrame;
         // [startFrame:endFrame] をスライス
         // TODO: update内で処理する
@@ -164,7 +160,8 @@ class nose : MonoBehaviour
             Dictionary<string, Vector3> jointFrame = jointPositions[frameCount];
 
             // 各関節点の座標を取得
-            foreach (KeyValuePair<string, Vector3> jointPosition in jointFrame) {
+            foreach (KeyValuePair<string, Vector3> jointPosition in jointFrame)
+            {
                 string jointName = jointPosition.Key;
                 // Joint joint = jointPostion.Value;
                 Vector3 pos = jointPosition.Value;
