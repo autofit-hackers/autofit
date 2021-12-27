@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collection.Generic;
+using System.Collections.Generic;
 
 using UnityEngine; // for vector3
 using Numpy; // ref. https://github.com/SciSharp/Numpy.NET
@@ -92,7 +92,7 @@ namespace rigidAlignment
             return List<float[]>(d.GetData<float>(), Z.GetData<float>(), T.GetData<float>(), b.GetData<float>(), c.GetData<float>());
         }
 
-        List<string> jointNames = new List<string> {
+        const List<string> jointNames = new List<string> {
             "leftEyeInner",
             "leftEye",
             "leftEyeOuter",
