@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/detectKeyframe.cs.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Scenes/posefitMvpMaster.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nose.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nose.cs" afterDir="false" />
-    </list>
+    <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,6 +19,7 @@
     <setting file="file://$PROJECT_DIR$/MouseOrbitImproved.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MeshCombiner.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/nose.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/rigidAlignment/rigidAlignment.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/CylinderBetweenTwoPoints.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
