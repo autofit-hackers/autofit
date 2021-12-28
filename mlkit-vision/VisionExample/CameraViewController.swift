@@ -349,7 +349,7 @@ class CameraViewController: UIViewController {
         let f = DateFormatter()
         f.locale = Locale(identifier: "ja_JP")
         f.timeZone = TimeZone(identifier: "Asia/Tokyo")
-        f.dateFormat = "yyyy-MM-dd-HH-mm-ss"
+        f.dateFormat = "yyyy-MM-dd-HH-mm"
         let now = Date()
         return f.string(from: now)
     }

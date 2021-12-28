@@ -153,13 +153,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   frameCountMax: 0
-  filename: strKey2.json
+  filename: sq-1227-1.json
   startFrame: 1
   endFrame: 100
   sphereScale: 0.1
   spherePrefab: {fileID: 8181101526125902083, guid: 1f85015d9c718423bbb73dfea8788439,
     type: 3}
   jointColor: {r: 0, g: 1, b: 0.9256196, a: 0}
+  bodySpeeds: []
   offset1: 0
   offset2: 0
   cylinderPrefab: {fileID: 1439162038340422739, guid: 3b40fcbd651a74a94acf46dc9a011cb2,

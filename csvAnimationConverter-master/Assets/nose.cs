@@ -25,6 +25,7 @@ class nose : MonoBehaviour
     public List<Dictionary<string, Vector3>> jointSpeeds = new List<Dictionary<string, Vector3>>();
     public Dictionary<string, GameObject> jointGameObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, GameObject> boneGameObjects = new Dictionary<string, GameObject>();
+    public List<Vector3> bodySpeeds = new List<Vector3>();
 
     public Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
     private float timeOut = 0.05f;
@@ -54,6 +55,7 @@ class nose : MonoBehaviour
 
             Dictionary<string, Vector3> tmpPos = new Dictionary<string, Vector3>();
             Dictionary<string, Vector3> tmpSpd = new Dictionary<string, Vector3>();
+            Vector3 bodySpd = new Vector3();
             // ローパスをかける & 瞬間速度を計算する
             foreach (KeyValuePair<string, Vector3> jointItem in deserializedFrame)
             {
@@ -73,6 +75,7 @@ class nose : MonoBehaviour
                 lastFramePoses[jointName] = lowpassFilteredPosition;
                 tmpPos.Add(jointName, lowpassFilteredPosition);
                 tmpSpd.Add(jointName, jointSpeed);
+                bodySpd += jointSpeed;
                 if (jointName == "Nose")
                 {
                     // Debug.Log(lowpassFilteredPosition);
@@ -80,6 +83,8 @@ class nose : MonoBehaviour
             }
             jointPositions.Add(tmpPos); // JointPos=Dic<string,Vector3>()にローパス済みのposをAdd
             jointSpeeds.Add(tmpSpd);
+            bodySpeeds.Add(bodySpd);
+            Debug.Log("bodySpeed "+bodySpd);
 
             //キーフレーム抽出
             // if (lineCount > 0)
@@ -89,16 +94,16 @@ class nose : MonoBehaviour
             lineCount += 1;
 
         }
-        foreach (var jointPosition in jointPositions)
-        {
-            foreach (KeyValuePair<string, Vector3> kvp in jointPosition)
-            {
-                if (kvp.Key == "Nose")
-                {
-                    Debug.Log("" + kvp.Key + kvp.Value);
-                }
-            }
-        }
+        // foreach (var jointPosition in jointPositions)
+        // {
+        //     foreach (KeyValuePair<string, Vector3> kvp in jointPosition)
+        //     {
+        //         if (kvp.Key == "Nose")
+        //         {
+        //             Debug.Log("" + kvp.Key + kvp.Value);
+        //         }
+        //     }
+        // }
         frameCountMax = deserializedFrames.Count;
         if (frameCountMax <= endFrame) { endFrame = frameCountMax - 1; } //frameCountMaxがendFrameを超えてしまわないようにする
 

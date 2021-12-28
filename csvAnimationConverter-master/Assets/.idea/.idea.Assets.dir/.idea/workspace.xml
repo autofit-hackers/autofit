@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="" />
+    <list default="true" id="4737b6c8-fc8a-4d78-a697-de53345371f4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Assets.dir/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nose.cs" beforeDir="false" afterPath="$PROJECT_DIR$/nose.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rigidAlignment/rigidAlignment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/rigidAlignment/rigidAlignment.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -55,7 +59,7 @@
       <workItem from="1640257863384" duration="2959000" />
       <workItem from="1640261297015" duration="4000" />
       <workItem from="1640444570245" duration="599000" />
-      <workItem from="1640519990828" duration="8475000" />
+      <workItem from="1640519990828" duration="9770000" />
     </task>
     <servers />
   </component>
