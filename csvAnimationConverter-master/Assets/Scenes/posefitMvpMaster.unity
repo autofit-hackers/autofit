@@ -152,10 +152,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51a8f6cc80f0b4d66bd3ae79e6af12e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  frameCount: 0
   frameCountMax: 0
-  filename: sq-1227-1.json
-  startFrame: 1
-  endFrame: 100
+  filename: sq-1228.json
+  startFrame: 80
+  endFrame: 220
   sphereScale: 0.1
   spherePrefab: {fileID: 8181101526125902083, guid: 1f85015d9c718423bbb73dfea8788439,
     type: 3}

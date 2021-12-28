@@ -10,12 +10,12 @@ class nose : MonoBehaviour
 {
     // Start is called before the first frame update
     private static int numOfJoints = 33;
-    private int frameCount = 0;
+    public int frameCount = 0;
     public int frameCountMax;
     private int loopCount = 0;
     public string filename;
-    public int startFrame = 1;
-    public int endFrame = 10;
+    public int startFrame = 80;
+    public int endFrame = 240;
     public float sphereScale = 0.5f;
 
     public Transform spherePrefab;
@@ -26,6 +26,9 @@ class nose : MonoBehaviour
     public Dictionary<string, GameObject> jointGameObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, GameObject> boneGameObjects = new Dictionary<string, GameObject>();
     public List<Vector3> bodySpeeds = new List<Vector3>();
+    private Vector3 startPosition = new Vector3();
+    private List<int> keyFrames = new List<Int32>();
+    private int recognizeAsTheSame = 10;
 
     public Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
     private float timeOut = 0.05f;
@@ -56,6 +59,7 @@ class nose : MonoBehaviour
             Dictionary<string, Vector3> tmpPos = new Dictionary<string, Vector3>();
             Dictionary<string, Vector3> tmpSpd = new Dictionary<string, Vector3>();
             Vector3 bodySpd = new Vector3();
+            Vector3 bodyPos = new Vector3();
             // ローパスをかける & 瞬間速度を計算する
             foreach (KeyValuePair<string, Vector3> jointItem in deserializedFrame)
             {
@@ -76,21 +80,30 @@ class nose : MonoBehaviour
                 tmpPos.Add(jointName, lowpassFilteredPosition);
                 tmpSpd.Add(jointName, jointSpeed);
                 bodySpd += jointSpeed;
-                if (jointName == "Nose")
-                {
-                    // Debug.Log(lowpassFilteredPosition);
-                }
+                bodyPos += lowpassFilteredPosition;
             }
             jointPositions.Add(tmpPos); // JointPos=Dic<string,Vector3>()にローパス済みのposをAdd
             jointSpeeds.Add(tmpSpd);
             bodySpeeds.Add(bodySpd);
-            Debug.Log("bodySpeed "+bodySpd);
+            if (lineCount == startFrame)
+            {
+                startPosition = bodyPos;
+            }
+            float bodyVel = Mathf.Sqrt(bodySpd.x * bodySpd.x + bodySpd.y * bodySpd.y + bodySpd.z * bodySpd.z);
+            
+            // キーフレーム抽出
+            if (lineCount > startFrame && lineCount < endFrame)
+            {
+                if (bodyVel < 0.5 && Vector3.Angle(startPosition, bodyPos)<20)
+                {
+                    keyFrames.Add(lineCount);
+                    DeleteSameKeyFrames(keyFrames, lineCount, recognizeAsTheSame);
+                    Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
+                    Debug.Log(Vector3.Angle(startPosition, bodyPos));
+                }
+                Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
+            }
 
-            //キーフレーム抽出
-            // if (lineCount > 0)
-            // {
-            //     
-            // }
             lineCount += 1;
 
         }
@@ -151,6 +164,10 @@ class nose : MonoBehaviour
                 );
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
         }
+
+        frameCount = startFrame;
+        frameCountMax = endFrame;
+        ShowListContentsInTheDebugLog(keyFrames);
     }
 
     // Update is called once per frame
@@ -164,35 +181,18 @@ class nose : MonoBehaviour
             // Dictionary<string, Joint> deserializedFrame = deserializedFrames[frameCount];
             Dictionary<string, Vector3> jointFrame = jointPositions[frameCount];
 
-            // 各関節点の座標を取得
+            // 各jointのupdate
             foreach (KeyValuePair<string, Vector3> jointPosition in jointFrame)
             {
                 string jointName = jointPosition.Key;
-                // Joint joint = jointPostion.Value;
                 Vector3 pos = jointPosition.Value;
-
-                // if (frameCount == 0 && loopCount == 0) { // lastFarme の初期化
-                //     lastFramePoses.Add(jointName, jointTransform.position);
-                // }
-                //
-                // Vector3 pos = jointTransform.position;
-                //
-                // pos.x = (joint.Y - 165.2f) / 100 + offset1;
-                // pos.y = -((joint.X - 250f) / 100) + offset2;
-                // pos.z = joint.Z / 100;
-
-                // LPF
-                // pos = lastFramePoses[jointName] * lpf_rate + pos * (1 - lpf_rate);
-                // jointGameObjects[jointName].transform.position = pos; // 各座標に直接値を代入することはできない
-                // lastFramePoses[jointName] = pos;
                 jointGameObjects[jointName].transform.position = pos;
-                if (jointName == "Nose")
-                {
-                    // Debug.Log(pos);
-                }
-                // Debug.Log(jointName);
+
+                if (keyFrames.IndexOf(frameCount) >= 0) { jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red; }
+                else { jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor; }
             }
-            //ここでcylのupdate
+            
+            // 各boneのupdate
             foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
             {
                 string boneName = boneEdgeName.Key;
@@ -206,6 +206,8 @@ class nose : MonoBehaviour
                     jointGameObjects[startJointName].transform.position,
                     jointGameObjects[endJointName].transform.position
                     );
+                if (keyFrames.IndexOf(frameCount) >= 0) { boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red; }
+                else { boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor; }
             }
 
             // カウンタをインクリメント
@@ -214,7 +216,7 @@ class nose : MonoBehaviour
             // 最終フレームに到達した時の処理
             if (frameCount == frameCountMax)
             {
-                frameCount = 0;
+                frameCount = startFrame;
                 loopCount += 1;
                 if (loopCount == 100)
                 {
@@ -243,5 +245,30 @@ class nose : MonoBehaviour
         Vector3 localScale = cyl.transform.localScale;
         localScale.z = (endPoint - beginPoint).magnitude;
         cyl.transform.localScale = localScale;
+    }
+    
+    public void ShowListContentsInTheDebugLog<T>(List<T> list)
+    {
+        string log = "[";
+
+        foreach(var content in list)
+        {
+            log += content.ToString() + ", ";
+        }
+
+        log += "]";
+
+        Debug.Log(log);
+    }
+
+    private void DeleteSameKeyFrames(List<int> list,int frameNumber, int serial)
+    {
+        for (int i = 0; i < serial; i++)
+        {
+            if (list.IndexOf(frameNumber-i-1) >= 0)
+            {
+                list.Remove(frameNumber-i-1);
+            }
+        }
     }
 }
