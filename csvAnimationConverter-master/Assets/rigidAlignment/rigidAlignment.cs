@@ -11,20 +11,19 @@ namespace rigidAlignment
         static List<double[]> Main(Dictionary<string, Vector3> fromJoints, Dictionary<string, Vector3> toJoints)
         {
             // NOTE: cast to np.array
-            float[][] fromJointsArr = new float[numOfJoints][3];
-            float[][] toJointsArr = new float[numOfJoints][3];
+            double[][] fromJointsArr = new double[numOfJoints][]; //  = new double[numOfJoints][3];
+            double[][] toJointsArr = new double[numOfJoints][]; // = new double[numOfJoints][3];
             foreach (var it in jointNames.Select((x, i) => new { Value = x, Index = i }))
             {
                 var idx = it.Index;
                 var jointName = it.Value;
                 var fromJoint = fromJoints[jointName];
-                var fromPos = new float[] { fromJoint.x, fromJoint.y, fromJoint.z };
+                var fromPos = new double[] { fromJoint.x, fromJoint.y, fromJoint.z };
                 // fromJointsList.Add(fromPos);
                 fromJointsArr[idx] = fromPos;
 
                 var toJoint = toJoints[jointName];
-                // var toPos = new List<float>() { toJoint.x, toJoint.y, toJoint.z };
-                var toPos = new float[] { toJoint.x, toJoint.y, toJoint.z };
+                var toPos = new double[] { toJoint.x, toJoint.y, toJoint.z };
                 toJointsArr[idx] = toPos;
             }
 
