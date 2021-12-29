@@ -5,7 +5,6 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-
 class nose : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -14,9 +13,9 @@ class nose : MonoBehaviour
     public int frameCountMax;
     private int loopCount = 0;
     public string filename;
-    public int startFrame = 80;
-    public int endFrame = 240;
-    public float sphereScale = 0.1f;
+    public int startFrame;
+    public int endFrame;
+    public float sphereScale;
 
     public Transform spherePrefab;
     public Color jointColor;
