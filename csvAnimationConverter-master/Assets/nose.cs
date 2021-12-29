@@ -41,8 +41,7 @@ class nose : MonoBehaviour
     public List<Transform> cylinderPrefabs = new List<Transform>(3);
     public List<GameObject> cylinders = new List<GameObject>(3);
     private GameObject cylinder;
-
-    // private string[,] boneEdgeNames = new string[,] {{"LeftShoulder", "RightShoulder"}, {"LeftShoulder", "LeftElbow"}, {"RightShoulder", "RightElbow"}};
+    
     Dictionary<string, (string, string)> boneEdgeNames = new Dictionary<string, (string startJoint, string endJoint)>();
     void Start()
     {
@@ -209,7 +208,7 @@ class nose : MonoBehaviour
                 loopCount += 1;
                 if (loopCount == 100)
                 {
-                    UnityEditor.EditorApplication.isPlaying = false; //開発環境での停止トリガ
+                    UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
                     // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
                 }
             }
