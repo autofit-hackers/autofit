@@ -5,7 +5,7 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-class nose : MonoBehaviour
+class rigidAlignmentTest : MonoBehaviour
 {
     // Start is called before the first frame update
     private static int numOfJoints = 33;
@@ -40,12 +40,12 @@ class nose : MonoBehaviour
     public List<Transform> cylinderPrefabs = new List<Transform>(3);
     public List<GameObject> cylinders = new List<GameObject>(3);
     private GameObject cylinder;
-    
-    Dictionary<string, (string, string)> boneEdgeNames = new Dictionary<string, (string startJoint, string endJoint)>();
 
-    private Dictionary<string, BoneOrdinal> boneOrdinals = new Dictionary<string, BoneOrdinal>();
-    private Dictionary<string, Vector3> basePose = new Dictionary<string, Vector3>();
-    public List<Dictionary<string, Vector3>> zCalibratedJointPositions = new List<Dictionary<string, Vector3>>();
+    public float translationMagnitude = 0.2f;
+    public bool useRigidAlignment = false;
+
+    // private string[,] boneEdgeNames = new string[,] {{"LeftShoulder", "RightShoulder"}, {"LeftShoulder", "LeftElbow"}, {"RightShoulder", "RightElbow"}};
+    Dictionary<string, (string, string)> boneEdgeNames = new Dictionary<string, (string startJoint, string endJoint)>();
 
     void Start()
     {
@@ -74,6 +74,12 @@ class nose : MonoBehaviour
                 latestPosition.x = (joint.y - 165.2f) / 100;
                 latestPosition.y = -((joint.x - 250f) / 100);
                 latestPosition.z = joint.z / 100;
+
+                // 動作確認のために平行移動させる
+                latestPosition.x += translationMagnitude;
+                latestPosition.y += translationMagnitude;
+                latestPosition.z += translationMagnitude;
+
                 if (lineCount == 0)
                 {
                     lastFramePoses.Add(jointName, latestPosition);
@@ -117,12 +123,6 @@ class nose : MonoBehaviour
                 }
 
                 Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
-            }
-            
-            // z軸補正のための基準フレーム抽出
-            if (lineCount == 160)
-            {
-                basePose = tmpPos;
             }
 
             lineCount += 1;
@@ -180,14 +180,6 @@ class nose : MonoBehaviour
                 jointGameObjects[endJointName].transform.position
             );
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
-            
-            // BoneOrdinalのinit
-            // TODO: 三平方の定理からz座標を算出
-            BoneOrdinal boneOrd = BoneOrdinalInit(boneName, startJointName, endJointName,
-                Vector3.Distance(basePose[startJointName], basePose[endJointName]));
-            boneOrdinals.Add(boneName, boneOrd);
-            Debug.Log("boneOrdinalの" + boneName + "はこれだよ => " + boneOrd.boneLength);
-            
         }
 
         frameCount = startFrame;
@@ -254,7 +246,7 @@ class nose : MonoBehaviour
                 loopCount += 1;
                 if (loopCount == 100)
                 {
-                    UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
+                    UnityEditor.EditorApplication.isPlaying = false; //開発環境での停止トリガ
                     // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
                 }
             }
@@ -304,41 +296,5 @@ class nose : MonoBehaviour
                 list.Remove(frameNumber - i - 1);
             }
         }
-    }
-    
-    public struct BoneOrdinal
-    {
-        public string name;
-        public string startBone;
-        public string endBone;
-        public float boneLength;
-    }
-
-    public BoneOrdinal BoneOrdinalInit(string name, string start, string end, float length)
-    {
-        BoneOrdinal boneOrdinal = new BoneOrdinal();
-        boneOrdinal.name = name;
-        boneOrdinal.startBone = start;
-        boneOrdinal.endBone = end;
-        boneOrdinal.boneLength = length;
-        return boneOrdinal;
-    }
-
-    public Vector3 CalibrateZ(Vector3 baseJoint, Vector3 rawJoint, float boneLength)
-    {
-        Vector3 outputJoint = new Vector3();
-        outputJoint.x = rawJoint.x;
-        outputJoint.y = rawJoint.y;
-        float distanceSquare = boneLength * boneLength - rawJoint.x * rawJoint.x - rawJoint.y * rawJoint.y;
-        if (distanceSquare > 0)
-        {
-            outputJoint.z = Mathf.Sqrt(distanceSquare);
-        }
-        else
-        {
-            outputJoint.z = rawJoint.z;
-        }
-
-        return outputJoint;
     }
 }
