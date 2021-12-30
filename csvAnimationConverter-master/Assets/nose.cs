@@ -46,6 +46,8 @@ class nose : MonoBehaviour
     private Dictionary<string, BoneOrdinal> boneOrdinals = new Dictionary<string, BoneOrdinal>();
     private Dictionary<string, Vector3> basePose = new Dictionary<string, Vector3>();
     public List<Dictionary<string, Vector3>> zCalibratedJointPositions = new List<Dictionary<string, Vector3>>();
+    public Dictionary<string, GameObject> calibratedJointGameObjects = new Dictionary<string, GameObject>();
+    public Dictionary<string, GameObject> calibratedBoneGameObjects = new Dictionary<string, GameObject>();
 
     void Start()
     {
@@ -100,8 +102,8 @@ class nose : MonoBehaviour
             bodySpeeds.Add(bodySpd);
             if (lineCount == startFrame)
             {
-                startPosition = bodyPos;
-            } //最初のフレームにおいて重心の初期位置を定義
+                startPosition = bodyPos;　//最初のフレームにおいて重心の初期位置を定義
+            } 
 
             float bodyVel = Mathf.Sqrt(bodySpd.x * bodySpd.x + bodySpd.y * bodySpd.y + bodySpd.z * bodySpd.z);
 
@@ -126,15 +128,14 @@ class nose : MonoBehaviour
             }
 
             lineCount += 1;
-
         }
 
         // 最終フレームの定義
         frameCountMax = deserializedFrames.Count;
         if (frameCountMax <= endFrame)
         {
-            endFrame = frameCountMax - 1;
-        } //frameCountMaxがendFrameを超えてしまわないようにする
+            endFrame = frameCountMax - 1;　//frameCountMaxがendFrameを超えてしまわないようにする
+        } 
 
         var slicedFrames = endFrame - startFrame;
         // [startFrame:endFrame] をスライス
@@ -153,18 +154,35 @@ class nose : MonoBehaviour
         }
 
         // Initialize bone names
-        boneEdgeNames.Add("Shoulders", ("LeftShoulder", "RightShoulder"));
-        boneEdgeNames.Add("LeftUpperArm", ("LeftShoulder", "LeftElbow"));
-        boneEdgeNames.Add("RightUpperArm", ("RightShoulder", "RightElbow"));
-        boneEdgeNames.Add("LeftForeArm", ("LeftElbow", "LeftWrist"));
-        boneEdgeNames.Add("RightForeArm", ("RightElbow", "RightWrist"));
-        boneEdgeNames.Add("LeftFlank", ("LeftShoulder", "LeftHip"));
-        boneEdgeNames.Add("RightFlank", ("RightShoulder", "RightHip"));
+        // boneEdgeNames.Add("Shoulders", ("LeftShoulder", "RightShoulder"));
+        // boneEdgeNames.Add("LeftUpperArm", ("LeftShoulder", "LeftElbow"));
+        // boneEdgeNames.Add("RightUpperArm", ("RightShoulder", "RightElbow"));
+        // boneEdgeNames.Add("LeftForeArm", ("LeftElbow", "LeftWrist"));
+        // boneEdgeNames.Add("RightForeArm", ("RightElbow", "RightWrist"));
+        // boneEdgeNames.Add("LeftFlank", ("LeftShoulder", "LeftHip"));
+        // boneEdgeNames.Add("RightFlank", ("RightShoulder", "RightHip"));
+        // boneEdgeNames.Add("Pelvis", ("LeftHip", "RightHip"));
+        // boneEdgeNames.Add("LeftThigh", ("LeftHip", "LeftKnee"));
+        // boneEdgeNames.Add("RightThigh", ("RightHip", "RightKnee"));
+        // boneEdgeNames.Add("LeftShin", ("LeftKnee", "LeftAnkle"));
+        // boneEdgeNames.Add("RightShin", ("RightKnee", "RightAnkle"));
+        
+        // Initialize bone names with order
         boneEdgeNames.Add("Pelvis", ("LeftHip", "RightHip"));
         boneEdgeNames.Add("LeftThigh", ("LeftHip", "LeftKnee"));
+        boneEdgeNames.Add("LeftFlank", ("LeftHip", "LeftShoulder"));
+        
         boneEdgeNames.Add("RightThigh", ("RightHip", "RightKnee"));
         boneEdgeNames.Add("LeftShin", ("LeftKnee", "LeftAnkle"));
+        boneEdgeNames.Add("LeftUpperArm", ("LeftShoulder", "LeftElbow"));
+        boneEdgeNames.Add("Shoulders", ("LeftShoulder", "RightShoulder"));
+
         boneEdgeNames.Add("RightShin", ("RightKnee", "RightAnkle"));
+        boneEdgeNames.Add("LeftForeArm", ("LeftElbow", "LeftWrist"));
+        // boneEdgeNames.Add("RightFlank", ("RightShoulder", "RightHip"));
+        boneEdgeNames.Add("RightUpperArm", ("RightShoulder", "RightElbow"));
+        
+        boneEdgeNames.Add("RightForeArm", ("RightElbow", "RightWrist"));
 
         //　Initialize bone objects
         foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
@@ -180,15 +198,57 @@ class nose : MonoBehaviour
                 jointGameObjects[endJointName].transform.position
             );
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
-            
+
             // BoneOrdinalのinit
             // TODO: 三平方の定理からz座標を算出
             BoneOrdinal boneOrd = BoneOrdinalInit(boneName, startJointName, endJointName,
                 Vector3.Distance(basePose[startJointName], basePose[endJointName]));
             boneOrdinals.Add(boneName, boneOrd);
-            Debug.Log("boneOrdinalの" + boneName + "はこれだよ => " + boneOrd.boneLength);
-            
+            // Debug.Log("boneOrdinalの" + boneName + "はこれだよ => " + boneOrd.boneLength);
         }
+
+        // z補正
+        string baseJointName = "LeftHip";
+        int counter = 0;
+        foreach (var jointFrame in jointPositions)
+        {
+            Dictionary<string, Vector3> zCalibratedJointPosition = new Dictionary<string, Vector3>();
+            zCalibratedJointPosition.Add(baseJointName, jointFrame[baseJointName]);
+            foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
+            {
+                string ordinalName = boneOrdinal.Key;
+                BoneOrdinal ordinal = boneOrdinal.Value;
+                Vector3 startJoint = jointFrame[ordinal.startBone];
+                Vector3 endJoint = jointFrame[ordinal.endBone];
+                Vector3 calibratedPos = CalibrateZ(startJoint, endJoint, ordinal.boneLength);
+                string endBoneName = ordinal.endBone;
+                zCalibratedJointPosition.Add(endBoneName, calibratedPos);
+            }
+            zCalibratedJointPositions.Add(zCalibratedJointPosition);
+            counter++;
+        }
+        foreach (var jointName in deserializedFrames[0].Keys) // 補正用jointをInitialize
+        {
+            calibratedJointGameObjects[jointName] =
+                Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+            calibratedJointGameObjects[jointName].transform.localScale =
+                new Vector3(sphereScale, sphereScale, sphereScale);
+            calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.blue;
+        }
+        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+        {
+            string boneName = boneEdgeName.Key;
+            string startJointName = boneEdgeName.Value.Item1;
+            string endJointName = boneEdgeName.Value.Item2;
+            InstantiateCylinderZ(
+                boneName,
+                cylinderPrefab,
+                jointGameObjects[startJointName].transform.position,
+                jointGameObjects[endJointName].transform.position
+            );
+            calibratedBoneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.blue;
+        }
+
 
         frameCount = startFrame;
         frameCountMax = endFrame;
@@ -221,6 +281,27 @@ class nose : MonoBehaviour
                 {
                     jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
                 }
+            }
+            
+            // 補正後のjointのupdate
+            foreach (KeyValuePair<string, Vector3> calibratedJointPosition in zCalibratedJointPositions[frameCount])
+            {
+                string jointName = calibratedJointPosition.Key;
+                // Debug.Log(jointName);
+                Vector3 pos = calibratedJointPosition.Value;
+                calibratedJointGameObjects[jointName].transform.position = pos;
+            }
+            // 補正後の各boneのupdate
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+            {
+                string boneName = boneEdgeName.Key;
+                string startJointName = boneEdgeName.Value.Item1;
+                string endJointName = boneEdgeName.Value.Item2;
+                UpdateCylinderPosition(
+                    calibratedBoneGameObjects[boneName],
+                    calibratedJointGameObjects[startJointName].transform.position,
+                    calibratedJointGameObjects[endJointName].transform.position
+                );
             }
 
             // 各boneのupdate
@@ -267,6 +348,12 @@ class nose : MonoBehaviour
     {
         boneGameObjects[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
         UpdateCylinderPosition(boneGameObjects[key], beginPoint, endPoint);
+    }
+    
+    private void InstantiateCylinderZ(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint)
+    {
+        calibratedBoneGameObjects[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
+        UpdateCylinderPosition(calibratedBoneGameObjects[key], beginPoint, endPoint);
     }
 
     private void UpdateCylinderPosition(GameObject cyl, Vector3 beginPoint, Vector3 endPoint)
@@ -332,11 +419,19 @@ class nose : MonoBehaviour
         float distanceSquare = boneLength * boneLength - rawJoint.x * rawJoint.x - rawJoint.y * rawJoint.y;
         if (distanceSquare > 0)
         {
-            outputJoint.z = Mathf.Sqrt(distanceSquare);
+            if (rawJoint.z > baseJoint.z)
+            {            
+                outputJoint.z = baseJoint.z + Mathf.Sqrt(distanceSquare);
+            }
+            else
+            {
+                outputJoint.z = baseJoint.z - Mathf.Sqrt(distanceSquare);
+            }
         }
         else
         {
-            outputJoint.z = rawJoint.z;
+            outputJoint.z = 0;//rawJoint.z;
+            Debug.Log("!!!!!!minus!!!!!!" + distanceSquare);
         }
 
         return outputJoint;
