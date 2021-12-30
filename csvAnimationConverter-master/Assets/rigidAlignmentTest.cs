@@ -5,7 +5,7 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-class nose : MonoBehaviour
+class rigidAlignmentTest : MonoBehaviour
 {
     // Start is called before the first frame update
     private static int numOfJoints = 33;
@@ -41,6 +41,9 @@ class nose : MonoBehaviour
     public List<GameObject> cylinders = new List<GameObject>(3);
     private GameObject cylinder;
 
+    public float translationMagnitude = 0.2f;
+    public bool useRigidAlignment = false;
+
     // private string[,] boneEdgeNames = new string[,] {{"LeftShoulder", "RightShoulder"}, {"LeftShoulder", "LeftElbow"}, {"RightShoulder", "RightElbow"}};
     Dictionary<string, (string, string)> boneEdgeNames = new Dictionary<string, (string startJoint, string endJoint)>();
 
@@ -71,6 +74,12 @@ class nose : MonoBehaviour
                 latestPosition.x = (joint.y - 165.2f) / 100;
                 latestPosition.y = -((joint.x - 250f) / 100);
                 latestPosition.z = joint.z / 100;
+
+                // 動作確認のために平行移動させる
+                latestPosition.x += translationMagnitude;
+                latestPosition.y += translationMagnitude;
+                latestPosition.z += translationMagnitude;
+
                 if (lineCount == 0)
                 {
                     lastFramePoses.Add(jointName, latestPosition);
@@ -289,4 +298,3 @@ class nose : MonoBehaviour
         }
     }
 }
-    

@@ -8,22 +8,56 @@ namespace rigidAlignment
 {
     public class RigidAlignment
     {
-        static List<double[]> Main(Dictionary<string, Vector3> fromJoints, Dictionary<string, Vector3> toJoints)
+
+        private List<Dictionary<string, Vector3>> rigidTransformJointPositions(Dictionary<string, Vector3> fromKeyFrame, Dictionary<string, Vector3> toKeyFrame, List<Dictionary<string, Vector3>> fromJointPositionFrames)
+        {
+            var rigidTransformFactors = calcRigidTransformMatrix(fromKeyFrame, toKeyFrame);
+            var mse = rigidTransformFactors[0];
+            var transformedTo = rigidTransformFactors[1];
+            var computedRotation = rigidTransformFactors[2];
+            var scaling = rigidTransformFactors[3];
+            var translation = rigidTransformFactors[4];
+            Debug.Log("mse");
+            Debug.Log(mse);
+            Debug.Log(transformedTo);
+            Debug.Log("transformedTo");
+            Debug.Log(computedRotation);
+            Debug.Log("computedRotation");
+            Debug.Log("scaling");
+            Debug.Log(scaling);
+            Debug.Log("translation");
+            Debug.Log(translation);
+            // for (int i = 0; i < fromJointPositionFrames.Count; i++)
+            // {
+            //     var fromOneFrame = fromJointPositionFrames[i];
+            //     Dictionary<string, Vector3> transformedOneFrame;
+            //     foreach (KeyValuePair<string, Vector3> fromJointItem in fromOneFrame)
+            //     {
+            //         var fromJointName = fromJointItem.Key;
+            //         var fromJointPos = fromJointItem.Value;
+            //         var transformedJointPos = 
+            //         transformedOneFrame.Add(fromJointName, );
+            //     }
+            //
+            // }
+            return fromJointPositionFrames;
+        }
+        static List<float[]> calcRigidTransformMatrix(Dictionary<string, Vector3> fromJoints, Dictionary<string, Vector3> toJoints)
         {
             // NOTE: cast to np.array
-            double[][] fromJointsArr = new double[numOfJoints][]; //  = new double[numOfJoints][3];
-            double[][] toJointsArr = new double[numOfJoints][]; // = new double[numOfJoints][3];
+            float[][] fromJointsArr = new float[numOfJoints][]; //  = new float[numOfJoints][3];
+            float[][] toJointsArr = new float[numOfJoints][]; // = new float[numOfJoints][3];
             foreach (var it in jointNames.Select((x, i) => new { Value = x, Index = i }))
             {
                 var idx = it.Index;
                 var jointName = it.Value;
                 var fromJoint = fromJoints[jointName];
-                var fromPos = new double[] { fromJoint.x, fromJoint.y, fromJoint.z };
+                var fromPos = new float[] { fromJoint.x, fromJoint.y, fromJoint.z };
                 // fromJointsList.Add(fromPos);
                 fromJointsArr[idx] = fromPos;
 
                 var toJoint = toJoints[jointName];
-                var toPos = new double[] { toJoint.x, toJoint.y, toJoint.z };
+                var toPos = new float[] { toJoint.x, toJoint.y, toJoint.z };
                 toJointsArr[idx] = toPos;
             }
 
@@ -88,7 +122,7 @@ namespace rigidAlignment
 
             var c = muFrom - b * np.dot(muTo, T);
 
-            return new List<double[]>{d.GetData<double>(), Z.GetData<double>(), T.GetData<double>(), b.GetData<double>(), c.GetData<double>()};
+            return new List<float[]>{d.GetData<float>(), Z.GetData<float>(), T.GetData<float>(), b.GetData<float>(), c.GetData<float>()};
         }
 
         static List<string> jointNames = new List<string> {
