@@ -42,6 +42,11 @@ class nose : MonoBehaviour
     private GameObject cylinder;
     
     Dictionary<string, (string, string)> boneEdgeNames = new Dictionary<string, (string startJoint, string endJoint)>();
+
+    private Dictionary<string, BoneOrdinal> boneOrdinals = new Dictionary<string, BoneOrdinal>();
+    private Dictionary<string, Vector3> basePose = new Dictionary<string, Vector3>();
+    public List<Dictionary<string, Vector3>> zCalibratedJointPositions = new List<Dictionary<string, Vector3>>();
+
     void Start()
     {
         // deserializedFramesに各行をparseして格納
@@ -102,6 +107,12 @@ class nose : MonoBehaviour
                 }
                 Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
             }
+            
+            // z軸補正のための基準フレーム抽出
+            if (lineCount == 160)
+            {
+                basePose = tmpPos;
+            }
 
             lineCount += 1;
 
@@ -154,6 +165,14 @@ class nose : MonoBehaviour
                 jointGameObjects[endJointName].transform.position
                 );
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
+            
+            // BoneOrdinalのinit
+            // TODO: 三平方の定理からz座標を算出
+            BoneOrdinal boneOrd = BoneOrdinalInit(boneName, startJointName, endJointName,
+                Vector3.Distance(basePose[startJointName], basePose[endJointName]));
+            boneOrdinals.Add(boneName, boneOrd);
+            Debug.Log("boneOrdinalの" + boneName + "はこれだよ => " + boneOrd.boneLength);
+            
         }
 
         frameCount = startFrame;
@@ -256,5 +275,41 @@ class nose : MonoBehaviour
                 list.Remove(frameNumber-i-1);
             }
         }
+    }
+    
+    public struct BoneOrdinal
+    {
+        public string name;
+        public string startBone;
+        public string endBone;
+        public float boneLength;
+    }
+
+    public BoneOrdinal BoneOrdinalInit(string name, string start, string end, float length)
+    {
+        BoneOrdinal boneOrdinal = new BoneOrdinal();
+        boneOrdinal.name = name;
+        boneOrdinal.startBone = start;
+        boneOrdinal.endBone = end;
+        boneOrdinal.boneLength = length;
+        return boneOrdinal;
+    }
+
+    public Vector3 CalibrateZ(Vector3 baseJoint, Vector3 rawJoint, float boneLength)
+    {
+        Vector3 outputJoint = new Vector3();
+        outputJoint.x = rawJoint.x;
+        outputJoint.y = rawJoint.y;
+        float distanceSquare = boneLength * boneLength - rawJoint.x * rawJoint.x - rawJoint.y * rawJoint.y;
+        if (distanceSquare > 0)
+        {
+            outputJoint.z = Mathf.Sqrt(distanceSquare);
+        }
+        else
+        {
+            outputJoint.z = rawJoint.z;
+        }
+
+        return outputJoint;
     }
 }
