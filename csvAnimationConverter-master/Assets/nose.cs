@@ -200,18 +200,21 @@ class nose : MonoBehaviour
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
 
             // BoneOrdinalのinit
-            // TODO: 三平方の定理からz座標を算出
             BoneOrdinal boneOrd = BoneOrdinalInit(boneName, startJointName, endJointName,
                 Vector3.Distance(basePose[startJointName], basePose[endJointName]));
             boneOrdinals.Add(boneName, boneOrd);
-            // Debug.Log("boneOrdinalの" + boneName + "はこれだよ => " + boneOrd.boneLength);
         }
 
         // z補正
         string baseJointName = "LeftHip";
         int counter = 0;
-        foreach (var jointFrame in jointPositions)
+        Dictionary<string, Vector3> lastPosition = jointPositions[100];//new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
+        foreach (var jointFrame in jointPositions) //全てのフレームのjointについてforeach
         {
+            if (counter == 80 || counter == 100)
+            {
+                lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
+            }
             Dictionary<string, Vector3> zCalibratedJointPosition = new Dictionary<string, Vector3>();
             zCalibratedJointPosition.Add(baseJointName, jointFrame[baseJointName]);
             foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
@@ -220,10 +223,13 @@ class nose : MonoBehaviour
                 BoneOrdinal ordinal = boneOrdinal.Value;
                 Vector3 startJoint = jointFrame[ordinal.startBone];
                 Vector3 endJoint = jointFrame[ordinal.endBone];
-                Vector3 calibratedPos = CalibrateZ(startJoint, endJoint, ordinal.boneLength);
+                Vector3 baseJoint = zCalibratedJointPosition[ordinal.startBone];
+                Vector3 lastTargetJoint = lastPosition[ordinal.endBone];
+                Vector3 calibratedPos = CalibrateZ(baseJoint, startJoint, endJoint, lastTargetJoint, ordinal.boneLength);
                 string endBoneName = ordinal.endBone;
                 zCalibratedJointPosition.Add(endBoneName, calibratedPos);
             }
+            lastPosition = zCalibratedJointPosition;
             zCalibratedJointPositions.Add(zCalibratedJointPosition);
             counter++;
         }
@@ -235,7 +241,7 @@ class nose : MonoBehaviour
                 new Vector3(sphereScale, sphereScale, sphereScale);
             calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.blue;
         }
-        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames) // 補正用boneのInitialize
         {
             string boneName = boneEdgeName.Key;
             string startJointName = boneEdgeName.Value.Item1;
@@ -248,7 +254,6 @@ class nose : MonoBehaviour
             );
             calibratedBoneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.blue;
         }
-
 
         frameCount = startFrame;
         frameCountMax = endFrame;
@@ -339,7 +344,6 @@ class nose : MonoBehaviour
                     // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
                 }
             }
-
             timeElapsed = 0.0f;
         }
     }
@@ -411,21 +415,25 @@ class nose : MonoBehaviour
         return boneOrdinal;
     }
 
-    public Vector3 CalibrateZ(Vector3 baseJoint, Vector3 rawJoint, float boneLength)
+    public Vector3 CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint, float boneLength)
     {
         Vector3 outputJoint = new Vector3();
-        outputJoint.x = rawJoint.x;
-        outputJoint.y = rawJoint.y;
-        float distanceSquare = boneLength * boneLength - rawJoint.x * rawJoint.x - rawJoint.y * rawJoint.y;
+        outputJoint.x = rawEndJoint.x;
+        outputJoint.y = rawEndJoint.y;
+        float distanceSquare = 
+            boneLength * boneLength - 
+            (rawStartJoint.x-rawEndJoint.x) * (rawStartJoint.x-rawEndJoint.x) - 
+            (rawStartJoint.y-rawEndJoint.y) * (rawStartJoint.y-rawEndJoint.y);
         if (distanceSquare > 0)
         {
-            if (rawJoint.z > baseJoint.z)
-            {            
-                outputJoint.z = baseJoint.z + Mathf.Sqrt(distanceSquare);
+            var distance = Mathf.Sqrt(distanceSquare);
+            if (Mathf.Abs((baseJoint.z + distance) - lastTargetJoint.z) < Mathf.Abs((baseJoint.z-distance) - lastTargetJoint.z))
+            {
+                outputJoint.z = baseJoint.z + distance;
             }
             else
             {
-                outputJoint.z = baseJoint.z - Mathf.Sqrt(distanceSquare);
+                outputJoint.z = baseJoint.z - distance;
             }
         }
         else
