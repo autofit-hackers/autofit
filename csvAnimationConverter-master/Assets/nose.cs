@@ -200,8 +200,11 @@ class nose : MonoBehaviour
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
 
             // BoneOrdinalのinit
+            var startPoseXY = make2dVector(basePose[startJointName]);
+            var endPoseXY = make2dVector(basePose[endJointName]);
             BoneOrdinal boneOrd = BoneOrdinalInit(boneName, startJointName, endJointName,
-                Vector3.Distance(basePose[startJointName], basePose[endJointName]));
+                Vector2.Distance(startPoseXY, endPoseXY));
+            // BoneOrdinal boneOrd = BoneOrdinalInit(boneName, startJointName, endJointName,Vector3.Distance(basePose[startJointName], basePose[endJointName]));
             boneOrdinals.Add(boneName, boneOrd);
         }
 
@@ -443,5 +446,10 @@ class nose : MonoBehaviour
         }
 
         return outputJoint;
+    }
+
+    public Vector2 make2dVector(Vector3 inputVec)
+    {
+        return new Vector2(inputVec.x, inputVec.y);
     }
 }
