@@ -154,9 +154,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   frameCount: 0
   frameCountMax: 0
-  filename: sq-1228.json
-  startFrame: 80
-  endFrame: 220
+  filename: sq-1231.json
+  startFrame: 700
+  endFrame: 1100
   sphereScale: 0.1
   spherePrefab: {fileID: 8181101526125902083, guid: 1f85015d9c718423bbb73dfea8788439,
     type: 3}

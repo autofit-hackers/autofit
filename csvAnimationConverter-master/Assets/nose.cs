@@ -32,7 +32,7 @@ class nose : MonoBehaviour
     public Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
     private float timeOut = 0.05f;
     private float timeElapsed = 0.0f;
-    private float lpf_rate = 0.1f;
+    private float lpf_rate = 0.2f;
     public float offset1 = 0;
     public float offset2 = 0;
 
@@ -175,11 +175,12 @@ class nose : MonoBehaviour
         boneEdgeNames.Add("RightThigh", ("RightHip", "RightKnee"));
         boneEdgeNames.Add("LeftShin", ("LeftKnee", "LeftAnkle"));
         boneEdgeNames.Add("LeftUpperArm", ("LeftShoulder", "LeftElbow"));
-        boneEdgeNames.Add("Shoulders", ("LeftShoulder", "RightShoulder"));
+        // boneEdgeNames.Add("Shoulders", ("LeftShoulder", "RightShoulder"));        
+        boneEdgeNames.Add("RightFlank", ("RightHip", "RightShoulder"));
+
 
         boneEdgeNames.Add("RightShin", ("RightKnee", "RightAnkle"));
         boneEdgeNames.Add("LeftForeArm", ("LeftElbow", "LeftWrist"));
-        // boneEdgeNames.Add("RightFlank", ("RightShoulder", "RightHip"));
         boneEdgeNames.Add("RightUpperArm", ("RightShoulder", "RightElbow"));
         
         boneEdgeNames.Add("RightForeArm", ("RightElbow", "RightWrist"));
@@ -281,14 +282,8 @@ class nose : MonoBehaviour
                 Vector3 pos = jointPosition.Value;
                 jointGameObjects[jointName].transform.position = pos;
 
-                if (keyFrames.IndexOf(frameCount) >= 0)
-                {
-                    jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
-                }
-                else
-                {
-                    jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
-                }
+                if (keyFrames.IndexOf(frameCount) >= 0) jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
+                else jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
             }
             
             // 補正後のjointのupdate
@@ -298,6 +293,12 @@ class nose : MonoBehaviour
                 // Debug.Log(jointName);
                 Vector3 pos = calibratedJointPosition.Value;
                 calibratedJointGameObjects[jointName].transform.position = pos;
+                if (jointName == "RightElbow")
+                {
+                    calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
+                    Debug.Log(pos.z);
+                }
+                // else jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.blue;
             }
             // 補正後の各boneのupdate
             foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
@@ -323,14 +324,8 @@ class nose : MonoBehaviour
                     jointGameObjects[startJointName].transform.position,
                     jointGameObjects[endJointName].transform.position
                 );
-                if (keyFrames.IndexOf(frameCount) >= 0)
-                {
-                    boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
-                }
-                else
-                {
-                    boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
-                }
+                if (keyFrames.IndexOf(frameCount) >= 0) boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
+                else boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
             }
 
             // カウンタをインクリメント
@@ -380,12 +375,9 @@ class nose : MonoBehaviour
         string log = "[";
 
         foreach (var content in list)
-        {
             log += content.ToString() + ", ";
-        }
 
         log += "]";
-
         Debug.Log(log);
     }
 
@@ -393,10 +385,7 @@ class nose : MonoBehaviour
     {
         for (int i = 0; i < serial; i++)
         {
-            if (list.IndexOf(frameNumber - i - 1) >= 0)
-            {
-                list.Remove(frameNumber - i - 1);
-            }
+            if (list.IndexOf(frameNumber - i - 1) >= 0) list.Remove(frameNumber - i - 1);
         }
     }
     
@@ -430,14 +419,9 @@ class nose : MonoBehaviour
         if (distanceSquare > 0)
         {
             var distance = Mathf.Sqrt(distanceSquare);
-            if (Mathf.Abs((baseJoint.z + distance) - lastTargetJoint.z) < Mathf.Abs((baseJoint.z-distance) - lastTargetJoint.z))
-            {
+            if (Mathf.Abs((baseJoint.z + distance) - lastTargetJoint.z) < Mathf.Abs((baseJoint.z-distance) - lastTargetJoint.z)) 
                 outputJoint.z = baseJoint.z + distance;
-            }
-            else
-            {
-                outputJoint.z = baseJoint.z - distance;
-            }
+            else outputJoint.z = baseJoint.z - distance;
         }
         else
         {
