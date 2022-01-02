@@ -1,21 +1,19 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 using Newtonsoft.Json;
 
-class rigidAlignmentTest : MonoBehaviour
+class RigidAlignmentTest : MonoBehaviour
 {
     // Start is called before the first frame update
-    private static int numOfJoints = 33;
     public int frameCount = 0;
     public int frameCountMax;
     private int loopCount = 0;
-    public string filename;
-    public int startFrame;
-    public int endFrame;
-    public float sphereScale;
+    public string filename = "sq-1228.json";
+    public int startFrame = 80;
+    public int endFrame = 220;
+    public float sphereScale = 0.1f;
 
     public Transform spherePrefab;
     public Color jointColor;
@@ -41,10 +39,14 @@ class rigidAlignmentTest : MonoBehaviour
     public List<GameObject> cylinders = new List<GameObject>(3);
     private GameObject cylinder;
 
+    // rigid alignment
     public float translationMagnitude = 0.2f;
-    public bool useRigidAlignment = false;
+    public List<Dictionary<string, Vector3>> deserializedFramesFrom = new List<Dictionary<string, Vector3>>();
+    public List<Dictionary<string, Vector3>> deserializedFramesAligned = new List<Dictionary<string, Vector3>>();
+    public Dictionary<string, GameObject> jointGameObjectsAligned = new Dictionary<string, GameObject>();
+    public Dictionary<string, GameObject> boneGameObjectsAligned = new Dictionary<string, GameObject>();
 
-    // private string[,] boneEdgeNames = new string[,] {{"LeftShoulder", "RightShoulder"}, {"LeftShoulder", "LeftElbow"}, {"RightShoulder", "RightElbow"}};
+
     Dictionary<string, (string, string)> boneEdgeNames = new Dictionary<string, (string startJoint, string endJoint)>();
 
     void Start()
@@ -75,10 +77,6 @@ class rigidAlignmentTest : MonoBehaviour
                 latestPosition.y = -((joint.x - 250f) / 100);
                 latestPosition.z = joint.z / 100;
 
-                // 動作確認のために平行移動させる
-                latestPosition.x += translationMagnitude;
-                latestPosition.y += translationMagnitude;
-                latestPosition.z += translationMagnitude;
 
                 if (lineCount == 0)
                 {
@@ -118,15 +116,14 @@ class rigidAlignmentTest : MonoBehaviour
                 {
                     keyFrames.Add(lineCount);
                     DeleteSameKeyFrames(keyFrames, lineCount, recognizeAsTheSame);
-                    Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
-                    Debug.Log(Vector3.Angle(startPosition, bodyPos));
+                    // Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
+                    // Debug.Log(Vector3.Angle(startPosition, bodyPos));
                 }
 
-                Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
+                // Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
             }
 
             lineCount += 1;
-
         }
 
         // 最終フレームの定義
@@ -142,15 +139,43 @@ class rigidAlignmentTest : MonoBehaviour
         deserializedFrames = deserializedFrames.GetRange(startFrame, slicedFrames);
         frameCountMax = deserializedFrames.Count;
 
+        // rigid alignment の動作確認のために平行移動させる
+        // NOTE: deep copy かどうかは要検証
+        for (int i = 0; i < deserializedFrames.Count; i++)
+        {
+            var frame = deserializedFrames[i];
+            Dictionary<string, Vector3> tmpFrame = new Dictionary<string, Vector3>();
+            foreach (KeyValuePair<string, Vector3> jointItem in frame)
+            {
+                var jointName = jointItem.Key;
+                var jointPos = jointItem.Value;
+                jointPos.x += translationMagnitude;
+                jointPos.y += translationMagnitude;
+                jointPos.z += translationMagnitude;
+                tmpFrame.Add(jointName, jointPos);
+            }
+            deserializedFramesFrom.Add(tmpFrame);
+        }
+
+        // rigidAlignment
+        var toJoints = deserializedFrames[0];
+        var fromJoints = deserializedFramesFrom[0];
+        var rigidAdjuster = new RigidAlignment.RigidAlignment(fromJoints, toJoints);
+        deserializedFramesAligned = rigidAdjuster.RigidTransformFrames(deserializedFramesFrom);
+
+
         // Initialize joint objects
         // NOTE: get joint names from 0 frame of deserializedFrames
-        foreach (var jointName in deserializedFrames[0].Keys)
-        {
-            jointGameObjects[jointName] =
-                Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
-            jointGameObjects[jointName].transform.localScale = new Vector3(sphereScale, sphereScale, sphereScale);
-            jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
-        }
+        InitJointGameObj(jointGameObjects);
+        InitJointGameObj(jointGameObjectsAligned);
+        // foreach (var jointName in deserializedFrames[0].Keys)
+        // {
+        //     Debug.Log(jointName);
+        //     jointGameObjects[jointName] =
+        //         Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+        //     jointGameObjects[jointName].transform.localScale = new Vector3(sphereScale, sphereScale, sphereScale);
+        //     jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
+        // }
 
         // Initialize bone names
         boneEdgeNames.Add("Shoulders", ("LeftShoulder", "RightShoulder"));
@@ -167,20 +192,23 @@ class rigidAlignmentTest : MonoBehaviour
         boneEdgeNames.Add("RightShin", ("RightKnee", "RightAnkle"));
 
         //　Initialize bone objects
-        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
-        {
-            string boneName = boneEdgeName.Key;
-            // Debug.Log(boneKey);
-            string startJointName = boneEdgeName.Value.Item1;
-            string endJointName = boneEdgeName.Value.Item2;
-            InstantiateCylinder(
-                boneName,
-                cylinderPrefab,
-                jointGameObjects[startJointName].transform.position,
-                jointGameObjects[endJointName].transform.position
-            );
-            boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
-        }
+        // foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+        // {
+        //     string boneName = boneEdgeName.Key;
+        //     // Debug.Log(boneKey);
+        //     string startJointName = boneEdgeName.Value.Item1;
+        //     string endJointName = boneEdgeName.Value.Item2;
+        //     InstantiateCylinder(
+        //         boneName,
+        //         cylinderPrefab,
+        //         jointGameObjects[startJointName].transform.position,
+        //         jointGameObjects[endJointName].transform.position
+        //     );
+        //     boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
+        // }
+        
+        InitBoneGameObj(boneGameObjects, jointGameObjects);
+        InitBoneGameObj(boneGameObjectsAligned, jointGameObjectsAligned);
 
         frameCount = startFrame;
         frameCountMax = endFrame;
@@ -197,14 +225,17 @@ class rigidAlignmentTest : MonoBehaviour
         {
             //この中でアニメーション描画
             Dictionary<string, Vector3> jointFrame = jointPositions[frameCount];
-
+            Dictionary<string, Vector3> jointFrameAligned = deserializedFramesAligned[frameCount];
+        
             // 各jointのupdate
             foreach (KeyValuePair<string, Vector3> jointPosition in jointFrame)
             {
                 string jointName = jointPosition.Key;
                 Vector3 pos = jointPosition.Value;
+                Debug.Log(string.Join(",", jointGameObjects.Keys));
                 jointGameObjects[jointName].transform.position = pos;
-
+        
+                // keyframeは着色
                 if (keyFrames.IndexOf(frameCount) >= 0)
                 {
                     jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
@@ -214,7 +245,16 @@ class rigidAlignmentTest : MonoBehaviour
                     jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
                 }
             }
-
+            
+            // 各jointのupdate(aligned)
+            foreach (KeyValuePair<string, Vector3> jointPosition in jointFrameAligned)
+            {
+                string jointName = jointPosition.Key;
+                Vector3 pos = jointPosition.Value;
+                Debug.Log(string.Join(",", jointGameObjects.Keys));
+                jointGameObjectsAligned[jointName].transform.position = pos;
+            }
+        
             // 各boneのupdate
             foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
             {
@@ -226,6 +266,15 @@ class rigidAlignmentTest : MonoBehaviour
                     jointGameObjects[startJointName].transform.position,
                     jointGameObjects[endJointName].transform.position
                 );
+                
+                // aligned
+                UpdateCylinderPosition(
+                    boneGameObjectsAligned[boneName],
+                    jointGameObjectsAligned[startJointName].transform.position,
+                    jointGameObjectsAligned[endJointName].transform.position
+                );
+                
+                // keyframeは着色
                 if (keyFrames.IndexOf(frameCount) >= 0)
                 {
                     boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
@@ -235,10 +284,10 @@ class rigidAlignmentTest : MonoBehaviour
                     boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
                 }
             }
-
+        
             // カウンタをインクリメント
             frameCount += 1;
-
+        
             // 最終フレームに到達した時の処理
             if (frameCount == frameCountMax)
             {
@@ -250,8 +299,57 @@ class rigidAlignmentTest : MonoBehaviour
                     // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
                 }
             }
-
+        
             timeElapsed = 0.0f;
+        }
+    }
+    
+    private void InitJointGameObj(Dictionary<string, GameObject> jointGameObjTmp)
+    {
+        foreach (var jointName in deserializedFrames[0].Keys)
+        {
+            jointGameObjTmp[jointName] =
+                Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+            jointGameObjTmp[jointName].transform.localScale = new Vector3(sphereScale, sphereScale, sphereScale);
+            jointGameObjTmp[jointName].GetComponent<Renderer>().material.color = jointColor;
+        }
+    }
+    
+    // private void UpdateJointGameObj(KeyValuePair<string, Vector3> jointPosTmp, Dictionary<string, GameObject> jointGameObjTmp)
+    // {
+    //         {
+    //             string jointName = jointPosTmp.Key;
+    //             Vector3 pos = jointPosTmp.Value;
+    //             Debug.Log(string.Join(",", jointGameObjTmp.Keys));
+    //             jointGameObjTmp[jointName].transform.position = pos;
+    //
+    //             if (keyFrames.IndexOf(frameCount) >= 0)
+    //             {
+    //                 jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
+    //             }
+    //             else
+    //             {
+    //                 jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
+    //             }
+    //         }
+    // }
+
+    private void InitBoneGameObj(Dictionary<string, GameObject> boneGameObjTmp, Dictionary<string, GameObject> jointGameObjTmp)
+    {
+        //　Initialize bone objects
+        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+        {
+            string boneName = boneEdgeName.Key;
+            // Debug.Log(boneKey);
+            string startJointName = boneEdgeName.Value.Item1;
+            string endJointName = boneEdgeName.Value.Item2;
+            InstantiateCylinder(
+                boneName,
+                cylinderPrefab,
+                jointGameObjTmp[startJointName].transform.position,
+                jointGameObjTmp[endJointName].transform.position
+            );
+            boneGameObjTmp[boneName].GetComponent<Renderer>().material.color = jointColor;
         }
     }
 
@@ -284,7 +382,7 @@ class rigidAlignmentTest : MonoBehaviour
 
         log += "]";
 
-        Debug.Log(log);
+        // Debug.Log(log);
     }
 
     private void DeleteSameKeyFrames(List<int> list, int frameNumber, int serial)

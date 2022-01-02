@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657815, g: 0.49641192, b: 0.57481617, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641275, b: 0.5748172, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -123,6 +123,68 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &596835353
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 596835356}
+  - component: {fileID: 596835354}
+  m_Layer: 0
+  m_Name: ControllerFrom
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &596835354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 596835353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67a31282af724ef19c26d568a6311323, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  frameCount: 0
+  frameCountMax: 0
+  filename: sq-1228.json
+  startFrame: 80
+  endFrame: 220
+  sphereScale: 0.1
+  spherePrefab: {fileID: 8181101526125902083, guid: 1f85015d9c718423bbb73dfea8788439,
+    type: 3}
+  jointColor: {r: 0, g: 0, b: 0, a: 0}
+  bodySpeeds: []
+  offset1: 0
+  offset2: 0
+  cylinderPrefab: {fileID: 1439162038340422739, guid: 3b40fcbd651a74a94acf46dc9a011cb2,
+    type: 3}
+  cylinderPrefabs: []
+  cylinders: []
+  translationMagnitude: 0.2
+  toObj: {fileID: 822453110}
+  toScript: {fileID: 0}
+--- !u!4 &596835356
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 596835353}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &822453110
 GameObject:
   m_ObjectHideFlags: 0
@@ -134,7 +196,7 @@ GameObject:
   - component: {fileID: 822453114}
   - component: {fileID: 822453111}
   m_Layer: 0
-  m_Name: Controller
+  m_Name: ControllerTo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -4,62 +4,107 @@ using System.Linq;
 using UnityEngine; // for vector3
 using Numpy; // ref. https://github.com/SciSharp/Numpy.NET
 
-namespace rigidAlignment
+namespace RigidAlignment
 {
     public class RigidAlignment
     {
-
-        private List<Dictionary<string, Vector3>> rigidTransformJointPositions(Dictionary<string, Vector3> fromKeyFrame, Dictionary<string, Vector3> toKeyFrame, List<Dictionary<string, Vector3>> fromJointPositionFrames)
+        public List<float[]> rigidTransformFactors;
+        public Vector3 transformedTo;
+        public Vector3 computedRotation;
+        public Vector3 translation;
+        
+        public RigidAlignment(Dictionary<string, Vector3> fromKeyFrame, Dictionary<string, Vector3> toKeyFrame)
         {
-            var rigidTransformFactors = calcRigidTransformMatrix(fromKeyFrame, toKeyFrame);
-            var mse = rigidTransformFactors[0];
-            var transformedTo = rigidTransformFactors[1];
-            var computedRotation = rigidTransformFactors[2];
-            var scaling = rigidTransformFactors[3];
-            var translation = rigidTransformFactors[4];
-            Debug.Log("mse");
-            Debug.Log(mse);
-            Debug.Log(transformedTo);
+            rigidTransformFactors = CalcRigidTransformMatrix(fromKeyFrame, toKeyFrame);
+            // var mse = arrayToVec3(rigidTransformFactors[0]);
+            transformedTo = ArrayToVec3(rigidTransformFactors[1]);
             Debug.Log("transformedTo");
-            Debug.Log(computedRotation);
+            Debug.Log(transformedTo);
+            computedRotation = ArrayToVec3(rigidTransformFactors[2]);
             Debug.Log("computedRotation");
-            Debug.Log("scaling");
-            Debug.Log(scaling);
+            Debug.Log(computedRotation);
+            // var scaling = arrayToVec3(rigidTransformFactors[3]);
+            translation = ArrayToVec3(rigidTransformFactors[4]);
             Debug.Log("translation");
             Debug.Log(translation);
-            // for (int i = 0; i < fromJointPositionFrames.Count; i++)
-            // {
-            //     var fromOneFrame = fromJointPositionFrames[i];
-            //     Dictionary<string, Vector3> transformedOneFrame;
-            //     foreach (KeyValuePair<string, Vector3> fromJointItem in fromOneFrame)
-            //     {
-            //         var fromJointName = fromJointItem.Key;
-            //         var fromJointPos = fromJointItem.Value;
-            //         var transformedJointPos = 
-            //         transformedOneFrame.Add(fromJointName, );
-            //     }
-            //
-            // }
-            return fromJointPositionFrames;
+            // Debug.Log("scaling");
+            // Debug.Log(scaling);
         }
-        static List<float[]> calcRigidTransformMatrix(Dictionary<string, Vector3> fromJoints, Dictionary<string, Vector3> toJoints)
+        
+        public  List<Dictionary<string, Vector3>> RigidTransformFrames(List<Dictionary<string, Vector3>> fromFrames)
         {
-            // NOTE: cast to np.array
-            float[][] fromJointsArr = new float[numOfJoints][]; //  = new float[numOfJoints][3];
-            float[][] toJointsArr = new float[numOfJoints][]; // = new float[numOfJoints][3];
-            foreach (var it in jointNames.Select((x, i) => new { Value = x, Index = i }))
+            List<Dictionary<string, Vector3>> transformedFrames = new List<Dictionary<string, Vector3>>();
+
+            for (int i = 0; i < fromFrames.Count; i++)
+            {
+                var fromJointPositions = fromFrames[i];
+                Dictionary<string, Vector3> transformedJoints = new Dictionary<string, Vector3>();
+
+                foreach (var jointName in jointNames)
+                {
+                    var fromJointPos = fromJointPositions[jointName];
+                    var transformedJoint = fromJointPos + translation;
+                    transformedJoints.Add(jointName, transformedJoint);
+                }
+                
+                // Dictionary<string, Vector3> transformedOneFrame = new Dictionary<string, Vector3>();
+                // foreach (KeyValuePair<string, Vector3> fromJointItem in fromJointPositions)
+                // {
+                //     var fromJointName = fromJointItem.Key;
+                //     var fromJointPos = fromJointItem.Value;
+                //     var transformedJointPos = fromOneFrame;
+                //     transformedOneFrame.Add(fromJointName, transformedJointPos);
+                // }
+
+                transformedFrames.Add(transformedJoints);
+            }
+            return transformedFrames;
+        }
+
+        private static Vector3 ArrayToVec3(float[] xyzArr)
+        {
+            return new Vector3(x: xyzArr[0], y: xyzArr[1], xyzArr[2]);
+        }
+
+        private static float[,] JointsToArray(Dictionary<string, Vector3> joints)
+        {
+            Debug.Log(string.Join(",", joints.Keys));
+            float[,] jointsArr = new float[numOfJoints,3];
+            foreach (var it in jointNames.Select((x, i) => new {Value = x, Index = i}))
             {
                 var idx = it.Index;
                 var jointName = it.Value;
-                var fromJoint = fromJoints[jointName];
-                var fromPos = new float[] { fromJoint.x, fromJoint.y, fromJoint.z };
-                // fromJointsList.Add(fromPos);
-                fromJointsArr[idx] = fromPos;
-
-                var toJoint = toJoints[jointName];
-                var toPos = new float[] { toJoint.x, toJoint.y, toJoint.z };
-                toJointsArr[idx] = toPos;
+                var joint = joints[jointName];
+                // jointsArr[idx] = new float[] {joint.x, joint.y, joint.z};
+                jointsArr[idx, 0] = joint.x;
+                jointsArr[idx, 1] = joint.y;
+                jointsArr[idx, 2] = joint.z;
             }
+            return jointsArr;
+        }
+        
+        private static Dictionary<string, Vector3> ArrayToJoints(float[][] jointsArr)
+        {
+            Dictionary<string, Vector3> joints = new Dictionary<string, Vector3>();
+            foreach (var it in jointNames.Select((x, i) => new {Value = x, Index = i}))
+            {
+                var idx = it.Index;
+                var jointName = it.Value;
+                Vector3 jointVec = new Vector3(x: jointsArr[idx][0], y: jointsArr[idx][1], z: jointsArr[idx][2]);
+                joints.Add(jointName, jointVec);
+            }
+            return joints;
+        }
+        
+        private static List<float[]> CalcRigidTransformMatrix(Dictionary<string, Vector3> fromJoints, Dictionary<string, Vector3> toJoints)
+        {
+            Debug.Log("CalcRigidTransformMatrix");
+            float[,] fromJointsArr = JointsToArray(fromJoints);
+            float[,] toJointsArr = JointsToArray(toJoints);
+            Debug.Log("fromJointsArr");
+            Debug.Log(fromJointsArr);
+            Debug.Log("toJointsArr");
+            Debug.Log(toJointsArr);
 
             var fromJointsNp = np.array(fromJointsArr);
             var toJointsNp = np.array(toJointsArr);
@@ -126,40 +171,41 @@ namespace rigidAlignment
         }
 
         static List<string> jointNames = new List<string> {
-            "leftEyeInner",
-            "leftEye",
-            "leftEyeOuter",
-            "rightEyeInner",
-            "rightEye",
-            "rightEyeOuter",
-            "leftEar",
-            "rightEar",
-            "mouthLeft",
-            "mouthRight",
-            "leftShoulder",
-            "rightShoulder",
-            "leftElbow",
-            "rightElbow",
-            "leftWrist",
-            "rightWrist",
-            "leftPinkyFinger",
-            "rightPinkyFinger",
-            "leftIndexFinger",
-            "rightIndexFinger",
-            "leftThumb",
-            "rightThumb",
-            "leftHip",
-            "rightHip",
-            "leftKnee",
-            "rightKnee",
-            "leftAnkle",
-            "rightAnkle",
-            "leftHeel",
-            "rightHeel",
-            "leftToe",
-            "rightToe"
+            "Nose",
+            "LeftEyeInner",
+            "LeftEye",
+            "LeftEyeOuter",
+            "RightEyeInner",
+            "RightEye",
+            "RightEyeOuter",
+            "LeftEar",
+            "RightEar",
+            "MouthLeft",
+            "MouthRight",
+            "LeftShoulder",
+            "RightShoulder",
+            "LeftElbow",
+            "RightElbow",
+            "LeftWrist",
+            "RightWrist",
+            "LeftPinkyFinger",
+            "RightPinkyFinger",
+            "LeftIndexFinger",
+            "RightIndexFinger",
+            "LeftThumb",
+            "RightThumb",
+            "LeftHip",
+            "RightHip",
+            "LeftKnee",
+            "RightKnee",
+            "LeftAnkle",
+            "RightAnkle",
+            "LeftHeel",
+            "RightHeel",
+            "LeftToe",
+            "RightToe"
         };
-        static int numOfJoints = jointNames.Count;
+        private static int numOfJoints = jointNames.Count;
     }
 }
 
