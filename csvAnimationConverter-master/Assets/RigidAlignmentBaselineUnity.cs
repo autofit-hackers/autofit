@@ -184,14 +184,14 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
         foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
         {
             string boneName = boneEdgeName.Key;
-            // Debug.Log(boneKey);
             string startJointName = boneEdgeName.Value.Item1;
             string endJointName = boneEdgeName.Value.Item2;
             InstantiateCylinder(
                 boneName,
                 cylinderPrefab,
                 jointGameObjects[startJointName].transform.position,
-                jointGameObjects[endJointName].transform.position
+                jointGameObjects[endJointName].transform.position,
+                boneGameObjects
             );
             boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
 
@@ -261,60 +261,18 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
         {
             //この中でアニメーション描画
             Dictionary<string, Vector3> jointFrame = jointPositions[frameCount];
+            Dictionary<string, Vector3> jointFrameCalibrated = zCalibratedJointPositions[frameCount];
             Dictionary<string, Vector3> jointFrameDisturbed = jointPositionsDisturbed[frameCount];
 
-            // 各jointのupdate
-            foreach (KeyValuePair<string, Vector3> jointPosition in jointFrame)
-            {
-                string jointName = jointPosition.Key;
-                Vector3 pos = jointPosition.Value;
-                jointGameObjects[jointName].transform.position = pos;
-
-                if (keyFrames.IndexOf(frameCount) >= 0) jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
-                else jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
-            }
-            
-            // 補正後のjointのupdate
-            foreach (KeyValuePair<string, Vector3> calibratedJointPosition in zCalibratedJointPositions[frameCount])
-            {
-                string jointName = calibratedJointPosition.Key;
-                // Debug.Log(jointName);
-                Vector3 pos = calibratedJointPosition.Value;
-                calibratedJointGameObjects[jointName].transform.position = pos;
-                if (jointName == "RightElbow")
-                {
-                    calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
-                    Debug.Log(pos.z);
-                }
-                // else jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.blue;
-            }
-            // 補正後の各boneのupdate
-            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
-            {
-                string boneName = boneEdgeName.Key;
-                string startJointName = boneEdgeName.Value.Item1;
-                string endJointName = boneEdgeName.Value.Item2;
-                UpdateCylinderPosition(
-                    calibratedBoneGameObjects[boneName],
-                    calibratedJointGameObjects[startJointName].transform.position,
-                    calibratedJointGameObjects[endJointName].transform.position
-                );
-            }
-
-            // 各boneのupdate
-            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
-            {
-                string boneName = boneEdgeName.Key;
-                string startJointName = boneEdgeName.Value.Item1;
-                string endJointName = boneEdgeName.Value.Item2;
-                UpdateCylinderPosition(
-                    boneGameObjects[boneName],
-                    jointGameObjects[startJointName].transform.position,
-                    jointGameObjects[endJointName].transform.position
-                );
-                if (keyFrames.IndexOf(frameCount) >= 0) boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
-                else boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
-            }
+            // 補正前のjointsのupdate
+            UpdateGameObjects(jointFrame, jointGameObjects, boneGameObjects, true);
+            Debug.Log("jointFrame updated");
+            // 補正後のjoints, bonesのupdate
+            UpdateGameObjects(jointFrameCalibrated, calibratedJointGameObjects, calibratedBoneGameObjects, false);
+            Debug.Log("jointFrameCalibrated updated");
+            // 位置をずらしたjoints, bonesのupdate
+            // UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false);
+            Debug.Log("jointFrameCalibrated updated");
 
             // カウンタをインクリメント
             frameCount += 1;
@@ -331,6 +289,39 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
                 }
             }
             timeElapsed = 0.0f;
+        }
+    }
+
+    private void UpdateGameObjects(Dictionary<string, Vector3> frame, Dictionary<string, GameObject> joints,
+        Dictionary<string, GameObject> bones, bool colorKeyFrame)
+    {
+        // joint GameObject の update
+        foreach (KeyValuePair<string, Vector3> jointPos in frame)
+        {
+            joints[jointPos.Key].transform.position = jointPos.Value;
+            if (colorKeyFrame)
+            {
+                if (keyFrames.IndexOf(frameCount) >= 0) joints[jointPos.Key].GetComponent<Renderer>().material.color = Color.red;
+                else joints[jointPos.Key].GetComponent<Renderer>().material.color = jointColor;
+            }
+        }
+        
+        // bones の update
+        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+        {
+            string boneName = boneEdgeName.Key;
+            string startJointName = boneEdgeName.Value.Item1;
+            string endJointName = boneEdgeName.Value.Item2;
+            UpdateCylinderPosition(
+                bones[boneName],
+                joints[startJointName].transform.position,
+                joints[endJointName].transform.position
+            );
+            if (colorKeyFrame)
+            {
+                if (keyFrames.IndexOf(frameCount) >= 0) bones[boneName].GetComponent<Renderer>().material.color = Color.red;
+                else bones[boneName].GetComponent<Renderer>().material.color = jointColor;
+            }
         }
     }
 
@@ -367,7 +358,8 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
                     boneName,
                     cylinderPrefab,
                     jointGameObjects[startJointName].transform.position,
-                    jointGameObjects[endJointName].transform.position
+                    jointGameObjects[endJointName].transform.position,
+                    bones
                 );
             }
             Debug.Log(String.Join(", ", bones.Keys));
@@ -376,10 +368,10 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
         }
     }
 
-    private void InstantiateCylinder(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint)
+    private void InstantiateCylinder(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint, Dictionary<string, GameObject> bones)
     {
-        boneGameObjects[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
-        UpdateCylinderPosition(boneGameObjects[key], beginPoint, endPoint);
+        bones[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
+        UpdateCylinderPosition(bones[key], beginPoint, endPoint);
     }
     
     private void InstantiateCylinderZ(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint, Dictionary<string, GameObject> boneGameObjectsTmp)
