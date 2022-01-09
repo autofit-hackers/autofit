@@ -237,7 +237,7 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
         // 意図的に位置ずらしをしたjointsの作成
         for (int i = 0; i < zCalibratedJointPositions.Count; i++)
         {
-            jointPositionsDisturbed[i] = DisturbJointsPositions((zCalibratedJointPositions[i]));
+            jointPositionsDisturbed.Add(DisturbJointsPositions((zCalibratedJointPositions[i])));
         }
         
         // rigid alignment 用クラスの初期化
@@ -469,10 +469,11 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
     private Dictionary<string, Vector3> DisturbJointsPositions(Dictionary<string, Vector3> joints)
     {
         Vector3 randomTranslation = Vector3.one;
+        Dictionary<string, Vector3> modifiedJoints = new Dictionary<string, Vector3>();
         foreach (KeyValuePair<string, Vector3> joint in joints)
         {
-            joints[joint.Key] += randomTranslation;
+            modifiedJoints.Add(joint.Key, joint.Value + randomTranslation);
         }
-        return joints;
+        return modifiedJoints;
     }
 }
