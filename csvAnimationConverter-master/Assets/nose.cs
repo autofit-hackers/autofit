@@ -32,7 +32,7 @@ class nose : MonoBehaviour
     public Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
     private float timeOut = 0.05f;
     private float timeElapsed = 0.0f;
-    private float lpf_rate = 0.2f;
+    private float lpf_rate = 0.5f;
     public float offset1 = 0;
     public float offset2 = 0;
 
@@ -48,7 +48,23 @@ class nose : MonoBehaviour
     public List<Dictionary<string, Vector3>> zCalibratedJointPositions = new List<Dictionary<string, Vector3>>();
     public Dictionary<string, GameObject> calibratedJointGameObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, GameObject> calibratedBoneGameObjects = new Dictionary<string, GameObject>();
-
+    private List<(int, string)> ngJoints = new List<(int, string)>();
+    public Dictionary<string, GameObject> cameraToJointLine = new Dictionary<string, GameObject>();
+    
+    static List<string> jointNames = new List<string> {
+        "LeftShoulder",
+        "RightShoulder",
+        "LeftElbow",
+        "RightElbow",
+        "LeftWrist",
+        "RightWrist",
+        "LeftHip",
+        "RightHip",
+        "LeftKnee",
+        "RightKnee",
+        "LeftAnkle",
+        "RightAnkle"
+    };
     void Start()
     {
         // deserializedFramesに各行をparseして格納
@@ -73,8 +89,8 @@ class nose : MonoBehaviour
 
                 //Joint の 中身を vector3 に格納
                 Vector3 latestPosition = new Vector3();
-                latestPosition.x = (joint.y - 165.2f) / 100;
-                latestPosition.y = -((joint.x - 250f) / 100);
+                latestPosition.x = (joint.y - 170.2f) / 100;
+                latestPosition.y = -((joint.x - 270f) / 100);
                 latestPosition.z = joint.z / 100;
                 if (lineCount == 0)
                 {
@@ -118,7 +134,7 @@ class nose : MonoBehaviour
                     Debug.Log(Vector3.Angle(startPosition, bodyPos));
                 }
 
-                Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
+                //Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
             }
             
             // z軸補正のための基準フレーム抽出
@@ -229,7 +245,12 @@ class nose : MonoBehaviour
                 Vector3 endJoint = jointFrame[ordinal.endBone];
                 Vector3 baseJoint = zCalibratedJointPosition[ordinal.startBone];
                 Vector3 lastTargetJoint = lastPosition[ordinal.endBone];
-                Vector3 calibratedPos = CalibrateZ(baseJoint, startJoint, endJoint, lastTargetJoint, ordinal.boneLength);
+                var calibratedJoint = CalibrateZ(baseJoint, startJoint, endJoint, lastTargetJoint, ordinal.boneLength, ordinal.endBone);
+                Vector3 calibratedPos = calibratedJoint.Item1;
+                if (calibratedJoint.Item2)
+                {
+                    ngJoints.Add((counter,ordinal.endBone));
+                }
                 string endBoneName = ordinal.endBone;
                 zCalibratedJointPosition.Add(endBoneName, calibratedPos);
             }
@@ -258,6 +279,21 @@ class nose : MonoBehaviour
             );
             calibratedBoneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.blue;
         }
+        /*
+        foreach (string jointName in deserializedFrames[0].Keys) // 可視化用の線のInitialize
+        {
+            if (jointNames.IndexOf(jointName) >= 0) {
+                var j = jointGameObjects[jointName].transform.position;
+                InstantiateCylinderL(
+                    jointName,
+                    cylinderPrefab,
+                    new Vector3(0.0f, 0.0f, -5.0f),
+                    jointGameObjects[jointName].transform.position
+                );
+                cameraToJointLine[jointName].GetComponent<Renderer>().material.color = new Color(1,1,1,1.0f);
+            }
+        }
+        */
 
         frameCount = startFrame;
         frameCountMax = endFrame;
@@ -284,6 +320,10 @@ class nose : MonoBehaviour
 
                 if (keyFrames.IndexOf(frameCount) >= 0) jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
                 else jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
+                
+                if (frameCount == 701 && (jointName == "Nose" || jointName == "LeftAnkle"))
+                    Debug.Log(jointName + " [" + frameCount + "] = " + jointGameObjects[jointName].transform.position);
+
             }
             
             // 補正後のjointのupdate
@@ -293,12 +333,12 @@ class nose : MonoBehaviour
                 // Debug.Log(jointName);
                 Vector3 pos = calibratedJointPosition.Value;
                 calibratedJointGameObjects[jointName].transform.position = pos;
-                if (jointName == "RightElbow")
+                if (ngJoints.IndexOf((frameCount,jointName))>=0)
                 {
                     calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
-                    Debug.Log(pos.z);
+                    //Debug.Log(pos.z);
                 }
-                // else jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.blue;
+                else calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.blue;
             }
             // 補正後の各boneのupdate
             foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
@@ -312,6 +352,24 @@ class nose : MonoBehaviour
                     calibratedJointGameObjects[endJointName].transform.position
                 );
             }
+            // カメラとXY平面上のjointをつなぐ線のupdate
+            /*
+            foreach (KeyValuePair<string, Vector3> jointPosition in jointFrame)
+            {
+                string jointName = jointPosition.Key;
+                if (jointNames.IndexOf(jointName) >= 0)
+                {
+                    var c = new Vector3(0, 0, -5.0f);
+                    var j = jointPosition.Value;
+                    var jXY = new Vector3(j.x, j.y, 0);
+                    var jLong = (jXY - c) * 2 + c;
+                    UpdateCylinderPosition(
+                        cameraToJointLine[jointName],
+                        new Vector3(0, 0, -5.0f),
+                        jLong
+                    );
+                }
+            }*/
 
             // 各boneのupdate
             foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
@@ -324,7 +382,8 @@ class nose : MonoBehaviour
                     jointGameObjects[startJointName].transform.position,
                     jointGameObjects[endJointName].transform.position
                 );
-                if (keyFrames.IndexOf(frameCount) >= 0) boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
+                if (keyFrames.IndexOf(frameCount) >= 0)
+                    boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
                 else boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
             }
 
@@ -356,6 +415,15 @@ class nose : MonoBehaviour
     {
         calibratedBoneGameObjects[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
         UpdateCylinderPosition(calibratedBoneGameObjects[key], beginPoint, endPoint);
+    }
+    
+    private void InstantiateCylinderL(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint)
+    {
+        // var scale = new Vector3(0.01f,0.01f,1.0f);
+        var cylinderPrefabThin = cylinderPrefab;
+        // cylinderPrefabThin.gameObject.transform.localScale = scale;
+        cameraToJointLine[key] = Instantiate<GameObject>(cylinderPrefabThin.gameObject, Vector3.zero, Quaternion.identity);
+        UpdateCylinderPosition(cameraToJointLine[key], beginPoint, endPoint);
     }
 
     private void UpdateCylinderPosition(GameObject cyl, Vector3 beginPoint, Vector3 endPoint)
@@ -407,29 +475,133 @@ class nose : MonoBehaviour
         return boneOrdinal;
     }
 
-    public Vector3 CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint, float boneLength)
+    // public Vector3 CalibrateZ1(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint, float boneLength)
+    // {
+    //     Vector3 outputJoint = new Vector3();
+    //     outputJoint.x = rawEndJoint.x;
+    //     outputJoint.y = rawEndJoint.y;
+    //     float distanceSquare = 
+    //         boneLength * boneLength - 
+    //         (rawStartJoint.x-rawEndJoint.x) * (rawStartJoint.x-rawEndJoint.x) - 
+    //         (rawStartJoint.y-rawEndJoint.y) * (rawStartJoint.y-rawEndJoint.y);
+    //     if (distanceSquare > 0)
+    //     {
+    //         var distance = Mathf.Sqrt(distanceSquare);
+    //         if (Mathf.Abs((baseJoint.z + distance) - lastTargetJoint.z) < Mathf.Abs((baseJoint.z-distance) - lastTargetJoint.z)) 
+    //             outputJoint.z = baseJoint.z + distance;
+    //         else outputJoint.z = baseJoint.z - distance;
+    //     }
+    //     else
+    //     {
+    //         outputJoint.z = 0;//rawJoint.z;
+    //         //Debug.Log("!!!!!!minus!!!!!!" + distanceSquare);
+    //     }
+    //
+    //     return outputJoint;
+    // }
+    //
+    // public Vector3 CalibrateZ2(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint,
+    //     float boneLength)
+    // {
+    //     float L = -3.0f;
+    //     float x0 = rawEndJoint.x;
+    //     float A = rawEndJoint.x * rawEndJoint.x + rawEndJoint.y * rawEndJoint.y + L * L;
+    //     float B = rawEndJoint.x * baseJoint.x + rawEndJoint.y * baseJoint.y + L * L + L * rawEndJoint.z;
+    //     float C = baseJoint.x * baseJoint.x + baseJoint.y * baseJoint.y + (L - baseJoint.z) * (L - baseJoint.z) -
+    //               boneLength * boneLength;
+    //     Vector3 P = new Vector3();
+    //     if (B * B > A * C)
+    //     {
+    //         float t1 = (-B + Mathf.Sqrt(B * B - A * C)) / A;
+    //         float t2 = (-B - Mathf.Sqrt(B * B - A * C)) / A;
+    //         Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
+    //         // Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
+    //         // Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
+    //         if (Mathf.Abs((1 - t1) * L - lastTargetJoint.z) < Mathf.Abs((1 - t2) * L) - lastTargetJoint.z)
+    //         {
+    //             P.x = t1 * rawEndJoint.x;
+    //             P.y = t1 * rawEndJoint.y;
+    //             P.z = (1 - t1) * L;
+    //         }
+    //         else
+    //         {
+    //             P.x = t2 * rawEndJoint.x;
+    //             P.y = t2 * rawEndJoint.y;
+    //             P.z = (1 - t2) * L;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         // P.x = 0;
+    //         // P.y = 0;
+    //         // P.z = L;
+    //         P = rawEndJoint;
+    //     }
+    //
+    //     return P;
+    // }
+
+    public (Vector3, bool) CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint,
+        Vector3 lastTargetJoint,
+        float boneLength, string targetJointName)
     {
-        Vector3 outputJoint = new Vector3();
-        outputJoint.x = rawEndJoint.x;
-        outputJoint.y = rawEndJoint.y;
-        float distanceSquare = 
-            boneLength * boneLength - 
-            (rawStartJoint.x-rawEndJoint.x) * (rawStartJoint.x-rawEndJoint.x) - 
-            (rawStartJoint.y-rawEndJoint.y) * (rawStartJoint.y-rawEndJoint.y);
-        if (distanceSquare > 0)
+        float L = -5.0f;
+        float x0 = rawEndJoint.x;
+        float y0 = rawEndJoint.y;
+        float z0 = rawEndJoint.z;
+        float xb = baseJoint.x;
+        float yb = baseJoint.y;
+        float zb = baseJoint.z;
+        float A = Mathf.Pow(x0, 2) + Mathf.Pow(y0, 2) + Mathf.Pow(L,2);
+        float B = x0 * xb + y0 * yb + Mathf.Pow(L, 2) - L * zb;
+        float C = Mathf.Pow(xb, 2) + Mathf.Pow(yb, 2) + Mathf.Pow(L - zb, 2) - Mathf.Pow(boneLength,2);
+        Vector3 P = new Vector3();
+        bool DMinus = new bool();
+        if (B * B >= A * C)
         {
-            var distance = Mathf.Sqrt(distanceSquare);
-            if (Mathf.Abs((baseJoint.z + distance) - lastTargetJoint.z) < Mathf.Abs((baseJoint.z-distance) - lastTargetJoint.z)) 
-                outputJoint.z = baseJoint.z + distance;
-            else outputJoint.z = baseJoint.z - distance;
+            DMinus = false;
+            float t1 = (B + Mathf.Sqrt(B * B - A * C)) / A;
+            float t2 = (B - Mathf.Sqrt(B * B - A * C)) / A;
+            Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
+            Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
+            Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
+            /*
+            if (Mathf.Abs((1 - t1) * L - lastTargetJoint.z) < Mathf.Abs((1 - t2) * L) - lastTargetJoint.z) //前回のboneに近い方を取得
+            {
+                P.x = t1 * rawEndJoint.x;
+                P.y = t1 * rawEndJoint.y;
+                P.z = (1 - t1) * L;
+            }
+            else
+            {
+                P.x = t2 * rawEndJoint.x;
+                P.y = t2 * rawEndJoint.y;
+                P.z = (1 - t2) * L;
+            }
+            */
+            if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
+            else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
+            else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
+            else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P2;
+            else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P1;
+            else if (Vector3.SqrMagnitude(P1 - lastTargetJoint) < Vector3.SqrMagnitude(P2 - lastTargetJoint))
+                P = P1;
+            else P = P2;
         }
         else
         {
-            outputJoint.z = 0;//rawJoint.z;
-            Debug.Log("!!!!!!minus!!!!!!" + distanceSquare);
+            DMinus = true;
+            // P.x = 0;
+            // P.y = 0;
+            // P.z = L;
+            Vector3 cameraVec = new Vector3(0, 0, L);
+            Vector3 jointXYPlane = new Vector3(rawEndJoint.x, rawEndJoint.y, 0);
+            P = cameraVec + Vector3.Project(baseJoint - cameraVec, jointXYPlane - cameraVec); //垂線の足を求める
+            Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C)); 
+            Debug.Log("minus");
         }
 
-        return outputJoint;
+        return (P,DMinus);
     }
 
     public Vector2 make2dVector(Vector3 inputVec)
