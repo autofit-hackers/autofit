@@ -51,6 +51,8 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
     public Dictionary<string, GameObject> calibratedJointGameObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, GameObject> calibratedBoneGameObjects = new Dictionary<string, GameObject>();
     
+    private List<(int, string)> ngJoints = new List<(int, string)>();
+    
     // Visualize rigid alignment
     public List<Dictionary<string, Vector3>> jointPositionsDisturbed = new List<Dictionary<string, Vector3>>();
     public Dictionary<string, GameObject> jointGameObjectsDisturbed = new Dictionary<string, GameObject>();
@@ -227,9 +229,13 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
                 Vector3 endJoint = jointFrame[ordinal.endBone];
                 Vector3 baseJoint = zCalibratedJointPosition[ordinal.startBone];
                 Vector3 lastTargetJoint = lastPosition[ordinal.endBone];
-                Vector3 calibratedPos = CalibrateZ(baseJoint, startJoint, endJoint, lastTargetJoint, ordinal.boneLength);
+                var calibratedJoint = CalibrateZ(baseJoint, startJoint, endJoint, lastTargetJoint, ordinal.boneLength, ordinal.endBone);
+                if (calibratedJoint.Item2)
+                {
+                    ngJoints.Add((counter,ordinal.endBone));
+                }
                 string endBoneName = ordinal.endBone;
-                zCalibratedJointPosition.Add(endBoneName, calibratedPos);
+                zCalibratedJointPosition.Add(endBoneName, calibratedJoint.Item1);
             }
             lastPosition = zCalibratedJointPosition;
             zCalibratedJointPositions.Add(zCalibratedJointPosition);
@@ -277,7 +283,7 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
             // UpdateGameObjects(jointFrame, jointGameObjects, boneGameObjects, true, Color.black);
             
             // z軸補正後のjoints, bonesのupdate
-            // UpdateGameObjects(jointFrameCalibrated, calibratedJointGameObjects, calibratedBoneGameObjects, false, Color.blue);
+            UpdateGameObjects(jointFrameCalibrated, calibratedJointGameObjects, calibratedBoneGameObjects, false, Color.blue);
             
             // 位置をずらしたjoints, bonesのupdate
             UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
@@ -443,28 +449,53 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
         return boneOrdinal;
     }
 
-    public Vector3 CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint, float boneLength)
+    public (Vector3, bool) CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint,
+        Vector3 lastTargetJoint,
+        float boneLength, string targetJointName)
     {
-        Vector3 outputJoint = new Vector3();
-        outputJoint.x = rawEndJoint.x;
-        outputJoint.y = rawEndJoint.y;
-        float distanceSquare = 
-            boneLength * boneLength - 
-            (rawStartJoint.x-rawEndJoint.x) * (rawStartJoint.x-rawEndJoint.x) - 
-            (rawStartJoint.y-rawEndJoint.y) * (rawStartJoint.y-rawEndJoint.y);
-        if (distanceSquare > 0)
+        float L = -5.0f;
+        float x0 = rawEndJoint.x;
+        float y0 = rawEndJoint.y;
+        float z0 = rawEndJoint.z;
+        float xb = baseJoint.x;
+        float yb = baseJoint.y;
+        float zb = baseJoint.z;
+        float A = Mathf.Pow(x0, 2) + Mathf.Pow(y0, 2) + Mathf.Pow(L,2);
+        float B = x0 * xb + y0 * yb + Mathf.Pow(L, 2) - L * zb;
+        float C = Mathf.Pow(xb, 2) + Mathf.Pow(yb, 2) + Mathf.Pow(L - zb, 2) - Mathf.Pow(boneLength,2);
+        Vector3 P = new Vector3();
+        bool DMinus = new bool();
+        if (B * B >= A * C)
         {
-            var distance = Mathf.Sqrt(distanceSquare);
-            if (Mathf.Abs((baseJoint.z + distance) - lastTargetJoint.z) < Mathf.Abs((baseJoint.z-distance) - lastTargetJoint.z)) 
-                outputJoint.z = baseJoint.z + distance;
-            else outputJoint.z = baseJoint.z - distance;
+            DMinus = false;
+            float t1 = (B + Mathf.Sqrt(B * B - A * C)) / A;
+            float t2 = (B - Mathf.Sqrt(B * B - A * C)) / A;
+            Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
+            Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
+            Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
+            
+            if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
+            else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
+            else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
+            else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P2;
+            else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P1;
+            else if (Vector3.SqrMagnitude(P1 - lastTargetJoint) < Vector3.SqrMagnitude(P2 - lastTargetJoint))
+                P = P1;
+            else P = P2;
         }
         else
         {
-            outputJoint.z = 0;//rawJoint.z;
+            DMinus = true;
+            // P.x = 0;
+            // P.y = 0;
+            // P.z = L;
+            Vector3 cameraVec = new Vector3(0, 0, L);
+            Vector3 jointXYPlane = new Vector3(rawEndJoint.x, rawEndJoint.y, 0);
+            P = cameraVec + Vector3.Project(baseJoint - cameraVec, jointXYPlane - cameraVec); //垂線の足を求める
+            Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C)); 
+            Debug.Log("minus");
         }
-
-        return outputJoint;
+        return (P,DMinus);
     }
 
     public Vector2 make2dVector(Vector3 inputVec)

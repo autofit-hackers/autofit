@@ -483,7 +483,7 @@ class nose : MonoBehaviour
     //     outputJoint.x = rawEndJoint.x;
     //     outputJoint.y = rawEndJoint.y;
     //     float distanceSquare = 
-    //         boneLength * boneLength - 
+    //         boneLength * 
     //         (rawStartJoint.x-rawEndJoint.x) * (rawStartJoint.x-rawEndJoint.x) - 
     //         (rawStartJoint.y-rawEndJoint.y) * (rawStartJoint.y-rawEndJoint.y);
     //     if (distanceSquare > 0)
