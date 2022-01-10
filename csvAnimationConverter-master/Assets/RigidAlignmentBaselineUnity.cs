@@ -55,6 +55,9 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
     public List<Dictionary<string, Vector3>> jointPositionsDisturbed = new List<Dictionary<string, Vector3>>();
     public Dictionary<string, GameObject> jointGameObjectsDisturbed = new Dictionary<string, GameObject>();
     public Dictionary<string, GameObject> boneGameObjectsDisturbed = new Dictionary<string, GameObject>();
+    public List<Dictionary<string, Vector3>> jointPositionsAligned = new List<Dictionary<string, Vector3>>();
+    public Dictionary<string, GameObject> jointGameObjectsAligned = new Dictionary<string, GameObject>();
+    public Dictionary<string, GameObject> boneGameObjectsAligned = new Dictionary<string, GameObject>();
 
     void Start()
     {
@@ -237,14 +240,19 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
         // 意図的に位置ずらしをしたjointsの作成
         for (int i = 0; i < zCalibratedJointPositions.Count; i++)
         {
-            jointPositionsDisturbed.Add(DisturbJointsPositions((zCalibratedJointPositions[i])));
+            var disturbedJointPosition = DisturbJointsPositions(zCalibratedJointPositions[i]);
+            jointPositionsDisturbed.Add(disturbedJointPosition);
         }
         
         // rigid alignment 用クラスの初期化
-        // var rigidAligner = RigidAlignmentBaseline.RigidAlignmentBaseline();
-        // jointsの更新
-        InitializeGameObjects(calibratedJointGameObjects, calibratedBoneGameObjects, isZ: true);
-        InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true);
+        var rigidAligner = new RigidAlignmentBaseline.RigidAlignmentBaseline(jointPositionsDisturbed[0], zCalibratedJointPositions[0]);
+        // disturbed を変形して aligned を生成
+        jointPositionsAligned = rigidAligner.RigidTransformFrames(jointPositionsDisturbed);
+        
+        // GameObjects の初期化 (joints, bones)
+        InitializeGameObjects(calibratedJointGameObjects, calibratedBoneGameObjects, isZ: true, Color.blue);
+        InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true, Color.cyan);
+        InitializeGameObjects(jointGameObjectsAligned, boneGameObjectsAligned, isZ: true, Color.green);
 
         frameCount = startFrame;
         frameCountMax = endFrame;
@@ -263,16 +271,20 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
             Dictionary<string, Vector3> jointFrame = jointPositions[frameCount];
             Dictionary<string, Vector3> jointFrameCalibrated = zCalibratedJointPositions[frameCount];
             Dictionary<string, Vector3> jointFrameDisturbed = jointPositionsDisturbed[frameCount];
+            Dictionary<string, Vector3> jointFrameAligned = jointPositionsAligned[frameCount];
 
-            // 補正前のjointsのupdate
-            UpdateGameObjects(jointFrame, jointGameObjects, boneGameObjects, true);
-            Debug.Log("jointFrame updated");
-            // 補正後のjoints, bonesのupdate
-            UpdateGameObjects(jointFrameCalibrated, calibratedJointGameObjects, calibratedBoneGameObjects, false);
-            Debug.Log("jointFrameCalibrated updated");
+            // z軸補正前のjointsのupdate
+            // UpdateGameObjects(jointFrame, jointGameObjects, boneGameObjects, true, Color.black);
+            
+            // z軸補正後のjoints, bonesのupdate
+            // UpdateGameObjects(jointFrameCalibrated, calibratedJointGameObjects, calibratedBoneGameObjects, false, Color.blue);
+            
             // 位置をずらしたjoints, bonesのupdate
-            // UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false);
+            UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
             Debug.Log("jointFrameCalibrated updated");
+            
+            // 位置ずらしを rigid alignment で補正した joints, bones の update
+            UpdateGameObjects(jointFrameAligned, jointGameObjectsAligned, boneGameObjectsAligned, false, Color.green);
 
             // カウンタをインクリメント
             frameCount += 1;
@@ -293,12 +305,13 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
     }
 
     private void UpdateGameObjects(Dictionary<string, Vector3> frame, Dictionary<string, GameObject> joints,
-        Dictionary<string, GameObject> bones, bool colorKeyFrame)
+        Dictionary<string, GameObject> bones, bool colorKeyFrame, Color color)
     {
         // joint GameObject の update
         foreach (KeyValuePair<string, Vector3> jointPos in frame)
         {
             joints[jointPos.Key].transform.position = jointPos.Value;
+            joints[jointPos.Key].GetComponent<Renderer>().material.color = color;
             if (colorKeyFrame)
             {
                 if (keyFrames.IndexOf(frameCount) >= 0) joints[jointPos.Key].GetComponent<Renderer>().material.color = Color.red;
@@ -317,6 +330,7 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
                 joints[startJointName].transform.position,
                 joints[endJointName].transform.position
             );
+            bones[boneName].GetComponent<Renderer>().material.color = color;
             if (colorKeyFrame)
             {
                 if (keyFrames.IndexOf(frameCount) >= 0) bones[boneName].GetComponent<Renderer>().material.color = Color.red;
@@ -325,7 +339,7 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
         }
     }
 
-    private void InitializeGameObjects(Dictionary<string, GameObject> joints, Dictionary<string, GameObject> bones, bool isZ)
+    private void InitializeGameObjects(Dictionary<string, GameObject> joints, Dictionary<string, GameObject> bones, bool isZ, Color color)
     //  引数の関節、ボーン用ゲームオブジェクトを初期化する
     {
         foreach (var jointName in deserializedFrames[0].Keys) // 補正用jointをInitialize
@@ -334,7 +348,7 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
                 Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
             joints[jointName].transform.localScale =
                 new Vector3(sphereScale, sphereScale, sphereScale);
-            joints[jointName].GetComponent<Renderer>().material.color = Color.blue;
+            joints[jointName].GetComponent<Renderer>().material.color = color;
         }
         
         foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames) // 補正用boneのInitialize
@@ -364,7 +378,7 @@ class RigidAlignmentBaselineUnity : MonoBehaviour
             }
             Debug.Log(String.Join(", ", bones.Keys));
             Debug.Log(boneName);
-            bones[boneName].GetComponent<Renderer>().material.color = Color.blue;
+            bones[boneName].GetComponent<Renderer>().material.color = color;
         }
     }
 
