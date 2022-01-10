@@ -27,7 +27,9 @@ class nose : MonoBehaviour
     public List<Vector3> bodySpeeds = new List<Vector3>();
     private Vector3 startPosition = new Vector3();
     private List<int> keyFrames = new List<Int32>();
+    private List<int> frameTimes = new List<int>();
     private int recognizeAsTheSame = 10;
+    private float keyDetectSpeed = 0.7f; // 0.5〜1.0くらいの値であれば検知できそう
 
     public Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
     private float timeOut = 0.05f;
@@ -89,7 +91,7 @@ class nose : MonoBehaviour
 
                 //Joint の 中身を vector3 に格納
                 Vector3 latestPosition = new Vector3();
-                latestPosition.x = (joint.y - 170.2f) / 100;
+                latestPosition.x = (joint.y - 170f) / 100;
                 latestPosition.y = -((joint.x - 270f) / 100);
                 latestPosition.z = joint.z / 100;
                 if (lineCount == 0)
@@ -126,12 +128,12 @@ class nose : MonoBehaviour
             // キーフレーム抽出
             if (lineCount > startFrame && lineCount < endFrame)
             {
-                if (bodyVel < 0.5 && Vector3.Angle(startPosition, bodyPos) < 20)
+                if (bodyVel < 1.0f && Vector3.Angle(startPosition, bodyPos) < 20)
                 {
                     keyFrames.Add(lineCount);
                     DeleteSameKeyFrames(keyFrames, lineCount, recognizeAsTheSame);
-                    Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
-                    Debug.Log(Vector3.Angle(startPosition, bodyPos));
+                    // Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
+                    // Debug.Log(Vector3.Angle(startPosition, bodyPos));
                 }
 
                 //Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
@@ -298,6 +300,9 @@ class nose : MonoBehaviour
         frameCount = startFrame;
         frameCountMax = endFrame;
         ShowListContentsInTheDebugLog(keyFrames); // ログにキーフレーム一覧を出力
+        for (int i = 0; i < keyFrames.Count-1; i++)
+            frameTimes.Add(keyFrames[i+1]-keyFrames[i]);
+        ShowListContentsInTheDebugLog(frameTimes);
     }
 
     // Update is called once per frame
@@ -318,12 +323,26 @@ class nose : MonoBehaviour
                 Vector3 pos = jointPosition.Value;
                 jointGameObjects[jointName].transform.position = pos;
 
-                if (keyFrames.IndexOf(frameCount) >= 0) jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
-                else jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
-                
-                if (frameCount == 701 && (jointName == "Nose" || jointName == "LeftAnkle"))
-                    Debug.Log(jointName + " [" + frameCount + "] = " + jointGameObjects[jointName].transform.position);
+                if (containsMultiElements(keyFrames,frameCount,3))
+                    jointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
+                else
+                    jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
+            }
 
+            // 各boneのupdate
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+            {
+                string boneName = boneEdgeName.Key;
+                string startJointName = boneEdgeName.Value.Item1;
+                string endJointName = boneEdgeName.Value.Item2;
+                UpdateCylinderPosition(
+                    boneGameObjects[boneName],
+                    jointGameObjects[startJointName].transform.position,
+                    jointGameObjects[endJointName].transform.position
+                );
+                if (containsMultiElements(keyFrames,frameCount,4))
+                    boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
+                else boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
             }
             
             // 補正後のjointのupdate
@@ -336,7 +355,6 @@ class nose : MonoBehaviour
                 if (ngJoints.IndexOf((frameCount,jointName))>=0)
                 {
                     calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.red;
-                    //Debug.Log(pos.z);
                 }
                 else calibratedJointGameObjects[jointName].GetComponent<Renderer>().material.color = Color.blue;
             }
@@ -370,22 +388,6 @@ class nose : MonoBehaviour
                     );
                 }
             }*/
-
-            // 各boneのupdate
-            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
-            {
-                string boneName = boneEdgeName.Key;
-                string startJointName = boneEdgeName.Value.Item1;
-                string endJointName = boneEdgeName.Value.Item2;
-                UpdateCylinderPosition(
-                    boneGameObjects[boneName],
-                    jointGameObjects[startJointName].transform.position,
-                    jointGameObjects[endJointName].transform.position
-                );
-                if (keyFrames.IndexOf(frameCount) >= 0)
-                    boneGameObjects[boneName].GetComponent<Renderer>().material.color = Color.red;
-                else boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
-            }
 
             // カウンタをインクリメント
             frameCount += 1;
@@ -475,7 +477,7 @@ class nose : MonoBehaviour
         return boneOrdinal;
     }
 
-    // public Vector3 CalibrateZ1(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint, float boneLength)
+    // public Vector3 CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint, float boneLength)
     // {
     //     Vector3 outputJoint = new Vector3();
     //     outputJoint.x = rawEndJoint.x;
@@ -499,47 +501,6 @@ class nose : MonoBehaviour
     //
     //     return outputJoint;
     // }
-    //
-    // public Vector3 CalibrateZ2(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint, Vector3 lastTargetJoint,
-    //     float boneLength)
-    // {
-    //     float L = -3.0f;
-    //     float x0 = rawEndJoint.x;
-    //     float A = rawEndJoint.x * rawEndJoint.x + rawEndJoint.y * rawEndJoint.y + L * L;
-    //     float B = rawEndJoint.x * baseJoint.x + rawEndJoint.y * baseJoint.y + L * L + L * rawEndJoint.z;
-    //     float C = baseJoint.x * baseJoint.x + baseJoint.y * baseJoint.y + (L - baseJoint.z) * (L - baseJoint.z) -
-    //               boneLength * boneLength;
-    //     Vector3 P = new Vector3();
-    //     if (B * B > A * C)
-    //     {
-    //         float t1 = (-B + Mathf.Sqrt(B * B - A * C)) / A;
-    //         float t2 = (-B - Mathf.Sqrt(B * B - A * C)) / A;
-    //         Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
-    //         // Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
-    //         // Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
-    //         if (Mathf.Abs((1 - t1) * L - lastTargetJoint.z) < Mathf.Abs((1 - t2) * L) - lastTargetJoint.z)
-    //         {
-    //             P.x = t1 * rawEndJoint.x;
-    //             P.y = t1 * rawEndJoint.y;
-    //             P.z = (1 - t1) * L;
-    //         }
-    //         else
-    //         {
-    //             P.x = t2 * rawEndJoint.x;
-    //             P.y = t2 * rawEndJoint.y;
-    //             P.z = (1 - t2) * L;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         // P.x = 0;
-    //         // P.y = 0;
-    //         // P.z = L;
-    //         P = rawEndJoint;
-    //     }
-    //
-    //     return P;
-    // }
 
     public (Vector3, bool) CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint,
         Vector3 lastTargetJoint,
@@ -548,7 +509,6 @@ class nose : MonoBehaviour
         float L = -5.0f;
         float x0 = rawEndJoint.x;
         float y0 = rawEndJoint.y;
-        float z0 = rawEndJoint.z;
         float xb = baseJoint.x;
         float yb = baseJoint.y;
         float zb = baseJoint.z;
@@ -565,20 +525,7 @@ class nose : MonoBehaviour
             Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
             Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
             Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
-            /*
-            if (Mathf.Abs((1 - t1) * L - lastTargetJoint.z) < Mathf.Abs((1 - t2) * L) - lastTargetJoint.z) //前回のboneに近い方を取得
-            {
-                P.x = t1 * rawEndJoint.x;
-                P.y = t1 * rawEndJoint.y;
-                P.z = (1 - t1) * L;
-            }
-            else
-            {
-                P.x = t2 * rawEndJoint.x;
-                P.y = t2 * rawEndJoint.y;
-                P.z = (1 - t2) * L;
-            }
-            */
+            
             if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
             else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
             else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
@@ -591,16 +538,10 @@ class nose : MonoBehaviour
         else
         {
             DMinus = true;
-            // P.x = 0;
-            // P.y = 0;
-            // P.z = L;
             Vector3 cameraVec = new Vector3(0, 0, L);
             Vector3 jointXYPlane = new Vector3(rawEndJoint.x, rawEndJoint.y, 0);
             P = cameraVec + Vector3.Project(baseJoint - cameraVec, jointXYPlane - cameraVec); //垂線の足を求める
-            Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C)); 
-            Debug.Log("minus");
         }
-
         return (P,DMinus);
     }
 
@@ -608,4 +549,14 @@ class nose : MonoBehaviour
     {
         return new Vector2(inputVec.x, inputVec.y);
     }
+
+    public bool containsMultiElements(List<int> list, int element, int frames)
+    {
+        bool isElement = false;
+        for (int i = -frames; i < frames; i++)
+            if (list.IndexOf(element - i) >= 0)
+                isElement = true;
+        return isElement;
+    }
+
 }
