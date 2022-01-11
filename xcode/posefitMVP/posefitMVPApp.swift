@@ -13,7 +13,8 @@ struct posefitMVPApp: App {
 
     var body: some Scene {
         WindowGroup {
-            StartRecView()
+            CameraView()
+//            StartRecView()
 //                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
