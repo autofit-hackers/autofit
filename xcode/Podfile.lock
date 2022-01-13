@@ -1,0 +1,117 @@
+PODS:
+  - GoogleDataTransport (9.1.2):
+    - GoogleUtilities/Environment (~> 7.2)
+    - nanopb (~> 2.30908.0)
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleMLKit/MLKitCore (2.4.0):
+    - MLKitCommon (~> 4.0.0)
+  - GoogleMLKit/PoseDetection (2.4.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitPoseDetection (~> 1.0.0-beta6)
+  - GoogleMLKit/PoseDetectionAccurate (2.4.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitPoseDetectionAccurate (~> 1.0.0-beta6)
+  - GoogleToolboxForMac/DebugUtils (2.3.2):
+    - GoogleToolboxForMac/Defines (= 2.3.2)
+  - GoogleToolboxForMac/Defines (2.3.2)
+  - GoogleToolboxForMac/Logger (2.3.2):
+    - GoogleToolboxForMac/Defines (= 2.3.2)
+  - "GoogleToolboxForMac/NSData+zlib (2.3.2)":
+    - GoogleToolboxForMac/Defines (= 2.3.2)
+  - "GoogleToolboxForMac/NSDictionary+URLArguments (2.3.2)":
+    - GoogleToolboxForMac/DebugUtils (= 2.3.2)
+    - GoogleToolboxForMac/Defines (= 2.3.2)
+    - "GoogleToolboxForMac/NSString+URLArguments (= 2.3.2)"
+  - "GoogleToolboxForMac/NSString+URLArguments (2.3.2)"
+  - GoogleUtilities/Environment (7.6.0):
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/Logger (7.6.0):
+    - GoogleUtilities/Environment
+  - GoogleUtilities/UserDefaults (7.6.0):
+    - GoogleUtilities/Logger
+  - GoogleUtilitiesComponents (1.1.0):
+    - GoogleUtilities/Logger
+  - GTMSessionFetcher/Core (1.7.0)
+  - MLImage (1.0.0-beta1)
+  - MLKitCommon (4.0.0):
+    - GoogleDataTransport (~> 9.0)
+    - GoogleToolboxForMac/Logger (~> 2.1)
+    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
+    - "GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)"
+    - GoogleUtilities/UserDefaults (~> 7.0)
+    - GoogleUtilitiesComponents (~> 1.0)
+    - GTMSessionFetcher/Core (~> 1.1)
+    - Protobuf (~> 3.12)
+  - MLKitPoseDetection (1.0.0-beta6):
+    - MLKitCommon (~> 4.0)
+    - MLKitPoseDetectionCommon (= 1.0.0-beta6)
+    - MLKitXenoCommon (= 1.0.0-beta6)
+  - MLKitPoseDetectionAccurate (1.0.0-beta6):
+    - MLKitCommon (~> 4.0)
+    - MLKitPoseDetectionCommon (= 1.0.0-beta6)
+    - MLKitXenoCommon (= 1.0.0-beta6)
+  - MLKitPoseDetectionCommon (1.0.0-beta6):
+    - MLKitCommon (~> 4.0)
+    - MLKitXenoCommon (= 1.0.0-beta6)
+  - MLKitVision (2.0.0):
+    - GoogleToolboxForMac/Logger (~> 2.1)
+    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
+    - GTMSessionFetcher/Core (~> 1.1)
+    - MLImage (= 1.0.0-beta1)
+    - MLKitCommon (~> 4.0)
+    - Protobuf (~> 3.12)
+  - MLKitXenoCommon (1.0.0-beta6):
+    - MLKitCommon (~> 4.0)
+    - MLKitVision (~> 2.0)
+  - nanopb (2.30908.0):
+    - nanopb/decode (= 2.30908.0)
+    - nanopb/encode (= 2.30908.0)
+  - nanopb/decode (2.30908.0)
+  - nanopb/encode (2.30908.0)
+  - PromisesObjC (2.0.0)
+  - Protobuf (3.19.1)
+
+DEPENDENCIES:
+  - GoogleMLKit/PoseDetection (= 2.4.0)
+  - GoogleMLKit/PoseDetectionAccurate (= 2.4.0)
+
+SPEC REPOS:
+  trunk:
+    - GoogleDataTransport
+    - GoogleMLKit
+    - GoogleToolboxForMac
+    - GoogleUtilities
+    - GoogleUtilitiesComponents
+    - GTMSessionFetcher
+    - MLImage
+    - MLKitCommon
+    - MLKitPoseDetection
+    - MLKitPoseDetectionAccurate
+    - MLKitPoseDetectionCommon
+    - MLKitVision
+    - MLKitXenoCommon
+    - nanopb
+    - PromisesObjC
+    - Protobuf
+
+SPEC CHECKSUMS:
+  GoogleDataTransport: 629c20a4d363167143f30ea78320d5a7eb8bd940
+  GoogleMLKit: db5007bddb78dedf52b60f4038d32e7bd006b519
+  GoogleToolboxForMac: 8bef7c7c5cf7291c687cf5354f39f9db6399ad34
+  GoogleUtilities: 684ee790a24f73ebb2d1d966e9711c203f2a4237
+  GoogleUtilitiesComponents: 679b2c881db3b615a2777504623df6122dd20afe
+  GTMSessionFetcher: 43748f93435c2aa068b1cbe39655aaf600652e91
+  MLImage: 647f3d580c10b3c9a3f6154f5d7baead60c42a0c
+  MLKitCommon: 923bcf261636f36af5fbf329b1643ea3cd69468b
+  MLKitPoseDetection: 5a8af23243c61847a8a21a701323013928d582e5
+  MLKitPoseDetectionAccurate: 044ee9552cf0b250e1a44898ba22d7907606c904
+  MLKitPoseDetectionCommon: 81118faea07e76c94f8b28dd0d7be7c4ba05cf90
+  MLKitVision: 53b8f93a864c8d9740f7f09041911f2e64150ec8
+  MLKitXenoCommon: ce52d85cd494127a9d886a4ad58e56fc61dea142
+  nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
+  PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
+  Protobuf: 3724efa50cb2846d7ccebc8691c574e85fd74471
+
+PODFILE CHECKSUM: 38e5db349fef5af53bfb570c5203e78933b557c5
+
+COCOAPODS: 1.11.2
