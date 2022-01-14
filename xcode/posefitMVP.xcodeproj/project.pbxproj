@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,7 @@
 		E9ED306E275B43D00033146C /* StartRecView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9ED306D275B43D00033146C /* StartRecView.swift */; };
 		E9ED3070275B43FE0033146C /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9ED306F275B43FE0033146C /* CameraView.swift */; };
 		E9ED3073275B45390033146C /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9ED3072275B45390033146C /* CameraService.swift */; };
+		E9FE34F6279063AC0041D46B /* JointsPickerUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FE34F5279063AC0041D46B /* JointsPickerUtil.swift */; };
 		F26CBA80275460EE00569876 /* posefitMVPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26CBA7F275460EE00569876 /* posefitMVPApp.swift */; };
 		F26CBA82275460EE00569876 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26CBA81275460EE00569876 /* ContentView.swift */; };
 		F26CBA84275460EF00569876 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F26CBA83275460EF00569876 /* Assets.xcassets */; };
@@ -52,6 +53,7 @@
 		E9ED306D275B43D00033146C /* StartRecView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartRecView.swift; sourceTree = "<group>"; };
 		E9ED306F275B43FE0033146C /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		E9ED3072275B45390033146C /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
+		E9FE34F5279063AC0041D46B /* JointsPickerUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JointsPickerUtil.swift; sourceTree = "<group>"; };
 		EC3735443D8A9CF5ED6805B6 /* Pods-posefitMVP-posefitMVPUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-posefitMVP-posefitMVPUITests.debug.xcconfig"; path = "Target Support Files/Pods-posefitMVP-posefitMVPUITests/Pods-posefitMVP-posefitMVPUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		F26CBA7C275460EE00569876 /* posefitMVP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = posefitMVP.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F26CBA7F275460EE00569876 /* posefitMVPApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = posefitMVPApp.swift; sourceTree = "<group>"; };
@@ -117,7 +119,6 @@
 				AB3CF27AC354451AA21E7DEC /* Pods-posefitMVPTests.debug.xcconfig */,
 				47FE13C5226FC73C7BFF6656 /* Pods-posefitMVPTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -142,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				E9ED3072275B45390033146C /* CameraService.swift */,
+				E9FE34F5279063AC0041D46B /* JointsPickerUtil.swift */,
 			);
 			path = SupportFiles;
 			sourceTree = "<group>";
@@ -487,6 +489,7 @@
 				F26CBA8C275460EF00569876 /* posefitMVP.xcdatamodeld in Sources */,
 				F26CBA89275460EF00569876 /* Persistence.swift in Sources */,
 				E9ED3070275B43FE0033146C /* CameraView.swift in Sources */,
+				E9FE34F6279063AC0041D46B /* JointsPickerUtil.swift in Sources */,
 				F26CBA82275460EE00569876 /* ContentView.swift in Sources */,
 				F26CBA80275460EE00569876 /* posefitMVPApp.swift in Sources */,
 				E9ED3073275B45390033146C /* CameraService.swift in Sources */,
