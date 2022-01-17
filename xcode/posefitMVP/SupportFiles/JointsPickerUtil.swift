@@ -21,7 +21,6 @@ public class JointsPickerUtil{
     private var poseDetector: PoseDetector?
     
     private func detectPose(in image: MLImage, width: CGFloat, height: CGFloat){
-        
         // unwraping
         if let poseDetector = poseDetector {
             var poses: [Pose]
@@ -96,13 +95,8 @@ public class JointsPickerUtil{
     }
     
     private func uiImageToMLImage(uiImage: UIImage) -> MLImage?{
-        guard let image = uiImage else { return nil }
-
-        guard let mlImage = MLImage(image: image) else {
-            print("Failed to create MLImage from UIImage.")
-            return
-        }
-        mlImage.orientation = uiImage.imageOrientation
+        let mlImage = MLImage(image: uiImage)
+        mlImage!.orientation = uiImage.imageOrientation
         return mlImage
     }
     

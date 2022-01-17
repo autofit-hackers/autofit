@@ -277,7 +277,7 @@ class Main : MonoBehaviour
             Dictionary<string, Vector3> jointFrameAligned = jointPositionsAligned[frameCount];
 
             // z軸補正前のjointsのupdate
-            // UpdateGameObjects(jointFrame, jointGameObjects, boneGameObjects, true, Color.black);
+            UpdateGameObjects(jointFrame, jointGameObjects, boneGameObjects, true, Color.black);
             
             // z軸補正後のjoints, bonesのupdate
             UpdateGameObjects(jointFrameCalibrated, calibratedJointGameObjects, calibratedBoneGameObjects, false, Color.blue);

@@ -13,8 +13,8 @@ public class CameraRotator : MonoBehaviour
     public float yMinLimit = -20f;
     public float yMaxLimit = 80f;
  
-    public float distanceMin = .5f;
-    public float distanceMax = 50f;
+    public float distanceMin = 5f;
+    public float distanceMax = 5f;
  
     private Rigidbody rigidbody;
  
