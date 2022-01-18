@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Newtonsoft.Json;
-using UnityEditor;
-using UnityEditor.UI;
-using Random = UnityEngine.Random;
 
 struct BoneOrdinal
 {
@@ -63,7 +60,7 @@ namespace HumanMotionNs
         public HumanMotionSettings settings;
         public HumanMotionState state;
         public Transform cylinderPrefab;
-        private GameObject cylinder;
+        // private GameObject cylinder;
         public Transform spherePrefab;
         public Color jointColor;
 
@@ -89,13 +86,13 @@ namespace HumanMotionNs
                 {"RightUpperArm", ("RightShoulder", "RightElbow")},
                 {"RightForeArm", ("RightElbow", "RightWrist")}
             };
+
         // bone の対応表
         private Dictionary<string, BoneOrdinal> boneOrdinals;
-        
+
         public HumanMotion(
             string jsonFilePath,
             float timeOut = 0.05f,
-            float timeElapsed = 0.0f,
             float lpfRate = 0.2f,
             int startFrame = 750,
             int endFrame = 1100,
@@ -121,6 +118,7 @@ namespace HumanMotionNs
             // loop state
             loopCount = 0;
             frameCount = 0;
+            ReadAndPreprocess();
         }
 
         public void ReadAndPreprocess()
@@ -132,7 +130,7 @@ namespace HumanMotionNs
             Dictionary<string, GameObject> jointGameObjects = new Dictionary<string, GameObject>();
             Dictionary<string, GameObject> boneGameObjects = new Dictionary<string, GameObject>();
             Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
-            
+
             // 1行ずつ iterate して読み込み
             int lineCount = 0;
             IEnumerable<string> lines = System.IO.File.ReadLines(@"./");
@@ -146,410 +144,428 @@ namespace HumanMotionNs
                 Dictionary<string, Vector3> tmpSpd = new Dictionary<string, Vector3>();
                 Vector3 bodySpd = new Vector3();
                 Vector3 bodyPos = new Vector3();
-        
-            // ローパスをかける & 瞬間速度を計算する
-            foreach (KeyValuePair<string, Vector3> jointItem in deserializedFrame)
-            {
-                string jointName = jointItem.Key;
-                Vector3 joint = jointItem.Value;
-        
-                //Joint の 中身を vector3 に格納
-                Vector3 latestPosition = new Vector3();
-                latestPosition.x = (joint.y - 165.2f) / 100;
-                latestPosition.y = -((joint.x - 250f) / 100);
-                latestPosition.z = joint.z / 100;
-                if (lineCount == 0)
+
+                // ローパスをかける & 瞬間速度を計算する
+                foreach (KeyValuePair<string, Vector3> jointItem in deserializedFrame)
                 {
-                    lastFramePoses.Add(jointName, latestPosition);
-                } // 1ループ目の時はdicに要素を追加
-        
-                // LPF
-                Vector3 lowpassFilteredPosition = new Vector3();
-                lowpassFilteredPosition =
-                    lastFramePoses[jointName] * settings.lpfRate + latestPosition * (1 - settings.lpfRate); // ローパス後のposを計算
-                Vector3 jointSpeed = lowpassFilteredPosition - lastFramePoses[jointName];
-                lastFramePoses[jointName] = lowpassFilteredPosition;
-        
-                // TmpDicに関節のposition情報を格納
-                tmpPos.Add(jointName, lowpassFilteredPosition);
-                tmpSpd.Add(jointName, jointSpeed);
-        
-                // キーフレーム抽出用に重心の算出
-                bodySpd += jointSpeed;
-                bodyPos += lowpassFilteredPosition;
-            }
-        
-            state.jointPositions.Add(tmpPos); // JointPos=Dic<string,Vector3>()にローパス済みのposをAdd
-            state.jointSpeeds.Add(tmpSpd);
-            bodySpeeds.Add(bodySpd);
-            if (lineCount == settings.startFrame)
-            {
-                startPosition = bodyPos;　//最初のフレームにおいて重心の初期位置を定義
-            } 
-        
-            float bodyVel = Mathf.Sqrt(bodySpd.x * bodySpd.x + bodySpd.y * bodySpd.y + bodySpd.z * bodySpd.z);
-        
-            // キーフレーム抽出
-            if (lineCount > settings.startFrame && lineCount < settings.endFrame)
-            {
-                if (bodyVel < 0.5 && Vector3.Angle(startPosition, bodyPos) < 20)
-                {
-                    state.keyFrames.Add(lineCount);
-                    DeleteSameKeyFrames(state.keyFrames, lineCount, settings.keyFrameMargin);
-                    Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
-                    Debug.Log(Vector3.Angle(startPosition, bodyPos));
+                    string jointName = jointItem.Key;
+                    Vector3 joint = jointItem.Value;
+
+                    //Joint の 中身を vector3 に格納
+                    Vector3 latestPosition = new Vector3();
+                    latestPosition.x = (joint.y - 165.2f) / 100;
+                    latestPosition.y = -((joint.x - 250f) / 100);
+                    latestPosition.z = joint.z / 100;
+                    if (lineCount == 0)
+                    {
+                        lastFramePoses.Add(jointName, latestPosition);
+                    } // 1ループ目の時はdicに要素を追加
+
+                    // LPF
+                    Vector3 lowpassFilteredPosition = new Vector3();
+                    lowpassFilteredPosition =
+                        lastFramePoses[jointName] * settings.lpfRate +
+                        latestPosition * (1 - settings.lpfRate); // ローパス後のposを計算
+                    Vector3 jointSpeed = lowpassFilteredPosition - lastFramePoses[jointName];
+                    lastFramePoses[jointName] = lowpassFilteredPosition;
+
+                    // TmpDicに関節のposition情報を格納
+                    tmpPos.Add(jointName, lowpassFilteredPosition);
+                    tmpSpd.Add(jointName, jointSpeed);
+
+                    // キーフレーム抽出用に重心の算出
+                    bodySpd += jointSpeed;
+                    bodyPos += lowpassFilteredPosition;
                 }
-        
-                Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
-            }
-        
-            // z軸補正のための基準フレーム抽出
-            if (lineCount == 160)
-            {
-                basePose = tmpPos;
-            }
-        
-            lineCount += 1;
-        }
-        
-        // 最終フレームの定義
-        frameCountMax = state.deserializedFrames.Count;
-        if (frameCountMax <= settings.endFrame)
-        {
-            settings.endFrame = frameCountMax - 1;　//frameCountMaxがendFrameを超えてしまわないようにする
-        } 
-        
-        var slicedFrames = settings.endFrame - settings.startFrame;
-        // [startFrame:endFrame] をスライス
-        // TODO: update内で処理する
-        state.deserializedFrames = state.deserializedFrames.GetRange(settings.startFrame, slicedFrames);
-        frameCountMax = state.deserializedFrames.Count;
-        
-        // Initialize joint objects
-        // NOTE: get joint names from 0 frame of deserializedFrames
-        foreach (var jointName in state.deserializedFrames[0].Keys)
-        {
-            jointGameObjects[jointName] =
-                Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
-            jointGameObjects[jointName].transform.localScale = new Vector3(settings.sphereScale, settings.sphereScale, sphereScale);
-            jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
-        }
-        
-        //　Initialize bone objects
-        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
-        {
-            string boneName = boneEdgeName.Key;
-            string startJointName = boneEdgeName.Value.Item1;
-            string endJointName = boneEdgeName.Value.Item2;
-            InstantiateCylinder(
-                boneName,
-                cylinderPrefab,
-                jointGameObjects[startJointName].transform.position,
-                jointGameObjects[endJointName].transform.position,
-                boneGameObjects
-            );
-            boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
-        
-            // BoneOrdinalのinit
-            var startPoseXY = make2dVector(basePose[startJointName]);
-            var endPoseXY = make2dVector(basePose[endJointName]);
-            BoneOrdinal boneOrd = new BoneOrdinal()
-            {
-             name = boneName,
-             startJoint = startJointName,
-             endJoint = endJointName,
-             boneLength = Vector2.Distance(startPoseXY, endPoseXY)
-            };
-            boneOrdinals.Add(boneName, boneOrd);
-        }
-        
-        // z補正
-        string baseJointName = "LeftHip";
-        int counter = 0;
-        Dictionary<string, Vector3> lastPosition = state.jointPositions[100];//new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
-        foreach (var jointFrame in state.jointPositions) //全てのフレームのjointについてforeach
-        {
-            if (counter == 80 || counter == 100)
-            {
-                lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
-            }
-            Dictionary<string, Vector3> zCalibratedJointPosition = new Dictionary<string, Vector3>();
-            zCalibratedJointPosition.Add(baseJointName, jointFrame[baseJointName]);
-            foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
-            {
-                string ordinalName = boneOrdinal.Key;
-                BoneOrdinal ordinal = boneOrdinal.Value;
-                Vector3 startJoint = jointFrame[ordinal.startJoint];
-                Vector3 endJoint = jointFrame[ordinal.endJoint];
-                Vector3 baseJoint = zCalibratedJointPosition[ordinal.startJoint];
-                Vector3 lastTargetJoint = lastPosition[ordinal.endJoint];
-                var calibratedJoint = CalibrateZ(baseJoint, startJoint, endJoint, lastTargetJoint, ordinal.boneLength, ordinal.endJoint);
-                if (calibratedJoint.Item2)
+
+                state.jointPositions.Add(tmpPos); // JointPos=Dic<string,Vector3>()にローパス済みのposをAdd
+                state.jointSpeeds.Add(tmpSpd);
+                bodySpeeds.Add(bodySpd);
+                if (lineCount == settings.startFrame)
                 {
-                    state.ngJoints.Add((counter,ordinal.endJoint));
+                    startPosition = bodyPos; //最初のフレームにおいて重心の初期位置を定義
                 }
-                string endJointName = ordinal.endJoint;
-                zCalibratedJointPosition.Add(endJointName, calibratedJoint.Item1);
-            }
-            lastPosition = zCalibratedJointPosition;
-            state.zCalibratedJointPositions.Add(zCalibratedJointPosition);
-            counter++;
-        }
-        
-        // Rigid alignment
-        // 意図的に位置ずらしをしたjointsの作成
-        // for (int i = 0; i < state.zCalibratedJointPositions.Count; i++)
-        // {
-        //     var disturbedJointPosition = state.disturbJointsPositions(zCalibratedJointPositions[i]);
-        //     state.jointPositionsDisturbed.Add(disturbedJointPosition);
-        // }
-        //
-        // rigid alignment 用クラスの初期化
-        // var rigidAligner = new RigidAlignmentBaseline.RigidAlignmentBaseline(jointPositionsDisturbed[0], zCalibratedJointPositions[0]);
-        // disturbed を変形して aligned を生成
-        // jointPositionsAligned = rigidAligner.RigidTransformFrames(jointPositionsDisturbed);
-        
-        // GameObjects の初期化 (joints, bones)
-        InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true, Color.blue);
-        // InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true, Color.cyan);
-        // InitializeGameObjects(jointGameObjectsAligned, boneGameObjectsAligned, isZ: true, Color.green);
-        
-        frameCount = settings.startFrame;
-        frameCountMax =  settings.endFrame;
-        ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
-    }
 
+                float bodyVel = Mathf.Sqrt(bodySpd.x * bodySpd.x + bodySpd.y * bodySpd.y + bodySpd.z * bodySpd.z);
 
-// Update is called once per frame
-    void Update()
-    {
-        //以下FPS関連
-        state.timeElapsed += Time.deltaTime;
-        //FPSを制御
-        if (state.timeElapsed >= settings.timeOut)
-        {
-            //この中でアニメーション描画
-            Dictionary<string, Vector3> jointFrame = state.jointPositions[frameCount];
-            Dictionary<string, Vector3> jointFrameCalibrated = state.zCalibratedJointPositions[frameCount];
-            // Dictionary<string, Vector3> jointFrameDisturbed = jointPositionsDisturbed[frameCount];
-            // Dictionary<string, Vector3> jointFrameAligned = jointPositionsAligned[frameCount];
-
-            // z軸補正前のjointsのupdate
-            // UpdateGameObjects(jointFrame, jointGameObjects, boneGameObjects, true, Color.black);
-            
-            // z軸補正後のjoints, bonesのupdate
-            UpdateGameObjects(jointFrameCalibrated, state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, false, Color.blue);
-            
-            // 位置をずらしたjoints, bonesのupdate
-            // UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
-            
-            // 位置ずらしを rigid alignment で補正した joints, bones の update
-            // UpdateGameObjects(jointFrameAligned, jointGameObjectsAligned, boneGameObjectsAligned, false, Color.green);
-
-            // カウンタをインクリメント
-            frameCount += 1;
-
-            // 最終フレームに到達した時の処理
-            if (frameCount == frameCountMax)
-            {
-                frameCount = settings.startFrame;
-                loopCount += 1;
-                if (loopCount == 100)
+                // キーフレーム抽出
+                if (lineCount > settings.startFrame && lineCount < settings.endFrame)
                 {
-                    UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
-                    // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
+                    if (bodyVel < 0.5 && Vector3.Angle(startPosition, bodyPos) < 20)
+                    {
+                        state.keyFrames.Add(lineCount);
+                        DeleteSameKeyFrames(state.keyFrames, lineCount, settings.keyFrameMargin);
+                        Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
+                        Debug.Log(Vector3.Angle(startPosition, bodyPos));
+                    }
+
+                    Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
                 }
-            }
-            state.timeElapsed = 0.0f;
-        }
-    }
 
-    private void UpdateGameObjects(Dictionary<string, Vector3> frame, Dictionary<string, GameObject> joints,
-        Dictionary<string, GameObject> bones, bool colorKeyFrame, Color color)
-    {
-        // joint GameObject の update
-        foreach (KeyValuePair<string, Vector3> jointPos in frame)
-        {
-            joints[jointPos.Key].transform.position = jointPos.Value;
-            joints[jointPos.Key].GetComponent<Renderer>().material.color = color;
-            if (colorKeyFrame)
-            {
-                if (state.keyFrames.IndexOf(frameCount) >= 0) joints[jointPos.Key].GetComponent<Renderer>().material.color = Color.red;
-                else joints[jointPos.Key].GetComponent<Renderer>().material.color = jointColor;
-            }
-        }
-        
-        // bones の update
-        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
-        {
-            string boneName = boneEdgeName.Key;
-            string startJointName = boneEdgeName.Value.Item1;
-            string endJointName = boneEdgeName.Value.Item2;
-            UpdateCylinderPosition(
-                bones[boneName],
-                joints[startJointName].transform.position,
-                joints[endJointName].transform.position
-            );
-            bones[boneName].GetComponent<Renderer>().material.color = color;
-            if (colorKeyFrame)
-            {
-                if (state.keyFrames.IndexOf(frameCount) >= 0) bones[boneName].GetComponent<Renderer>().material.color = Color.red;
-                else bones[boneName].GetComponent<Renderer>().material.color = jointColor;
-            }
-        }
-    }
+                // z軸補正のための基準フレーム抽出
+                if (lineCount == 160)
+                {
+                    basePose = tmpPos;
+                }
 
-    private void InitializeGameObjects(Dictionary<string, GameObject> joints, Dictionary<string, GameObject> bones, bool isZ, Color color)
-    //  引数の関節、ボーン用ゲームオブジェクトを初期化する
-    {
-        foreach (var jointName in state.deserializedFrames[0].Keys) // 補正用jointをInitialize
-        {
-            joints[jointName] =
-                Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
-            joints[jointName].transform.localScale =
-                new Vector3(settings.sphereScale, settings.sphereScale, settings.sphereScale);
-            joints[jointName].GetComponent<Renderer>().material.color = color;
-        }
-
-        foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames) // 補正用boneのInitialize
-        {
-            string boneName = boneEdgeName.Key;
-            string startJointName = boneEdgeName.Value.Item1;
-            string endJointName = boneEdgeName.Value.Item2;
-            if (isZ)
-            {
-                InstantiateCylinderZ(
-                    boneName,
-                    cylinderPrefab,
-                    state.jointGameObjects[startJointName].transform.position,
-                    state.jointGameObjects[endJointName].transform.position,
-                    bones
-                );
+                lineCount += 1;
             }
-            else
+
+            // 最終フレームの定義
+            frameCountMax = state.deserializedFrames.Count;
+            if (frameCountMax <= settings.endFrame)
             {
+                settings.endFrame = frameCountMax - 1; //frameCountMaxがendFrameを超えてしまわないようにする
+            }
+
+            var slicedFrames = settings.endFrame - settings.startFrame;
+            // [startFrame:endFrame] をスライス
+            // TODO: update内で処理する
+            state.deserializedFrames = state.deserializedFrames.GetRange(settings.startFrame, slicedFrames);
+            frameCountMax = state.deserializedFrames.Count;
+
+            // Initialize joint objects
+            // NOTE: get joint names from 0 frame of deserializedFrames
+            foreach (var jointName in state.deserializedFrames[0].Keys)
+            {
+                jointGameObjects[jointName] =
+                    Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+                jointGameObjects[jointName].transform.localScale = new Vector3(settings.sphereScale,
+                    settings.sphereScale, settings.sphereScale);
+                jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
+            }
+
+            //　Initialize bone objects
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+            {
+                string boneName = boneEdgeName.Key;
+                string startJointName = boneEdgeName.Value.Item1;
+                string endJointName = boneEdgeName.Value.Item2;
                 InstantiateCylinder(
                     boneName,
                     cylinderPrefab,
-                    state.jointGameObjects[startJointName].transform.position,
-                    state.jointGameObjects[endJointName].transform.position,
-                    bones
+                    jointGameObjects[startJointName].transform.position,
+                    jointGameObjects[endJointName].transform.position,
+                    boneGameObjects
                 );
+                boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
+
+                // BoneOrdinalのinit
+                var startPoseXY = make2dVector(basePose[startJointName]);
+                var endPoseXY = make2dVector(basePose[endJointName]);
+                BoneOrdinal boneOrd = new BoneOrdinal()
+                {
+                    name = boneName,
+                    startJoint = startJointName,
+                    endJoint = endJointName,
+                    boneLength = Vector2.Distance(startPoseXY, endPoseXY)
+                };
+                boneOrdinals.Add(boneName, boneOrd);
             }
-            Debug.Log(String.Join(", ", bones.Keys));
-            Debug.Log(boneName);
-            bones[boneName].GetComponent<Renderer>().material.color = color;
+
+            // z補正
+            string baseJointName = "LeftHip";
+            int counter = 0;
+            Dictionary<string, Vector3>
+                lastPosition = state.jointPositions[100]; //new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
+            foreach (var jointFrame in state.jointPositions) //全てのフレームのjointについてforeach
+            {
+                if (counter == 80 || counter == 100)
+                {
+                    lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
+                }
+
+                Dictionary<string, Vector3> zCalibratedJointPosition = new Dictionary<string, Vector3>();
+                zCalibratedJointPosition.Add(baseJointName, jointFrame[baseJointName]);
+                foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
+                {
+                    string ordinalName = boneOrdinal.Key;
+                    BoneOrdinal ordinal = boneOrdinal.Value;
+                    Vector3 startJoint = jointFrame[ordinal.startJoint];
+                    Vector3 endJoint = jointFrame[ordinal.endJoint];
+                    Vector3 baseJoint = zCalibratedJointPosition[ordinal.startJoint];
+                    Vector3 lastTargetJoint = lastPosition[ordinal.endJoint];
+                    var calibratedJoint = CalibrateZ(baseJoint, startJoint, endJoint, lastTargetJoint,
+                        ordinal.boneLength, ordinal.endJoint);
+                    if (calibratedJoint.Item2)
+                    {
+                        state.ngJoints.Add((counter, ordinal.endJoint));
+                    }
+
+                    string endJointName = ordinal.endJoint;
+                    zCalibratedJointPosition.Add(endJointName, calibratedJoint.Item1);
+                }
+
+                lastPosition = zCalibratedJointPosition;
+                state.zCalibratedJointPositions.Add(zCalibratedJointPosition);
+                counter++;
+            }
+
+            // Rigid alignment
+            // 意図的に位置ずらしをしたjointsの作成
+            // for (int i = 0; i < state.zCalibratedJointPositions.Count; i++)
+            // {
+            //     var disturbedJointPosition = state.disturbJointsPositions(zCalibratedJointPositions[i]);
+            //     state.jointPositionsDisturbed.Add(disturbedJointPosition);
+            // }
+            //
+            // rigid alignment 用クラスの初期化
+            // var rigidAligner = new RigidAlignmentBaseline.RigidAlignmentBaseline(jointPositionsDisturbed[0], zCalibratedJointPositions[0]);
+            // disturbed を変形して aligned を生成
+            // jointPositionsAligned = rigidAligner.RigidTransformFrames(jointPositionsDisturbed);
+
+            // GameObjects の初期化 (joints, bones)
+            InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true,
+                Color.blue);
+            // InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true, Color.cyan);
+            // InitializeGameObjects(jointGameObjectsAligned, boneGameObjectsAligned, isZ: true, Color.green);
+
+            frameCount = settings.startFrame;
+            frameCountMax = settings.endFrame;
+            ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
         }
-    }
 
-    private void InstantiateCylinder(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint, Dictionary<string, GameObject> bones)
-    {
-        bones[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
-        UpdateCylinderPosition(bones[key], beginPoint, endPoint);
-    }
 
-    private void InstantiateCylinderZ(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint, Dictionary<string, GameObject> boneGameObjectsTmp)
-    {
-        boneGameObjectsTmp[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
-        UpdateCylinderPosition(boneGameObjectsTmp[key], beginPoint, endPoint);
-    }
-
-    private void UpdateCylinderPosition(GameObject cyl, Vector3 beginPoint, Vector3 endPoint)
-    {
-        Vector3 offset = endPoint - beginPoint;
-        Vector3 position = beginPoint + (offset / 2.0f);
-
-        cyl.transform.position = position;
-        cyl.transform.LookAt(beginPoint);
-        Vector3 localScale = cyl.transform.localScale;
-        localScale.z = (endPoint - beginPoint).magnitude;
-        cyl.transform.localScale = localScale;
-    }
-
-    public void ShowListContentsInTheDebugLog<T>(List<T> list)
-    {
-        string log = "[";
-
-        foreach (var content in list)
-            log += content.ToString() + ", ";
-
-        log += "]";
-        Debug.Log(log);
-    }
-
-    private void DeleteSameKeyFrames(List<int> list, int frameNumber, int serial)
-    {
-        // serial 以上に連続するフレームがキーフレームと認識されていた場合、キーフレームでない扱いにする。
-        for (int i = 0; i < serial; i++)
+// Update is called once per frame
+        void FrameStep()
         {
-            if (list.IndexOf(frameNumber - i - 1) >= 0) list.Remove(frameNumber - i - 1);
+            //以下FPS関連
+            state.timeElapsed += Time.deltaTime;
+            //FPSを制御
+            if (state.timeElapsed >= settings.timeOut)
+            {
+                //この中でアニメーション描画
+                // Dictionary<string, Vector3> jointFrameDisturbed = jointPositionsDisturbed[frameCount];
+                // Dictionary<string, Vector3> jointFrameAligned = jointPositionsAligned[frameCount];
+
+                // z軸補正前のjointsのupdate
+                UpdateGameObjects(state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+
+                // z軸補正後のjoints, bonesのupdate
+                UpdateGameObjects(state.zCalibratedJointPositions[frameCount], state.zCalibratedJointGameObjects,
+                    state.zCalibratedBoneGameObjects, false, Color.blue);
+
+                // 位置をずらしたjoints, bonesのupdate
+                // UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
+
+                // 位置ずらしを rigid alignment で補正した joints, bones の update
+                // UpdateGameObjects(jointFrameAligned, jointGameObjectsAligned, boneGameObjectsAligned, false, Color.green);
+
+                // カウンタをインクリメント
+                frameCount += 1;
+
+                // 最終フレームに到達した時の処理
+                if (frameCount == frameCountMax)
+                {
+                    frameCount = settings.startFrame;
+                    loopCount += 1;
+                    if (loopCount == 100)
+                    {
+                        UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
+                        // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
+                    }
+                }
+
+                state.timeElapsed = 0.0f;
+            }
         }
-    }
 
-
-
-    public (Vector3, bool) CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint,
-        Vector3 lastTargetJoint,
-        float boneLength, string targetJointName)
-    {
-        float L = -5.0f;
-        float x0 = rawEndJoint.x;
-        float y0 = rawEndJoint.y;
-        float z0 = rawEndJoint.z;
-        float xb = baseJoint.x;
-        float yb = baseJoint.y;
-        float zb = baseJoint.z;
-        float A = Mathf.Pow(x0, 2) + Mathf.Pow(y0, 2) + Mathf.Pow(L,2);
-        float B = x0 * xb + y0 * yb + Mathf.Pow(L, 2) - L * zb;
-        float C = Mathf.Pow(xb, 2) + Mathf.Pow(yb, 2) + Mathf.Pow(L - zb, 2) - Mathf.Pow(boneLength,2);
-        Vector3 P = new Vector3();
-        bool DMinus = new bool();
-        if (B * B >= A * C)
+        private void UpdateGameObjects(Dictionary<string, Vector3> frame, Dictionary<string, GameObject> joints,
+            Dictionary<string, GameObject> bones, bool colorKeyFrame, Color color)
         {
-            DMinus = false;
-            float t1 = (B + Mathf.Sqrt(B * B - A * C)) / A;
-            float t2 = (B - Mathf.Sqrt(B * B - A * C)) / A;
-            Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
-            Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
-            Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
+            // joint GameObject の update
+            foreach (KeyValuePair<string, Vector3> jointPos in frame)
+            {
+                joints[jointPos.Key].transform.position = jointPos.Value;
+                joints[jointPos.Key].GetComponent<Renderer>().material.color = color;
+                if (colorKeyFrame)
+                {
+                    if (state.keyFrames.IndexOf(frameCount) >= 0)
+                        joints[jointPos.Key].GetComponent<Renderer>().material.color = Color.red;
+                    else joints[jointPos.Key].GetComponent<Renderer>().material.color = jointColor;
+                }
+            }
 
-            if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
-            else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
-            else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
-            else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P2;
-            else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P1;
-            else if (Vector3.SqrMagnitude(P1 - lastTargetJoint) < Vector3.SqrMagnitude(P2 - lastTargetJoint))
-                P = P1;
-            else P = P2;
+            // bones の update
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+            {
+                string boneName = boneEdgeName.Key;
+                string startJointName = boneEdgeName.Value.Item1;
+                string endJointName = boneEdgeName.Value.Item2;
+                UpdateCylinderPosition(
+                    bones[boneName],
+                    joints[startJointName].transform.position,
+                    joints[endJointName].transform.position
+                );
+                bones[boneName].GetComponent<Renderer>().material.color = color;
+                if (colorKeyFrame)
+                {
+                    if (state.keyFrames.IndexOf(frameCount) >= 0)
+                        bones[boneName].GetComponent<Renderer>().material.color = Color.red;
+                    else bones[boneName].GetComponent<Renderer>().material.color = jointColor;
+                }
+            }
         }
-        else
+
+        private void InitializeGameObjects(Dictionary<string, GameObject> joints, Dictionary<string, GameObject> bones,
+                bool isZ, Color color)
+            //  引数の関節、ボーン用ゲームオブジェクトを初期化する
         {
-            DMinus = true;
-            // P.x = 0;
-            // P.y = 0;
-            // P.z = L;
-            Vector3 cameraVec = new Vector3(0, 0, L);
-            Vector3 jointXYPlane = new Vector3(rawEndJoint.x, rawEndJoint.y, 0);
-            P = cameraVec + Vector3.Project(baseJoint - cameraVec, jointXYPlane - cameraVec); //垂線の足を求める
-            Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C)); 
-            Debug.Log("minus");
+            foreach (var jointName in state.deserializedFrames[0].Keys) // 補正用jointをInitialize
+            {
+                joints[jointName] =
+                    Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+                joints[jointName].transform.localScale =
+                    new Vector3(settings.sphereScale, settings.sphereScale, settings.sphereScale);
+                joints[jointName].GetComponent<Renderer>().material.color = color;
+            }
+
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames) // 補正用boneのInitialize
+            {
+                string boneName = boneEdgeName.Key;
+                string startJointName = boneEdgeName.Value.Item1;
+                string endJointName = boneEdgeName.Value.Item2;
+                if (isZ)
+                {
+                    InstantiateCylinderZ(
+                        boneName,
+                        cylinderPrefab,
+                        state.jointGameObjects[startJointName].transform.position,
+                        state.jointGameObjects[endJointName].transform.position,
+                        bones
+                    );
+                }
+                else
+                {
+                    InstantiateCylinder(
+                        boneName,
+                        cylinderPrefab,
+                        state.jointGameObjects[startJointName].transform.position,
+                        state.jointGameObjects[endJointName].transform.position,
+                        bones
+                    );
+                }
+
+                Debug.Log(String.Join(", ", bones.Keys));
+                Debug.Log(boneName);
+                bones[boneName].GetComponent<Renderer>().material.color = color;
+            }
         }
-        return (P,DMinus);
-    }
 
-    public Vector2 make2dVector(Vector3 inputVec)
-    {
-        return new Vector2(inputVec.x, inputVec.y);
-    }
-
-    private Dictionary<string, Vector3> DisturbJointsPositions(Dictionary<string, Vector3> joints)
-    {
-        Vector3 randomTranslation = Vector3.one;
-        Dictionary<string, Vector3> modifiedJoints = new Dictionary<string, Vector3>();
-        foreach (KeyValuePair<string, Vector3> joint in joints)
+        private void InstantiateCylinder(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint,
+            Dictionary<string, GameObject> bones)
         {
-            modifiedJoints.Add(joint.Key, joint.Value + randomTranslation);
+            bones[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
+            UpdateCylinderPosition(bones[key], beginPoint, endPoint);
         }
-        return modifiedJoints;
+
+        private void InstantiateCylinderZ(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint,
+            Dictionary<string, GameObject> boneGameObjectsTmp)
+        {
+            boneGameObjectsTmp[key] =
+                Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
+            UpdateCylinderPosition(boneGameObjectsTmp[key], beginPoint, endPoint);
+        }
+
+        private void UpdateCylinderPosition(GameObject cyl, Vector3 beginPoint, Vector3 endPoint)
+        {
+            Vector3 offset = endPoint - beginPoint;
+            Vector3 position = beginPoint + (offset / 2.0f);
+
+            cyl.transform.position = position;
+            cyl.transform.LookAt(beginPoint);
+            Vector3 localScale = cyl.transform.localScale;
+            localScale.z = (endPoint - beginPoint).magnitude;
+            cyl.transform.localScale = localScale;
+        }
+
+        public void ShowListContentsInTheDebugLog<T>(List<T> list)
+        {
+            string log = "[";
+
+            foreach (var content in list)
+                log += content.ToString() + ", ";
+
+            log += "]";
+            Debug.Log(log);
+        }
+
+        private void DeleteSameKeyFrames(List<int> list, int frameNumber, int serial)
+        {
+            // serial 以上に連続するフレームがキーフレームと認識されていた場合、キーフレームでない扱いにする。
+            for (int i = 0; i < serial; i++)
+            {
+                if (list.IndexOf(frameNumber - i - 1) >= 0) list.Remove(frameNumber - i - 1);
+            }
+        }
+
+
+
+        public (Vector3, bool) CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint,
+            Vector3 lastTargetJoint,
+            float boneLength, string targetJointName)
+        {
+            float L = -5.0f;
+            float x0 = rawEndJoint.x;
+            float y0 = rawEndJoint.y;
+            float z0 = rawEndJoint.z;
+            float xb = baseJoint.x;
+            float yb = baseJoint.y;
+            float zb = baseJoint.z;
+            float A = Mathf.Pow(x0, 2) + Mathf.Pow(y0, 2) + Mathf.Pow(L, 2);
+            float B = x0 * xb + y0 * yb + Mathf.Pow(L, 2) - L * zb;
+            float C = Mathf.Pow(xb, 2) + Mathf.Pow(yb, 2) + Mathf.Pow(L - zb, 2) - Mathf.Pow(boneLength, 2);
+            Vector3 P = new Vector3();
+            bool DMinus = new bool();
+            if (B * B >= A * C)
+            {
+                DMinus = false;
+                float t1 = (B + Mathf.Sqrt(B * B - A * C)) / A;
+                float t2 = (B - Mathf.Sqrt(B * B - A * C)) / A;
+                Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
+                Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
+                Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
+
+                if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
+                else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
+                else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
+                else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P2;
+                else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P1;
+                else if (Vector3.SqrMagnitude(P1 - lastTargetJoint) < Vector3.SqrMagnitude(P2 - lastTargetJoint))
+                    P = P1;
+                else P = P2;
+            }
+            else
+            {
+                DMinus = true;
+                // P.x = 0;
+                // P.y = 0;
+                // P.z = L;
+                Vector3 cameraVec = new Vector3(0, 0, L);
+                Vector3 jointXYPlane = new Vector3(rawEndJoint.x, rawEndJoint.y, 0);
+                P = cameraVec + Vector3.Project(baseJoint - cameraVec, jointXYPlane - cameraVec); //垂線の足を求める
+                Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C));
+                Debug.Log("minus");
+            }
+
+            return (P, DMinus);
+        }
+
+        public Vector2 make2dVector(Vector3 inputVec)
+        {
+            return new Vector2(inputVec.x, inputVec.y);
+        }
+
+        private Dictionary<string, Vector3> DisturbJointsPositions(Dictionary<string, Vector3> joints)
+        {
+            Vector3 randomTranslation = Vector3.one;
+            Dictionary<string, Vector3> modifiedJoints = new Dictionary<string, Vector3>();
+            foreach (KeyValuePair<string, Vector3> joint in joints)
+            {
+                modifiedJoints.Add(joint.Key, joint.Value + randomTranslation);
+            }
+
+            return modifiedJoints;
+        }
     }
 }
