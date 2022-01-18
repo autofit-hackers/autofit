@@ -4,63 +4,67 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-struct BoneOrdinal
-{
-    // bone を startJoint -> endJoint で表現されることを定義する
-    public string name;
-    public string startJoint;
-    public string endJoint;
-    public float boneLength;
-};
-
-struct HumanMotionSettings
-{
-    public string jsonFilePath;
-    public float timeOut;
-    public float lpfRate;
-    public int startFrame;
-    public int endFrame;
-    public float sphereScale;
-    public int keyFrameMargin; // KyeFrame 検出の hyper parameter
-}
-
-struct HumanMotionState
-{
-    // 前回の可視化から経過した時間
-    public float timeElapsed;
-    // jsonからロードしたフレームを格納、加工を加えて最終的に可視化するデータを格納する mutable なオブジェクト
-    public List<Dictionary<string, Vector3>> deserializedFrames;
-
-    public List<Dictionary<string, Vector3>> jointPositions;
-    
-    // z補正前のデータ
-    public Dictionary<string, GameObject> jointGameObjects;
-    public Dictionary<string, GameObject> boneGameObjects;
-
-    // key frame 検出のために利用する各フレームにおける各 joint の速度
-    public List<Dictionary<string, Vector3>> jointSpeeds;
-
-    // key frame の リスト
-    public List<int> keyFrames;
-
-    // z補正後のデータ
-    public List<Dictionary<string, Vector3>> zCalibratedJointPositions;
-    public Dictionary<string, GameObject> zCalibratedJointGameObjects;
-    public Dictionary<string, GameObject> zCalibratedBoneGameObjects;
-
-    // z軸補正時の判別式が負になる点の集合
-    public List<(int, string)> ngJoints;
-}
 
 namespace HumanMotionNs
 {
-    class HumanMotion : MonoBehaviour
+    struct BoneOrdinal
+    {
+        // bone を startJoint -> endJoint で表現されることを定義する
+        public string name;
+        public string startJoint;
+        public string endJoint;
+        public float boneLength;
+    };
+
+    struct HumanMotionSettings
+    {
+        public string jsonFilePath;
+        public Transform cylinderPrefab;
+        public Transform spherePrefab;
+        public float timeOut;
+        public float lpfRate;
+        public int startFrame;
+        public int endFrame;
+        public float sphereScale;
+        public int keyFrameMargin; // KyeFrame 検出の hyper parameter
+    }
+
+    struct HumanMotionState
+    {
+        // 前回の可視化から経過した時間
+        public float timeElapsed;
+
+        // jsonからロードしたフレームを格納、加工を加えて最終的に可視化するデータを格納する mutable なオブジェクト
+        public List<Dictionary<string, Vector3>> deserializedFrames;
+
+        public List<Dictionary<string, Vector3>> jointPositions;
+
+        // z補正前のデータ
+        public Dictionary<string, GameObject> jointGameObjects;
+        public Dictionary<string, GameObject> boneGameObjects;
+
+        // key frame 検出のために利用する各フレームにおける各 joint の速度
+        public List<Dictionary<string, Vector3>> jointSpeeds;
+
+        // key frame の リスト
+        public List<int> keyFrames;
+
+        // z補正後のデータ
+        public List<Dictionary<string, Vector3>> zCalibratedJointPositions;
+        public Dictionary<string, GameObject> zCalibratedJointGameObjects;
+        public Dictionary<string, GameObject> zCalibratedBoneGameObjects;
+
+        // z軸補正時の判別式が負になる点の集合
+        public List<(int, string)> ngJoints;
+    }
+
+    class HumanMotion
     {
         // インスタンス変数として扱う設定値は構造体にまとめる
         public HumanMotionSettings settings;
         public HumanMotionState state;
-        public Transform cylinderPrefab;
         // private GameObject cylinder;
+        public Transform cylinderPrefab;
         public Transform spherePrefab;
         public Color jointColor;
 
@@ -92,6 +96,8 @@ namespace HumanMotionNs
 
         public HumanMotion(
             string jsonFilePath,
+            Transform cylinderPrefab,
+            Transform spherePrefab,
             float timeOut = 0.05f,
             float lpfRate = 0.2f,
             int startFrame = 750,
@@ -104,6 +110,8 @@ namespace HumanMotionNs
             settings = new HumanMotionSettings()
             {
                 jsonFilePath = jsonFilePath,
+                cylinderPrefab = cylinderPrefab,
+                spherePrefab = spherePrefab,
                 timeOut = timeOut,
                 lpfRate = lpfRate,
                 startFrame = startFrame,
@@ -229,7 +237,8 @@ namespace HumanMotionNs
             foreach (var jointName in state.deserializedFrames[0].Keys)
             {
                 jointGameObjects[jointName] =
-                    Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+                    GameObject.Instantiate(spherePrefab.gameObject, Vector3.zero, Quaternion.identity) as GameObject;
+                    // Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
                 jointGameObjects[jointName].transform.localScale = new Vector3(settings.sphereScale,
                     settings.sphereScale, settings.sphereScale);
                 jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
@@ -327,7 +336,7 @@ namespace HumanMotionNs
 
 
 // Update is called once per frame
-        void FrameStep()
+        public void FrameStep()
         {
             //以下FPS関連
             state.timeElapsed += Time.deltaTime;
@@ -414,7 +423,7 @@ namespace HumanMotionNs
             foreach (var jointName in state.deserializedFrames[0].Keys) // 補正用jointをInitialize
             {
                 joints[jointName] =
-                    Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+                    GameObject.Instantiate(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
                 joints[jointName].transform.localScale =
                     new Vector3(settings.sphereScale, settings.sphereScale, settings.sphereScale);
                 joints[jointName].GetComponent<Renderer>().material.color = color;
@@ -455,7 +464,7 @@ namespace HumanMotionNs
         private void InstantiateCylinder(String key, Transform cylinderPrefab, Vector3 beginPoint, Vector3 endPoint,
             Dictionary<string, GameObject> bones)
         {
-            bones[key] = Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
+            bones[key] = GameObject.Instantiate(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
             UpdateCylinderPosition(bones[key], beginPoint, endPoint);
         }
 
@@ -463,7 +472,7 @@ namespace HumanMotionNs
             Dictionary<string, GameObject> boneGameObjectsTmp)
         {
             boneGameObjectsTmp[key] =
-                Instantiate<GameObject>(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
+                GameObject.Instantiate(cylinderPrefab.gameObject, Vector3.zero, Quaternion.identity);
             UpdateCylinderPosition(boneGameObjectsTmp[key], beginPoint, endPoint);
         }
 
