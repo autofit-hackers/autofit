@@ -140,7 +140,6 @@ namespace HumanMotionNs
 
             // 1行ずつ iterate して読み込み
             int lineCount = 0;
-            // IEnumerable<string> lines = System.IO.File.ReadLines(@"./");
             IEnumerable<string> lines = System.IO.File.ReadLines(path: settings.jsonFilePath);
             foreach (string line in lines)
             {
@@ -164,6 +163,9 @@ namespace HumanMotionNs
                     latestPosition.x = (joint.y - 170f) / 100;
                     latestPosition.y = -((joint.x - 250f) / 100);
                     latestPosition.z = joint.z / 100;
+                    // latestPosition.x = joint.x / 100;
+                    // latestPosition.y = joint.y / 100;
+                    // latestPosition.z = -(joint.z / 100 - 1f);
                     if (lineCount == 0)
                         lastFramePoses.Add(jointName, latestPosition); // 1ループ目の時はdicに要素を追加
 
@@ -302,9 +304,12 @@ namespace HumanMotionNs
             // jointPositionsAligned = rigidAligner.RigidTransformFrames(jointPositionsDisturbed);
 
             // GameObjects の初期化 (joints, bones)
-            InitializeGameObjects(state.jointGameObjects, state.boneGameObjects, isZ: true, color: Color.blue);
+            // 補正前
+            // InitializeGameObjects(state.jointGameObjects, state.boneGameObjects, isZ: true, color: settings.jointColor);
+            
+            // 補正後
             InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true,
-                color: Color.blue);
+                color: settings.jointColor);
             // InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true, Color.cyan);
             // InitializeGameObjects(jointGameObjectsAligned, boneGameObjectsAligned, isZ: true, Color.green);
 
@@ -326,11 +331,11 @@ namespace HumanMotionNs
                 // Dictionary<string, Vector3> jointFrameAligned = jointPositionsAligned[frameCount];
 
                 // z軸補正前のjointsのupdate
-                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+                // UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
 
                 // z軸補正後のjoints, bonesのupdate
                 UpdateGameObjects(frame: state.zCalibratedJointPositions[frameCount], state.zCalibratedJointGameObjects,
-                    state.zCalibratedBoneGameObjects, false, Color.blue);
+                    state.zCalibratedBoneGameObjects, false, settings.jointColor);
 
                 // 位置をずらしたjoints, bonesのupdate
                 // UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
@@ -433,8 +438,8 @@ namespace HumanMotionNs
                     );
                 }
 
-                Debug.Log(String.Join(", ", bones.Keys));
-                Debug.Log(boneName);
+                // Debug.Log(String.Join(", ", bones.Keys));
+                // Debug.Log(boneName);
                 bones[boneName].GetComponent<Renderer>().material.color = color;
             }
         }
@@ -509,7 +514,7 @@ namespace HumanMotionNs
                 DMinus = false;
                 float t1 = (B + Mathf.Sqrt(B * B - A * C)) / A;
                 float t2 = (B - Mathf.Sqrt(B * B - A * C)) / A;
-                Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
+                // Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
                 Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
                 Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
 
@@ -531,7 +536,7 @@ namespace HumanMotionNs
                 Vector3 cameraVec = new Vector3(0, 0, L);
                 Vector3 jointXYPlane = new Vector3(rawEndJoint.x, rawEndJoint.y, 0);
                 P = cameraVec + Vector3.Project(baseJoint - cameraVec, jointXYPlane - cameraVec); //垂線の足を求める
-                Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C));
+                // Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C));
                 Debug.Log("minus");
             }
 
