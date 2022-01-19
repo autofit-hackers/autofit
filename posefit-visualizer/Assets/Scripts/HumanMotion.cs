@@ -172,19 +172,15 @@ namespace HumanMotionNs
 
                     //Joint の 中身を vector3 に格納
                     Vector3 latestPosition = new Vector3();
-                    latestPosition.x = (joint.y - 165.2f) / 100;
+                    latestPosition.x = (joint.y - 170f) / 100;
                     latestPosition.y = -((joint.x - 250f) / 100);
                     latestPosition.z = joint.z / 100;
                     if (lineCount == 0)
-                    {
-                        lastFramePoses.Add(jointName, latestPosition);
-                    } // 1ループ目の時はdicに要素を追加
+                        lastFramePoses.Add(jointName, latestPosition); // 1ループ目の時はdicに要素を追加
 
                     // LPF
                     Vector3 lowpassFilteredPosition = new Vector3();
-                    lowpassFilteredPosition =
-                        lastFramePoses[jointName] * settings.lpfRate +
-                        latestPosition * (1 - settings.lpfRate); // ローパス後のposを計算
+                    lowpassFilteredPosition = lastFramePoses[jointName] * settings.lpfRate + latestPosition * (1 - settings.lpfRate); // ローパス後のposを計算
                     Vector3 jointSpeed = lowpassFilteredPosition - lastFramePoses[jointName];
                     lastFramePoses[jointName] = lowpassFilteredPosition;
 
@@ -201,9 +197,7 @@ namespace HumanMotionNs
                 state.jointSpeeds.Add(tmpSpd);
                 bodySpeeds.Add(bodySpd);
                 if (lineCount == settings.startFrame)
-                {
                     startPosition = bodyPos; //最初のフレームにおいて重心の初期位置を定義
-                }
 
                 float bodyVel = Mathf.Sqrt(bodySpd.x * bodySpd.x + bodySpd.y * bodySpd.y + bodySpd.z * bodySpd.z);
 
@@ -214,18 +208,14 @@ namespace HumanMotionNs
                     {
                         state.keyFrames.Add(lineCount);
                         DeleteSameKeyFrames(state.keyFrames, lineCount, settings.keyFrameMargin);
-                        Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
-                        Debug.Log(Vector3.Angle(startPosition, bodyPos));
+                        // Debug.Log("frameNumber -> " + lineCount + ", angle -> ");
+                        // Debug.Log(Vector3.Angle(startPosition, bodyPos));
                     }
-
-                    Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
+                    // Debug.Log("frameNumber -> " + lineCount + ", bodySpeed -> " + bodySpd + ", bodyVel -> " + bodyVel);
                 }
 
                 // z軸補正のための基準フレーム抽出
-                if (lineCount == 160)
-                {
-                    basePose = tmpPos;
-                }
+                if (lineCount == 160) basePose = tmpPos;
 
                 lineCount += 1;
             }
@@ -286,14 +276,10 @@ namespace HumanMotionNs
             // z補正
             string baseJointName = "LeftHip";
             int counter = 0;
-            Dictionary<string, Vector3>
-                lastPosition = state.jointPositions[100]; //new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
+            Dictionary<string, Vector3> lastPosition = state.jointPositions[100]; //new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
             foreach (var jointFrame in state.jointPositions) //全てのフレームのjointについてforeach
             {
-                if (counter == 80 || counter == 100)
-                {
-                    lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
-                }
+                if (counter == 0 || counter == 80 || counter == 100) lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
 
                 Dictionary<string, Vector3> zCalibratedJointPosition = new Dictionary<string, Vector3>();
                 zCalibratedJointPosition.Add(baseJointName, jointFrame[baseJointName]);
