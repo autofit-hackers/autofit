@@ -21,6 +21,7 @@ namespace HumanMotionNs
         public string jsonFilePath;
         public Transform cylinderPrefab;
         public Transform spherePrefab;
+        public Color jointColor;
         public float timeOut;
         public float lpfRate;
         public int startFrame;
@@ -36,7 +37,6 @@ namespace HumanMotionNs
 
         // jsonからロードしたフレームを格納、加工を加えて最終的に可視化するデータを格納する mutable なオブジェクト
         public List<Dictionary<string, Vector3>> deserializedFrames;
-
         public List<Dictionary<string, Vector3>> jointPositions;
 
         // z補正前のデータ
@@ -64,9 +64,6 @@ namespace HumanMotionNs
         public HumanMotionSettings settings;
         public HumanMotionState state;
         // private GameObject cylinder;
-        public Transform cylinderPrefab;
-        public Transform spherePrefab;
-        public Color jointColor;
 
 
         // XXX: loopCount と frameCount の違いがわかる変数名にする
@@ -92,16 +89,17 @@ namespace HumanMotionNs
             };
 
         // bone の対応表
-        private Dictionary<string, BoneOrdinal> boneOrdinals;
+        private Dictionary<string, BoneOrdinal> boneOrdinals = new Dictionary<string, BoneOrdinal>();
 
         public HumanMotion(
             string jsonFilePath,
             Transform cylinderPrefab,
             Transform spherePrefab,
+            Color jointColor,
             float timeOut = 0.05f,
             float lpfRate = 0.2f,
-            int startFrame = 750,
-            int endFrame = 1100,
+            int startFrame = 10,
+            int endFrame = 100,
             float sphereScale = 0.1f,
             int keyFrameMargin = 10
         )
@@ -112,6 +110,7 @@ namespace HumanMotionNs
                 jsonFilePath = jsonFilePath,
                 cylinderPrefab = cylinderPrefab,
                 spherePrefab = spherePrefab,
+                jointColor = jointColor,
                 timeOut = timeOut,
                 lpfRate = lpfRate,
                 startFrame = startFrame,
@@ -120,13 +119,24 @@ namespace HumanMotionNs
                 keyFrameMargin = keyFrameMargin
             };
             // state
-            state = new HumanMotionState();
-            state.timeElapsed = 0.0f;
+            state = new HumanMotionState()
+            {
+                timeElapsed = 0.0f,
+                deserializedFrames = new List<Dictionary<string, Vector3>>(),
+                jointPositions = new List<Dictionary<string, Vector3>>(),
+                keyFrames = new List<int>(),
+                jointGameObjects = new Dictionary<string, GameObject>(),
+                boneGameObjects = new Dictionary<string, GameObject>(),
+                jointSpeeds = new List<Dictionary<string, Vector3>>(),
+                zCalibratedJointPositions = new List<Dictionary<string, Vector3>>(),
+                zCalibratedJointGameObjects = new Dictionary<string, GameObject>(),
+                zCalibratedBoneGameObjects = new Dictionary<string, GameObject>(),
+                ngJoints = new List<(int, string)>()
+            };
 
             // loop state
             loopCount = 0;
             frameCount = 0;
-            ReadAndPreprocess();
         }
 
         public void ReadAndPreprocess()
@@ -141,7 +151,8 @@ namespace HumanMotionNs
 
             // 1行ずつ iterate して読み込み
             int lineCount = 0;
-            IEnumerable<string> lines = System.IO.File.ReadLines(@"./");
+            // IEnumerable<string> lines = System.IO.File.ReadLines(@"./");
+            IEnumerable<string> lines = System.IO.File.ReadLines(path: settings.jsonFilePath);
             foreach (string line in lines)
             {
                 Dictionary<string, Vector3> deserializedFrame =
@@ -237,11 +248,11 @@ namespace HumanMotionNs
             foreach (var jointName in state.deserializedFrames[0].Keys)
             {
                 jointGameObjects[jointName] =
-                    GameObject.Instantiate(spherePrefab.gameObject, Vector3.zero, Quaternion.identity) as GameObject;
+                    GameObject.Instantiate(settings.spherePrefab.gameObject, Vector3.zero, Quaternion.identity) as GameObject;
                     // Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
                 jointGameObjects[jointName].transform.localScale = new Vector3(settings.sphereScale,
                     settings.sphereScale, settings.sphereScale);
-                jointGameObjects[jointName].GetComponent<Renderer>().material.color = jointColor;
+                jointGameObjects[jointName].GetComponent<Renderer>().material.color = settings.jointColor;
             }
 
             //　Initialize bone objects
@@ -252,12 +263,12 @@ namespace HumanMotionNs
                 string endJointName = boneEdgeName.Value.Item2;
                 InstantiateCylinder(
                     boneName,
-                    cylinderPrefab,
+                    settings.cylinderPrefab,
                     jointGameObjects[startJointName].transform.position,
                     jointGameObjects[endJointName].transform.position,
                     boneGameObjects
                 );
-                boneGameObjects[boneName].GetComponent<Renderer>().material.color = jointColor;
+                boneGameObjects[boneName].GetComponent<Renderer>().material.color = settings.jointColor;
 
                 // BoneOrdinalのinit
                 var startPoseXY = make2dVector(basePose[startJointName]);
@@ -324,8 +335,8 @@ namespace HumanMotionNs
             // jointPositionsAligned = rigidAligner.RigidTransformFrames(jointPositionsDisturbed);
 
             // GameObjects の初期化 (joints, bones)
-            InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true,
-                Color.blue);
+            InitializeGameObjects(state.jointGameObjects, state.boneGameObjects, isZ: true, color: Color.blue);
+            InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true, color: Color.blue);
             // InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true, Color.cyan);
             // InitializeGameObjects(jointGameObjectsAligned, boneGameObjectsAligned, isZ: true, Color.green);
 
@@ -348,10 +359,10 @@ namespace HumanMotionNs
                 // Dictionary<string, Vector3> jointFrameAligned = jointPositionsAligned[frameCount];
 
                 // z軸補正前のjointsのupdate
-                UpdateGameObjects(state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
 
                 // z軸補正後のjoints, bonesのupdate
-                UpdateGameObjects(state.zCalibratedJointPositions[frameCount], state.zCalibratedJointGameObjects,
+                UpdateGameObjects(frame: state.zCalibratedJointPositions[frameCount], state.zCalibratedJointGameObjects,
                     state.zCalibratedBoneGameObjects, false, Color.blue);
 
                 // 位置をずらしたjoints, bonesのupdate
@@ -391,7 +402,7 @@ namespace HumanMotionNs
                 {
                     if (state.keyFrames.IndexOf(frameCount) >= 0)
                         joints[jointPos.Key].GetComponent<Renderer>().material.color = Color.red;
-                    else joints[jointPos.Key].GetComponent<Renderer>().material.color = jointColor;
+                    else joints[jointPos.Key].GetComponent<Renderer>().material.color = settings.jointColor;
                 }
             }
 
@@ -411,7 +422,7 @@ namespace HumanMotionNs
                 {
                     if (state.keyFrames.IndexOf(frameCount) >= 0)
                         bones[boneName].GetComponent<Renderer>().material.color = Color.red;
-                    else bones[boneName].GetComponent<Renderer>().material.color = jointColor;
+                    else bones[boneName].GetComponent<Renderer>().material.color = settings.jointColor;
                 }
             }
         }
@@ -423,7 +434,7 @@ namespace HumanMotionNs
             foreach (var jointName in state.deserializedFrames[0].Keys) // 補正用jointをInitialize
             {
                 joints[jointName] =
-                    GameObject.Instantiate(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+                    GameObject.Instantiate(settings.spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
                 joints[jointName].transform.localScale =
                     new Vector3(settings.sphereScale, settings.sphereScale, settings.sphereScale);
                 joints[jointName].GetComponent<Renderer>().material.color = color;
@@ -438,9 +449,9 @@ namespace HumanMotionNs
                 {
                     InstantiateCylinderZ(
                         boneName,
-                        cylinderPrefab,
-                        state.jointGameObjects[startJointName].transform.position,
-                        state.jointGameObjects[endJointName].transform.position,
+                        settings.cylinderPrefab,
+                        joints[startJointName].transform.position,
+                        joints[endJointName].transform.position,
                         bones
                     );
                 }
@@ -448,9 +459,9 @@ namespace HumanMotionNs
                 {
                     InstantiateCylinder(
                         boneName,
-                        cylinderPrefab,
-                        state.jointGameObjects[startJointName].transform.position,
-                        state.jointGameObjects[endJointName].transform.position,
+                        settings.cylinderPrefab,
+                        joints[startJointName].transform.position,
+                        joints[endJointName].transform.position,
                         bones
                     );
                 }

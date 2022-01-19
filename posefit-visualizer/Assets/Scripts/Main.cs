@@ -16,9 +16,13 @@ class Main : MonoBehaviour
     private HumanMotion hm2;
 
     void Start()
-    { 
-        hm1 = new HumanMotion(jsonFilePath: "Assets/Data/sq-1231.json", cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab);
-        hm2 = new HumanMotion(jsonFilePath: "Assets/Data/sq-1228_2.json", cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab);
+    {
+        string jsonFilePath1 = "./Assets/Data/sq-1231.json";
+        string jsonFilePath2 = "./Assets/Data/sq-1228_2.json";
+        hm1 = new HumanMotion(jsonFilePath: jsonFilePath1, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.cyan);
+        hm2 = new HumanMotion(jsonFilePath: jsonFilePath2, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.magenta);
+        hm1.ReadAndPreprocess();
+        hm2.ReadAndPreprocess();
     }
 
     // Update is called once per frame
