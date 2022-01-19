@@ -13,17 +13,17 @@ namespace BoneOrdinalsNs
         public static Dictionary<string, (string, string)> boneEdgeNames =
             new Dictionary<string, (string startJoint, string endJoint)>()
             {
+                {"LeftShin", ("LeftAnkle", "LeftKnee")},
+                {"LeftThigh", ("LeftKnee", "LeftHip")},
                 {"Pelvis", ("LeftHip", "RightHip")},
-                {"LeftThigh", ("LeftHip", "LeftKnee")},
                 {"LeftFlank", ("LeftHip", "LeftShoulder")},
                 {"RightThigh", ("RightHip", "RightKnee")},
-                {"LeftShin", ("LeftKnee", "LeftAnkle")},
-                {"LeftUpperArm", ("LeftShoulder", "LeftElbow")},
                 {"RightFlank", ("RightHip", "RightShoulder")},
                 {"RightShin", ("RightKnee", "RightAnkle")},
-                {"LeftForeArm", ("LeftElbow", "LeftWrist")},
                 {"RightUpperArm", ("RightShoulder", "RightElbow")},
-                {"RightForeArm", ("RightElbow", "RightWrist")}
+                {"RightForeArm", ("RightElbow", "RightWrist")},
+                {"LeftUpperArm", ("LeftShoulder", "LeftElbow")},
+                {"LeftForeArm", ("LeftElbow", "LeftWrist")}
             };
 
         public static Dictionary<string, BoneOrdinal> JsonToBoneOrdinals(string jsonFilePath, int targetFrameIdx = 100)

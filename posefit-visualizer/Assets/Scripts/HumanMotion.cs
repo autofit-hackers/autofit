@@ -165,6 +165,10 @@ namespace HumanMotionNs
                     latestPosition.y = -((joint.y - 960f) / 400);
                     latestPosition.x = (joint.x - 540f) / 400;
                     latestPosition.z = joint.z / 400;
+                    if (jointName == "LeftAnkle")
+                    {
+                        latestPosition.z = 0f;
+                    }
                     // latestPosition.x = joint.x / 100;
                     // latestPosition.y = joint.y / 100;
                     // latestPosition.z = -(joint.z / 100 - 1f);
@@ -257,16 +261,16 @@ namespace HumanMotionNs
             }
 
             // z補正
-            string baseJointName = "LeftHip";
+            string baseJointName = "LeftAnkle";
             int counter = 0;
             Dictionary<string, Vector3>
                 lastPosition = state.jointPositions[100]; //new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
             foreach (var jointFrame in state.jointPositions) //全てのフレームのjointについてforeach
             {
-                if (counter == 0 || counter == 80 || counter == 100)
+                if (counter == 0)
                     lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
 
-                Dictionary<string, Vector3> zCalibratedJointPosition = new Dictionary<string, Vector3>();
+                var zCalibratedJointPosition = new Dictionary<string, Vector3>();
                 zCalibratedJointPosition.Add(baseJointName, jointFrame[baseJointName]);
                 foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in settings.boneOrdinals)
                 {
@@ -285,12 +289,38 @@ namespace HumanMotionNs
 
                     string endJointName = ordinal.endJoint;
                     zCalibratedJointPosition.Add(endJointName, calibratedJoint.Item1);
+                    
+                    //LPF
+                    var jpAfterLPF = lastPosition[endJointName] * settings.lpfRate +
+                                     zCalibratedJointPosition[endJointName] * (1 - settings.lpfRate); // ローパス後のposを計算
+                    lastPosition[endJointName] = jpAfterLPF;
+                    //LPFここまで
+                    
                 }
-
                 lastPosition = zCalibratedJointPosition;
                 state.zCalibratedJointPositions.Add(zCalibratedJointPosition);
                 counter++;
             }
+            
+            // z軸に関して再度LPF
+            // Dictionary<string, Vector3> lastJP = new Dictionary<string, Vector3>();
+            // for (int idx = 0; idx < state.zCalibratedJointPositions.Count; idx++)
+            // {
+            //     var calibratedJP = state.zCalibratedJointPositions[idx];
+            //     if (idx == 0)
+            //     {
+            //         lastJP = calibratedJP;
+            //         continue;
+            //     }
+            //     foreach (string jointName in calibratedJP.Keys)
+            //     {
+            //         // Vector3 jpAfterLPF = new Vector3();
+            //         var jpAfterLPF = lastJP[jointName] * settings.lpfRate +
+            //                                   calibratedJP[jointName] * (1 - settings.lpfRate); // ローパス後のposを計算
+            //         lastJP[jointName] = jpAfterLPF;
+            //     }
+            //     state.zCalibratedJointPositions[idx] = lastJP;
+            // }
 
             // Rigid alignment
             // 意図的に位置ずらしをしたjointsの作成
@@ -499,28 +529,29 @@ namespace HumanMotionNs
             Vector3 lastTargetJoint,
             float boneLength, string targetJointName)
         {
-            float L = -5.0f;
-            float x0 = rawEndJoint.x;
-            float y0 = rawEndJoint.y;
-            float z0 = rawEndJoint.z;
-            float xb = baseJoint.x;
-            float yb = baseJoint.y;
-            float zb = baseJoint.z;
-            float A = Mathf.Pow(x0, 2) + Mathf.Pow(y0, 2) + Mathf.Pow(L, 2);
-            float B = x0 * xb + y0 * yb + Mathf.Pow(L, 2) - L * zb;
-            float C = Mathf.Pow(xb, 2) + Mathf.Pow(yb, 2) + Mathf.Pow(L - zb, 2) - Mathf.Pow(boneLength, 2);
+            var L = -4.8f;
+            var x0 = rawEndJoint.x;
+            var y0 = rawEndJoint.y;
+            var z0 = rawEndJoint.z;
+            var xb = baseJoint.x;
+            var yb = baseJoint.y;
+            var zb = baseJoint.z;
+            var A = Mathf.Pow(x0, 2) + Mathf.Pow(y0, 2) + Mathf.Pow(L, 2);
+            var B = x0 * xb + y0 * yb + Mathf.Pow(L, 2) - L * zb;
+            var C = Mathf.Pow(xb, 2) + Mathf.Pow(yb, 2) + Mathf.Pow(L - zb, 2) - Mathf.Pow(boneLength, 2);
             Vector3 P = new Vector3();
             bool DMinus = new bool();
             if (B * B >= A * C)
             {
                 DMinus = false;
-                float t1 = (B + Mathf.Sqrt(B * B - A * C)) / A;
-                float t2 = (B - Mathf.Sqrt(B * B - A * C)) / A;
+                var t1 = (B + Mathf.Sqrt(B * B - A * C)) / A;
+                var t2 = (B - Mathf.Sqrt(B * B - A * C)) / A;
                 // Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", t1 = " + t1 + ", t2 = " + t2);
-                Vector3 P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
-                Vector3 P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
+                var P1 = new Vector3(t1 * rawEndJoint.x, t1 * rawEndJoint.y, (1 - t1) * L);
+                var P2 = new Vector3(t2 * rawEndJoint.x, t2 * rawEndJoint.y, (1 - t2) * L);
 
-                if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
+                // ヒューリスティックに２つの交点のどちらかを選択する
+                if (targetJointName == "LeftHip" || targetJointName == "RightAnkle") P = P1;
                 else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
                 else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
                 else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P1;
