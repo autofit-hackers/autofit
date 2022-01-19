@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641275, b: 0.5748172, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657815, g: 0.49641192, b: 0.57481617, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -154,9 +154,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cylinderPrefab: {fileID: 1439162038340422739, guid: ce4d79fddc8fb4a5c8252d796164a19a, type: 3}
   spherePrefab: {fileID: 1439162038340422739, guid: 593af48ff20744d17ba3c2b5b5f91977, type: 3}
-  initJsonFilePath: ./Assets/Data/sq-1231.json
-  jsonFilePath1: ./Assets/Data/sq-1231.json
-  jsonFilePath2: ./Assets/Data/sq-1228.json
+  initJsonFilePath: ./Assets/Data/init-20220119.json
+  jsonFilePath1: ./Assets/Data/squat-narrow-20220119.json
+  jsonFilePath2: ./Assets/Data/squat-wide-20220119-3.json
+  startFrame1: 0
+  endFrame1: 1000
+  startFrame2: 0
+  endFrame2: 1000
 --- !u!4 &545093750
 Transform:
   m_ObjectHideFlags: 0

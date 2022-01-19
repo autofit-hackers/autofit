@@ -49,7 +49,7 @@ namespace BoneOrdinalsNs
                     name = boneName,
                     startJoint = startJointName,
                     endJoint = endJointName,
-                    boneLength = Vector2.Distance(startPoseXY, endPoseXY) / 100
+                    boneLength = Vector2.Distance(startPoseXY, endPoseXY) / 410
                 };
                 boneOrdinals.Add(boneName, boneOrd);
             }

@@ -160,9 +160,11 @@ namespace HumanMotionNs
 
                     // Joint の 中身を vector3 に格納
                     Vector3 latestPosition = new Vector3();
-                    latestPosition.x = (joint.y - 170f) / 100;
-                    latestPosition.y = -((joint.x - 250f) / 100);
-                    latestPosition.z = joint.z / 100;
+                    // latestPosition.x = (joint.y - 960f) / 400;
+                    // latestPosition.y = -((joint.x - 540f) / 400);
+                    latestPosition.y = -((joint.y - 960f) / 400);
+                    latestPosition.x = (joint.x - 540f) / 400;
+                    latestPosition.z = joint.z / 400;
                     // latestPosition.x = joint.x / 100;
                     // latestPosition.y = joint.y / 100;
                     // latestPosition.z = -(joint.z / 100 - 1f);
@@ -521,8 +523,8 @@ namespace HumanMotionNs
                 if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
                 else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
                 else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
-                else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P2;
-                else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P1;
+                else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P1;
+                else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P2;
                 else if (Vector3.SqrMagnitude(P1 - lastTargetJoint) < Vector3.SqrMagnitude(P2 - lastTargetJoint))
                     P = P1;
                 else P = P2;
