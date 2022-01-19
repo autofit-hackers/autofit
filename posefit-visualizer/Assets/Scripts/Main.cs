@@ -1,6 +1,5 @@
-using System;
-using HumanMotionNs;
 using System.Collections.Generic;
+using HumanMotionNs;
 using UnityEngine;
 
 class Main : MonoBehaviour
@@ -17,10 +16,15 @@ class Main : MonoBehaviour
 
     void Start()
     {
+        // キャリブレーションフレームから各ボーンの長さを取得
+        string initJsonFilePath = "./Assets/Data/init-20220119.json";
+        Dictionary<string, BoneOrdinal> boneOrdinals =
+            BoneOrdinalsNs.BoneOrdinals.JsonToBoneOrdinals(jsonFilePath: initJsonFilePath, targetFrameIdx: 100);
+        
         string jsonFilePath1 = "./Assets/Data/squat-narrow-20220119.json";
         string jsonFilePath2 = "./Assets/Data/squat-wide-20220119-3.json";
-        hm1 = new HumanMotion(jsonFilePath: jsonFilePath1, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.cyan);
-        hm2 = new HumanMotion(jsonFilePath: jsonFilePath2, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.magenta);
+        hm1 = new HumanMotion(jsonFilePath: jsonFilePath1, boneOrdinals: boneOrdinals, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.cyan);
+        hm2 = new HumanMotion(jsonFilePath: jsonFilePath2, boneOrdinals: boneOrdinals, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.magenta);
         hm1.ReadAndPreprocess();
         hm2.ReadAndPreprocess();
     }

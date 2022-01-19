@@ -4,6 +4,7 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
+using BoneOrdinalsNs;
 
 namespace HumanMotionNs
 {
@@ -28,6 +29,7 @@ namespace HumanMotionNs
         public int endFrame;
         public float sphereScale;
         public int keyFrameMargin; // KyeFrame 検出の hyper parameter
+        public Dictionary<string, BoneOrdinal> boneOrdinals;
     }
 
     struct HumanMotionState
@@ -56,12 +58,16 @@ namespace HumanMotionNs
 
         // z軸補正時の判別式が負になる点の集合
         public List<(int, string)> ngJoints;
+        
+        // 
+        public Dictionary<string, BoneOrdinal> boneOrdinals;
     }
 
     class HumanMotion
     {
         // インスタンス変数として扱う設定値は構造体にまとめる
         public HumanMotionSettings settings;
+
         public HumanMotionState state;
         // private GameObject cylinder;
 
@@ -71,28 +77,10 @@ namespace HumanMotionNs
         public int frameCount;
         public int frameCountMax;
 
-        // 定数
-        private Dictionary<string, (string, string)> boneEdgeNames =
-            new Dictionary<string, (string startJoint, string endJoint)>()
-            {
-                {"Pelvis", ("LeftHip", "RightHip")},
-                {"LeftThigh", ("LeftHip", "LeftKnee")},
-                {"LeftFlank", ("LeftHip", "LeftShoulder")},
-                {"RightThigh", ("RightHip", "RightKnee")},
-                {"LeftShin", ("LeftKnee", "LeftAnkle")},
-                {"LeftUpperArm", ("LeftShoulder", "LeftElbow")},
-                {"RightFlank", ("RightHip", "RightShoulder")},
-                {"RightShin", ("RightKnee", "RightAnkle")},
-                {"LeftForeArm", ("LeftElbow", "LeftWrist")},
-                {"RightUpperArm", ("RightShoulder", "RightElbow")},
-                {"RightForeArm", ("RightElbow", "RightWrist")}
-            };
-
-        // bone の対応表
-        private Dictionary<string, BoneOrdinal> boneOrdinals = new Dictionary<string, BoneOrdinal>();
 
         public HumanMotion(
             string jsonFilePath,
+            Dictionary<string, BoneOrdinal> boneOrdinals,
             Transform cylinderPrefab,
             Transform spherePrefab,
             Color jointColor,
@@ -108,6 +96,7 @@ namespace HumanMotionNs
             settings = new HumanMotionSettings()
             {
                 jsonFilePath = jsonFilePath,
+                boneOrdinals = boneOrdinals,
                 cylinderPrefab = cylinderPrefab,
                 spherePrefab = spherePrefab,
                 jointColor = jointColor,
@@ -131,7 +120,7 @@ namespace HumanMotionNs
                 zCalibratedJointPositions = new List<Dictionary<string, Vector3>>(),
                 zCalibratedJointGameObjects = new Dictionary<string, GameObject>(),
                 zCalibratedBoneGameObjects = new Dictionary<string, GameObject>(),
-                ngJoints = new List<(int, string)>()
+                ngJoints = new List<(int, string)>(),
             };
 
             // loop state
@@ -170,7 +159,7 @@ namespace HumanMotionNs
                     string jointName = jointItem.Key;
                     Vector3 joint = jointItem.Value;
 
-                    //Joint の 中身を vector3 に格納
+                    // Joint の 中身を vector3 に格納
                     Vector3 latestPosition = new Vector3();
                     latestPosition.x = (joint.y - 170f) / 100;
                     latestPosition.y = -((joint.x - 250f) / 100);
@@ -180,7 +169,8 @@ namespace HumanMotionNs
 
                     // LPF
                     Vector3 lowpassFilteredPosition = new Vector3();
-                    lowpassFilteredPosition = lastFramePoses[jointName] * settings.lpfRate + latestPosition * (1 - settings.lpfRate); // ローパス後のposを計算
+                    lowpassFilteredPosition = lastFramePoses[jointName] * settings.lpfRate +
+                                              latestPosition * (1 - settings.lpfRate); // ローパス後のposを計算
                     Vector3 jointSpeed = lowpassFilteredPosition - lastFramePoses[jointName];
                     lastFramePoses[jointName] = lowpassFilteredPosition;
 
@@ -238,15 +228,16 @@ namespace HumanMotionNs
             foreach (var jointName in state.deserializedFrames[0].Keys)
             {
                 jointGameObjects[jointName] =
-                    GameObject.Instantiate(settings.spherePrefab.gameObject, Vector3.zero, Quaternion.identity) as GameObject;
-                    // Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
+                    GameObject.Instantiate(settings.spherePrefab.gameObject, Vector3.zero, Quaternion.identity) as
+                        GameObject;
+                // Instantiate<GameObject>(spherePrefab.gameObject, Vector3.zero, Quaternion.identity);
                 jointGameObjects[jointName].transform.localScale = new Vector3(settings.sphereScale,
                     settings.sphereScale, settings.sphereScale);
                 jointGameObjects[jointName].GetComponent<Renderer>().material.color = settings.jointColor;
             }
 
             //　Initialize bone objects
-            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in BoneOrdinals.boneEdgeNames)
             {
                 string boneName = boneEdgeName.Key;
                 string startJointName = boneEdgeName.Value.Item1;
@@ -259,31 +250,21 @@ namespace HumanMotionNs
                     boneGameObjects
                 );
                 boneGameObjects[boneName].GetComponent<Renderer>().material.color = settings.jointColor;
-
-                // BoneOrdinalのinit
-                var startPoseXY = make2dVector(basePose[startJointName]);
-                var endPoseXY = make2dVector(basePose[endJointName]);
-                BoneOrdinal boneOrd = new BoneOrdinal()
-                {
-                    name = boneName,
-                    startJoint = startJointName,
-                    endJoint = endJointName,
-                    boneLength = Vector2.Distance(startPoseXY, endPoseXY)
-                };
-                boneOrdinals.Add(boneName, boneOrd);
             }
 
             // z補正
             string baseJointName = "LeftHip";
             int counter = 0;
-            Dictionary<string, Vector3> lastPosition = state.jointPositions[100]; //new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
+            Dictionary<string, Vector3>
+                lastPosition = state.jointPositions[100]; //new Dictionary<string, Vector3>(); //前の座標を入れておくDictionary
             foreach (var jointFrame in state.jointPositions) //全てのフレームのjointについてforeach
             {
-                if (counter == 0 || counter == 80 || counter == 100) lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
+                if (counter == 0 || counter == 80 || counter == 100)
+                    lastPosition = jointFrame; //0フレーム目では直前フレームをjointFrame[0]とする
 
                 Dictionary<string, Vector3> zCalibratedJointPosition = new Dictionary<string, Vector3>();
                 zCalibratedJointPosition.Add(baseJointName, jointFrame[baseJointName]);
-                foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
+                foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in settings.boneOrdinals)
                 {
                     string ordinalName = boneOrdinal.Key;
                     BoneOrdinal ordinal = boneOrdinal.Value;
@@ -322,7 +303,8 @@ namespace HumanMotionNs
 
             // GameObjects の初期化 (joints, bones)
             InitializeGameObjects(state.jointGameObjects, state.boneGameObjects, isZ: true, color: Color.blue);
-            InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true, color: Color.blue);
+            InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true,
+                color: Color.blue);
             // InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true, Color.cyan);
             // InitializeGameObjects(jointGameObjectsAligned, boneGameObjectsAligned, isZ: true, Color.green);
 
@@ -330,7 +312,6 @@ namespace HumanMotionNs
             frameCountMax = settings.endFrame;
             ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
         }
-
 
 // Update is called once per frame
         public void FrameStep()
@@ -393,7 +374,7 @@ namespace HumanMotionNs
             }
 
             // bones の update
-            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames)
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in BoneOrdinals.boneEdgeNames)
             {
                 string boneName = boneEdgeName.Key;
                 string startJointName = boneEdgeName.Value.Item1;
@@ -426,7 +407,7 @@ namespace HumanMotionNs
                 joints[jointName].GetComponent<Renderer>().material.color = color;
             }
 
-            foreach (KeyValuePair<string, (string, string)> boneEdgeName in boneEdgeNames) // 補正用boneのInitialize
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in BoneOrdinals.boneEdgeNames) // 補正用boneのInitialize
             {
                 string boneName = boneEdgeName.Key;
                 string startJointName = boneEdgeName.Value.Item1;
@@ -557,7 +538,7 @@ namespace HumanMotionNs
             return (P, DMinus);
         }
 
-        public Vector2 make2dVector(Vector3 inputVec)
+        private static Vector2 Make2dVector(Vector3 inputVec)
         {
             return new Vector2(inputVec.x, inputVec.y);
         }
@@ -572,6 +553,29 @@ namespace HumanMotionNs
             }
 
             return modifiedJoints;
+        }
+        
+        private static Dictionary<string, BoneOrdinal> GetBoneOrdinals(Dictionary<string, Vector3> basePose)
+        {
+            // 特定のフレームの各関節点の情報から、各ボーンの長さを取得する
+            var boneOrdinals = new Dictionary<string, BoneOrdinal>();
+            foreach (KeyValuePair<string, (string, string)> boneEdgeName in BoneOrdinals.boneEdgeNames)
+            {
+                var boneName = boneEdgeName.Key;
+                var startJointName = boneEdgeName.Value.Item1;
+                var endJointName = boneEdgeName.Value.Item2;
+                var startPoseXY = Make2dVector(basePose[startJointName]);
+                var endPoseXY = Make2dVector(basePose[endJointName]);
+                BoneOrdinal boneOrd = new BoneOrdinal()
+                {
+                    name = boneName,
+                    startJoint = startJointName,
+                    endJoint = endJointName,
+                    boneLength = Vector2.Distance(startPoseXY, endPoseXY)
+                };
+                boneOrdinals.Add(boneName, boneOrd);
+            }
+            return boneOrdinals;
         }
     }
 }
