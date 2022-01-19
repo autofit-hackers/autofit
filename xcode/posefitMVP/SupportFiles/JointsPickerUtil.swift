@@ -8,6 +8,7 @@
 import Foundation
 import MLKit
 import MLImage
+import UIKit
 
 struct JointPos: Codable {
     let x: Float
@@ -18,35 +19,35 @@ struct JointPos: Codable {
 // ViewController.swift の detectPose を呼んでいる
 public class JointsPickerUtil{
     /// Initialized when one of the pose detector rows are chosen. Reset to `nil` when neither are.
-    private var poseDetector: PoseDetector?
+//    public var poseDetector: PoseDetector?
     
-    private func detectPose(in image: MLImage, width: CGFloat, height: CGFloat){
-        // unwraping
-        if let poseDetector = poseDetector {
-            var poses: [Pose]
-            do {
-                poses = try poseDetector.results(in: image)
-            } catch {
-                print("Failed to detect poses with error: \(error.localizedDescription).")
+    public func detectPose(uiImage: UIImage, filename: String, poseDetector: PoseDetector){//, width: CGFloat, height: CGFloat){width, height is needed when visualize
+        let image = uiImageToMLImage(uiImage: uiImage)
+        
+        var poses: [Pose]
+        do {
+            poses = try poseDetector.results(in: image!) as! [Pose]
+        } catch {
+            print("Failed to detect poses with error: \(error.localizedDescription).")
 //                updatePreviewOverlayViewWithLastFrame()
-                return
-            }
+            return
+        }
 //            updatePreviewOverlayViewWithLastFrame()
-            guard !poses.isEmpty else {
-                print("Pose detector returned no results.")
+        guard !poses.isEmpty else {
+            print("Pose detector returned no results.")
+            return
+        }
+        weak var weakSelf = self
+        let encoder = JSONEncoder()
+        DispatchQueue.main.sync {
+            guard let strongSelf = weakSelf else {
+                print("Self is nil!")
                 return
             }
-            weak var weakSelf = self
-            let encoder = JSONEncoder()
-            DispatchQueue.main.sync {
-                guard let strongSelf = weakSelf else {
-                    print("Self is nil!")
-                    return
-                }
-                // 1 frame に予測した関節位置を持つリスト
-                // let jointPoses: [Dictionary<Int,JointPos>]
-                // Pose detected. Currently, only single person detection is supported.
-                poses.forEach { pose in
+            // 1 frame に予測した関節位置を持つリスト
+            let jointPoses: [Dictionary<Int,JointPos>]
+            // Pose detected. Currently, only single person detection is supported.
+            poses.forEach { pose in
 //                    let poseOverlayView = UIUtilities.createPoseOverlayView(
 //                        forPose: pose,
 //                        inViewWithBounds: strongSelf.annotationOverlayView.bounds,
@@ -58,38 +59,40 @@ public class JointsPickerUtil{
 //                            )
 //                        }
 //                    )
-                    // 可視化
+                // 可視化
 //                    strongSelf.annotationOverlayView.addSubview(poseOverlayView)
-                    var oneFrame: [String: JointPos] = [:]
+                var oneFrame: [String: JointPos] = [:]
 
-                    // JSON化
-                    for landmarkType in landmarkTypes {
-                        let poseLandmark = pose.landmark(ofType: landmarkType)
-                        let jointName = landmarkType.rawValue
-                        let jointPos = JointPos(
-                            x: Float(poseLandmark.position.x),
-                            y: Float(poseLandmark.position.y),
-                            z: Float(poseLandmark.position.z)
-                        )
-                        print(jointName)
-                        print(jointPos)
-                        oneFrame.updateValue(jointPos, forKey: jointName)
-                    }
-                    // JSON化
-                    // one line json にするためにpretty printはしない
-                    // encoder.outputFormatting = .prettyPrinted
-                    let encodedData: Data
-                    do {
-                        encodedData = try encoder.encode(oneFrame)
-                    } catch {
-                        encodedData = Data()
-                    }
-                    let jsonString = String(data: encodedData, encoding: .utf8)! + "\n"
-                    // 書き出し
-                    let outputFilename = getNowStr() + ".json"
-                    print(outputFilename)
-                    addTextToFile(text: jsonString, outputFilename: outputFilename)
+                // JSON化
+                for landmarkType in landmarkTypes {
+                    let poseLandmark = pose.landmark(ofType: landmarkType)
+                    let jointName = landmarkType.rawValue
+                    let jointPos = JointPos(
+                        x: Float(poseLandmark.position.x),
+                        y: Float(poseLandmark.position.y),
+                        z: Float(poseLandmark.position.z)
+                    )
+//                    print(jointName)
+//                    print(jointPos)
+                    oneFrame.updateValue(jointPos, forKey: jointName)
                 }
+                // JSON化
+                // one line json にするためにpretty printはしない
+                // encoder.outputFormatting = .prettyPrinted
+                let encodedData: Data
+                do {
+                    encodedData = try encoder.encode(oneFrame)
+                } catch {
+                    encodedData = Data()
+                }
+                let jsonString = String(data: encodedData, encoding: .utf8)! + "\n"
+                // 書き出し
+                var outputFilename = filename + ".json"
+                if (filename == ""){
+                    outputFilename = getNowStr() + ".json"
+                }
+//                print(outputFilename)
+                addTextToFile(text: jsonString, outputFilename: outputFilename)
             }
         }
     }
@@ -117,7 +120,7 @@ public class JointsPickerUtil{
             for: .documentDirectory,
             in: .userDomainMask
         ).first!
-        print(dir.path)
+//        print(dir.path)
         let fileUrl = dir.appendingPathComponent(outputFilename)
         if FileManager.default.fileExists(atPath: fileUrl.path) {
             // ファイルが存在したら追記
@@ -125,7 +128,7 @@ public class JointsPickerUtil{
             fileHandler.seekToEndOfFile()
             fileHandler.write(dataToWrite)
             fileHandler.closeFile()
-            print(fileUrl)
+//            print(fileUrl)
         } else {
             // ファイルが存在しなければ作成
             if FileManager.default.createFile(
@@ -133,8 +136,8 @@ public class JointsPickerUtil{
                 contents: dataToWrite,
                 attributes: nil
             ) {
-                print("file successfully created")
-                print(fileUrl)
+//                print("file successfully created")
+//                print(fileUrl)
             } else {
                 print("failed to create file")
             }

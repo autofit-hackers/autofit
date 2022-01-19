@@ -1,10 +1,19 @@
 import SwiftUI
 import AVFoundation
+import MLKit
+import MLImage
 
 struct ContentView: View {
     let videoCapture = VideoCapture()
+    let jointsPickerUtil = JointsPickerUtil()
+//    let options = PoseDetectorOptions()
+//        .detectorMode = .singleImage
+//        options.detectorMode = .stream
+//        let options = AccuratePoseDetectorOptions()
+    let poseDetector = PoseDetector.poseDetector(options: PoseDetectorOptions())
     @State var image: UIImage? = nil
-    @State var name: String = ""
+    let tmp: String = ""
+    @State var filename: String = ""
     var body: some View {
         VStack {
             if let image = image {
@@ -19,6 +28,7 @@ struct ContentView: View {
                             DispatchQueue.main.async {
                                 self.image = convertImage
                             }
+                            jointsPickerUtil.detectPose(uiImage: convertImage, filename: filename, poseDetector: poseDetector)
                         }
                     }
                 }
@@ -27,6 +37,9 @@ struct ContentView: View {
                 }
             }
             .font(.largeTitle)
+            TextField("Enter File Name", text: $filename)
+                .font(.title)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
         }
     }
 
@@ -34,6 +47,8 @@ struct ContentView: View {
         if let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
             let imageRect = CGRect(x: 0, y: 0, width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
+//            print(CVPixelBufferGetWidth(pixelBuffer),CVPixelBufferGetHeight(pixelBuffer))
+            //width=1080,height=1920
             let context = CIContext()
             if let image = context.createCGImage(ciImage, from: imageRect) {
                 return UIImage(cgImage: image)
@@ -41,7 +56,6 @@ struct ContentView: View {
         }
         return nil
     }
-
 }
 
 struct ContentView_Previews: PreviewProvider {

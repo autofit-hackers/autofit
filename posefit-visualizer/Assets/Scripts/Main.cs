@@ -283,11 +283,11 @@ class Main : MonoBehaviour
             UpdateGameObjects(jointFrameCalibrated, calibratedJointGameObjects, calibratedBoneGameObjects, false, Color.blue);
             
             // 位置をずらしたjoints, bonesのupdate
-            UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
-            Debug.Log("jointFrameCalibrated updated");
+            // UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
+            // Debug.Log("jointFrameCalibrated updated");
             
             // 位置ずらしを rigid alignment で補正した joints, bones の update
-            UpdateGameObjects(jointFrameAligned, jointGameObjectsAligned, boneGameObjectsAligned, false, Color.green);
+            // UpdateGameObjects(jointFrameAligned, jointGameObjectsAligned, boneGameObjectsAligned, false, Color.green);
 
             // カウンタをインクリメント
             frameCount += 1;
@@ -474,8 +474,8 @@ class Main : MonoBehaviour
             if (targetJointName == "LeftAnkle" || targetJointName == "RightAnkle") P = P1;
             else if (targetJointName == "LeftKnee" || targetJointName == "RightKnee") P = P2;
             else if (targetJointName == "LeftShoulder" || targetJointName == "RightShoulder") P = P2;
-            else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P2;
-            else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P1;
+            else if (targetJointName == "LeftElbow" || targetJointName == "RightElbow") P = P1;
+            else if (targetJointName == "LeftWrist" || targetJointName == "RightWrist") P = P2;
             else if (Vector3.SqrMagnitude(P1 - lastTargetJoint) < Vector3.SqrMagnitude(P2 - lastTargetJoint))
                 P = P1;
             else P = P2;
