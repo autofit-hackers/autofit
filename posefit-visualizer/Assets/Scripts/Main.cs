@@ -7,12 +7,12 @@ class Main : MonoBehaviour
     // Start is called before the first frame update
     public Transform cylinderPrefab;
     public Transform spherePrefab;
-    // public string initJsonFilePath = "./Assets/Data/init-20220119.json";
-    // public string jsonFilePath1 = "./Assets/Data/squat-narrow-20220119.json";
-    // public string jsonFilePath2 = "./Assets/Data/squat-wide-20220119-3.json";
-    public string initJsonFilePath = "./Assets/Data/sq-1228_2.json"; // "./Assets/Data/init-20220119.json";
-    public string jsonFilePath1 = "./Assets/Data/sq-1231.json";
-    public string jsonFilePath2 = "./Assets/Data/sq-1228.json";
+    public string initJsonFilePath = "./Assets/Data/init-20220119.json";
+    public string jsonFilePath1 = "./Assets/Data/squat-narrow-20220119.json";
+    public string jsonFilePath2 = "./Assets/Data/squat-wide-20220119-3.json";
+    // public string initJsonFilePath = "./Assets/Data/sq-1228_2.json";
+    // public string jsonFilePath1 = "./Assets/Data/sq-1231.json";
+    // public string jsonFilePath2 = "./Assets/Data/sq-1228.json";
     public int startFrame1 = 750;
     public int endFrame1 = 1100;
     public int startFrame2 = 80;
