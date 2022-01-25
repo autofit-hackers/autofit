@@ -1,0 +1,25 @@
+{
+  "author": {
+    "name": "IKEP",
+    "url": "https://ikep.jp"
+  },
+  "name": "jp.ikep.mediapipe.blazepose",
+  "displayName": "BlazePoseBarracuda",
+  "description": "BlazePose (Mediapipe Pose) for Unity Barracuda.",
+  "version": "1.1.1",
+  "unity": "2020.3",
+  "unityRelease": "6f1",
+  "keywords": [
+    "unity",
+    "Barracuda",
+    "Mediapipe",
+    "Pose",
+    "BlazePose"
+  ],
+  "dependencies": {
+    "jp.ikep.mediapipe.posedetection": "1.0.0",
+    "jp.ikep.mediapipe.poselandmark": "1.1.0"
+  },
+  "license": "Apache-2.0",
+  "repository": "github:creativeIKEP/BlazePoseBarracuda"
+}
