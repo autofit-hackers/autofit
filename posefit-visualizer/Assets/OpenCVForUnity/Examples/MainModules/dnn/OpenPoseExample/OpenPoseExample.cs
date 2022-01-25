@@ -119,7 +119,7 @@ namespace OpenCVForUnityExample
                         { "REye", "REar" }, { "Nose", "LEye" }, { "LEye", "LEar" }
                 };
 
-                IMAGE_FILENAME = "dnn/COCO_val2014_000000000589.jpg";
+                IMAGE_FILENAME = "dnn/standing.jpg";
                 CAFFEMODEL_FILENAME = "dnn/pose_iter_440000.caffemodel";
                 PROTOTXT_FILENAME = "dnn/openpose_pose_coco.prototxt";
             }
@@ -176,7 +176,7 @@ namespace OpenCVForUnityExample
                     }
                 };
 
-                IMAGE_FILENAME = "dnn/COCO_val2014_000000000589.jpg";
+                IMAGE_FILENAME = "dnn/standing.jpg";
                 CAFFEMODEL_FILENAME = "dnn/pose_iter_160000.caffemodel";
                 PROTOTXT_FILENAME = "dnn/openpose_pose_mpi_faster_4_stages.prototxt";
 
