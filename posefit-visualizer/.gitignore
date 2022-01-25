@@ -45,3 +45,13 @@ Logs/
 # Rider
 .idea/
 
+# OpenCV for Unity
+Assets/OpenCVForUnity/Plugins/WebGL/2021.2/opencvforunity.bc
+Assets/OpenCVForUnity/Plugins/WebGL/2019.1/opencvforunity.bc
+Assets/OpenCVforUnity/Plugins/iOS/libopencvforunity.a
+Assets/OpenCVforUnity/Plugins/iOS/opencv2.framework/opencv2
+Assets/OpenCVforUnity/Plugins/Windows/x86_64/opencvforunity.dll
+Assets/StreamingAssets/dnn/pose_iter_440000.caffemodel
+Assets/StreamingAssets/dnn/pose_iter_102000.caffemodel
+Assets/StreamingAssets/dnn/pose_iter_160000.caffemodel
+Assets/OpenCVforUnity/Extra.unitypackage
