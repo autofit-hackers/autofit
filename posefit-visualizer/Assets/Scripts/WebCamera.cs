@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 public class WebCamera : MonoBehaviour
 {
-    int width = 1920;
-    int height = 1080;
-    int fps = 30;
+    public int width = 1920;
+    public int height = 1080;
+    public int fps = 30;
+    public int deviceId = 0;
     WebCamTexture webcamTexture;
     void Start () {
         WebCamDevice[] devices = WebCamTexture.devices;
-        webcamTexture = new WebCamTexture(devices[0].name, this.width, this.height, this.fps);
+        webcamTexture = new WebCamTexture(devices[deviceId].name, this.width, this.height, this.fps);
         GetComponent<Renderer> ().material.mainTexture = webcamTexture;
         webcamTexture.Play();
     }
