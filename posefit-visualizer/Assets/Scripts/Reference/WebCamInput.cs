@@ -39,9 +39,11 @@ public class WebCamInput : MonoBehaviour
         var aspect2 = (float)inputRT.width / inputRT.height;
         var aspectGap = aspect2 / aspect1;
 
-        var vMirrored = webCamTexture.videoVerticallyMirrored;
-        var scale = new Vector2(aspectGap, vMirrored ? -1 : 1);
-        var offset = new Vector2((1 - aspectGap) / 2, vMirrored ? 1 : 0);
+        var vMirrored = true;//webCamTexture.videoVerticallyMirrored;
+        // var scale = new Vector2(aspectGap, vMirrored ? -1 : 1);
+        // var offset = new Vector2((1 - aspectGap) / 2, vMirrored ? 1 : 0);
+        var scale = new Vector2(-aspectGap, vMirrored ? -1 : 1);
+        var offset = new Vector2(1, vMirrored ? 1 : 0);
 
         Graphics.Blit(webCamTexture, inputRT, scale, offset);
     }
