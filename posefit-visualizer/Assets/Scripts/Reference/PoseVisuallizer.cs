@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +42,8 @@ public class PoseVisuallizer : MonoBehaviour
         // Predict pose by neural network model.
         // Switchable anytime models with 2nd argment.
         detecter.ProcessImage(webCamInput.inputImageTexture, poseLandmarkModel);
+        
+        Debug.Log(detecter.outputBuffer);
     } 
 
     void OnRenderObject(){
@@ -57,11 +60,11 @@ public class PoseVisuallizer : MonoBehaviour
 
         // Draw 35 body topology lines.
         material.SetPass(0);
-        Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, BODY_LINE_NUM);
+        Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, BODY_LINE_NUM); //ここで線を描画
 
         // Draw 33 landmark points.
         material.SetPass(1);
-        Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, detecter.vertexCount);
+        Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, detecter.vertexCount); //ここで点を描画
     }
 
     void OnApplicationQuit(){

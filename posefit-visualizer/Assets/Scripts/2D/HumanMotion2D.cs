@@ -162,8 +162,8 @@ namespace HumanMotion2DNs
                     Vector3 latestPosition = new Vector3();
                     // latestPosition.x = (joint.y - 960f) / 400;
                     // latestPosition.y = -((joint.x - 540f) / 400);
-                    latestPosition.x = (joint.x - 540f) / 13;
-                    latestPosition.y = -((joint.y - 960f) / 13)+8;
+                    latestPosition.x = (joint.x - 540f) / 14;
+                    latestPosition.y = -((joint.y - 960f) / 14)+15f;
                     latestPosition.z = -405;
                     // if (jointName == "LeftAnkle") latestPosition.z = 0f;
                         // latestPosition.x = joint.x / 100;
