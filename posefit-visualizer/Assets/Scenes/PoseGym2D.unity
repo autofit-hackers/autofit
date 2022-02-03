@@ -872,7 +872,7 @@ MonoBehaviour:
   webCamName: 
   webCamResolution: {x: 1920, y: 1080}
   staticInput: {fileID: 0}
-  deviceId: 0
+  deviceId: 2
   fps: 30
 --- !u!328 &1166946502
 VideoPlayer:
