@@ -10,10 +10,11 @@ public class SoundManager : MonoBehaviour
     public AudioClip currentClip;
     public AudioSource source;
 
+    public GameObject obj;
+    
     void Start()
     {
         source = GetComponent<AudioSource>();
-        PlaySoundEffect();
     }
 
     void PlaySoundEffect()
@@ -22,5 +23,13 @@ public class SoundManager : MonoBehaviour
         currentClip = audioClips[randomizer.Next(0, audioClips.Count)];
         source.clip = currentClip;
         source.PlayOneShot(currentClip);
+    }
+    
+    void Awake()
+    {
+        AudioSource source = obj.GetComponent<AudioSource>();
+        //Resources.Loadでサウンドをロード ()内は画像名をパスから指定
+        source.clip = Resources.Load<AudioClip>("./Assets/Audio/ShoulderPress/top.wav");
+        source.Play();
     }
 }

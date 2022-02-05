@@ -334,7 +334,7 @@ namespace HumanMotion2DNs
             // joint GameObject の update
             foreach (KeyValuePair<string, Vector3> jointPos in frame)
             {
-                joints[jointPos.Key].transform.position = jointPos.Value * 100 + new Vector3(0,20,-405); //スケールの掛け算と定数の足し算，回転行列の乗算を行う
+                joints[jointPos.Key].transform.position = jointPos.Value * 95 + new Vector3(0,20,-405); //スケールの掛け算と定数の足し算，回転行列の乗算を行う
                 joints[jointPos.Key].GetComponent<Renderer>().material.color = color;
                 if (colorKeyFrame)
                 {

@@ -32,7 +32,7 @@ class Main2D : MonoBehaviour
     void Update()
     {
         hm1.FrameStep();
-        Debug.Log("main");
-        Debug.Log(PoseVisuallizer.instance.repCount);
+        // Debug.Log("main");
+        // Debug.Log(PoseVisuallizer.instance.repCounte);
     }
 }

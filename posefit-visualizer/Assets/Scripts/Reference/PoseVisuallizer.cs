@@ -16,12 +16,11 @@ public class PoseVisuallizer : MonoBehaviour
 
     Material material;
     BlazePoseDetecter detecter;
-
-    #region define repCount variables
-    private int flag = 0;
-    public int repCount = 0;
+    
     public GameObject countTxtObj = null; // Textオブジェクト
-    #endregion
+    RepCounter repCounter;
+    public AudioClip audioClip;
+    private AudioSource audioSource;
 
     #region alignment
     public static PoseVisuallizer instance;
@@ -51,6 +50,27 @@ public class PoseVisuallizer : MonoBehaviour
     void Start(){
         material = new Material(shader);
         detecter = new BlazePoseDetecter(blazePoseResource, poseLandmarkModel);
+        repCounter = new RepCounter()
+        {
+            repCount = 0,
+            flag = false,
+            countTextObject = countTxtObj,
+            isLiftUpType = true,
+            upperThreshold = 0.4f,
+            lowerThreshold = 0.65f,
+            keyJointNumber = 16,
+            menuName = "ShoulderPress"
+        };
+        audioSource = countTxtObj.GetComponent<AudioSource>();
+        audioSource.clip = audioClip;
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            audioSource.Play();
+        }
     }
 
     void LateUpdate(){
@@ -65,14 +85,8 @@ public class PoseVisuallizer : MonoBehaviour
         int count = detecter.vertexCount;
         var data = new Vector4[count];
         result.GetData(data);
-        if (flag == 0 && data[16].y < 0.4) flag = 1;
-        if (flag == 1 && data[16].y > 0.7)
-        {
-            flag = 0;
-            repCount += 1;
-            Text score_text = countTxtObj.GetComponent<Text> ();
-            score_text.text = repCount.ToString();
-        }
+        
+        UpdateRepCount(ref repCounter, data, audioSource);
         // Debug.Log(repCount);
     } 
 
@@ -101,5 +115,44 @@ public class PoseVisuallizer : MonoBehaviour
     void OnApplicationQuit(){
         // Must call Dispose method when no longer in use.
         detecter.Dispose();
+    }
+
+    void UpdateRepCount(ref RepCounter repCounter, Vector4[] data, AudioSource audioSource)
+    {
+        if (repCounter.isLiftUpType)
+        {
+            if (!repCounter.flag && data[repCounter.keyJointNumber].y < repCounter.upperThreshold)
+                repCounter.flag = true;
+            if (repCounter.flag && data[repCounter.keyJointNumber].y > repCounter.lowerThreshold)
+            {
+                repCounter.flag = false;
+                repCounter.repCount++;
+                repCounter.countTextObject.GetComponent<Text>().text = repCounter.repCount.ToString();
+                audioSource.Play();
+            }
+        }
+        else
+        {
+            if (repCounter.flag && data[repCounter.keyJointNumber].y < repCounter.lowerThreshold)
+                repCounter.flag = true;
+            if (!repCounter.flag && data[repCounter.keyJointNumber].y > repCounter.upperThreshold)
+            {
+                repCounter.flag = false;
+                repCounter.repCount++;
+                repCounter.countTextObject.GetComponent<Text>().text = repCounter.repCount.ToString();
+            }
+        }
+    }
+
+    struct RepCounter
+    {
+        public bool flag;
+        public int repCount;
+        public int keyJointNumber;
+        public string menuName;
+        public float upperThreshold;
+        public float lowerThreshold;
+        public GameObject countTextObject;
+        public bool isLiftUpType;
     }
 }
