@@ -12,19 +12,19 @@ class Main2D : MonoBehaviour
     public int startFrame1 = 0;
     public int endFrame1 = 1000;
     private Dictionary<string, BoneOrdinal> boneOrdinals;
-    private HumanMotion hm1;
+    private HumanMotion2D hm1;
 
     void Start()
     {
         // キャリブレーションフレームから各ボーンの長さを取得
         boneOrdinals = BoneOrdinals2DNs.BoneOrdinals2D.JsonToBoneOrdinals(initJsonFilePath, 160);
-        foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
-        {
-            Debug.Log(boneOrdinal.Key);
-            Debug.Log(boneOrdinal.Value.boneLength);
-        }
+        // foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
+        // {
+        //     Debug.Log(boneOrdinal.Key);
+        //     Debug.Log(boneOrdinal.Value.boneLength);
+        // }
 
-        hm1 = new HumanMotion(jsonFilePath: jsonFilePath1, boneOrdinals: boneOrdinals, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.cyan, startFrame: startFrame1, endFrame: endFrame1);
+        hm1 = new HumanMotion2D(jsonFilePath: jsonFilePath1, boneOrdinals: boneOrdinals, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.cyan, startFrame: startFrame1, endFrame: endFrame1);
         hm1.ReadAndPreprocess();
     }
 
@@ -32,5 +32,7 @@ class Main2D : MonoBehaviour
     void Update()
     {
         hm1.FrameStep();
+        Debug.Log("main");
+        Debug.Log(PoseVisuallizer.instance.repCount);
     }
 }

@@ -70,11 +70,10 @@ namespace BoneOrdinals2DNs
             var lines = System.IO.File.ReadLines(path: jsonFilePath);
             foreach (var line in lines)
             {
-                var joint =
-                    JsonConvert.DeserializeObject<Dictionary<string, Vector3>>(line);
+                var joint = JsonConvert.DeserializeObject<Dictionary<string, Vector3>>(line);
                 joints.Add(joint);
             }
-
+            
             return joints;
         }
 
@@ -82,7 +81,6 @@ namespace BoneOrdinals2DNs
         {
             var frames = JsonToFrames(jsonFilePath);
             var targetFrame = frames[targetFrameIdx];
-            
         }
     }
 }

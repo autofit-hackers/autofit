@@ -63,7 +63,7 @@ namespace HumanMotion2DNs
         public Dictionary<string, BoneOrdinal> boneOrdinals;
     }
 
-    class HumanMotion
+    class HumanMotion2D
     {
         // インスタンス変数として扱う設定値は構造体にまとめる
         public HumanMotionSettings settings;
@@ -78,7 +78,7 @@ namespace HumanMotion2DNs
         public int frameCountMax;
 
 
-        public HumanMotion(
+        public HumanMotion2D(
             string jsonFilePath,
             Dictionary<string, BoneOrdinal> boneOrdinals,
             Transform cylinderPrefab,
@@ -138,6 +138,8 @@ namespace HumanMotion2DNs
             Dictionary<string, GameObject> boneGameObjects = new Dictionary<string, GameObject>();
             Dictionary<string, Vector3> lastFramePoses = new Dictionary<string, Vector3>();
 
+            float bodyHeight = (settings.boneOrdinals["LeftFlank"].boneLength +settings.boneOrdinals["LeftThigh"].boneLength +settings.boneOrdinals["LeftShin"].boneLength)/1080*1920;
+
             // 1行ずつ iterate して読み込み
             int lineCount = 0;
             IEnumerable<string> lines = System.IO.File.ReadLines(path: settings.jsonFilePath);
@@ -160,15 +162,14 @@ namespace HumanMotion2DNs
 
                     // Joint の 中身を vector3 に格納
                     Vector3 latestPosition = new Vector3();
-                    // latestPosition.x = (joint.y - 960f) / 400;
-                    // latestPosition.y = -((joint.x - 540f) / 400);
-                    latestPosition.x = (joint.x - 540f) / 14;
-                    latestPosition.y = -((joint.y - 960f) / 14)+15f;
-                    latestPosition.z = -405;
-                    // if (jointName == "LeftAnkle") latestPosition.z = 0f;
-                        // latestPosition.x = joint.x / 100;
-                    // latestPosition.y = joint.y / 100;
-                    // latestPosition.z = -(joint.z / 100 - 1f);
+                    
+                    latestPosition.x = (joint.x - 540f)/bodyHeight;
+                    latestPosition.y = -(joint.y - 960f)/bodyHeight;
+                    latestPosition.z = 0;
+                    // latestPosition.x = (joint.x - 540f) / 14;
+                    // latestPosition.y = ((joint.y - 960f) / 14)+15f;
+                    // latestPosition.z = -405;
+                    
                     if (lineCount == 0)
                         lastFramePoses.Add(jointName, latestPosition); // 1ループ目の時はdicに要素を追加
 
@@ -281,7 +282,7 @@ namespace HumanMotion2DNs
 
             frameCount = settings.startFrame;
             frameCountMax = settings.endFrame;
-            ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
+            // ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
         }
 
 // Update is called once per frame
@@ -333,7 +334,7 @@ namespace HumanMotion2DNs
             // joint GameObject の update
             foreach (KeyValuePair<string, Vector3> jointPos in frame)
             {
-                joints[jointPos.Key].transform.position = jointPos.Value;
+                joints[jointPos.Key].transform.position = jointPos.Value * 100 + new Vector3(0,20,-405); //スケールの掛け算と定数の足し算，回転行列の乗算を行う
                 joints[jointPos.Key].GetComponent<Renderer>().material.color = color;
                 if (colorKeyFrame)
                 {
@@ -502,7 +503,6 @@ namespace HumanMotion2DNs
                 Vector3 cameraVec = new Vector3(0, 0, L);
                 Vector3 jointXYPlane = new Vector3(rawEndJoint.x, rawEndJoint.y, 0);
                 P = cameraVec + Vector3.Project(baseJoint - cameraVec, jointXYPlane - cameraVec); //垂線の足を求める
-                // Debug.Log("A = " + A + ", B = " + B + ", C = " + C + ", D = " + (B * B - A * C));
                 Debug.Log("minus");
             }
 
