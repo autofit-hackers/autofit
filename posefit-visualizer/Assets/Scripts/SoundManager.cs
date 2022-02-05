@@ -9,15 +9,14 @@ public class SoundManager : MonoBehaviour
     public List<AudioClip> audioClips;
     public AudioClip currentClip;
     public AudioSource source;
-
     public GameObject obj;
     
     void Start()
     {
-        source = GetComponent<AudioSource>();
+        source = obj.GetComponent<AudioSource>();
     }
 
-    void PlaySoundEffect()
+    public void PlaySoundEffect()
     {
         var randomizer = new System.Random();
         currentClip = audioClips[randomizer.Next(0, audioClips.Count)];

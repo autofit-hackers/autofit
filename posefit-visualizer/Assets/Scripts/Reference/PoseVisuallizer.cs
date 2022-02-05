@@ -25,6 +25,8 @@ public class PoseVisuallizer : MonoBehaviour
     #region alignment
     public static PoseVisuallizer instance;
     #endregion
+
+    public Vector2 keyPointVector;
     
 
     // Lines count of body's topology.
@@ -55,7 +57,7 @@ public class PoseVisuallizer : MonoBehaviour
             repCount = 0,
             flag = false,
             countTextObject = countTxtObj,
-            isLiftUpType = true,
+            isLiftUpType = false,
             upperThreshold = 0.4f,
             lowerThreshold = 0.65f,
             keyJointNumber = 16,
@@ -88,6 +90,7 @@ public class PoseVisuallizer : MonoBehaviour
         
         UpdateRepCount(ref repCounter, data, audioSource);
         // Debug.Log(repCount);
+        keyPointVector = new Vector2(data[11].x, data[11].y);
     } 
 
 
@@ -128,18 +131,19 @@ public class PoseVisuallizer : MonoBehaviour
                 repCounter.flag = false;
                 repCounter.repCount++;
                 repCounter.countTextObject.GetComponent<Text>().text = repCounter.repCount.ToString();
-                audioSource.Play();
+                // audioSource.Play();
             }
         }
         else
         {
-            if (repCounter.flag && data[repCounter.keyJointNumber].y < repCounter.lowerThreshold)
+            if (!repCounter.flag && data[repCounter.keyJointNumber].y > repCounter.lowerThreshold)
                 repCounter.flag = true;
-            if (!repCounter.flag && data[repCounter.keyJointNumber].y > repCounter.upperThreshold)
+            if (repCounter.flag && data[repCounter.keyJointNumber].y < repCounter.upperThreshold)
             {
                 repCounter.flag = false;
                 repCounter.repCount++;
                 repCounter.countTextObject.GetComponent<Text>().text = repCounter.repCount.ToString();
+                // audioSource.Play();
             }
         }
     }

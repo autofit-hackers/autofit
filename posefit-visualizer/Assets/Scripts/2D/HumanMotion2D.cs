@@ -327,6 +327,66 @@ namespace HumanMotion2DNs
                 state.timeElapsed = 0.0f;
             }
         }
+        
+        public void FrameStepByJointPosition(Vector2 keyPointVec, float h, float w, Camera cam)
+        {
+            string jName = "RightShoulder";
+            Vector3 beforeVec = cam.WorldToScreenPoint(state.jointPositions[frameCount][jName]*80+new Vector3(0,0,-405));
+            Vector3 afterVec = cam.WorldToScreenPoint(state.jointPositions[frameCount+10][jName]*80+new Vector3(0,0,-405));
+            Vector2 before = new Vector2(beforeVec.x / w, 1 - beforeVec.y / h);
+            Vector2 after = new Vector2(afterVec.x / w, 1 - afterVec.y / h);
+            float dis1 = Vector2.Distance(before, keyPointVec);
+            float dis2 = Vector2.Distance(after, keyPointVec);
+            bool dis = dis1 >= dis2;
+            
+            // Debug.Log("bool = " + dis + ", before = " + dis1.ToString() + ", after = " + dis2.ToString());
+            // Debug.Log("key = " + keyPointVec.ToString() + ", before = " + before.ToString() + ", after = " + after.ToString());
+
+            float beforeY = before.y;
+            float afterY = after.y;
+            float keyY = keyPointVec.y;
+            bool boolY = Mathf.Abs(beforeY - keyY) > Mathf.Abs(afterY - keyY);
+            // Debug.Log(beforeY);
+            // Debug.Log(keyY);
+            bool boolY2 = Mathf.Abs(beforeY - keyY) > 0.02f && Mathf.Abs(beforeY - keyY) < 0.1f;
+            
+            if (boolY2)
+            {
+                frameCount += 1;
+                // z軸補正前のjointsのupdate
+                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+                Debug.Log("NEXT!!!");
+                // 最終フレームに到達した時の処理
+                if (frameCount == frameCountMax-31)
+                {
+                    frameCount = settings.startFrame;
+                    loopCount += 1;
+                    if (loopCount == 100)
+                    {
+                        UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
+                        // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
+                    }
+                }
+            }
+            else
+            {
+                // frameCount += 1;
+                // // z軸補正前のjointsのupdate
+                // UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+                // Debug.Log("NEXT!!!");
+                // // 最終フレームに到達した時の処理
+                // if (frameCount == frameCountMax-21)
+                // {
+                //     frameCount = settings.startFrame;
+                //     loopCount += 1;
+                //     if (loopCount == 100)
+                //     {
+                //         UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
+                //         // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
+                //     }
+                // }
+            }
+        }
 
         private void UpdateGameObjects(Dictionary<string, Vector3> frame, Dictionary<string, GameObject> joints,
             Dictionary<string, GameObject> bones, bool colorKeyFrame, Color color)
@@ -334,7 +394,7 @@ namespace HumanMotion2DNs
             // joint GameObject の update
             foreach (KeyValuePair<string, Vector3> jointPos in frame)
             {
-                joints[jointPos.Key].transform.position = jointPos.Value * 95 + new Vector3(0,20,-405); //スケールの掛け算と定数の足し算，回転行列の乗算を行う
+                joints[jointPos.Key].transform.position = jointPos.Value * 80 + new Vector3(0,0,-405); //スケールの掛け算と定数の足し算，回転行列の乗算を行う
                 joints[jointPos.Key].GetComponent<Renderer>().material.color = color;
                 if (colorKeyFrame)
                 {
