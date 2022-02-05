@@ -13,6 +13,7 @@ public class SoundManager : MonoBehaviour
     void Start()
     {
         source = GetComponent<AudioSource>();
+        PlaySoundEffect();
     }
 
     void PlaySoundEffect()
