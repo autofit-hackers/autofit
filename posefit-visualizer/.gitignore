@@ -55,3 +55,6 @@ Assets/StreamingAssets/dnn/pose_iter_440000.caffemodel
 Assets/StreamingAssets/dnn/pose_iter_102000.caffemodel
 Assets/StreamingAssets/dnn/pose_iter_160000.caffemodel
 Assets/OpenCVforUnity/Extra.unitypackage
+
+# Audio
+*.wav

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mediapipe.BlazePose;
+using OpenCVForUnity.ArucoModule;
 
 public class PoseVisuallizer : MonoBehaviour
 {
