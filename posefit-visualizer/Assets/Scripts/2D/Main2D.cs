@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HumanMotion2DNs;
+using RealtimeMotion2DNs;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,8 +15,9 @@ class Main2D : MonoBehaviour
     public int endFrame1 = 1000;
     private Dictionary<string, BoneOrdinal> boneOrdinals;
     private HumanMotion2D hm1;
-    
-    
+    private RealtimeMotion2D rm;
+
+
     [SerializeField] RawImage inputImageUI;
     public Camera cam;
 
@@ -23,15 +25,12 @@ class Main2D : MonoBehaviour
     {
         // キャリブレーションフレームから各ボーンの長さを取得
         boneOrdinals = BoneOrdinals2DNs.BoneOrdinals2D.JsonToBoneOrdinals(initJsonFilePath, 160);
-        // foreach (KeyValuePair<string, BoneOrdinal> boneOrdinal in boneOrdinals)
-        // {
-        //     Debug.Log(boneOrdinal.Key);
-        //     Debug.Log(boneOrdinal.Value.boneLength);
-        // }
+        
 
         hm1 = new HumanMotion2D(jsonFilePath: jsonFilePath1, boneOrdinals: boneOrdinals, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.cyan, startFrame: startFrame1, endFrame: endFrame1);
         hm1.ReadAndPreprocess();
-        
+        rm = new RealtimeMotion2D(cylinderPrefab, spherePrefab, Color.green);
+        rm.Preprocess();
         // cam = GetComponent<Camera>();
     }
 
@@ -41,8 +40,8 @@ class Main2D : MonoBehaviour
         
         var w = inputImageUI.rectTransform.rect.width;
         var h = inputImageUI.rectTransform.rect.height;
-        hm1.FrameStepByJointPosition(PoseVisuallizer.instance.keyPointVector,h,w,cam);
-        // Debug.Log("main");
-        // Debug.Log(PoseVisuallizer.instance.keyPointVector);
+        hm1.FrameStep();
+        // hm1.FrameStepByJointPosition(PoseVisuallizer.instance.keyPointVector,h,w,cam);
+        rm.UpdateFrame(PoseVisuallizer.instance.data, cam);
     }
 }

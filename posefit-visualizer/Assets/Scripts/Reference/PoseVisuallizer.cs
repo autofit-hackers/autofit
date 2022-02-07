@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Mediapipe.BlazePose;
 using OpenCVForUnity.ArucoModule;
+using HumanMotion2DNs;
 
 public class PoseVisuallizer : MonoBehaviour
 {
@@ -27,6 +28,8 @@ public class PoseVisuallizer : MonoBehaviour
     #endregion
 
     public Vector2 keyPointVector;
+    public Vector4[] data;
+    
     
 
     // Lines count of body's topology.
@@ -65,6 +68,7 @@ public class PoseVisuallizer : MonoBehaviour
         };
         audioSource = countTxtObj.GetComponent<AudioSource>();
         audioSource.clip = audioClip;
+        data = new Vector4[33];
     }
 
     void Update()
@@ -83,9 +87,7 @@ public class PoseVisuallizer : MonoBehaviour
         detecter.ProcessImage(webCamInput.inputImageTexture, poseLandmarkModel);
         ComputeBuffer result = detecter.outputBuffer;
         ComputeBuffer worldLandmarkResult = detecter.worldLandmarkBuffer;
-        
-        int count = detecter.vertexCount;
-        var data = new Vector4[count];
+
         result.GetData(data);
         
         UpdateRepCount(ref repCounter, data, audioSource);
@@ -95,6 +97,7 @@ public class PoseVisuallizer : MonoBehaviour
 
 
     void OnRenderObject(){
+        /*
         var w = inputImageUI.rectTransform.rect.width;
         var h = inputImageUI.rectTransform.rect.height;
 
@@ -112,8 +115,10 @@ public class PoseVisuallizer : MonoBehaviour
 
         // Draw 33 landmark points.
         material.SetPass(1);
-        Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, detecter.vertexCount); //ここで点を描画
+        // Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, detecter.vertexCount); //ここで点を描画
+        */
     }
+
 
     void OnApplicationQuit(){
         // Must call Dispose method when no longer in use.

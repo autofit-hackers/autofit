@@ -88,7 +88,7 @@ namespace HumanMotion2DNs
             float lpfRate = 0.2f,
             int startFrame = 10,
             int endFrame = 100,
-            float sphereScale = 0.1f,
+            float sphereScale = 1.5f,
             int keyFrameMargin = 10
         )
         {

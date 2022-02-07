@@ -719,6 +719,7 @@ MonoBehaviour:
   countTxtObj: {fileID: 927432189}
   audioClip: {fileID: 8300000, guid: 2570508deea9344b786cf4b9b6808682, type: 3}
   keyPointVector: {x: 0, y: 0}
+  data: []
 --- !u!4 &1109230533
 Transform:
   m_ObjectHideFlags: 0
@@ -861,7 +862,7 @@ MonoBehaviour:
   webCamName: 
   webCamResolution: {x: 1920, y: 1080}
   staticInput: {fileID: 0}
-  deviceId: 2
+  deviceId: 1
   fps: 30
 --- !u!328 &1166946502
 VideoPlayer:
