@@ -282,7 +282,7 @@ namespace HumanMotion2DNs
 
             frameCount = settings.startFrame;
             frameCountMax = settings.endFrame;
-            // ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
+            ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
         }
 
 // Update is called once per frame
@@ -348,7 +348,7 @@ namespace HumanMotion2DNs
             bool boolY = Mathf.Abs(beforeY - keyY) > Mathf.Abs(afterY - keyY);
             // Debug.Log(beforeY);
             // Debug.Log(keyY);
-            bool boolY2 = Mathf.Abs(beforeY - keyY) > 0.02f && Mathf.Abs(beforeY - keyY) < 0.1f;
+            bool boolY2 = Mathf.Abs(beforeY - keyY) > 0.02f && Mathf.Abs(beforeY - keyY) < 0.05f;
             
             if (boolY2)
             {

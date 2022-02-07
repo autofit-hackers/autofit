@@ -862,7 +862,7 @@ MonoBehaviour:
   webCamName: 
   webCamResolution: {x: 1920, y: 1080}
   staticInput: {fileID: 0}
-  deviceId: 1
+  deviceId: 0
   fps: 30
 --- !u!328 &1166946502
 VideoPlayer:
@@ -1166,7 +1166,7 @@ MonoBehaviour:
   spherePrefab: {fileID: 1439162038340422739, guid: 593af48ff20744d17ba3c2b5b5f91977, type: 3}
   initJsonFilePath: ./Assets/Data/init-20220119.json
   jsonFilePath1: ./Assets/Data/squat-narrow-20220119.json
-  startFrame1: 0
-  endFrame1: 1000
+  startFrame1: 125
+  endFrame1: 217
   inputImageUI: {fileID: 240984736}
   cam: {fileID: 1748393448}

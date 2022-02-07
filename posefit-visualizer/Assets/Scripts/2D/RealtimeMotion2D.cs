@@ -13,6 +13,9 @@ namespace RealtimeMotion2DNs
         public Color jointColor;
         public float lpfRate;
         public float sphereScale;
+        public Vector3 scale;
+        public Vector3 rotation;
+        public Vector3 translation;
     }
 
     struct RealtimeMotionState
@@ -30,7 +33,7 @@ namespace RealtimeMotion2DNs
             Transform cylinderPrefab,
             Transform spherePrefab,
             Color jointColor,
-            float lpfRate = 0.2f,
+            float lpfRate = 0.4f,
             float sphereScale = 1.5f
         )
         {
@@ -40,7 +43,6 @@ namespace RealtimeMotion2DNs
                 spherePrefab = spherePrefab,
                 jointColor = jointColor,
                 lpfRate = lpfRate,
-
                 sphereScale = sphereScale
             };
             state = new RealtimeMotionState()
@@ -90,11 +92,11 @@ namespace RealtimeMotion2DNs
             // joint GameObject の update
             for (int jointNumber = 0; jointNumber < 33; jointNumber++)
             {
-                var vec = mainCamera.ScreenToWorldPoint(new Vector3(data[jointNumber].x*1920, (1-data[jointNumber].y)*1080, 95)) - new Vector3(0f,5f,0f);
+                var lastPositionVec = joints[PoseLandmarks.LANDMARK_LIST[jointNumber]].transform.position;
+                var newPositonVec = mainCamera.ScreenToWorldPoint(new Vector3(data[jointNumber].x*1920, (1-data[jointNumber].y)*1080, 95)) - new Vector3(0f,5f,0f);
+                var vec = lastPositionVec * (1-settings.lpfRate) + newPositonVec * settings.lpfRate;
                 joints[PoseLandmarks.LANDMARK_LIST[jointNumber]].transform.position = vec;
             }
-            // Debug.Log(data[12].ToString());
-            // Debug.Log(mainCamera.ScreenToWorldPoint(new Vector3(data[12].x*1920, (1-data[12].y)*1080, 95)).ToString());
 
             // bones の update
             foreach (KeyValuePair<string, (string, string)> boneEdgeName in BoneOrdinals2D.boneEdgeNames)

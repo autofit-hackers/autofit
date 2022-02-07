@@ -119,7 +119,6 @@ public class PoseVisuallizer : MonoBehaviour
         */
     }
 
-
     void OnApplicationQuit(){
         // Must call Dispose method when no longer in use.
         detecter.Dispose();
