@@ -12,14 +12,12 @@ class Main2D : MonoBehaviour
     public string initJsonFilePath = "./Assets/Data/init-20220119.json";
     public string jsonFilePath1 = "./Assets/Data/squat-narrow-20220119.json";
     public int startFrame1 = 45;
-    public int endFrame1 = 125;
+    public int endFrame1 = 105;
     private Dictionary<string, BoneOrdinal> boneOrdinals;
     private HumanMotion2D hm1;
     private RealtimeMotion2D rm;
-
-
-    [SerializeField] RawImage inputImageUI;
-    public Camera cam;
+    
+    public Camera mainCamera;
 
     void Start()
     {
@@ -35,10 +33,12 @@ class Main2D : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        rm.UpdateFrame(PoseVisuallizer.instance.data, cam);
+        rm.UpdateFrame(PoseVisuallizer.instance.data, mainCamera);
+        var keyJointName = "RightShoulder";
+        hm1.FrameStepByJointWorldPosition(rm.state.jointGameObjects["LeftShoulder"].transform.position, keyJointName);
         // hm1.FrameStep();
-        var w = inputImageUI.rectTransform.rect.width;
-        var h = inputImageUI.rectTransform.rect.height;
-        hm1.FrameStepByJointPosition(PoseVisuallizer.instance.keyPointVector,h,w,cam);
+        // var w = inputImageUI.rectTransform.rect.width;
+        // var h = inputImageUI.rectTransform.rect.height;
+        // hm1.FrameStepByJointPosition(PoseVisuallizer.instance.keyPointVector,h,w,mainCamera);
     }
 }

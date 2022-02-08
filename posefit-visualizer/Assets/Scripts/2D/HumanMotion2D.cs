@@ -84,10 +84,8 @@ namespace HumanMotion2DNs
             Transform cylinderPrefab,
             Transform spherePrefab,
             Color jointColor,
-            float timeOut = 0.05f,
-            float lpfRate = 0.2f,
-            int startFrame = 10,
-            int endFrame = 100,
+            int startFrame,
+            int endFrame,
             float sphereScale = 1.5f,
             int keyFrameMargin = 10
         )
@@ -100,8 +98,8 @@ namespace HumanMotion2DNs
                 cylinderPrefab = cylinderPrefab,
                 spherePrefab = spherePrefab,
                 jointColor = jointColor,
-                timeOut = timeOut,
-                lpfRate = lpfRate,
+                timeOut = 0.05f,
+                lpfRate = 0.2f,
                 startFrame = startFrame,
                 endFrame = endFrame,
                 sphereScale = sphereScale,
@@ -327,7 +325,7 @@ namespace HumanMotion2DNs
                 state.timeElapsed = 0.0f;
             }
         }
-        
+        /*
         public void FrameStepByJointPosition(Vector2 keyPointVec, float h, float w, Camera cam)
         {
             string jName = "RightShoulder";
@@ -350,7 +348,7 @@ namespace HumanMotion2DNs
             // Debug.Log(keyY);
             bool boolY2 = Mathf.Abs(beforeY - keyY) > 0.02f && Mathf.Abs(beforeY - keyY) < 0.05f;
             
-            if (boolY2)
+            if (dis)
             {
                 frameCount += 1;
                 // z軸補正前のjointsのupdate
@@ -368,25 +366,42 @@ namespace HumanMotion2DNs
                     }
                 }
             }
-            else
+        }
+        */
+        public void FrameStepByJointWorldPosition(Vector3 keyPointVec, string keyJointName)
+        {
+            string jName = "RightShoulder";
+            Vector3 beforeVec = state.jointPositions[frameCount][keyJointName]*80+new Vector3(0,0,-405);
+            Vector3 afterVec = state.jointPositions[frameCount + 10][keyJointName] * 80 + new Vector3(0, 0, -405);
+            Vector2 before = new Vector2(beforeVec.x, beforeVec.y);
+            Vector2 after = new Vector2(afterVec.x, afterVec.y);
+            Vector2 key = new Vector2(keyPointVec.x, keyPointVec.y);
+            float dis1 = Vector2.Distance(before, key);
+            float dis2 = Vector2.Distance(after, key);
+            bool dis = dis1 >= dis2;
+            // Debug.Log("bool = " + dis + ", before = " + dis1.ToString() + ", after = " + dis2.ToString());
+            // Debug.Log("bool = " + key + ", before = " + before.ToString() + ", after = " + after.ToString());
+
+            if (dis)
             {
-                // frameCount += 1;
-                // // z軸補正前のjointsのupdate
-                // UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
-                // Debug.Log("NEXT!!!");
-                // // 最終フレームに到達した時の処理
-                // if (frameCount == frameCountMax-21)
-                // {
-                //     frameCount = settings.startFrame;
-                //     loopCount += 1;
-                //     if (loopCount == 100)
-                //     {
-                //         UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
-                //         // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
-                //     }
-                // }
+                frameCount += 1;
+                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+
+                // 最終フレームに到達した時の処理
+                if (frameCount == frameCountMax-11)
+                {
+                    frameCount = settings.startFrame;
+                    loopCount += 1;
+                    if (loopCount == 100)
+                    {
+                        UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
+                        // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
+                    }
+                }
             }
         }
+        
+        
 
         private void UpdateGameObjects(Dictionary<string, Vector3> frame, Dictionary<string, GameObject> joints,
             Dictionary<string, GameObject> bones, bool colorKeyFrame, Color color)

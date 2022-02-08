@@ -43,7 +43,11 @@ namespace RealtimeMotion2DNs
                 spherePrefab = spherePrefab,
                 jointColor = jointColor,
                 lpfRate = lpfRate,
-                sphereScale = sphereScale
+                sphereScale = sphereScale,
+                scale = new Vector3(1920, 1080, 1),
+                rotation = new Vector3(1,1,1),
+                translation = new Vector3(0, -5,0)
+                
             };
             state = new RealtimeMotionState()
             {
@@ -93,7 +97,10 @@ namespace RealtimeMotion2DNs
             for (int jointNumber = 0; jointNumber < 33; jointNumber++)
             {
                 var lastPositionVec = joints[PoseLandmarks.LANDMARK_LIST[jointNumber]].transform.position;
-                var newPositonVec = mainCamera.ScreenToWorldPoint(new Vector3(data[jointNumber].x*1920, (1-data[jointNumber].y)*1080, 95)) - new Vector3(0f,5f,0f);
+                // var newPositonVec = mainCamera.ScreenToWorldPoint(new Vector3(data[jointNumber].x*settings.scale.x, (1-data[jointNumber].y)*settings.scale.y, 95)) + settings.translation;
+                var newPositonVec =
+                    mainCamera.ScreenToWorldPoint(new Vector3((1 - data[jointNumber].y) * settings.scale.y,
+                        (1 - data[jointNumber].x) * settings.scale.x, 95)) + new Vector3(0,-5f*1080/1920,0);
                 var vec = lastPositionVec * (1-settings.lpfRate) + newPositonVec * settings.lpfRate;
                 joints[PoseLandmarks.LANDMARK_LIST[jointNumber]].transform.position = vec;
             }

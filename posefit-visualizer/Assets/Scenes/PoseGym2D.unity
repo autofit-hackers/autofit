@@ -287,13 +287,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 240984735}
-  m_LocalRotation: {x: 1, y: 0, z: 0, w: 0}
+  m_LocalRotation: {x: 0.7071068, y: -0.7071068, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1554085237}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 180}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 270}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
@@ -714,12 +714,12 @@ MonoBehaviour:
   inputImageUI: {fileID: 240984736}
   shader: {fileID: 4800000, guid: 4f8282850706b46d0b58df7fb89f9d4d, type: 3}
   blazePoseResource: {fileID: 11400000, guid: f19b49e33e0e57347b280b0184fcb7cb, type: 2}
-  humanExistThreshold: 0.5
   poseLandmarkModel: 0
   countTxtObj: {fileID: 927432189}
   audioClip: {fileID: 8300000, guid: 2570508deea9344b786cf4b9b6808682, type: 3}
   keyPointVector: {x: 0, y: 0}
   data: []
+  mainCamera: {fileID: 1748393448}
 --- !u!4 &1109230533
 Transform:
   m_ObjectHideFlags: 0
@@ -862,7 +862,7 @@ MonoBehaviour:
   webCamName: 
   webCamResolution: {x: 1920, y: 1080}
   staticInput: {fileID: 0}
-  deviceId: 0
+  deviceId: 1
   fps: 30
 --- !u!328 &1166946502
 VideoPlayer:
@@ -1167,6 +1167,5 @@ MonoBehaviour:
   initJsonFilePath: ./Assets/Data/init-20220119.json
   jsonFilePath1: ./Assets/Data/squat-narrow-20220119.json
   startFrame1: 125
-  endFrame1: 217
-  inputImageUI: {fileID: 240984736}
-  cam: {fileID: 1748393448}
+  endFrame1: 207
+  mainCamera: {fileID: 1748393448}
