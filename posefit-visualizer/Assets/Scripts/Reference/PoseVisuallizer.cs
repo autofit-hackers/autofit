@@ -18,10 +18,13 @@ public class PoseVisuallizer : MonoBehaviour
     // Material material;
     BlazePoseDetecter detecter;
     
-    public GameObject countTxtObj = null; // Textオブジェクト
+    public GameObject countTxtObj = null; // repCounter に対応するTextオブジェクト
     RepCounter repCounter;
     public AudioClip audioClip;
     private AudioSource audioSource;
+
+    private KeywordController keywordController; // 音声認識
+    public GameObject menuNameTxtObj = null;
 
     #region alignment
     public static PoseVisuallizer instance;
@@ -50,12 +53,27 @@ public class PoseVisuallizer : MonoBehaviour
             upperThreshold = 0.4f,
             lowerThreshold = 0.65f,
             keyJointNumber = 16,
-            menuName = "ShoulderPress"
+            menuNameTextObject = menuNameTxtObj
         };
         audioSource = countTxtObj.GetComponent<AudioSource>();
         audioSource.clip = audioClip;
+        
+        // 音声認識
+        string[][] keywords = new string[][]
+        {
+            new string[] {"すくわっと"}, //ひらがなでもカタカナでもいい
+            new string[] {"しょるだーぷれす"},
+            new string[] {"すたーと"}
+        };
+        keywordController = new KeywordController(keywords, true);
+        keywordController.SetKeywords();
+        keywordController.StartRecognizing(0);
+        keywordController.StartRecognizing(1);
+        keywordController.StartRecognizing(2);
+        
         data = new Vector4[33];
         countTxtObj.transform.position = mainCamera.ScreenToWorldPoint(new Vector3(100, 980, 100)) + new Vector3(0,-5,0);
+        menuNameTxtObj.transform.position = mainCamera.ScreenToWorldPoint(new Vector3(100, 980, 100)) + new Vector3(0,-5,0);
     }
 
     void Update()
@@ -64,11 +82,21 @@ public class PoseVisuallizer : MonoBehaviour
         {
             audioSource.Play();
         }
-        if (Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeyCode.C) ^ keywordController.hasRecognized[2]) // スタート
         {
             countTxtObj.transform.position = mainCamera.ScreenToWorldPoint(new Vector3(200, 1720, 100)) + new Vector3(0,-5,0);
             repCounter.repCount = 0;
             repCounter.countTextObject.GetComponent<Text>().text = repCounter.repCount.ToString();
+            // TODO: 位置合わせ
+
+        }
+        if (keywordController.hasRecognized[0]) // 種目選択
+        {
+            repCounter.menuNameTextObject.GetComponent<Text>().text = "スクワット";
+        }
+        if (keywordController.hasRecognized[1])
+        {
+            repCounter.menuNameTextObject.GetComponent<Text>().text = "ショルダープレス";
         }
     }
 
@@ -154,7 +182,7 @@ public class PoseVisuallizer : MonoBehaviour
         public bool flag;
         public int repCount;
         public int keyJointNumber;
-        public string menuName;
+        public GameObject menuNameTextObject;
         public float upperThreshold;
         public float lowerThreshold;
         public GameObject countTextObject;
