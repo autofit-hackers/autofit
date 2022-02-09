@@ -5,6 +5,8 @@ using UnityEngine;
 using Newtonsoft.Json;
 
 using BoneOrdinals2DNs;
+using DisplayObjects2DNs;
+using UnityEngine.Assertions.Must;
 
 namespace HumanMotion2DNs
 {
@@ -61,6 +63,10 @@ namespace HumanMotion2DNs
         
         // 
         public Dictionary<string, BoneOrdinal> boneOrdinals;
+        
+        // bone のtransformation
+        public float scale;
+        public Vector3 transition;
     }
 
     class HumanMotion2D
@@ -119,6 +125,8 @@ namespace HumanMotion2DNs
                 zCalibratedJointGameObjects = new Dictionary<string, GameObject>(),
                 zCalibratedBoneGameObjects = new Dictionary<string, GameObject>(),
                 ngJoints = new List<(int, string)>(),
+                scale = 80,
+                transition = new Vector3(0, 15, -405)
             };
 
             // loop state
@@ -161,15 +169,11 @@ namespace HumanMotion2DNs
                     // Joint の 中身を vector3 に格納
                     Vector3 latestPosition = new Vector3();
                     
-                    latestPosition.x = (joint.x - 540f)/bodyHeight;
-                    latestPosition.y = -(joint.y - 960f)/bodyHeight;
+                    latestPosition.x = (joint.x - 1080f/2)/bodyHeight;
+                    latestPosition.y = -(joint.y - 1920f/2)/bodyHeight;
                     latestPosition.z = 0;
-                    // latestPosition.x = (joint.x - 540f) / 14;
-                    // latestPosition.y = ((joint.y - 960f) / 14)+15f;
-                    // latestPosition.z = -405;
                     
-                    if (lineCount == 0)
-                        lastFramePoses.Add(jointName, latestPosition); // 1ループ目の時はdicに要素を追加
+                    if (lineCount == 0) lastFramePoses.Add(jointName, latestPosition); // 1ループ目の時はdicに要素を追加
 
                     // LPF
                     Vector3 lowpassFilteredPosition = new Vector3();
@@ -255,132 +259,24 @@ namespace HumanMotion2DNs
                 );
                 boneGameObjects[boneName].GetComponent<Renderer>().material.color = settings.jointColor;
             }
-            
-            // Rigid alignment
-            // 意図的に位置ずらしをしたjointsの作成
-            // for (int i = 0; i < state.zCalibratedJointPositions.Count; i++)
-            // {
-            //     var disturbedJointPosition = state.disturbJointsPositions(zCalibratedJointPositions[i]);
-            //     state.jointPositionsDisturbed.Add(disturbedJointPosition);
-            // }
-            //
-            // rigid alignment 用クラスの初期化
-            // var rigidAligner = new RigidAlignmentBaseline.RigidAlignmentBaseline(jointPositionsDisturbed[0], zCalibratedJointPositions[0]);
-            // disturbed を変形して aligned を生成
-            // jointPositionsAligned = rigidAligner.RigidTransformFrames(jointPositionsDisturbed);
-
-            // GameObjects の初期化 (joints, bones)
             // 補正前
             InitializeGameObjects(state.jointGameObjects, state.boneGameObjects, isZ: true, color: Color.black);
-            
-            // 補正後
-            // InitializeGameObjects(state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, isZ: true, color: settings.jointColor);
-            // InitializeGameObjects(jointGameObjectsDisturbed, boneGameObjectsDisturbed, isZ: true, Color.cyan);
-            // InitializeGameObjects(jointGameObjectsAligned, boneGameObjectsAligned, isZ: true, Color.green);
 
             frameCount = settings.startFrame;
             frameCountMax = settings.endFrame;
-            ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
+            //ShowListContentsInTheDebugLog(state.keyFrames); // ログにキーフレーム一覧を出力
         }
 
-// Update is called once per frame
-        public void FrameStep()
-        {
-            //以下FPS関連
-            state.timeElapsed += Time.deltaTime;
-            //FPSを制御
-            if (state.timeElapsed >= settings.timeOut)
-            {
-                //この中でアニメーション描画
-                // Dictionary<string, Vector3> jointFrameDisturbed = jointPositionsDisturbed[frameCount];
-                // Dictionary<string, Vector3> jointFrameAligned = jointPositionsAligned[frameCount];
-
-                // z軸補正前のjointsのupdate
-                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
-
-                // z軸補正後のjoints, bonesのupdate
-                // UpdateGameObjects(frame: state.zCalibratedJointPositions[frameCount], state.zCalibratedJointGameObjects, state.zCalibratedBoneGameObjects, false, settings.jointColor);
-
-                // 位置をずらしたjoints, bonesのupdate
-                // UpdateGameObjects(jointFrameDisturbed, jointGameObjectsDisturbed, boneGameObjectsDisturbed, false, Color.cyan);
-
-                // 位置ずらしを rigid alignment で補正した joints, bones の update
-                // UpdateGameObjects(jointFrameAligned, jointGameObjectsAligned, boneGameObjectsAligned, false, Color.green);
-
-                // カウンタをインクリメント
-                frameCount += 1;
-
-                // 最終フレームに到達した時の処理
-                if (frameCount == frameCountMax)
-                {
-                    frameCount = settings.startFrame;
-                    loopCount += 1;
-                    if (loopCount == 100)
-                    {
-                        UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
-                        // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
-                    }
-                }
-
-                state.timeElapsed = 0.0f;
-            }
-        }
-        /*
-        public void FrameStepByJointPosition(Vector2 keyPointVec, float h, float w, Camera cam)
-        {
-            string jName = "RightShoulder";
-            Vector3 beforeVec = cam.WorldToScreenPoint(state.jointPositions[frameCount][jName]*80+new Vector3(0,0,-405));
-            Vector3 afterVec = cam.WorldToScreenPoint(state.jointPositions[frameCount+10][jName]*80+new Vector3(0,0,-405));
-            Vector2 before = new Vector2(beforeVec.x / w, 1 - beforeVec.y / h);
-            Vector2 after = new Vector2(afterVec.x / w, 1 - afterVec.y / h);
-            float dis1 = Vector2.Distance(before, keyPointVec);
-            float dis2 = Vector2.Distance(after, keyPointVec);
-            bool dis = dis1 >= dis2;
-            
-            // Debug.Log("bool = " + dis + ", before = " + dis1.ToString() + ", after = " + dis2.ToString());
-            // Debug.Log("key = " + keyPointVec.ToString() + ", before = " + before.ToString() + ", after = " + after.ToString());
-
-            float beforeY = before.y;
-            float afterY = after.y;
-            float keyY = keyPointVec.y;
-            bool boolY = Mathf.Abs(beforeY - keyY) > Mathf.Abs(afterY - keyY);
-            // Debug.Log(beforeY);
-            // Debug.Log(keyY);
-            bool boolY2 = Mathf.Abs(beforeY - keyY) > 0.02f && Mathf.Abs(beforeY - keyY) < 0.05f;
-            
-            if (dis)
-            {
-                frameCount += 1;
-                // z軸補正前のjointsのupdate
-                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
-                Debug.Log("NEXT!!!");
-                // 最終フレームに到達した時の処理
-                if (frameCount == frameCountMax-31)
-                {
-                    frameCount = settings.startFrame;
-                    loopCount += 1;
-                    if (loopCount == 100)
-                    {
-                        UnityEditor.EditorApplication.isPlaying = false; // 開発環境での停止トリガ
-                        // UnityEngine.Application.Quit(); // 本番環境（スタンドアロン）で実行している場合
-                    }
-                }
-            }
-        }
-        */
         public void FrameStepByJointWorldPosition(Vector3 keyPointVec, string keyJointName)
         {
-            string jName = "RightShoulder";
-            Vector3 beforeVec = state.jointPositions[frameCount][keyJointName]*80+new Vector3(0,0,-405);
-            Vector3 afterVec = state.jointPositions[frameCount + 10][keyJointName] * 80 + new Vector3(0, 0, -405);
+            Vector3 beforeVec = state.jointPositions[frameCount - 1][keyJointName] * state.scale + state.transition;
+            Vector3 afterVec = state.jointPositions[frameCount + 3][keyJointName] * state.scale + state.transition;
             Vector2 before = new Vector2(beforeVec.x, beforeVec.y);
             Vector2 after = new Vector2(afterVec.x, afterVec.y);
             Vector2 key = new Vector2(keyPointVec.x, keyPointVec.y);
             float dis1 = Vector2.Distance(before, key);
             float dis2 = Vector2.Distance(after, key);
             bool dis = dis1 >= dis2;
-            // Debug.Log("bool = " + dis + ", before = " + dis1.ToString() + ", after = " + dis2.ToString());
-            // Debug.Log("bool = " + key + ", before = " + before.ToString() + ", after = " + after.ToString());
 
             if (dis)
             {
@@ -388,7 +284,7 @@ namespace HumanMotion2DNs
                 UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
 
                 // 最終フレームに到達した時の処理
-                if (frameCount == frameCountMax-11)
+                if (frameCount == frameCountMax-20)
                 {
                     frameCount = settings.startFrame;
                     loopCount += 1;
@@ -400,8 +296,6 @@ namespace HumanMotion2DNs
                 }
             }
         }
-        
-        
 
         private void UpdateGameObjects(Dictionary<string, Vector3> frame, Dictionary<string, GameObject> joints,
             Dictionary<string, GameObject> bones, bool colorKeyFrame, Color color)
@@ -409,7 +303,7 @@ namespace HumanMotion2DNs
             // joint GameObject の update
             foreach (KeyValuePair<string, Vector3> jointPos in frame)
             {
-                joints[jointPos.Key].transform.position = jointPos.Value * 80 + new Vector3(0,0,-405); //スケールの掛け算と定数の足し算，回転行列の乗算を行う
+                joints[jointPos.Key].transform.position = jointPos.Value * state.scale + state.transition; //スケールの掛け算と定数の足し算，回転行列の乗算を行う
                 joints[jointPos.Key].GetComponent<Renderer>().material.color = color;
                 if (colorKeyFrame)
                 {
@@ -478,9 +372,6 @@ namespace HumanMotion2DNs
                         bones
                     );
                 }
-
-                // Debug.Log(String.Join(", ", bones.Keys));
-                // Debug.Log(boneName);
                 bones[boneName].GetComponent<Renderer>().material.color = color;
             }
         }
@@ -531,9 +422,7 @@ namespace HumanMotion2DNs
                 if (list.IndexOf(frameNumber - i - 1) >= 0) list.Remove(frameNumber - i - 1);
             }
         }
-
-
-
+        
         public (Vector3, bool) CalibrateZ(Vector3 baseJoint, Vector3 rawStartJoint, Vector3 rawEndJoint,
             Vector3 lastTargetJoint,
             float boneLength, string targetJointName)
@@ -622,6 +511,32 @@ namespace HumanMotion2DNs
                 boneOrdinals.Add(boneName, boneOrd);
             }
             return boneOrdinals;
+        }
+
+        public void CorrectTransformations(Dictionary<string, GameObject> realtimeJoints)
+        {
+            var keyFrameIndex = 200;
+            var trainerHeight = HumanHeight(null, state.jointPositions[keyFrameIndex], true);
+            var realtimeHeight = HumanHeight(realtimeJoints,null, false);
+            state.scale = realtimeHeight / trainerHeight;
+            var trainerFoot = (state.jointPositions[keyFrameIndex]["LeftAnkle"] * state.scale +
+                              state.jointPositions[keyFrameIndex]["RightAnkle"] * state.scale)/2;
+            var realtimeFoot = (realtimeJoints["LeftAnkle"].transform.position +
+                               realtimeJoints["RightAnkle"].transform.position)/2;
+            state.transition = realtimeFoot - trainerFoot;
+
+            frameCount = settings.startFrame;
+            UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+        }
+
+        private float HumanHeight(Dictionary<string, GameObject> jointObjects, Dictionary<string, Vector3> jointPositions, bool useVector3)
+        {
+            var upperJointName = "LeftShoulder";
+            var lowerJointName = "LeftAnkle";
+            float height;
+            if (useVector3) height = jointPositions[upperJointName].y - jointPositions[lowerJointName].y;
+            else height = jointObjects[upperJointName].transform.position.y - jointObjects[lowerJointName].transform.position.y;
+            return height;
         }
     }
 }

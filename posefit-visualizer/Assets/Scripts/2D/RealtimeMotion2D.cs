@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using BoneOrdinals2DNs;
 using UnityEngine;
+using Mediapipe.BlazePose;
+using UnityEngine.UI;
+
 
 namespace RealtimeMotion2DNs
 {
@@ -22,6 +25,13 @@ namespace RealtimeMotion2DNs
     {
         public Dictionary<string, GameObject> jointGameObjects; // spheres
         public Dictionary<string, GameObject> boneGameObjects; // cylinders
+        
+        public BlazePoseDetecter detecter;
+        public Vector4[] data;
+        public WebCamInput webCamInput;
+        public RawImage inputImageUI;
+        public BlazePoseResource blazePoseResource;
+        public BlazePoseModel poseLandmarkModel;
     }
 
     class RealtimeMotion2D
@@ -33,8 +43,10 @@ namespace RealtimeMotion2DNs
             Transform cylinderPrefab,
             Transform spherePrefab,
             Color jointColor,
-            float lpfRate = 0.4f,
-            float sphereScale = 1.5f
+            WebCamInput webCamInput,
+            ref RawImage inputImageUI,
+            BlazePoseResource blazePoseResource,
+            BlazePoseModel poseLandmarkModel
         )
         {
             settings = new RealtimeMotionSettings()
@@ -42,8 +54,8 @@ namespace RealtimeMotion2DNs
                 cylinderPrefab = cylinderPrefab,
                 spherePrefab = spherePrefab,
                 jointColor = jointColor,
-                lpfRate = lpfRate,
-                sphereScale = sphereScale,
+                lpfRate = 0.4f,
+                sphereScale = 1.5f,
                 scale = new Vector3(1920, 1080, 1),
                 rotation = new Vector3(1,1,1),
                 translation = new Vector3(0, -5,0)
@@ -52,13 +64,21 @@ namespace RealtimeMotion2DNs
             state = new RealtimeMotionState()
             {
                 jointGameObjects = new Dictionary<string, GameObject>(),
-                boneGameObjects = new Dictionary<string, GameObject>()
+                boneGameObjects = new Dictionary<string, GameObject>(),
+                
+                data = new Vector4[33],
+                webCamInput = webCamInput,
+                inputImageUI = inputImageUI,
+                blazePoseResource = blazePoseResource,
+                poseLandmarkModel = poseLandmarkModel
             };
         }
         
         // Initialize GameObjects
         public void Preprocess()
         {
+            state.detecter = new BlazePoseDetecter(state.blazePoseResource, state.poseLandmarkModel);
+            
             // Initialize joint objects
             foreach (var jointName in PoseLandmarks.LANDMARK_LIST)
             {
@@ -85,9 +105,19 @@ namespace RealtimeMotion2DNs
         }
         
         // Update frame
-        public void UpdateFrame(Vector4[] data, Camera mainCamera)
+        public void UpdateFrame(Camera mainCamera)
         {
-            UpdateGameObjects(mainCamera, data,state.jointGameObjects, state.boneGameObjects);
+            state.inputImageUI.texture = state.webCamInput.inputImageTexture;
+            GetData();
+            UpdateGameObjects(mainCamera, state.data,state.jointGameObjects, state.boneGameObjects);
+        }
+
+        public void GetData()
+        {
+            state.detecter.ProcessImage(state.webCamInput.inputImageTexture, state.poseLandmarkModel);
+            ComputeBuffer result = state.detecter.outputBuffer;
+            ComputeBuffer worldLandmarkResult = state.detecter.worldLandmarkBuffer;
+            result.GetData(state.data);
         }
 
         // Update GameObjects
@@ -166,6 +196,23 @@ namespace RealtimeMotion2DNs
             Vector3 localScale = cyl.transform.localScale;
             localScale.z = (endPoint - beginPoint).magnitude;
             cyl.transform.localScale = localScale;
+        }
+
+        public void Dispose()
+        {
+            // Must call Dispose method when no longer in use.
+            state.detecter.Dispose();
+        }
+
+        public Dictionary<string, Vector3> CaluculateOneJointFrame()
+        {
+            Dictionary<string, Vector3> frame = new Dictionary<string, Vector3>();
+            for (int jointNumber = 0; jointNumber < 33; jointNumber++)
+            {
+                var positonVec = state.jointGameObjects[PoseLandmarks.LANDMARK_LIST[jointNumber]].transform.position;
+                frame[PoseLandmarks.LANDMARK_LIST[jointNumber]] = positonVec;
+            }
+            return frame;
         }
     }
 }

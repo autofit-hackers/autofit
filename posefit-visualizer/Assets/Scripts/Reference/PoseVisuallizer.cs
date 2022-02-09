@@ -16,7 +16,7 @@ public class PoseVisuallizer : MonoBehaviour
     [SerializeField] BlazePoseModel poseLandmarkModel;
 
     // Material material;
-    BlazePoseDetecter detecter;
+    BlazePoseDetecter detector;
     
     public GameObject countTxtObj = null; // repCounter に対応するTextオブジェクト
     RepCounter repCounter;
@@ -43,7 +43,7 @@ public class PoseVisuallizer : MonoBehaviour
 
     void Start(){
         // material = new Material(shader);
-        detecter = new BlazePoseDetecter(blazePoseResource, poseLandmarkModel);
+        detector = new BlazePoseDetecter(blazePoseResource, poseLandmarkModel);
         repCounter = new RepCounter()
         {
             repCount = 0,
@@ -105,9 +105,9 @@ public class PoseVisuallizer : MonoBehaviour
 
         // Predict pose by neural network model.
         // Switchable anytime models with 2nd argment.
-        detecter.ProcessImage(webCamInput.inputImageTexture, poseLandmarkModel);
-        ComputeBuffer result = detecter.outputBuffer;
-        ComputeBuffer worldLandmarkResult = detecter.worldLandmarkBuffer;
+        detector.ProcessImage(webCamInput.inputImageTexture, poseLandmarkModel);
+        ComputeBuffer result = detector.outputBuffer;
+        ComputeBuffer worldLandmarkResult = detector.worldLandmarkBuffer;
 
         result.GetData(data);
         
@@ -118,7 +118,7 @@ public class PoseVisuallizer : MonoBehaviour
     
     void OnApplicationQuit(){
         // Must call Dispose method when no longer in use.
-        detecter.Dispose();
+        detector.Dispose();
     }
 
     void UpdateRepCount(ref RepCounter repCounter, Vector4[] data, AudioSource audioSource)
