@@ -9,7 +9,7 @@ using Mediapipe.BlazePose;
 
 class Main2D : MonoBehaviour
 {
-    #region Variables for Humanpose
+    #region Variables for TrainerPose
     private HumanMotion2D hm;
     public Transform cylinderPrefab;
     public Transform spherePrefab;
@@ -20,7 +20,7 @@ class Main2D : MonoBehaviour
     private Dictionary<string, BoneOrdinal> boneOrdinals;
     #endregion
 
-    #region Variables for Realtime Input
+    #region Variables for TraineePose
     private RealtimeMotion2D rm;
     public Camera mainCamera;
     [SerializeField] WebCamInput webCamInput;
@@ -40,27 +40,41 @@ class Main2D : MonoBehaviour
         // キャリブレーションフレームから各ボーンの長さを取得
         boneOrdinals = BoneOrdinals2DNs.BoneOrdinals2D.JsonToBoneOrdinals(initJsonFilePath, 160);
         
+        // トレーナー初期化
         hm = new HumanMotion2D(jsonFilePath: jsonFilePath, boneOrdinals: boneOrdinals, cylinderPrefab: cylinderPrefab, spherePrefab: spherePrefab, jointColor: Color.cyan, startFrame: startFrame, endFrame: endFrame);
-        rm = new RealtimeMotion2D(cylinderPrefab, spherePrefab, Color.green, webCamInput, ref inputImageUI, blazePoseResource, poseLandmarkModel);
-        displayObjects = new DisplayObjects(countTextObject);
         hm.ReadAndPreprocess();
+        
+        // トレーニー初期化
+        rm = new RealtimeMotion2D(cylinderPrefab, spherePrefab, Color.green, webCamInput, ref inputImageUI, blazePoseResource, poseLandmarkModel);
         rm.Preprocess();
+
+        // 表示系初期化
+        displayObjects = new DisplayObjects(countTextObject);
         displayObjects.Preprocess(mainCamera);
     }
 
     // Update is called once per frame
     void Update()
     {
+        // スタートトリガでの処理
         if (Input.GetKeyDown(KeyCode.S))
         {
+            // 重ね合わせ
             hm.CorrectTransformations(rm.state.jointGameObjects);
+            
+            // TODO: カウント系のRepリセットはここにかく
         }
+        
+        // トレーナーのフレームを進める
         hm.FrameStepByJointWorldPosition(rm.state.jointGameObjects["LeftShoulder"].transform.position, "RightShoulder");
+        
+        // 表示系の更新
         displayObjects.Update(rm.state.jointGameObjects);
     }
 
     void LateUpdate()
     {
+        // トレーニーの更新
         rm.UpdateFrame(mainCamera);
     }
 

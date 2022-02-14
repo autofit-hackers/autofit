@@ -259,8 +259,9 @@ namespace HumanMotion2DNs
                 );
                 boneGameObjects[boneName].GetComponent<Renderer>().material.color = settings.jointColor;
             }
-            // 補正前
-            InitializeGameObjects(state.jointGameObjects, state.boneGameObjects, isZ: true, color: Color.black);
+            
+            // 初期化
+            InitializeGameObjects(state.jointGameObjects, state.boneGameObjects, isZ: true, color: Color.cyan);
 
             frameCount = settings.startFrame;
             frameCountMax = settings.endFrame;
@@ -281,7 +282,7 @@ namespace HumanMotion2DNs
             if (dis)
             {
                 frameCount += 1;
-                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+                UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.cyan);
 
                 // 最終フレームに到達した時の処理
                 if (frameCount == frameCountMax-20)
@@ -526,7 +527,7 @@ namespace HumanMotion2DNs
             state.transition = realtimeFoot - trainerFoot;
 
             frameCount = settings.startFrame;
-            UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.black);
+            UpdateGameObjects(frame: state.jointPositions[frameCount], state.jointGameObjects, state.boneGameObjects, true, Color.cyan);
         }
 
         private float HumanHeight(Dictionary<string, GameObject> jointObjects, Dictionary<string, Vector3> jointPositions, bool useVector3)

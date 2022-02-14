@@ -130,7 +130,7 @@ namespace RealtimeMotion2DNs
                 // var newPositonVec = mainCamera.ScreenToWorldPoint(new Vector3(data[jointNumber].x*settings.scale.x, (1-data[jointNumber].y)*settings.scale.y, 95)) + settings.translation;
                 var newPositonVec =
                     mainCamera.ScreenToWorldPoint(new Vector3((1 - data[jointNumber].y) * settings.scale.y,
-                        (1 - data[jointNumber].x) * settings.scale.x, 95)) + new Vector3(0,-5f*1080/1920,0);
+                        (1 - data[jointNumber].x) * settings.scale.x, data[jointNumber].z*100 +95)) + new Vector3(0,-5f*1080/1920,0); //TODO: ここでZ座標を出現させる
                 var vec = lastPositionVec * (1-settings.lpfRate) + newPositonVec * settings.lpfRate;
                 joints[PoseLandmarks.LANDMARK_LIST[jointNumber]].transform.position = vec;
             }
