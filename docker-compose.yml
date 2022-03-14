@@ -1,0 +1,10 @@
+version: '3'
+services:
+  python3:
+    restart: always
+    build: .
+    container_name: 'posefit'
+    working_dir: '/root/python'
+    tty: true
+    volumes:
+      - ${SRC_PATH}:/root/python
