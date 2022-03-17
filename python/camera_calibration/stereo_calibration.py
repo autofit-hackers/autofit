@@ -58,8 +58,6 @@ def calibrate_camera(images_folder):
     print("rmse:", ret)
     print("camera matrix:\n", mtx)
     print("distortion coeffs:", dist)
-    print("Rs:\n", rvecs)
-    print("Ts:\n", tvecs)
 
     return mtx, dist
 
@@ -135,23 +133,26 @@ def stereo_calibrate(mtx1, dist1, mtx2, dist2, frames_folder):
     return R, T
 
 
+# num_camera = 2
+# for camera_id in range(num_camera):
+#     mtx, dist, rot, trans = calibrate_camera(images_folder="D2/*")
+#     np.savetxt(f'../bodypose3d/camera_parameters/c{camera_id}_mtx.dat', mtx)
+#     np.savetxt(f'../bodypose3d/camera_parameters/c{camera_id}_dist.dat', dist)
+#     np.savetxt(f'../bodypose3d/camera_parameters/c{camera_id}_rot.dat', rot)
+#     np.savetxt(f'../bodypose3d/camera_parameters/c{camera_id}_trans.dat', trans)
+
+
 mtx1, dist1 = calibrate_camera(images_folder="D2/*")
 mtx2, dist2 = calibrate_camera(images_folder="J2/*")
 R, T = stereo_calibrate(mtx1, dist1, mtx2, dist2, "synched/*")
 
-print(type(mtx1))
-print(type(dist1))
 print(R)
 print(T)
-
-# with open("../bodypose3d/camera_parameters/c0.dat", "w") as f:
-#     f.write(mtx1)
-
-# with open("../bodypose3d/camera_parameters/c1.dat", "w") as f:
-#     f.write(mtx2)
-
-# with open("../bodypose3d/camera_parameters/rot_trans_c0.dat", "w") as f:
-#     f.write(mtx1)
-
-# with open("../bodypose3d/camera_parameters/rot_trans_c1.dat", "w") as f:
-#     f.write(mtx1)
+np.savetxt("../bodypose3d/camera_parameters/c0_mtx.dat", mtx1)
+np.savetxt("../bodypose3d/camera_parameters/c0_dist.dat", dist1)
+np.savetxt("../bodypose3d/camera_parameters/c0_rot.dat", np.eye(3))
+np.savetxt("../bodypose3d/camera_parameters/c0_trans.dat", np.array([[0], [0], [0]]))
+np.savetxt("../bodypose3d/camera_parameters/c1_mtx.dat", mtx2)
+np.savetxt("../bodypose3d/camera_parameters/c1_dist.dat", dist2)
+np.savetxt("../bodypose3d/camera_parameters/c1_rot.dat", R)
+np.savetxt("../bodypose3d/camera_parameters/c1_trans.dat", T)
