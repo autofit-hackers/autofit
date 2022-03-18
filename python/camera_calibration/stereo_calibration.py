@@ -7,8 +7,8 @@ import numpy as np
 # Change this if the code can't find the checkerboard
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-rows = 5  # number of checkerboard rows.
-columns = 8  # number of checkerboard columns.
+rows = 6  # number of checkerboard rows.
+columns = 9  # number of checkerboard columns.
 world_scaling = 1  # change this to the real world square size. Or not.
 
 
@@ -62,12 +62,15 @@ def calibrate_camera(images_folder):
     return mtx, dist
 
 
-def stereo_calibrate(mtx1, dist1, mtx2, dist2, frames_folder):
+def stereo_calibrate(mtx_front, dist_front, mtx_side, dist_side, img_dir_front, img_dir_side):
     # read the synched frames
-    images_names = glob.glob(frames_folder)
-    images_names = sorted(images_names)
-    c1_images_names = images_names[: len(images_names) // 2]
-    c2_images_names = images_names[len(images_names) // 2 :]
+    # images_names = glob.glob(frames_folder)
+    # images_names = sorted(images_names)
+    # c1_images_names = images_names[: len(images_names) // 2]
+    # c2_images_names = images_names[len(images_names) // 2 :]
+
+    c1_images_names = sorted(glob.glob(img_dir_front))
+    c2_images_names = sorted(glob.glob(img_dir_side))
 
     c1_images = []
     c2_images = []
@@ -97,17 +100,17 @@ def stereo_calibrate(mtx1, dist1, mtx2, dist2, frames_folder):
     for frame1, frame2 in zip(c1_images, c2_images):
         gray1 = cv.cvtColor(frame1, cv.COLOR_BGR2GRAY)
         gray2 = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
-        c_ret1, corners1 = cv.findChessboardCorners(gray1, (5, 8), None)
-        c_ret2, corners2 = cv.findChessboardCorners(gray2, (5, 8), None)
+        c_ret1, corners1 = cv.findChessboardCorners(gray1, (rows, columns), None)
+        c_ret2, corners2 = cv.findChessboardCorners(gray2, (rows, columns), None)
 
         if c_ret1 == True and c_ret2 == True:
             corners1 = cv.cornerSubPix(gray1, corners1, (11, 11), (-1, -1), criteria)
             corners2 = cv.cornerSubPix(gray2, corners2, (11, 11), (-1, -1), criteria)
 
-            cv.drawChessboardCorners(frame1, (5, 8), corners1, c_ret1)
+            cv.drawChessboardCorners(frame1, (rows, columns), corners1, c_ret1)
             cv.imshow("img", frame1)
 
-            cv.drawChessboardCorners(frame2, (5, 8), corners2, c_ret2)
+            cv.drawChessboardCorners(frame2, (rows, columns), corners2, c_ret2)
             cv.imshow("img2", frame2)
             k = cv.waitKey(500)
 
@@ -116,14 +119,14 @@ def stereo_calibrate(mtx1, dist1, mtx2, dist2, frames_folder):
             imgpoints_right.append(corners2)
 
     stereocalibration_flags = cv.CALIB_FIX_INTRINSIC
-    ret, CM1, dist1, CM2, dist2, R, T, E, F = cv.stereoCalibrate(
+    ret, CM1, dist_front, CM2, dist_side, R, T, E, F = cv.stereoCalibrate(
         objpoints,
         imgpoints_left,
         imgpoints_right,
-        mtx1,
-        dist1,
-        mtx2,
-        dist2,
+        mtx_front,
+        dist_front,
+        mtx_side,
+        dist_side,
         (width, height),
         criteria=criteria,
         flags=stereocalibration_flags,
@@ -142,17 +145,19 @@ def stereo_calibrate(mtx1, dist1, mtx2, dist2, frames_folder):
 #     np.savetxt(f'../bodypose3d/camera_parameters/c{camera_id}_trans.dat', trans)
 
 
-mtx1, dist1 = calibrate_camera(images_folder="D2/*")
-mtx2, dist2 = calibrate_camera(images_folder="J2/*")
-R, T = stereo_calibrate(mtx1, dist1, mtx2, dist2, "synched/*")
+mtx_front, dist_front = calibrate_camera(images_folder="front_img/*")
+mtx_side, dist_side = calibrate_camera(images_folder="side_img/*")
+R, T = stereo_calibrate(
+    mtx_front, dist_front, mtx_side, dist_side, img_dir_front="front_img/*", img_dir_side="side_img/*"
+)
 
 print(R)
 print(T)
-np.savetxt("../bodypose3d/camera_parameters/c0_mtx.dat", mtx1)
-np.savetxt("../bodypose3d/camera_parameters/c0_dist.dat", dist1)
+np.savetxt("../bodypose3d/camera_parameters/c0_mtx.dat", mtx_front)
+np.savetxt("../bodypose3d/camera_parameters/c0_dist.dat", dist_front)
 np.savetxt("../bodypose3d/camera_parameters/c0_rot.dat", np.eye(3))
 np.savetxt("../bodypose3d/camera_parameters/c0_trans.dat", np.array([[0], [0], [0]]))
-np.savetxt("../bodypose3d/camera_parameters/c1_mtx.dat", mtx2)
-np.savetxt("../bodypose3d/camera_parameters/c1_dist.dat", dist2)
+np.savetxt("../bodypose3d/camera_parameters/c1_mtx.dat", mtx_side)
+np.savetxt("../bodypose3d/camera_parameters/c1_dist.dat", dist_side)
 np.savetxt("../bodypose3d/camera_parameters/c1_rot.dat", R)
 np.savetxt("../bodypose3d/camera_parameters/c1_trans.dat", T)

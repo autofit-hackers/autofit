@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
 from utils import DLT
 
@@ -39,14 +40,10 @@ def visualize_3d(p3ds):
     body = [torso, arml, armr, legr, legl]
     colors = ["red", "blue", "green", "black", "orange"]
 
-    from mpl_toolkits.mplot3d import Axes3D
-
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
     for framenum, kpts3d in enumerate(p3ds):
-        if framenum % 2 == 0:
-            continue  # skip every 2nd frame
         for bodypart, part_color in zip(body, colors):
             for _c in bodypart:
                 ax.plot(
