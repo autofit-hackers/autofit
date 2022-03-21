@@ -1,7 +1,9 @@
 import numpy as np
+from scipy import linalg
 
 
 def _make_homogeneous_rep_matrix(R, t):
+
     P = np.zeros((4, 4))
     P[:3, :3] = R
     P[:3, 3] = t.reshape(3)
@@ -23,7 +25,6 @@ def DLT(P1, P2, point1, point2):
     # print(A)
 
     B = A.transpose() @ A
-    from scipy import linalg
 
     U, s, Vh = linalg.svd(B, full_matrices=False)
 
@@ -49,6 +50,7 @@ def read_rotation_translation(camera_id, savefolder="camera_parameters/"):
 
 
 def _convert_to_homogeneous(pts):
+
     pts = np.array(pts)
     if len(pts.shape) > 1:
         w = np.ones((pts.shape[0], 1))
@@ -69,6 +71,7 @@ def get_projection_matrix(camera_id):
 
 
 def write_keypoints_to_disk(filename, kpts):
+
     fout = open(filename, "w")
 
     for frame_kpts in kpts:

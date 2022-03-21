@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 capture_1 = cv2.VideoCapture(0)
-capture_2 = cv2.VideoCapture(2)
+capture_2 = cv2.VideoCapture(1)
 
 print(f"camera1 is available:{capture_1.isOpened()}")
 print(f"camera2 is available:{capture_2.isOpened()}")
@@ -21,6 +21,8 @@ print("press c to take photo or esc to exit")
 while True:
     ret1, frame1 = capture_1.read()
     ret2, frame2 = capture_2.read()
+    frame1 = cv2.rotate(frame1, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    frame2 = cv2.rotate(frame2, cv2.ROTATE_90_COUNTERCLOCKWISE)
     mergeImg = np.vstack((frame1, frame2))
     cv2.imshow("frame", mergeImg)
     key = cv2.waitKey(1) & 0xFF

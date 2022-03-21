@@ -3,3 +3,4 @@ pandas
 opencv-contrib-python
 mediapipe
 matplotlib
+scipy
