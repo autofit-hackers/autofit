@@ -11,10 +11,10 @@ ENV LC_ALL ja_JP.UTF-8
 ENV TZ JST-9
 ENV TERM xterm
 
-RUN mkdir -p /root/python
-COPY requirements.txt /root/python
-WORKDIR /root/python
+RUN mkdir -p /work
+WORKDIR /work
 
+COPY requirements.txt /work/requirements.txt
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
-RUN pip install -r requirements.txt
+RUN pip install -r /work/requirements.txt
