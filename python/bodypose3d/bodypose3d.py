@@ -14,7 +14,9 @@ mp_pose = mp.solutions.pose
 
 frame_shape = [720, 1280]
 min_confidence = 0.1
-record_dir = "./pose_record/"
+pose_record_dir = "./pose_record"
+video_record_dir = "./video_record"
+now = datetime.datetime.now().strftime("%m-%d-%H-%M")
 
 # add here if you need more keypoints
 # pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
@@ -28,6 +30,14 @@ def run_mp(input_stream1, input_stream2, P0, P1):
     cap1 = cv2.VideoCapture(input_stream2)
     caps = [cap0, cap1]
 
+    # video save config
+    fps = int(cap0.get(cv2.CAP_PROP_FPS))
+    w = int(cap0.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap0.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
+    video_front = cv2.VideoWriter(f"{video_record_dir}/video_front_{now}.mp4", fourcc, fps, (w, h))
+    video_side = cv2.VideoWriter(f"{video_record_dir}/video_side_{now}.mp4", fourcc, fps, (w, h))
+
     # wait cameras to wake up
     for i in range(5):
         print(f"start in {5-i} sec")
@@ -35,7 +45,7 @@ def run_mp(input_stream1, input_stream2, P0, P1):
         time.sleep(1)
         t1 = time.time()
 
-    # set camera resolution if using webcam to 1280x720. Any bigger will cause some lag for hand detection
+    # set cap0 resolution if using webcam to 1280x720. Any bigger will cause some lag for hand detection
     for cap in caps:
         cap.set(3, frame_shape[1])
         cap.set(4, frame_shape[0])
@@ -44,13 +54,12 @@ def run_mp(input_stream1, input_stream2, P0, P1):
     pose0 = mp_pose.Pose(min_detection_confidence=min_confidence, min_tracking_confidence=min_confidence)
     pose1 = mp_pose.Pose(min_detection_confidence=min_confidence, min_tracking_confidence=min_confidence)
 
-    # containers for detected keypoints for each camera. These are filled at each frame.
+    # containers for detected keypoints for each cap0. These are filled at each frame.
     # This will run you into memory issue if you run the program without stop
     kpts_cam0 = []
     kpts_cam1 = []
     kpts_3d = []
 
-    # 開始時間
     start = time.time()
     num_frames = 0
     while True:
@@ -58,6 +67,10 @@ def run_mp(input_stream1, input_stream2, P0, P1):
         # read frames from stream
         ret0, frame0 = cap0.read()
         ret1, frame1 = cap1.read()
+
+        # save frame
+        video_front.write(frame0)
+        video_side.write(frame1)
 
         if not ret0 or not ret1:
             break
@@ -67,7 +80,7 @@ def run_mp(input_stream1, input_stream2, P0, P1):
         frame1 = cv2.rotate(frame1, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
         # crop to 720x720.
-        # Note: camera calibration parameters are set to this resolution.If you change this, make sure to also change camera intrinsic parameters
+        # Note: cap0 calibration parameters are set to this resolution.If you change this, make sure to also change cap0 intrinsic parameters
         if frame0.shape[1] != 720:
             frame0 = frame0[:, frame_shape[1] // 2 - frame_shape[0] // 2 : frame_shape[1] // 2 + frame_shape[0] // 2]
             frame1 = frame1[:, frame_shape[1] // 2 - frame_shape[0] // 2 : frame_shape[1] // 2 + frame_shape[0] // 2]
@@ -172,11 +185,11 @@ def run_mp(input_stream1, input_stream2, P0, P1):
 
 if __name__ == "__main__":
 
-    # this will load the sample videos if no camera ID is given
+    # this will load the sample videos if no cap0 ID is given
     input_stream1 = "media/cam0_test.mp4"
     input_stream2 = "media/cam1_test.mp4"
 
-    # put camera id as command line arguements
+    # put cap0 id as command line arguements
     if len(sys.argv) == 3:
         input_stream1 = int(sys.argv[1])
         input_stream2 = int(sys.argv[2])
@@ -188,7 +201,6 @@ if __name__ == "__main__":
     kpts_cam0, kpts_cam1, kpts_3d = run_mp(input_stream1, input_stream2, P0, P1)
 
     # this will create keypoints file in current working folder
-    now = datetime.datetime.now().strftime("%m-%d-%H-%M")
-    write_keypoints_to_disk(f"{record_dir}/kpts_cam_front_{now}.dat", kpts_cam0)
-    write_keypoints_to_disk(f"{record_dir}/kpts_cam_side_{now}.dat", kpts_cam1)
-    write_keypoints_to_disk(f"{record_dir}/kpts_3d_{now}.dat", kpts_3d)
+    write_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_front_{now}.dat", kpts_cam0)
+    write_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_side_{now}.dat", kpts_cam1)
+    write_keypoints_to_disk(f"{pose_record_dir}/kpts_3d_{now}.dat", kpts_3d)
