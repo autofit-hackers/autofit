@@ -6,7 +6,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 
-from utils import DLT, get_projection_matrix, write_keypoints_to_disk
+from utils import DLT, ThreadingVideoCapture, get_projection_matrix
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -24,8 +24,10 @@ pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28, 0]
 
 def run_mp(input_stream1, P0, P1):
     # input video stream
-    cap0 = cv2.VideoCapture(input_stream1)
-    cap0.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc("H", "2", "6", "4"))
+    # cap0 = cv2.VideoCapture(input_stream1)
+    cap0 = ThreadingVideoCapture(input_stream1)
+    # cap0.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc("H", "2", "6", "4"))
+    cap0.start()
 
     # wait cameras to wake up
     for i in range(5):
@@ -35,8 +37,8 @@ def run_mp(input_stream1, P0, P1):
         t1 = time.time()
 
     # set camera resolution if using webcam to 1280x720. Any bigger will cause some lag for hand detection
-    cap0.set(3, frame_shape[1])
-    cap0.set(4, frame_shape[0])
+    # cap0.set(3, frame_shape[1])
+    # cap0.set(4, frame_shape[0])
 
     # create body keypoints detector objects.
     pose0 = mp_pose.Pose(min_detection_confidence=min_confidence, min_tracking_confidence=min_confidence)
