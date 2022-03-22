@@ -422,7 +422,7 @@ def draw_skeleton_from_joint_angles(kpts):
     plt.close()
 
 
-if __name__ == "__main__":
+def main():
 
     if len(sys.argv) == 2:
         keypoints_file = f"{pose_record_dir}/{sys.argv[1]}.dat"
@@ -446,3 +446,8 @@ if __name__ == "__main__":
     calculate_joint_angles(filtered_kpts)
     # draw_skeleton_from_joint_coordinates(filtered_kpts)
     draw_skeleton_from_joint_angles(filtered_kpts)
+
+
+if __name__ == "__main__":
+
+    main()

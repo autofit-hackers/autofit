@@ -1,12 +1,13 @@
 import datetime
 import sys
 import time
+from xml.etree.ElementInclude import include
 
 import cv2
 import mediapipe as mp
 import numpy as np
 
-from utils import DLT, get_projection_matrix, write_keypoints_to_disk
+from utils import DLT, get_projection_matrix, save_keypoints_to_disk
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -17,14 +18,15 @@ min_confidence = 0.1
 pose_record_dir = "./pose_record"
 video_record_dir = "./video_record"
 now = datetime.datetime.now().strftime("%m-%d-%H-%M")
+include_head = True
 
-# add here if you need more keypoints
-# pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
-# include head
-pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28, 0]
+"""keypoint setting"""
+pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
+if include_head:
+    pose_keypoints.append(0)
 
 
-def run_mp(input_stream1, input_stream2, P0, P1):
+def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
     # input video stream
     cap0 = cv2.VideoCapture(input_stream1)
     cap1 = cv2.VideoCapture(input_stream2)
@@ -165,7 +167,7 @@ def run_mp(input_stream1, input_stream2, P0, P1):
         #     mp_pose.POSE_CONNECTIONS,
         #     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
         # )
-        
+
         # mp_drawing.draw_landmarks(
         #     frame1,
         #     results1.pose_landmarks,
@@ -190,24 +192,28 @@ def run_mp(input_stream1, input_stream2, P0, P1):
     return np.array(kpts_cam0), np.array(kpts_cam1), np.array(kpts_3d)
 
 
-if __name__ == "__main__":
+def main():
 
-    # this will load the sample videos if no cap0 ID is given
-    input_stream1 = "media/cam0_test.mp4"
-    input_stream2 = "media/cam1_test.mp4"
-
-    # put cap0 id as command line arguements
+    # put webcam id as command line arguements
     if len(sys.argv) == 3:
         input_stream1 = int(sys.argv[1])
         input_stream2 = int(sys.argv[2])
+    else:
+        print("Call program with input webcam")
+        quit()
 
     # get projection matrices
     P0 = get_projection_matrix(0)
     P1 = get_projection_matrix(1)
 
-    kpts_cam0, kpts_cam1, kpts_3d = run_mp(input_stream1, input_stream2, P0, P1)
+    kpts_cam0, kpts_cam1, kpts_3d = run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1)
 
-    # this will create keypoints file in current working folder
-    write_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_front_{now}.dat", kpts_cam0)
-    write_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_side_{now}.dat", kpts_cam1)
-    write_keypoints_to_disk(f"{pose_record_dir}/kpts_3d_{now}.dat", kpts_3d)
+    # create keypoints file in current working folder
+    save_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_front_{now}.dat", kpts_cam0)
+    save_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_side_{now}.dat", kpts_cam1)
+    save_keypoints_to_disk(f"{pose_record_dir}/kpts_3d_{now}.dat", kpts_3d)
+
+
+if __name__ == "__main__":
+
+    main()

@@ -70,7 +70,7 @@ def get_projection_matrix(camera_id):
     return P
 
 
-def write_keypoints_to_disk(filename, kpts):
+def save_keypoints_to_disk(filename, kpts):
 
     fout = open(filename, "w")
 

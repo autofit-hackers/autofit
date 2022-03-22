@@ -8,11 +8,14 @@ from mpl_toolkits.mplot3d import Axes3D
 from utils import DLT
 
 plt.style.use("seaborn")
+
 pose_record_dir = "./pose_record"
-# add here if you need more keypoints
-pose_keypoints = np.array([16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28])
-# include head
-# pose_keypoints = np.array([16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28, 0])
+include_head = True
+
+"""keypoint setting"""
+pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
+if include_head:
+    pose_keypoints.append(0)
 
 
 def read_keypoints(filename):
@@ -103,14 +106,22 @@ def visualize_3d(p3ds):
             ax.cla()
 
 
-if __name__ == "__main__":
+def main():
 
+    # put keypoints file as command line argument
     if len(sys.argv) == 2:
         keypoints_file = f"{pose_record_dir}/{sys.argv[1]}.dat"
     else:
         keypoints_file = f"{pose_record_dir}/kpts_3d.dat"
 
+    # process keypoint coordinates
     p3ds = read_keypoints(keypoints_file)
-    # p3ds = exclude_outliers(p3ds)
+    p3ds = exclude_outliers(p3ds)
     p3ds = standardize_keypoints(p3ds)
+
     visualize_3d(p3ds)
+
+
+if __name__ == "__main__":
+
+    main()
