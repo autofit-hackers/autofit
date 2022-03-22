@@ -159,22 +159,29 @@ def run_mp(input_stream1, input_stream2, P0, P1):
         kpts_3d.append(frame_p3ds)
 
         # uncomment these if you want to see the full keypoints detections
-        # mp_drawing.draw_landmarks(frame0, results0.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-        #                           landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-        #
-        # mp_drawing.draw_landmarks(frame1, results1.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-        #                           landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+        # mp_drawing.draw_landmarks(
+        #     frame0,
+        #     results0.pose_landmarks,
+        #     mp_pose.POSE_CONNECTIONS,
+        #     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+        # )
+        
+        # mp_drawing.draw_landmarks(
+        #     frame1,
+        #     results1.pose_landmarks,
+        #     mp_pose.POSE_CONNECTIONS,
+        #     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+        # )
 
         cv2.imshow("front", frame0)
         cv2.imshow("side", frame1)
 
         k = cv2.waitKey(0.1)
-        if k & 0xFF == 27:
-            # 終了時間
+        if k & 0xFF == 27:  # 27 is ESC key.
             end = time.time()
             fps = num_frames / (end - start)
             print(f"FPS:{fps}")
-            break  # 27 is ESC key.
+            break
 
     cv2.destroyAllWindows()
     for cap in caps:

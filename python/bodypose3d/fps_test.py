@@ -97,11 +97,12 @@ def run_mp(input_stream1, P0, P1):
         kpts_cam0.append(frame0_keypoints)
 
         # uncomment these if you want to see the full keypoints detections
-        # mp_drawing.draw_landmarks(frame0, results0.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-        #                           landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-        #
-        # mp_drawing.draw_landmarks(frame1, results1.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-        #                           landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+        mp_drawing.draw_landmarks(
+            frame0,
+            results0.pose_landmarks,
+            mp_pose.POSE_CONNECTIONS,
+            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+        )
 
         cv2.imshow("front", frame0)
 
@@ -133,7 +134,3 @@ if __name__ == "__main__":
     P1 = get_projection_matrix(1)
 
     kpts_cam0 = run_mp(input_stream1, P0, P1)
-
-    # this will create keypoints file in current working folder
-    now = datetime.datetime.now().strftime("%m-%d-%H-%M")
-    write_keypoints_to_disk(f"{record_dir}/kpts_cam_front_{now}.dat", kpts_cam0)
