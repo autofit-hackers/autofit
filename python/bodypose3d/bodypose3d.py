@@ -10,7 +10,12 @@ import numpy as np
 
 from utils import DLT, get_projection_matrix, save_keypoints_to_disk
 
-"""saving setting"""
+"""mediapipe setting"""
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
+mp_pose = mp.solutions.pose
+
+"""file saving setting"""
 pose_record_dir = "./pose_record"
 video_record_dir = "./video_record"
 now = datetime.datetime.now().strftime("%m-%d-%H-%M")
@@ -196,7 +201,7 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
             if uv1[0] == -1 or uv2[0] == -1:
                 _p3d = [-1, -1, -1]
             else:
-                _p3d = DLT(P0, P1, uv1, uv2)  # calculate 3d position of keypoint
+                _p3d = DLT(P0, P1, uv1, uv2)
             frame_p3ds.append(_p3d)
 
         """
@@ -240,10 +245,6 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
 
 
 def main():
-    # set mediapipe
-    mp_drawing = mp.solutions.drawing_utils
-    mp_drawing_styles = mp.solutions.drawing_styles
-    mp_pose = mp.solutions.pose
 
     # put webcam id as command line arguements
     if len(sys.argv) == 3:
@@ -259,7 +260,7 @@ def main():
 
     kpts_cam0, kpts_cam1, kpts_3d = run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1)
 
-    # create keypoints file
+    # create keypoint save file
     save_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_front_{now}.dat", kpts_cam0)
     save_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_side_{now}.dat", kpts_cam1)
     save_keypoints_to_disk(f"{pose_record_dir}/kpts_3d_{now}.dat", kpts_3d)

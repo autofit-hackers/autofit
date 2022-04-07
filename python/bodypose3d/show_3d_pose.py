@@ -10,9 +10,9 @@ from utils import DLT
 plt.style.use("seaborn")
 
 pose_record_dir = "./pose_record"
-include_head = False
 
 """keypoint setting"""
+include_head = False
 pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
 if include_head:
     pose_keypoints.append(0)
