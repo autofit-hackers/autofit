@@ -1,10 +1,16 @@
+import sys
 import time
 
 import cv2
 import numpy as np
 
-capture_1 = cv2.VideoCapture(0)
-capture_2 = cv2.VideoCapture(1)
+# put webcam id as command line arguements
+if len(sys.argv) == 3:
+    capture_1 = cv2.VideoCapture(int(sys.argv[1]))
+    capture_2 = cv2.VideoCapture(int(sys.argv[2]))
+else:
+    print("Call program with input webcam!")
+    quit()
 
 print(f"camera1 is available:{capture_1.isOpened()}")
 print(f"camera2 is available:{capture_2.isOpened()}")

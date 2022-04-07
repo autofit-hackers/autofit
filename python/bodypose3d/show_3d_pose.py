@@ -10,12 +10,22 @@ from utils import DLT
 plt.style.use("seaborn")
 
 pose_record_dir = "./pose_record"
-include_head = True
+include_head = False
 
 """keypoint setting"""
 pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
 if include_head:
     pose_keypoints.append(0)
+
+
+"""3D vizualization setting"""
+torso = [[0, 1], [1, 7], [7, 6], [6, 0]]
+armr = [[1, 3], [3, 5]]
+arml = [[0, 2], [2, 4]]
+legr = [[6, 8], [8, 10]]
+legl = [[7, 9], [9, 11]]
+body = [torso, arml, armr, legr, legl]
+colors = ["red", "blue", "green", "black", "orange"]
 
 
 def read_keypoints(filename):
@@ -62,15 +72,6 @@ def exclude_outliers(kpts, alpha=0.2, threshold=1.5):
 
 
 def visualize_3d(p3ds):
-
-    """Now visualize in 3D"""
-    torso = [[0, 1], [1, 7], [7, 6], [6, 0]]
-    armr = [[1, 3], [3, 5]]
-    arml = [[0, 2], [2, 4]]
-    legr = [[6, 8], [8, 10]]
-    legl = [[7, 9], [9, 11]]
-    body = [torso, arml, armr, legr, legl]
-    colors = ["red", "blue", "green", "black", "orange"]
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")

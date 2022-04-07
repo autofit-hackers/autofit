@@ -10,21 +10,21 @@ import numpy as np
 
 from utils import DLT, get_projection_matrix, save_keypoints_to_disk
 
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_pose = mp.solutions.pose
-
-frame_shape = [720, 1280]
-min_confidence = 0.1
+"""saving setting"""
 pose_record_dir = "./pose_record"
 video_record_dir = "./video_record"
 now = datetime.datetime.now().strftime("%m-%d-%H-%M")
-include_head = True
 
 """keypoint setting"""
+include_head = True
 pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
 if include_head:
     pose_keypoints.append(0)
+
+"""2D pose vizualization setting"""
+frame_shape = [720, 1280]
+min_confidence = 0.1
+show_2d_estimation = False
 
 """3D pose vizualization setting"""
 torso = [[0, 1], [1, 7], [7, 6], [6, 0]]
@@ -33,22 +33,17 @@ arml = [[0, 2], [2, 4]]
 legr = [[6, 8], [8, 10]]
 legl = [[7, 9], [9, 11]]
 body = [torso, arml, armr, legr, legl]
-colors = ["red", "blue", "green", "black", "orange"]
+colors = ["red", "blue", "blue", "black", "black"]
 
 
 def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
+
     # input video stream
     cap0 = cv2.VideoCapture(input_stream1)
     cap1 = cv2.VideoCapture(input_stream2)
+    print(f"camera1 is available:{cap0.isOpened()}")
+    print(f"camera2 is available:{cap1.isOpened()}")
     caps = [cap0, cap1]
-
-    # video save config
-    fps = int(cap0.get(cv2.CAP_PROP_FPS))
-    w = int(cap0.get(cv2.CAP_PROP_FRAME_WIDTH))
-    h = int(cap0.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
-    video_front = cv2.VideoWriter(f"{video_record_dir}/video_front_{now}.mp4", fourcc, fps, (w, h))
-    video_side = cv2.VideoWriter(f"{video_record_dir}/video_side_{now}.mp4", fourcc, fps, (w, h))
 
     # wait cameras to wake up
     for i in range(5):
@@ -57,7 +52,18 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
         time.sleep(1)
         t1 = time.time()
 
-    # set cap0 resolution if using webcam to 1280x720. Any bigger will cause some lag for hand detection
+    # video saving config
+    cap0.set(cv2.CAP_PROP_FPS, 120)
+    fps = int(cap0.get(cv2.CAP_PROP_FPS))
+    w = int(cap0.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap0.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
+    video_front = cv2.VideoWriter(
+        f"{video_record_dir}/video_front_{now}.mp4", fourcc, fps, (h, w)
+    )  # exchange width and height because of imput rotation
+    video_side = cv2.VideoWriter(f"{video_record_dir}/video_side_{now}.mp4", fourcc, fps, (h, w))
+
+    # set resolution if using webcam to 1280x720. Any bigger will cause some lag for keypoint detection
     for cap in caps:
         cap.set(3, frame_shape[1])
         cap.set(4, frame_shape[0])
@@ -159,6 +165,31 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
         # update keypoints container
         kpts_cam1.append(frame1_keypoints)
 
+        if show_2d_estimation:
+            mp_drawing.draw_landmarks(
+                frame0,
+                results0.pose_landmarks,
+                mp_pose.POSE_CONNECTIONS,
+                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+            )
+
+            mp_drawing.draw_landmarks(
+                frame1,
+                results1.pose_landmarks,
+                mp_pose.POSE_CONNECTIONS,
+                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+            )
+
+        cv2.imshow("front", frame0)
+        cv2.imshow("side", frame1)
+
+        k = cv2.waitKey(1)
+        if k & 0xFF == 27:  # 27 is ESC key.
+            end = time.time()
+            fps = num_frames / (end - start)
+            print(f"FPS:{fps}")
+            break
+
         # calculate 3d position
         frame_p3ds = []
         for uv1, uv2 in zip(frame0_keypoints, frame1_keypoints):
@@ -176,25 +207,7 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
         kpts_3d.append(frame_p3ds)
 
         # set the center of feet to [0,0,0]
-        frame_p3ds = frame_p3ds - (frame_p3ds[0, 10, :] + frame_p3ds[0, 11, :]) / 2 + [0, 0, 50]
-
-        # uncomment these if you want to see the full keypoints detections
-        mp_drawing.draw_landmarks(
-            frame0,
-            results0.pose_landmarks,
-            mp_pose.POSE_CONNECTIONS,
-            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
-        )
-
-        mp_drawing.draw_landmarks(
-            frame1,
-            results1.pose_landmarks,
-            mp_pose.POSE_CONNECTIONS,
-            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
-        )
-
-        cv2.imshow("front", frame0)
-        cv2.imshow("side", frame1)
+        frame_p3ds = frame_p3ds - (frame_p3ds[10, :] + frame_p3ds[11, :]) / 2 + [0, 0, 50]
 
         # 3D pose vizualization
         for bodypart, part_color in zip(body, colors):
@@ -216,14 +229,8 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
         ax.set_ylabel("y")
         ax.set_zlim3d(50, 100)
         ax.set_zlabel("z")
+        plt.pause(0.001)
         ax.cla()
-
-        k = cv2.waitKey(0.1)
-        if k & 0xFF == 27:  # 27 is ESC key.
-            end = time.time()
-            fps = num_frames / (end - start)
-            print(f"FPS:{fps}")
-            break
 
     cv2.destroyAllWindows()
     for cap in caps:
@@ -233,6 +240,10 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
 
 
 def main():
+    # set mediapipe
+    mp_drawing = mp.solutions.drawing_utils
+    mp_drawing_styles = mp.solutions.drawing_styles
+    mp_pose = mp.solutions.pose
 
     # put webcam id as command line arguements
     if len(sys.argv) == 3:
