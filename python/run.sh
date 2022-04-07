@@ -1,2 +1,2 @@
 #!/bin/bash
-docker container exec -it posefit-python /bin/bash
+docker-compose run posefit bash
