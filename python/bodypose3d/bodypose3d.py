@@ -4,6 +4,7 @@ import time
 from xml.etree.ElementInclude import include
 
 import cv2
+import matplotlib.pyplot as plt
 import mediapipe as mp
 import numpy as np
 
@@ -24,6 +25,15 @@ include_head = True
 pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
 if include_head:
     pose_keypoints.append(0)
+
+"""3D pose vizualization setting"""
+torso = [[0, 1], [1, 7], [7, 6], [6, 0]]
+armr = [[1, 3], [3, 5]]
+arml = [[0, 2], [2, 4]]
+legr = [[6, 8], [8, 10]]
+legl = [[7, 9], [9, 11]]
+body = [torso, arml, armr, legr, legl]
+colors = ["red", "blue", "green", "black", "orange"]
 
 
 def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
@@ -64,6 +74,11 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
 
     start = time.time()
     num_frames = 0
+
+    # prepare matplotlib for 3D pose vizualization
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+
     while True:
         num_frames += 1
         # read frames from stream
@@ -115,8 +130,8 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
                 pxl_x = int(round(pxl_x))
                 pxl_y = int(round(pxl_y))
                 cv2.circle(frame0, (pxl_x, pxl_y), 3, (0, 0, 255), -1)  # add keypoint detection points into figure
-                kpts = [pxl_x, pxl_y]
-                frame0_keypoints.append(kpts)
+                frame_p3ds = [pxl_x, pxl_y]
+                frame0_keypoints.append(frame_p3ds)
         else:
             # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
             frame0_keypoints = [[-1, -1]] * len(pose_keypoints)
@@ -134,8 +149,8 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
                 pxl_x = int(round(pxl_x))
                 pxl_y = int(round(pxl_y))
                 cv2.circle(frame1, (pxl_x, pxl_y), 3, (0, 0, 255), -1)
-                kpts = [pxl_x, pxl_y]
-                frame1_keypoints.append(kpts)
+                frame_p3ds = [pxl_x, pxl_y]
+                frame1_keypoints.append(frame_p3ds)
 
         else:
             # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
@@ -160,23 +175,48 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
         frame_p3ds = np.array(frame_p3ds).reshape((len(pose_keypoints), 3))
         kpts_3d.append(frame_p3ds)
 
-        # uncomment these if you want to see the full keypoints detections
-        # mp_drawing.draw_landmarks(
-        #     frame0,
-        #     results0.pose_landmarks,
-        #     mp_pose.POSE_CONNECTIONS,
-        #     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
-        # )
+        # set the center of feet to [0,0,0]
+        frame_p3ds = frame_p3ds - (frame_p3ds[0, 10, :] + frame_p3ds[0, 11, :]) / 2 + [0, 0, 50]
 
-        # mp_drawing.draw_landmarks(
-        #     frame1,
-        #     results1.pose_landmarks,
-        #     mp_pose.POSE_CONNECTIONS,
-        #     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
-        # )
+        # uncomment these if you want to see the full keypoints detections
+        mp_drawing.draw_landmarks(
+            frame0,
+            results0.pose_landmarks,
+            mp_pose.POSE_CONNECTIONS,
+            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+        )
+
+        mp_drawing.draw_landmarks(
+            frame1,
+            results1.pose_landmarks,
+            mp_pose.POSE_CONNECTIONS,
+            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+        )
 
         cv2.imshow("front", frame0)
         cv2.imshow("side", frame1)
+
+        # 3D pose vizualization
+        for bodypart, part_color in zip(body, colors):
+            for _c in bodypart:
+                ax.plot(
+                    xs=[frame_p3ds[_c[0], 0], frame_p3ds[_c[1], 0]],
+                    ys=[frame_p3ds[_c[0], 1], frame_p3ds[_c[1], 1]],
+                    zs=[frame_p3ds[_c[0], 2], frame_p3ds[_c[1], 2]],
+                    linewidth=4,
+                    c=part_color,
+                )
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_zticks([])
+        ax.set_xlim3d(-50, 50)
+        ax.set_xlabel("x")
+        ax.set_ylim3d(-50, 50)
+        ax.set_ylabel("y")
+        ax.set_zlim3d(50, 100)
+        ax.set_zlabel("z")
+        ax.cla()
 
         k = cv2.waitKey(0.1)
         if k & 0xFF == 27:  # 27 is ESC key.
@@ -199,7 +239,7 @@ def main():
         input_stream1 = int(sys.argv[1])
         input_stream2 = int(sys.argv[2])
     else:
-        print("Call program with input webcam")
+        print("Call program with input webcam!")
         quit()
 
     # get projection matrices
@@ -208,7 +248,7 @@ def main():
 
     kpts_cam0, kpts_cam1, kpts_3d = run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1)
 
-    # create keypoints file in current working folder
+    # create keypoints file
     save_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_front_{now}.dat", kpts_cam0)
     save_keypoints_to_disk(f"{pose_record_dir}/kpts_cam_side_{now}.dat", kpts_cam1)
     save_keypoints_to_disk(f"{pose_record_dir}/kpts_3d_{now}.dat", kpts_3d)
