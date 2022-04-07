@@ -1,10 +1,9 @@
 version: '3'
 services:
-  posefit-python:
+  posefit:
     shm_size: '2gb'
     build:
       context: ./docker
-    container_name: 'posefit-python'
     tty: true
     volumes:
       - .:/work
