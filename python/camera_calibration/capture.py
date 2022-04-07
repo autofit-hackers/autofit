@@ -6,7 +6,7 @@ import numpy as np
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--camera-id", type=int, nargs="+", help="Camera device id")
+    parser.add_argument("--camera-ids", type=int, nargs="+", required=True, help="Camera device id")
     return parser.parse_args()
 
 
@@ -30,7 +30,7 @@ def main():
     while True:
         frames = []
         for capture in captures:
-            ret, frame = capture.read()
+            _, frame = capture.read()
             frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frames.append(frame)
         mergeImg = np.vstack(frames)
