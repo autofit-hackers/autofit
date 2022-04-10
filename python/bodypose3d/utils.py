@@ -179,6 +179,7 @@ class ThreadingVideoCapture:
         self.video = cv2.VideoCapture(src)
         self.q = queue.Queue(maxsize=max_queue_size)
         self.stopped = False
+        self.start()
 
     def start(self):
         thread = threading.Thread(target=self.update, daemon=True)

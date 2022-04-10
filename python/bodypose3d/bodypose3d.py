@@ -83,15 +83,12 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
     kpts_cam1 = []
     kpts_3d = []
 
-    start = time.time()
-    num_frames = 0
-
     # prepare matplotlib for 3D pose vizualization
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
     while True:
-        num_frames += 1
+        start = time.time()
         # read frames from stream
         ret0, frame0 = cap0.read()
         ret1, frame1 = cap1.read()
@@ -185,57 +182,62 @@ def run_realtime_pose_estimation(input_stream1, input_stream2, P0, P1):
                 landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
             )
 
+        end = time.time()
+        totalTime = end - start
+
+        fps = 1 / totalTime
+
+        cv2.putText(frame0, f"FPS: {int(fps)}", (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
+        cv2.putText(frame1, f"FPS: {int(fps)}", (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
+
         cv2.imshow("front", frame0)
         cv2.imshow("side", frame1)
 
         k = cv2.waitKey(1)
         if k & 0xFF == 27:  # 27 is ESC key.
-            end = time.time()
-            fps = num_frames / (end - start)
-            print(f"FPS:{fps}")
             break
 
-        # calculate 3d position
-        frame_p3ds = []
-        for uv1, uv2 in zip(frame0_keypoints, frame1_keypoints):
-            if uv1[0] == -1 or uv2[0] == -1:
-                _p3d = [-1, -1, -1]
-            else:
-                _p3d = DLT(P0, P1, uv1, uv2)
-            frame_p3ds.append(_p3d)
+        # # calculate 3d position
+        # frame_p3ds = []
+        # for uv1, uv2 in zip(frame0_keypoints, frame1_keypoints):
+        #     if uv1[0] == -1 or uv2[0] == -1:
+        #         _p3d = [-1, -1, -1]
+        #     else:
+        #         _p3d = DLT(P0, P1, uv1, uv2)
+        #     frame_p3ds.append(_p3d)
 
-        """
-        This contains the 3d position of each keypoint in current frame.
-        For real time application, this is what you want.
-        """
-        frame_p3ds = np.array(frame_p3ds).reshape((len(pose_keypoints), 3))
-        kpts_3d.append(frame_p3ds)
+        # """
+        # This contains the 3d position of each keypoint in current frame.
+        # For real time application, this is what you want.
+        # """
+        # frame_p3ds = np.array(frame_p3ds).reshape((len(pose_keypoints), 3))
+        # kpts_3d.append(frame_p3ds)
 
-        # set the center of feet to [0,0,0]
-        frame_p3ds = frame_p3ds - (frame_p3ds[10, :] + frame_p3ds[11, :]) / 2 + [0, 0, 50]
+        # # set the center of feet to [0,0,0]
+        # frame_p3ds = frame_p3ds - (frame_p3ds[10, :] + frame_p3ds[11, :]) / 2 + [0, 0, 50]
 
-        # 3D pose vizualization
-        for bodypart, part_color in zip(body, colors):
-            for _c in bodypart:
-                ax.plot(
-                    xs=[frame_p3ds[_c[0], 0], frame_p3ds[_c[1], 0]],
-                    ys=[frame_p3ds[_c[0], 1], frame_p3ds[_c[1], 1]],
-                    zs=[frame_p3ds[_c[0], 2], frame_p3ds[_c[1], 2]],
-                    linewidth=4,
-                    c=part_color,
-                )
+        # # 3D pose vizualization
+        # for bodypart, part_color in zip(body, colors):
+        #     for _c in bodypart:
+        #         ax.plot(
+        #             xs=[frame_p3ds[_c[0], 0], frame_p3ds[_c[1], 0]],
+        #             ys=[frame_p3ds[_c[0], 1], frame_p3ds[_c[1], 1]],
+        #             zs=[frame_p3ds[_c[0], 2], frame_p3ds[_c[1], 2]],
+        #             linewidth=4,
+        #             c=part_color,
+        #         )
 
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_zticks([])
-        ax.set_xlim3d(-50, 50)
-        ax.set_xlabel("x")
-        ax.set_ylim3d(-50, 50)
-        ax.set_ylabel("y")
-        ax.set_zlim3d(50, 100)
-        ax.set_zlabel("z")
-        plt.pause(0.001)
-        ax.cla()
+        # ax.set_xticks([])
+        # ax.set_yticks([])
+        # ax.set_zticks([])
+        # ax.set_xlim3d(-50, 50)
+        # ax.set_xlabel("x")
+        # ax.set_ylim3d(-50, 50)
+        # ax.set_ylabel("y")
+        # ax.set_zlim3d(50, 100)
+        # ax.set_zlabel("z")
+        # plt.pause(0.001)
+        # ax.cla()
 
     cv2.destroyAllWindows()
     for cap in caps:
