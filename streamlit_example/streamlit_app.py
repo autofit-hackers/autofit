@@ -3,7 +3,12 @@ from multiprocessing import Queue, Process
 from typing import NamedTuple, List
 
 import streamlit as st
-from streamlit_webrtc import VideoProcessorBase, webrtc_streamer, WebRtcMode, ClientSettings
+from streamlit_webrtc import (
+    VideoProcessorBase,
+    webrtc_streamer,
+    WebRtcMode,
+    ClientSettings,
+)
 
 import av
 import cv2 as cv
@@ -41,35 +46,46 @@ def pose_process(
             break
 
         results = pose.process(input_item)
-        picklable_results = FakeResultObject(pose_landmarks=FakeLandmarksObject(landmark=[
-            FakeLandmarkObject(
-                x=pose_landmark.x,
-                y=pose_landmark.y,
-                z=pose_landmark.z,
-                visibility=pose_landmark.visibility,
-            ) for pose_landmark in results.pose_landmarks.landmark
-        ]))
+        picklable_results = FakeResultObject(
+            pose_landmarks=FakeLandmarksObject(
+                landmark=[
+                    FakeLandmarkObject(
+                        x=pose_landmark.x,
+                        y=pose_landmark.y,
+                        z=pose_landmark.z,
+                        visibility=pose_landmark.visibility,
+                    )
+                    for pose_landmark in results.pose_landmarks.landmark
+                ]
+            )
+        )
         out_queue.put_nowait(picklable_results)
 
 
 class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
-    def __init__(self, static_image_mode,
-                    model_complexity,
-                    min_detection_confidence,
-                    min_tracking_confidence,
-                    rev_color,
-                    display_mode,
-                    show_fps) -> None:
+    def __init__(
+        self,
+        static_image_mode,
+        model_complexity,
+        min_detection_confidence,
+        min_tracking_confidence,
+        rev_color,
+        display_mode,
+        show_fps,
+    ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
-        self._pose_process = Process(target=pose_process, kwargs={
-            "in_queue": self._in_queue,
-            "out_queue": self._out_queue,
-            "static_image_mode": static_image_mode,
-            "model_complexity": model_complexity,
-            "min_detection_confidence": min_detection_confidence,
-            "min_tracking_confidence": min_tracking_confidence,
-        })
+        self._pose_process = Process(
+            target=pose_process,
+            kwargs={
+                "in_queue": self._in_queue,
+                "out_queue": self._out_queue,
+                "static_image_mode": static_image_mode,
+                "model_complexity": model_complexity,
+                "min_detection_confidence": min_detection_confidence,
+                "min_tracking_confidence": min_tracking_confidence,
+            },
+        )
         self._cvFpsCalc = CvFpsCalc(buffer_len=10)
 
         self.rev_color = rev_color
@@ -103,10 +119,13 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
         image = cv.flip(image, 1)  # ミラー表示
         debug_image01 = copy.deepcopy(image)
         debug_image02 = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
-        cv.rectangle(debug_image02, (0, 0), (image.shape[1], image.shape[0]),
-                    bg_color,
-                    thickness=-1)
-
+        cv.rectangle(
+            debug_image02,
+            (0, 0),
+            (image.shape[1], image.shape[0]),
+            bg_color,
+            thickness=-1,
+        )
 
         # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -128,10 +147,26 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
             )
 
         if self.show_fps:
-            cv.putText(debug_image01, "FPS:" + str(display_fps), (10, 30),
-                    cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2, cv.LINE_AA)
-            cv.putText(debug_image02, "FPS:" + str(display_fps), (10, 30),
-                    cv.FONT_HERSHEY_SIMPLEX, 1.0, color, 2, cv.LINE_AA)
+            cv.putText(
+                debug_image01,
+                "FPS:" + str(display_fps),
+                (10, 30),
+                cv.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 255, 0),
+                2,
+                cv.LINE_AA,
+            )
+            cv.putText(
+                debug_image02,
+                "FPS:" + str(display_fps),
+                (10, 30),
+                cv.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                color,
+                2,
+                cv.LINE_AA,
+            )
 
         if self.display_mode == "Pose":
             return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
@@ -144,8 +179,12 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
             half_w = w // 2
 
             offset_y = h // 4
-            new_image[offset_y: offset_y + half_h, 0: half_w, :] = cv.resize(debug_image02, (half_w, half_h))
-            new_image[offset_y: offset_y + half_h, half_w:, :] = cv.resize(debug_image01, (half_w, half_h))
+            new_image[offset_y : offset_y + half_h, 0:half_w, :] = cv.resize(
+                debug_image02, (half_w, half_h)
+            )
+            new_image[offset_y : offset_y + half_h, half_w:, :] = cv.resize(
+                debug_image01, (half_w, half_h)
+            )
             return av.VideoFrame.from_ndarray(new_image, format="bgr24")
 
     def __del__(self):
@@ -155,11 +194,25 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
 
 
 def main():
-    with st.beta_expander("Model parameters (there parameters are effective only at initialization)"):
+    with st.beta_expander(
+        "Model parameters (there parameters are effective only at initialization)"
+    ):
         static_image_mode = st.checkbox("Static image mode")
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
-        min_detection_confidence = st.slider("Min detection confidence", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
-        min_tracking_confidence = st.slider("Min tracking confidence", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
+        min_detection_confidence = st.slider(
+            "Min detection confidence",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.5,
+            step=0.01,
+        )
+        min_tracking_confidence = st.slider(
+            "Min tracking confidence",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.5,
+            step=0.01,
+        )
 
     rev_color = st.checkbox("Reverse color")
     display_mode = st.radio("Display mode", ["Pictogram", "Pose", "Both"], index=0)
@@ -173,14 +226,16 @@ def main():
             min_tracking_confidence=min_tracking_confidence,
             rev_color=rev_color,
             display_mode=display_mode,
-            show_fps=show_fps
+            show_fps=show_fps,
         )
 
     webrtc_ctx = webrtc_streamer(
         key="tokyo2020-Pictogram",
         mode=WebRtcMode.SENDRECV,
         client_settings=ClientSettings(
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            rtc_configuration={
+                "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+            },
             media_stream_constraints={"video": True, "audio": False},
         ),
         video_processor_factory=processor_factory,

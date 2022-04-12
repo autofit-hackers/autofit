@@ -12,6 +12,7 @@ class FakeLandmarkObject(NamedTuple):
     z: float
     visibility: bool
 
+
 class FakeLandmarksObject(NamedTuple):
     landmark: List[FakeLandmarkObject]
 
