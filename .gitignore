@@ -221,3 +221,6 @@ fabric.properties
 
 # cache
 __pycache__/
+
+# Others
+**/venv
