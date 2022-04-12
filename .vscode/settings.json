@@ -5,16 +5,8 @@
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
   "extensions.ignoreRecommendations": false,
-
   "files.encoding": "utf8",
   "files.eol": "\n",
-
-  "vetur.format.defaultFormatter.js": "none",
-  "vetur.format.defaultFormatter.less": "none",
-  "vetur.format.defaultFormatter.postcss": "none",
-  "vetur.format.defaultFormatter.pug": "none",
-  "vetur.format.defaultFormatter.ts": "none",
-
   "[html]": {
     "editor.tabSize": 2
   },
@@ -44,7 +36,6 @@
   "[vue-postcss]": {
     "editor.tabSize": 2
   },
-
   "[python]": {
     "editor.defaultFormatter": "ms-python.python",
     "editor.tabSize": 4,
@@ -52,6 +43,10 @@
   "autoDocstring.docstringFormat": "google",
   "python.analysis.typeCheckingMode": "strict",
   "python.formatting.provider": "black",
+  "python.formatting.blackArgs": [
+    "--line-length",
+    "119"
+  ],
   "python.languageServer": "Pylance",
   "python.linting.enabled": true,
 }
