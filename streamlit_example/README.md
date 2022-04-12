@@ -4,14 +4,21 @@ MediaPipeで姿勢推定を行い、Tokyo2020オリンピック風のピクト�
 https://user-images.githubusercontent.com/37477845/127340964-5378706f-034a-4920-be23-c6fbca442686.mp4
 
 # Requirement 
-* mediapipe 0.8.6 or later
-* OpenCV 3.4.2 or later
+```
+$ pip install -r requirements.txt
+```
 
-#  Demo
+# Demo (Recommended)
+```
+$ streamlit run streamlit_app.py
+```
+> :warning: ブラウザからローカルに立てたサーバに接続する際に、カメラの使用を許可しないと動作しない
+
+# Demo (Deprecated)
 以下コマンドでデモを起動してください。<br>
 ESCキー押下でプログラム終了します。<br>
 ```
-python main.py
+$ python main.py
 ```
 * --device<br>
 カメラデバイス番号の指定<br>
@@ -38,9 +45,5 @@ python main.py
 * --rev_color<br>
 背景色とピクトグラムの色を反転する<br>
 デフォルト：指定なし
-
-# Author
-高橋かずひと(https://twitter.com/KzhtTkhs)
- 
 # License 
-Tokyo2020-Pictogram-using-MediaPipe is under [Apache-2.0 License](LICENSE).
+This repository is forked from Tokyo2020-Pictogram-using-MediaPipe, which is under [Apache-2.0 License](LICENSE).

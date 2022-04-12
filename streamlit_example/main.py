@@ -23,6 +23,7 @@ def get_args():
     parser.add_argument("--min_detection_confidence", help="min_detection_confidence", type=float, default=0.5)
     parser.add_argument("--min_tracking_confidence", help="min_tracking_confidence", type=int, default=0.5)
 
+
     parser.add_argument("--rev_color", action="store_true")
 
     args = parser.parse_args()
@@ -80,7 +81,17 @@ def main():
         image = cv.flip(image, 1)  # ミラー表示
         debug_image01 = copy.deepcopy(image)
         debug_image02 = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
+<<<<<<< HEAD
         cv.rectangle(debug_image02, (0, 0), (image.shape[1], image.shape[0]), bg_color, thickness=-1)
+=======
+        cv.rectangle(
+            debug_image02,
+            (0, 0),
+            (image.shape[1], image.shape[0]),
+            bg_color,
+            thickness=-1,
+        )
+>>>>>>> ba1c64475be0c2ddad7f59d42986050bb5b0a379
 
         # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -111,7 +122,18 @@ def main():
             cv.LINE_AA,
         )
         cv.putText(
+<<<<<<< HEAD
             debug_image02, "FPS:" + str(display_fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1.0, color, 2, cv.LINE_AA
+=======
+            debug_image02,
+            "FPS:" + str(display_fps),
+            (10, 30),
+            cv.FONT_HERSHEY_SIMPLEX,
+            1.0,
+            color,
+            2,
+            cv.LINE_AA,
+>>>>>>> ba1c64475be0c2ddad7f59d42986050bb5b0a379
         )
 
         # キー処理(ESC：終了) #################################################
@@ -142,7 +164,13 @@ def draw_stick_figure(
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
         landmark_z = landmark.z
+<<<<<<< HEAD
         landmark_point.append([index, landmark.visibility, (landmark_x, landmark_y), landmark_z])
+=======
+        landmark_point.append(
+            [index, landmark.visibility, (landmark_x, landmark_y), landmark_z]
+        )
+>>>>>>> ba1c64475be0c2ddad7f59d42986050bb5b0a379
 
     # 脚の付け根の位置を腰の中点に修正
     right_leg = landmark_point[23]
@@ -219,7 +247,13 @@ def min_enclosing_face_circle(landmark_point):
 
     index_list = [1, 4, 7, 8, 9, 10]
     for index in index_list:
+<<<<<<< HEAD
         np_landmark_point = [np.array((landmark_point[index][2][0], landmark_point[index][2][1]))]
+=======
+        np_landmark_point = [
+            np.array((landmark_point[index][2][0], landmark_point[index][2][1]))
+        ]
+>>>>>>> ba1c64475be0c2ddad7f59d42986050bb5b0a379
         landmark_array = np.append(landmark_array, np_landmark_point, axis=0)
 
     center, radius = cv.minEnclosingCircle(points=landmark_array)
@@ -421,6 +455,7 @@ def draw_landmarks(
 
     if len(landmark_point) > 25:
         # 右足
+<<<<<<< HEAD
         if landmark_point[23][0] > visibility_th and landmark_point[25][0] > visibility_th:
             cv.line(image, landmark_point[23][1], landmark_point[25][1], (0, 255, 0), 2)
         if landmark_point[25][0] > visibility_th and landmark_point[27][0] > visibility_th:
@@ -438,6 +473,49 @@ def draw_landmarks(
         if landmark_point[28][0] > visibility_th and landmark_point[30][0] > visibility_th:
             cv.line(image, landmark_point[28][1], landmark_point[30][1], (0, 255, 0), 2)
         if landmark_point[30][0] > visibility_th and landmark_point[32][0] > visibility_th:
+=======
+        if (
+            landmark_point[23][0] > visibility_th
+            and landmark_point[25][0] > visibility_th
+        ):
+            cv.line(image, landmark_point[23][1], landmark_point[25][1], (0, 255, 0), 2)
+        if (
+            landmark_point[25][0] > visibility_th
+            and landmark_point[27][0] > visibility_th
+        ):
+            cv.line(image, landmark_point[25][1], landmark_point[27][1], (0, 255, 0), 2)
+        if (
+            landmark_point[27][0] > visibility_th
+            and landmark_point[29][0] > visibility_th
+        ):
+            cv.line(image, landmark_point[27][1], landmark_point[29][1], (0, 255, 0), 2)
+        if (
+            landmark_point[29][0] > visibility_th
+            and landmark_point[31][0] > visibility_th
+        ):
+            cv.line(image, landmark_point[29][1], landmark_point[31][1], (0, 255, 0), 2)
+
+        # 左足
+        if (
+            landmark_point[24][0] > visibility_th
+            and landmark_point[26][0] > visibility_th
+        ):
+            cv.line(image, landmark_point[24][1], landmark_point[26][1], (0, 255, 0), 2)
+        if (
+            landmark_point[26][0] > visibility_th
+            and landmark_point[28][0] > visibility_th
+        ):
+            cv.line(image, landmark_point[26][1], landmark_point[28][1], (0, 255, 0), 2)
+        if (
+            landmark_point[28][0] > visibility_th
+            and landmark_point[30][0] > visibility_th
+        ):
+            cv.line(image, landmark_point[28][1], landmark_point[30][1], (0, 255, 0), 2)
+        if (
+            landmark_point[30][0] > visibility_th
+            and landmark_point[32][0] > visibility_th
+        ):
+>>>>>>> ba1c64475be0c2ddad7f59d42986050bb5b0a379
             cv.line(image, landmark_point[30][1], landmark_point[32][1], (0, 255, 0), 2)
     return image
 
