@@ -39,6 +39,11 @@ python main.py
 背景色とピクトグラムの色を反転する<br>
 デフォルト：指定なし
 
+# streamlit の立て方
+```
+$ streamlit run streamlit_app.py
+```
+
 # Author
 高橋かずひと(https://twitter.com/KzhtTkhs)
  
