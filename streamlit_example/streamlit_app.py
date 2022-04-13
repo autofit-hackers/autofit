@@ -1,25 +1,17 @@
 import copy
-from multiprocessing import Queue, Process
-from typing import NamedTuple, List
-
-import streamlit as st
-from streamlit_webrtc import (
-    VideoProcessorBase,
-    webrtc_streamer,
-    WebRtcMode,
-    ClientSettings,
-)
+from multiprocessing import Process, Queue
+from typing import List, NamedTuple
 
 import av
 import cv2 as cv
-import numpy as np
 import mediapipe as mp
+import numpy as np
+import streamlit as st
+from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
 
-from utils import CvFpsCalc
+from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
-
-from fake_objects import FakeResultObject, FakeLandmarksObject, FakeLandmarkObject
-
+from utils import CvFpsCalc
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -179,12 +171,8 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
             half_w = w // 2
 
             offset_y = h // 4
-            new_image[offset_y : offset_y + half_h, 0:half_w, :] = cv.resize(
-                debug_image02, (half_w, half_h)
-            )
-            new_image[offset_y : offset_y + half_h, half_w:, :] = cv.resize(
-                debug_image01, (half_w, half_h)
-            )
+            new_image[offset_y : offset_y + half_h, 0:half_w, :] = cv.resize(debug_image02, (half_w, half_h))
+            new_image[offset_y : offset_y + half_h, half_w:, :] = cv.resize(debug_image01, (half_w, half_h))
             return av.VideoFrame.from_ndarray(new_image, format="bgr24")
 
     def __del__(self):
@@ -194,9 +182,7 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
 
 
 def main():
-    with st.beta_expander(
-        "Model parameters (there parameters are effective only at initialization)"
-    ):
+    with st.beta_expander("Model parameters (there parameters are effective only at initialization)"):
         static_image_mode = st.checkbox("Static image mode")
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
         min_detection_confidence = st.slider(
@@ -233,9 +219,7 @@ def main():
         key="tokyo2020-Pictogram",
         mode=WebRtcMode.SENDRECV,
         client_settings=ClientSettings(
-            rtc_configuration={
-                "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
-            },
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
             media_stream_constraints={"video": True, "audio": False},
         ),
         video_processor_factory=processor_factory,
