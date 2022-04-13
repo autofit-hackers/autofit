@@ -1,8 +1,7 @@
 {
-    "python.formatting.provider": "black"
-    "python.formatting.blackArgs": [
-        "--line-length",
-        "119"
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "esbenp.prettier-vscode",
     ],
-    "editor.formatOnSave": true
 }

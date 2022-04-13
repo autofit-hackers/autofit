@@ -41,7 +41,7 @@
     "editor.tabSize": 4,
   },
   "autoDocstring.docstringFormat": "google",
-  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.typeCheckingMode": "basic",
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": [
     "--line-length",
