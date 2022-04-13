@@ -61,7 +61,7 @@ def pose_process(
         out_queue.put_nowait(picklable_results)
 
 
-class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
+class PosefitVideoProcessor(VideoProcessorBase):
     def __init__(
         self,
         static_image_mode,
@@ -70,6 +70,7 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
         min_tracking_confidence,
         rev_color,
         show_fps,
+        show_2d: bool,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -84,16 +85,21 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
                 "min_tracking_confidence": min_tracking_confidence,
             },
         )
-        self._cvFpsCalc = CvFpsCalc(buffer_len=10)
+        self._cvFpsCalc = CvFpsCalc(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         self.rev_color = rev_color
         self.show_fps = show_fps
+        self.show_2d = show_2d
 
         self._pose_process.start()
 
     def _infer_pose(self, image):
+        print("inferring")
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
+
+    def _save_pose(self, results) -> None:
+        pass
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -126,22 +132,24 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
 
         # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-        results = self._infer_pose(image)
-        # results = self._pose.process(image)
+        if self.show_2d:
+            results = self._infer_pose(image)
+            self._save_pose(results)
+            # results = self._pose.process(image)
 
-        # 描画 ################################################################
-        if results.pose_landmarks is not None:
-            # 描画
-            debug_image01 = draw_landmarks(
-                debug_image01,
-                results.pose_landmarks,
-            )
-            debug_image02 = draw_stick_figure(
-                debug_image02,
-                results.pose_landmarks,
-                color=color,
-                bg_color=bg_color,
-            )
+            # 描画 ################################################################
+            if results.pose_landmarks is not None:
+                # 描画
+                debug_image01 = draw_landmarks(
+                    debug_image01,
+                    results.pose_landmarks,
+                )
+                debug_image02 = draw_stick_figure(
+                    debug_image02,
+                    results.pose_landmarks,
+                    color=color,
+                    bg_color=bg_color,
+                )
 
         if self.show_fps:
             cv.putText(
@@ -194,15 +202,17 @@ def main():
 
     rev_color = st.checkbox("Reverse color")
     show_fps = st.checkbox("Show FPS", value=True)
+    show_2d = st.checkbox("Show 2D", value=True)
 
     def processor_factory():
-        return Tokyo2020PictogramVideoProcessor(
+        return PosefitVideoProcessor(
             static_image_mode=static_image_mode,
             model_complexity=model_complexity,
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence,
             rev_color=rev_color,
             show_fps=show_fps,
+            show_2d=show_2d,
         )
 
     webrtc_ctx = webrtc_streamer(
