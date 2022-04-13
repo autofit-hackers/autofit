@@ -1,6 +1,13 @@
 import copy
-from multiprocessing import Process, Queue
-from typing import List, NamedTuple
+from multiprocessing import Queue, Process
+
+import streamlit as st
+from streamlit_webrtc import (
+    VideoProcessorBase,
+    webrtc_streamer,
+    WebRtcMode,
+    ClientSettings,
+)
 
 import av
 import cv2 as cv
@@ -62,7 +69,6 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
         min_detection_confidence,
         min_tracking_confidence,
         rev_color,
-        display_mode,
         show_fps,
     ) -> None:
         self._in_queue = Queue()
@@ -81,7 +87,6 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
         self._cvFpsCalc = CvFpsCalc(buffer_len=10)
 
         self.rev_color = rev_color
-        self.display_mode = display_mode
         self.show_fps = show_fps
 
         self._pose_process.start()
@@ -160,20 +165,7 @@ class Tokyo2020PictogramVideoProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        if self.display_mode == "Pose":
-            return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
-        elif self.display_mode == "Pictogram":
-            return av.VideoFrame.from_ndarray(debug_image02, format="bgr24")
-        elif self.display_mode == "Both":
-            new_image = np.zeros(image.shape, dtype=np.uint8)
-            h, w = image.shape[0:2]
-            half_h = h // 2
-            half_w = w // 2
-
-            offset_y = h // 4
-            new_image[offset_y : offset_y + half_h, 0:half_w, :] = cv.resize(debug_image02, (half_w, half_h))
-            new_image[offset_y : offset_y + half_h, half_w:, :] = cv.resize(debug_image01, (half_w, half_h))
-            return av.VideoFrame.from_ndarray(new_image, format="bgr24")
+        return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
 
     def __del__(self):
         print("Stop the inference process...")
@@ -201,7 +193,6 @@ def main():
         )
 
     rev_color = st.checkbox("Reverse color")
-    display_mode = st.radio("Display mode", ["Pictogram", "Pose", "Both"], index=0)
     show_fps = st.checkbox("Show FPS", value=True)
 
     def processor_factory():
@@ -211,7 +202,6 @@ def main():
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence,
             rev_color=rev_color,
-            display_mode=display_mode,
             show_fps=show_fps,
         )
 
@@ -228,7 +218,6 @@ def main():
 
     if webrtc_ctx.video_processor:
         webrtc_ctx.video_processor.rev_color = rev_color
-        webrtc_ctx.video_processor.display_mode = display_mode
         webrtc_ctx.video_processor.show_fps = show_fps
 
 
