@@ -61,15 +61,18 @@ def pose_process(
         out_queue.put_nowait(picklable_results)
 
 
+def save_
+
+
 class PosefitVideoProcessor(VideoProcessorBase):
     def __init__(
         self,
-        static_image_mode,
+        static_image_mode: bool,
         model_complexity,
         min_detection_confidence,
         min_tracking_confidence,
         rev_color,
-        show_fps,
+        show_fps: bool,
         show_2d: bool,
     ) -> None:
         self._in_queue = Queue()
@@ -229,6 +232,7 @@ def main():
     if webrtc_ctx.video_processor:
         webrtc_ctx.video_processor.rev_color = rev_color
         webrtc_ctx.video_processor.show_fps = show_fps
+        webrtc_ctx.video_processor.show_2d = show_2d
 
 
 if __name__ == "__main__":
