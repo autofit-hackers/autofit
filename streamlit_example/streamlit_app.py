@@ -185,7 +185,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
 
 def main():
-    with st.beta_expander("Model parameters (there parameters are effective only at initialization)"):
+    with st.expander("Model parameters (there parameters are effective only at initialization)"):
         static_image_mode = st.checkbox("Static image mode")
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
         min_detection_confidence = st.slider(
