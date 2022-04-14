@@ -1,3 +1,4 @@
+import time
 import copy
 from multiprocessing import Queue, Process
 
@@ -61,7 +62,11 @@ def pose_process(
         out_queue.put_nowait(picklable_results)
 
 
-def save_
+def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
+    """Save video as mp4."""
+    fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
+    video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
+    return video
 
 
 class PosefitVideoProcessor(VideoProcessorBase):
@@ -74,6 +79,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         rev_color,
         show_fps: bool,
         show_2d: bool,
+        video_save_path: str | None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -94,10 +100,12 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.show_fps = show_fps
         self.show_2d = show_2d
 
+        self.video_save_path = video_save_path
+        self.video_writer: cv.VideoWriter | None = None
+
         self._pose_process.start()
 
     def _infer_pose(self, image):
-        print("inferring")
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
@@ -111,6 +119,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._cvFpsCalc.get()
 
+        if (self.video_save_path is not None) and (self.video_writer is None):
+            # video_writer の初期化
+            # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
+            self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
         # 色指定
         if self.rev_color:
             color = (255, 255, 255)
@@ -132,6 +144,12 @@ class PosefitVideoProcessor(VideoProcessorBase):
             bg_color,
             thickness=-1,
         )
+
+        # 動画の保存
+        if self.video_save_path is not None:
+            assert self.video_writer is not None
+            # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
+            self.video_writer.write(image)
 
         # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -181,6 +199,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
     def __del__(self):
         print("Stop the inference process...")
         self._stop_pose_process()
+        if self.video_writer is not None:
+            print("Stop writing video process...")
+            self.video_writer.release()
         print("Stopped!")
 
 
@@ -206,6 +227,8 @@ def main():
     rev_color = st.checkbox("Reverse color")
     show_fps = st.checkbox("Show FPS", value=True)
     show_2d = st.checkbox("Show 2D", value=True)
+    save_video = st.checkbox("Save Video", value=False)
+    video_save_path: str | None = time.strftime("%Y%-m-%d-%H-%M-%S.mp4") if save_video else None
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -216,6 +239,7 @@ def main():
             rev_color=rev_color,
             show_fps=show_fps,
             show_2d=show_2d,
+            video_save_path=video_save_path,
         )
 
     webrtc_ctx = webrtc_streamer(
@@ -233,6 +257,7 @@ def main():
         webrtc_ctx.video_processor.rev_color = rev_color
         webrtc_ctx.video_processor.show_fps = show_fps
         webrtc_ctx.video_processor.show_2d = show_2d
+        webrtc_ctx.video_processor.video_save_path = video_save_path
 
 
 if __name__ == "__main__":
