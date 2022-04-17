@@ -1,6 +1,8 @@
 import time
 import copy
 from multiprocessing import Queue, Process
+from typing import List
+import pickle
 
 import streamlit as st
 from streamlit_webrtc import (
@@ -80,6 +82,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         show_fps: bool,
         show_2d: bool,
         video_save_path: str | None,
+        pose_save_path: str | None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -103,14 +106,18 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.video_save_path = video_save_path
         self.video_writer: cv.VideoWriter | None = None
 
+        self.pose_save_path: str | None = pose_save_path
+        self.pose_mem: List[FakeLandmarksObject] = []
+
         self._pose_process.start()
 
     def _infer_pose(self, image):
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
-    def _save_pose(self, results) -> None:
-        pass
+    def _save_as_pickle(self, obj, save_path) -> None:
+        with open(save_path, "wb") as handle:
+            pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -123,6 +130,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
             self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
+
         # 色指定
         if self.rev_color:
             color = (255, 255, 255)
@@ -155,7 +163,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         if self.show_2d:
             results = self._infer_pose(image)
-            self._save_pose(results)
+
+            # pose の保存
+            if self.pose_save_path is not None:
+                self.pose_mem.append(results)
             # results = self._pose.process(image)
 
             # 描画 ################################################################
@@ -202,6 +213,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
         if self.video_writer is not None:
             print("Stop writing video process...")
             self.video_writer.release()
+        if self.pose_save_path is not None:
+            print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
+            self._save_as_pickle(self.pose_mem, self.pose_save_path)
         print("Stopped!")
 
 
@@ -228,7 +242,9 @@ def main():
     show_fps = st.checkbox("Show FPS", value=True)
     show_2d = st.checkbox("Show 2D", value=True)
     save_video = st.checkbox("Save Video", value=False)
+    save_pose = st.checkbox("Save Pose", value=False)
     video_save_path: str | None = time.strftime("%Y%-m-%d-%H-%M-%S.mp4") if save_video else None
+    pose_save_path: str | None = time.strftime("%Y%-m-%d-%H-%M-%S.pkl") if save_pose else None
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -240,10 +256,11 @@ def main():
             show_fps=show_fps,
             show_2d=show_2d,
             video_save_path=video_save_path,
+            pose_save_path=pose_save_path,
         )
 
     webrtc_ctx = webrtc_streamer(
-        key="tokyo2020-Pictogram",
+        key="posefit",
         mode=WebRtcMode.SENDRECV,
         client_settings=ClientSettings(
             rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
@@ -258,6 +275,7 @@ def main():
         webrtc_ctx.video_processor.show_fps = show_fps
         webrtc_ctx.video_processor.show_2d = show_2d
         webrtc_ctx.video_processor.video_save_path = video_save_path
+        webrtc_ctx.video_processor.pose_save_path = pose_save_path
 
 
 if __name__ == "__main__":
