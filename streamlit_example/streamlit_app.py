@@ -1,3 +1,4 @@
+import os
 import time
 import copy
 from multiprocessing import Queue, Process
@@ -66,6 +67,7 @@ def pose_process(
 
 def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
     """Save video as mp4."""
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
     video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
     return video
@@ -215,6 +217,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
             self.video_writer.release()
         if self.pose_save_path is not None:
             print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
+            os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
             self._save_as_pickle(self.pose_mem, self.pose_save_path)
         print("Stopped!")
 
@@ -243,8 +246,10 @@ def main():
     show_2d = st.checkbox("Show 2D", value=True)
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
-    video_save_path: str | None = time.strftime("%Y%-m-%d-%H-%M-%S.mp4") if save_video else None
-    pose_save_path: str | None = time.strftime("%Y%-m-%d-%H-%M-%S.pkl") if save_pose else None
+    video_save_path: str | None = (
+        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
+    )
+    pose_save_path: str | None = os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
 
     def processor_factory():
         return PosefitVideoProcessor(
