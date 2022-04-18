@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import copy
@@ -142,6 +143,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
             'full_arm': 0,
             'pelvic_width': 0
         }
+        with open('data.json', 'w') as fp:
+            json.dump(bone_dict, fp)
 
 
     def _stop_pose_process(self):
