@@ -2,17 +2,8 @@ import os
 import time
 import copy
 from multiprocessing import Queue, Process
-from typing import List
+from typing import List, Union
 import pickle
-from typing import Union
-
-import streamlit as st
-from streamlit_webrtc import (
-    VideoProcessorBase,
-    webrtc_streamer,
-    WebRtcMode,
-    ClientSettings,
-)
 
 import av
 import cv2 as cv
@@ -133,16 +124,15 @@ class PosefitVideoProcessor(VideoProcessorBase):
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def _save_bone_info(self, results):
-        print('save!!!')
+        print("save!!!")
         bone_dict = {
-            'foot_neck_height': 0,
-            'shoulder_width': 0,
-            'upper_arm': 0,
-            'forearm': 0,
-            'full_arm': 0,
-            'pelvic_width': 0
+            "foot_neck_height": 0,
+            "shoulder_width": 0,
+            "upper_arm": 0,
+            "forearm": 0,
+            "full_arm": 0,
+            "pelvic_width": 0,
         }
-
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -288,13 +278,13 @@ def main():
         else None
     )
     screenshot = False
-    if st.button('Save'):
+    if st.button("Save"):
         # 最後の試行で上のボタンがクリックされた
-        st.write('Pose Saved')
+        st.write("Pose Saved")
         screenshot = True
     else:
         # クリックされなかった
-        st.write('Not saved yet')
+        st.write("Not saved yet")
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -307,7 +297,7 @@ def main():
             show_2d=show_2d,
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
-            screenshot=screenshot
+            screenshot=screenshot,
         )
 
     webrtc_ctx = webrtc_streamer(
