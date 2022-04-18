@@ -4,6 +4,7 @@ import copy
 from multiprocessing import Queue, Process
 from typing import List
 import pickle
+from typing import Union
 
 import streamlit as st
 from streamlit_webrtc import (
@@ -18,7 +19,12 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
+from streamlit_webrtc import (
+    ClientSettings,
+    VideoProcessorBase,
+    WebRtcMode,
+    webrtc_streamer,
+)
 
 from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
@@ -65,7 +71,9 @@ def pose_process(
         out_queue.put_nowait(picklable_results)
 
 
-def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
+def create_video_writer(
+    save_path: str, fps: int, frame: av.VideoFrame
+) -> cv.VideoWriter:
     """Save video as mp4."""
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
@@ -83,8 +91,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         rev_color,
         show_fps: bool,
         show_2d: bool,
-        video_save_path: str | None,
-        pose_save_path: str | None,
+        video_save_path: Union[str, None],
+        pose_save_path: Union[str, None],
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -131,7 +139,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
         if (self.video_save_path is not None) and (self.video_writer is None):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
-            self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
+            self.video_writer = create_video_writer(
+                save_path=self.video_save_path, fps=30, frame=frame
+            )
 
         # 色指定
         if self.rev_color:
@@ -223,7 +233,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
 
 def main():
-    with st.expander("Model parameters (there parameters are effective only at initialization)"):
+    with st.expander(
+        "Model parameters (there parameters are effective only at initialization)"
+    ):
         static_image_mode = st.checkbox("Static image mode")
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
         min_detection_confidence = st.slider(
@@ -247,9 +259,15 @@ def main():
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
     video_save_path: str | None = (
-        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
+        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4"))
+        if save_video
+        else None
     )
-    pose_save_path: str | None = os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    pose_save_path: str | None = (
+        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl"))
+        if save_pose
+        else None
+    )
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -268,7 +286,9 @@ def main():
         key="posefit",
         mode=WebRtcMode.SENDRECV,
         client_settings=ClientSettings(
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            rtc_configuration={
+                "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+            },
             media_stream_constraints={"video": True, "audio": False},
         ),
         video_processor_factory=processor_factory,
