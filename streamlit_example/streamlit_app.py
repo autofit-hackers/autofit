@@ -91,8 +91,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
         rev_color,
         show_fps: bool,
         show_2d: bool,
+<<<<<<< Updated upstream
         video_save_path: Union[str, None],
         pose_save_path: Union[str, None],
+=======
+        video_save_path: str | None,
+        pose_save_path: str | None,
+        screenshot: bool,
+>>>>>>> Stashed changes
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -133,6 +139,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _save_bone_info(self, results):
         print('save!!!')
+<<<<<<< Updated upstream
         bone_dict = {
             'foot_neck_height': 0,
             'shoulder_width': 0,
@@ -141,6 +148,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
             'full_arm': 0,
             'pelvic_width': 0
         }
+=======
+>>>>>>> Stashed changes
 
 
     def _stop_pose_process(self):
@@ -286,6 +295,19 @@ def main():
         if save_pose
         else None
     )
+<<<<<<< Updated upstream
+=======
+    pose_save_path: str | None = os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    
+    screenshot = False
+    if st.button('Save'):
+        # 最後の試行で上のボタンがクリックされた
+        st.write('Pose Saved')
+        screenshot = True
+    else:
+        # クリックされなかった
+        st.write('Not saved yet')
+>>>>>>> Stashed changes
 
     def processor_factory():
         return PosefitVideoProcessor(
