@@ -62,10 +62,10 @@ namespace DisplayObjects2DNs
             };
             repCounterSettings = new RepCounterSettings()
             {
-                keyJointNumber = 16,
+                keyJointNumber = 12,
                 menuName = "squat",
-                upperThreshold = 0.4f,
-                lowerThreshold = 0.5f,
+                upperThreshold = 0.45f,
+                lowerThreshold = 0.55f,
                 isLiftUpType = true,
                 directionIndex = 1
             };

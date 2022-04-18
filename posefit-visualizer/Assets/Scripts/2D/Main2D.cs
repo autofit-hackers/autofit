@@ -63,6 +63,7 @@ class Main2D : MonoBehaviour
             hm.CorrectTransformations(rm.state.jointGameObjects);
             
             // TODO: カウント系のRepリセットはここにかく
+            displayObjects.ResetRepCounts();
         }
         
         // トレーナーのフレームを進める

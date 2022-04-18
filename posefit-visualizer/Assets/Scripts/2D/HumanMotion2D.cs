@@ -169,6 +169,7 @@ namespace HumanMotion2DNs
                     // Joint の 中身を vector3 に格納
                     Vector3 latestPosition = new Vector3();
                     
+                    // TODO: 入力のiPadに合わせてハードコードしている部分
                     latestPosition.x = (joint.x - 1080f/2)/bodyHeight;
                     latestPosition.y = -(joint.y - 1920f/2)/bodyHeight;
                     latestPosition.z = 0;

@@ -3,7 +3,7 @@ import os
 import pickle
 import time
 from multiprocessing import Process, Queue
-from typing import List
+from typing import List, Union
 
 import av
 import cv2 as cv
@@ -75,9 +75,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         rev_color,
         show_fps: bool,
         show_2d: bool,
-        video_save_path: str | None,
-        pose_save_path: str | None,
-        pose_load_path: str | None,
+        video_save_path: Union[str, None],
+        pose_save_path: Union[str, None],
+        pose_load_path: Union[str, None],
+        screenshot: bool,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -97,11 +98,12 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.rev_color = rev_color
         self.show_fps = show_fps
         self.show_2d = show_2d
+        self.screenshot = screenshot
 
         self.video_save_path = video_save_path
-        self.video_writer: cv.VideoWriter | None = None
+        self.video_writer: Union[cv.VideoWriter, None] = None
 
-        self.pose_save_path: str | None = pose_save_path
+        self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []
 
         # お手本ポーズを3DでLoad
@@ -111,6 +113,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self._pose_process.start()
 
     def _infer_pose(self, image):
+        # print("inferring")
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
@@ -120,8 +123,19 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _load_pose(self, load_path) -> None:
         with open(load_path, "rb") as handle:
-            loaded_pose = pickle.load(handle)
-        return loaded_pose
+            loaded_poses = pickle.load(handle)
+        return loaded_poses
+
+    def _save_bone_info(self, results):
+        print("save!!!")
+        bone_dict = {
+            "foot_neck_height": 0,
+            "shoulder_width": 0,
+            "upper_arm": 0,
+            "forearm": 0,
+            "full_arm": 0,
+            "pelvic_width": 0,
+        }
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -172,6 +186,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
             if self.pose_save_path is not None:
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
+            if self.screenshot:
+                self._save_bone_info(image)
+                self.screenshot = False
 
             # Poseの描画 ################################################################
             if results.pose_landmarks is not None:
@@ -254,13 +271,24 @@ def main():
     rev_color = st.checkbox("Reverse color")
     show_fps = st.checkbox("Show FPS", value=True)
     show_2d = st.checkbox("Show 2D", value=True)
+    screenshot = False
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
     pose_load_path = st.file_uploader("Load File", type="pkl")
-    video_save_path: str | None = (
+    video_save_path: Union[str, None] = (
         os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
     )
-    pose_save_path: str | None = os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    pose_save_path: Union[str, None] = (
+        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    )
+    screenshot = False
+    if st.button("Save"):
+        # 最後の試行で上のボタンがクリックされた
+        st.write("Pose Saved")
+        screenshot = True
+    else:
+        # クリックされなかった
+        st.write("Not saved yet")
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -274,6 +302,7 @@ def main():
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
             pose_load_path=pose_load_path,
+            screenshot=screenshot,
         )
 
     webrtc_ctx = webrtc_streamer(
@@ -293,6 +322,7 @@ def main():
         webrtc_ctx.video_processor.show_2d = show_2d
         webrtc_ctx.video_processor.video_save_path = video_save_path
         webrtc_ctx.video_processor.pose_save_path = pose_save_path
+        webrtc_ctx.video_processor.screenshot = screenshot
 
 
 if __name__ == "__main__":

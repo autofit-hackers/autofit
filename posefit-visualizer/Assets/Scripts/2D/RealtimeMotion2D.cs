@@ -19,6 +19,9 @@ namespace RealtimeMotion2DNs
         public Vector3 scale;
         public Vector3 rotation;
         public Vector3 translation;
+        
+        public int deltaFrameCount; //d(joints)/d(Frame) を計算するときのd(Frame)
+        public int callFrameBefore;
     }
 
     struct RealtimeMotionState
@@ -32,6 +35,10 @@ namespace RealtimeMotion2DNs
         public RawImage inputImageUI;
         public BlazePoseResource blazePoseResource;
         public BlazePoseModel poseLandmarkModel;
+
+        public Dictionary<string, Vector3> jointSpeeds;
+        public Dictionary<string, Vector3> tmpJointSpeeds;
+        public bool isChangedVelocityDirection;
     }
 
     class RealtimeMotion2D
@@ -58,8 +65,10 @@ namespace RealtimeMotion2DNs
                 sphereScale = 1.5f,
                 scale = new Vector3(1920, 1080, 1),
                 rotation = new Vector3(1,1,1),
-                translation = new Vector3(0, -5,0)
+                translation = new Vector3(0, -5,0),
                 
+                deltaFrameCount = 5,
+                callFrameBefore = 5
             };
             state = new RealtimeMotionState()
             {
@@ -70,7 +79,11 @@ namespace RealtimeMotion2DNs
                 webCamInput = webCamInput,
                 inputImageUI = inputImageUI,
                 blazePoseResource = blazePoseResource,
-                poseLandmarkModel = poseLandmarkModel
+                poseLandmarkModel = poseLandmarkModel,
+                
+                jointSpeeds = new Dictionary<string, Vector3>(),
+                tmpJointSpeeds = new Dictionary<string, Vector3>(),
+                isChangedVelocityDirection = false
             };
         }
         
@@ -85,6 +98,10 @@ namespace RealtimeMotion2DNs
                 state.jointGameObjects[jointName] = GameObject.Instantiate(settings.spherePrefab.gameObject, Vector3.zero, Quaternion.identity) as GameObject;
                 state.jointGameObjects[jointName].transform.localScale = new Vector3(settings.sphereScale, settings.sphereScale, settings.sphereScale);
                 state.jointGameObjects[jointName].GetComponent<Renderer>().material.color = settings.jointColor;
+                
+                //initialize joint speeds
+                state.jointSpeeds[jointName] = new Vector3();
+                state.jointSpeeds[jointName] = new Vector3();
             }
 
             //　Initialize bone objects
@@ -130,7 +147,7 @@ namespace RealtimeMotion2DNs
                 // var newPositonVec = mainCamera.ScreenToWorldPoint(new Vector3(data[jointNumber].x*settings.scale.x, (1-data[jointNumber].y)*settings.scale.y, 95)) + settings.translation;
                 var newPositonVec =
                     mainCamera.ScreenToWorldPoint(new Vector3((1 - data[jointNumber].y) * settings.scale.y,
-                        (1 - data[jointNumber].x) * settings.scale.x, data[jointNumber].z*100 +95)) + new Vector3(0,-5f*1080/1920,0); //TODO: ここでZ座標を出現させる
+                        (1 - data[jointNumber].x) * settings.scale.x, data[jointNumber].z*0 +95)) + new Vector3(0,-5f*1080/1920,0); //TODO: ここでZ座標を出現させる
                 var vec = lastPositionVec * (1-settings.lpfRate) + newPositonVec * settings.lpfRate;
                 joints[PoseLandmarks.LANDMARK_LIST[jointNumber]].transform.position = vec;
             }
@@ -214,5 +231,10 @@ namespace RealtimeMotion2DNs
             }
             return frame;
         }
+
+        // public bool CaliculateVelocityDirection()
+        // {
+        //     Debug.Log("aa");
+        // }
     }
 }
