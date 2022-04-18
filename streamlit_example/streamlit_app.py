@@ -77,7 +77,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         show_2d: bool,
         video_save_path: Union[str, None],
         pose_save_path: Union[str, None],
-        pose_load_path: Union[str, None],
+        uploaded_file: Union[str, None],
         screenshot: bool,
     ) -> None:
         self._in_queue = Queue()
@@ -104,11 +104,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
-        self.pose_mem: List[FakeLandmarksObject] = []
+        self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
 
         # お手本ポーズを3DでLoad
-        if self.pose_load_path is not None:
-            self.loaded_poses = self._load_pose
+        if uploaded_file is not None:
+            self.loaded_poses = self._load_pose(uploaded_file)
 
         self._pose_process.start()
 
@@ -121,8 +121,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def _load_pose(self, load_path) -> None:
-        with open(load_path, "rb") as handle:
+    def _load_pose(self, uploaded_file):
+        with open(f"poses/{uploaded_file.name}", "rb") as handle:
             loaded_poses = pickle.load(handle)
         return loaded_poses
 
@@ -205,11 +205,12 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 )
 
             # お手本Poseの描画
-            if self.loaded_poses is not None:
-                loaded_pose = self.loaded_poses.landmark.pop(0)
+            if self.loaded_poses:
+                loaded_pose = self.loaded_poses.pop(0)
                 debug_image01 = draw_landmarks(
                     debug_image01,
-                    loaded_pose,
+                    loaded_pose.pose_landmarks,
+                    is_loaded=True,
                 )
 
         if self.show_fps:
@@ -274,7 +275,7 @@ def main():
     screenshot = False
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
-    pose_load_path = st.file_uploader("Load File", type="pkl")
+    uploaded_file = st.file_uploader("Load File", type="pkl")
     video_save_path: Union[str, None] = (
         os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
     )
@@ -301,7 +302,7 @@ def main():
             show_2d=show_2d,
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
-            pose_load_path=pose_load_path,
+            uploaded_file=uploaded_file,
             screenshot=screenshot,
         )
 
@@ -322,6 +323,7 @@ def main():
         webrtc_ctx.video_processor.show_2d = show_2d
         webrtc_ctx.video_processor.video_save_path = video_save_path
         webrtc_ctx.video_processor.pose_save_path = pose_save_path
+        webrtc_ctx.video_processor.uploaded_file = uploaded_file
         webrtc_ctx.video_processor.screenshot = screenshot
 
 
