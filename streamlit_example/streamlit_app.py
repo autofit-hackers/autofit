@@ -133,6 +133,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _save_bone_info(self, results):
         print('save!!!')
+        bone_dict = {
+            'foot_neck_height': 0,
+            'shoulder_width': 0,
+            'upper_arm': 0,
+            'forearm': 0,
+            'full_arm': 0,
+            'pelvic_width': 0
+        }
 
 
     def _stop_pose_process(self):
@@ -265,6 +273,7 @@ def main():
     rev_color = st.checkbox("Reverse color")
     show_fps = st.checkbox("Show FPS", value=True)
     show_2d = st.checkbox("Show 2D", value=True)
+    screenshot = False
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
     video_save_path: Union[str, None] = (
