@@ -1,17 +1,9 @@
-import os
-import time
 import copy
-from multiprocessing import Queue, Process
-from typing import List
+import os
 import pickle
-
-import streamlit as st
-from streamlit_webrtc import (
-    VideoProcessorBase,
-    webrtc_streamer,
-    WebRtcMode,
-    ClientSettings,
-)
+import time
+from multiprocessing import Process, Queue
+from typing import List
 
 import av
 import cv2 as cv
@@ -85,6 +77,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         show_2d: bool,
         video_save_path: str | None,
         pose_save_path: str | None,
+        pose_load_path: str | None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -111,6 +104,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.pose_save_path: str | None = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []
 
+        # お手本ポーズを3DでLoad
+        if self.pose_load_path is not None:
+            self.loaded_poses = self._load_pose
+
         self._pose_process.start()
 
     def _infer_pose(self, image):
@@ -120,6 +117,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
     def _save_as_pickle(self, obj, save_path) -> None:
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def _load_pose(self, load_path) -> None:
+        with open(load_path, "rb") as handle:
+            loaded_pose = pickle.load(handle)
+        return loaded_pose
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -171,7 +173,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
 
-            # 描画 ################################################################
+            # Poseの描画 ################################################################
             if results.pose_landmarks is not None:
                 # 描画
                 debug_image01 = draw_landmarks(
@@ -183,6 +185,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
                     results.pose_landmarks,
                     color=color,
                     bg_color=bg_color,
+                )
+
+            # お手本Poseの描画
+            if self.loaded_poses is not None:
+                loaded_pose = self.loaded_poses.landmark.pop(0)
+                debug_image01 = draw_landmarks(
+                    debug_image01,
+                    loaded_pose,
                 )
 
         if self.show_fps:
@@ -246,6 +256,7 @@ def main():
     show_2d = st.checkbox("Show 2D", value=True)
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
+    pose_load_path = st.file_uploader("Load File", type="pkl")
     video_save_path: str | None = (
         os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
     )
@@ -262,6 +273,7 @@ def main():
             show_2d=show_2d,
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
+            pose_load_path=pose_load_path,
         )
 
     webrtc_ctx = webrtc_streamer(
