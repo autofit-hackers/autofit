@@ -2,30 +2,18 @@ import json
 import os
 import time
 import copy
-from multiprocessing import Queue, Process
-from typing import List
+import os
 import pickle
-from typing import Union
-
-import streamlit as st
-from streamlit_webrtc import (
-    VideoProcessorBase,
-    webrtc_streamer,
-    WebRtcMode,
-    ClientSettings,
-)
+import time
+from multiprocessing import Process, Queue
+from typing import List, Union
 
 import av
 import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import (
-    ClientSettings,
-    VideoProcessorBase,
-    WebRtcMode,
-    webrtc_streamer,
-)
+from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
 
 from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
@@ -72,9 +60,7 @@ def pose_process(
         out_queue.put_nowait(picklable_results)
 
 
-def create_video_writer(
-    save_path: str, fps: int, frame: av.VideoFrame
-) -> cv.VideoWriter:
+def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
     """Save video as mp4."""
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
@@ -94,6 +80,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         show_2d: bool,
         video_save_path: Union[str, None],
         pose_save_path: Union[str, None],
+        pose_load_path: Union[str, None],
         screenshot: bool,
     ) -> None:
         self._in_queue = Queue()
@@ -122,6 +109,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []
 
+        # お手本ポーズを3DでLoad
+        if self.pose_load_path is not None:
+            self.loaded_poses = self._load_pose
+
         self._pose_process.start()
 
     def _infer_pose(self, image):
@@ -133,19 +124,23 @@ class PosefitVideoProcessor(VideoProcessorBase):
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    def _load_pose(self, load_path) -> None:
+        with open(load_path, "rb") as handle:
+            loaded_poses = pickle.load(handle)
+        return loaded_poses
+
     def _save_bone_info(self, results):
-        print('save!!!')
+        print("save!!!")
         bone_dict = {
-            'foot_neck_height': 0,
-            'shoulder_width': 0,
-            'upper_arm': 0,
-            'forearm': 0,
-            'full_arm': 0,
-            'pelvic_width': 0
+            "foot_neck_height": 0,
+            "shoulder_width": 0,
+            "upper_arm": 0,
+            "forearm": 0,
+            "full_arm": 0,
+            "pelvic_width": 0,
         }
         with open('data.json', 'w') as fp:
             json.dump(bone_dict, fp)
-
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -157,9 +152,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         if (self.video_save_path is not None) and (self.video_writer is None):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
-            self.video_writer = create_video_writer(
-                save_path=self.video_save_path, fps=30, frame=frame
-            )
+            self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
 
         # 色指定
         if self.rev_color:
@@ -202,7 +195,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 self._save_bone_info(image)
                 self.screenshot = False
 
-            # 描画 ################################################################
+            # Poseの描画 ################################################################
             if results.pose_landmarks is not None:
                 # 描画
                 debug_image01 = draw_landmarks(
@@ -214,6 +207,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
                     results.pose_landmarks,
                     color=color,
                     bg_color=bg_color,
+                )
+
+            # お手本Poseの描画
+            if self.loaded_poses is not None:
+                loaded_pose = self.loaded_poses.landmark.pop(0)
+                debug_image01 = draw_landmarks(
+                    debug_image01,
+                    loaded_pose,
                 )
 
         if self.show_fps:
@@ -254,9 +255,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
 
 def main():
-    with st.expander(
-        "Model parameters (there parameters are effective only at initialization)"
-    ):
+    with st.expander("Model parameters (there parameters are effective only at initialization)"):
         static_image_mode = st.checkbox("Static image mode")
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
         min_detection_confidence = st.slider(
@@ -280,24 +279,21 @@ def main():
     screenshot = False
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
+    pose_load_path = st.file_uploader("Load File", type="pkl")
     video_save_path: Union[str, None] = (
-        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4"))
-        if save_video
-        else None
+        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
     )
     pose_save_path: Union[str, None] = (
-        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl"))
-        if save_pose
-        else None
+        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
     )
     screenshot = False
-    if st.button('Save'):
+    if st.button("Save"):
         # 最後の試行で上のボタンがクリックされた
-        st.write('Pose Saved')
+        st.write("Pose Saved")
         screenshot = True
     else:
         # クリックされなかった
-        st.write('Not saved yet')
+        st.write("Not saved yet")
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -310,16 +306,15 @@ def main():
             show_2d=show_2d,
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
-            screenshot=screenshot
+            pose_load_path=pose_load_path,
+            screenshot=screenshot,
         )
 
     webrtc_ctx = webrtc_streamer(
         key="posefit",
         mode=WebRtcMode.SENDRECV,
         client_settings=ClientSettings(
-            rtc_configuration={
-                "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
-            },
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
             media_stream_constraints={"video": True, "audio": False},
         ),
         video_processor_factory=processor_factory,

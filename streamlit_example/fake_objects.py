@@ -3,7 +3,7 @@ Picklable objects to imitate the result object of pose estimation
 so that the results can be passed over processes through multiprocessing.Pipe.
 """
 
-from typing import NamedTuple, List
+from typing import List, NamedTuple
 
 
 class FakeLandmarkObject(NamedTuple):
