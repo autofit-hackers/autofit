@@ -115,9 +115,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.screenshot = screenshot
 
         self.video_save_path = video_save_path
-        self.video_writer: cv.VideoWriter | None = None
+        self.video_writer: Union[cv.VideoWriter, None] = None
 
-        self.pose_save_path: str | None = pose_save_path
+        self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []
 
         self._pose_process.start()
@@ -267,12 +267,12 @@ def main():
     show_2d = st.checkbox("Show 2D", value=True)
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
-    video_save_path: str | None = (
+    video_save_path: Union[str, None] = (
         os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4"))
         if save_video
         else None
     )
-    pose_save_path: str | None = (
+    pose_save_path: Union[str, None] = (
         os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl"))
         if save_pose
         else None
