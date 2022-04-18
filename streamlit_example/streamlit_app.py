@@ -112,6 +112,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.rev_color = rev_color
         self.show_fps = show_fps
         self.show_2d = show_2d
+        self.screenshot = screenshot
 
         self.video_save_path = video_save_path
         self.video_writer: cv.VideoWriter | None = None
@@ -122,12 +123,17 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self._pose_process.start()
 
     def _infer_pose(self, image):
+        # print("inferring")
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
     def _save_as_pickle(self, obj, save_path) -> None:
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def _save_bone_info(self, results):
+        print('save!!!')
+
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -180,6 +186,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
             if self.pose_save_path is not None:
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
+            if self.screenshot:
+                self._save_bone_info(image)
+                self.screenshot = False
 
             # 描画 ################################################################
             if results.pose_landmarks is not None:
@@ -280,6 +289,7 @@ def main():
             show_2d=show_2d,
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
+            screenshot=screenshot
         )
 
     webrtc_ctx = webrtc_streamer(
@@ -301,6 +311,7 @@ def main():
         webrtc_ctx.video_processor.show_2d = show_2d
         webrtc_ctx.video_processor.video_save_path = video_save_path
         webrtc_ctx.video_processor.pose_save_path = pose_save_path
+        webrtc_ctx.video_processor.screenshot = screenshot
 
 
 if __name__ == "__main__":
