@@ -42,6 +42,8 @@ def pose_process(
             break
 
         results = pose.process(input_item)
+        if results.pose_landmarks.landmark is None:
+            continue
         picklable_results = FakeResultObject(
             pose_landmarks=FakeLandmarksObject(
                 landmark=[
@@ -287,6 +289,7 @@ def main():
         save_video = st.checkbox("Save Video", value=False)
         save_pose = st.checkbox("Save Pose", value=False)
 
+    use_two_cam: bool = st.checkbox("Use two cam", value=False)
     uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
 
     screenshot = False
@@ -321,26 +324,46 @@ def main():
             screenshot=screenshot,
         )
 
-    webrtc_ctx = webrtc_streamer(
-        key="posefit",
-        mode=WebRtcMode.SENDRECV,
-        client_settings=ClientSettings(
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-            media_stream_constraints={"video": True, "audio": False},
-        ),
-        video_processor_factory=processor_factory,
-    )
-    st.session_state["started"] = webrtc_ctx.state.playing
+    def gen_webrtc_ctx(key: str):
+        return webrtc_streamer(
+            key=key,
+            mode=WebRtcMode.SENDRECV,
+            client_settings=ClientSettings(
+                rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+                media_stream_constraints={"video": True, "audio": False},
+            ),
+            video_processor_factory=processor_factory,
+        )
 
-    if webrtc_ctx.video_processor:
-        webrtc_ctx.video_processor.rev_color = rev_color
-        webrtc_ctx.video_processor.rotate_webcam_input = rotate_webcam_input
-        webrtc_ctx.video_processor.show_fps = show_fps
-        webrtc_ctx.video_processor.show_2d = show_2d
-        webrtc_ctx.video_processor.video_save_path = video_save_path
-        webrtc_ctx.video_processor.pose_save_path = pose_save_path
-        webrtc_ctx.video_processor.uploaded_file = uploaded_pose
-        webrtc_ctx.video_processor.screenshot = screenshot
+    webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main")
+    st.session_state["started"] = webrtc_ctx_main.state.playing
+
+    if webrtc_ctx_main.video_processor:
+        webrtc_ctx_main.video_processor.rev_color = rev_color
+        webrtc_ctx_main.video_processor.rotate_webcam_input = rotate_webcam_input
+        webrtc_ctx_main.video_processor.show_fps = show_fps
+        webrtc_ctx_main.video_processor.show_2d = show_2d
+        webrtc_ctx_main.video_processor.video_save_path = video_save_path
+        webrtc_ctx_main.video_processor.pose_save_path = pose_save_path
+        webrtc_ctx_main.video_processor.uploaded_file = uploaded_pose
+        webrtc_ctx_main.video_processor.screenshot = screenshot
+
+    if use_two_cam:
+        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub")
+
+        if webrtc_ctx_sub.video_processor:
+            webrtc_ctx_sub.video_processor.rev_color = rev_color
+            # TODO: rotate をカメラごとに設定可能にする
+            webrtc_ctx_sub.video_processor.rotate_webcam_input = rotate_webcam_input
+            webrtc_ctx_sub.video_processor.show_fps = show_fps
+            webrtc_ctx_sub.video_processor.show_2d = show_2d
+            # TODO: カメラごとに異なる video_save_path を自動設定する
+            webrtc_ctx_sub.video_processor.video_save_path = video_save_path
+            # TODO: カメラごとに異なる pose_save_path を自動設定する
+            webrtc_ctx_sub.video_processor.pose_save_path = pose_save_path
+            # TODO: カメラごとに異なる uploaded_file を自動設定する
+            webrtc_ctx_sub.video_processor.uploaded_file = uploaded_pose
+            webrtc_ctx_sub.video_processor.screenshot = screenshot
 
 
 if __name__ == "__main__":
