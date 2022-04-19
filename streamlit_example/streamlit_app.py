@@ -283,7 +283,9 @@ def main():
     show_2d = st.checkbox("Show 2D", value=True)
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
-    uploaded_pose = st.file_uploader("Load File", type="pkl")
+
+    uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
+
     screenshot = False
     if st.button("Save"):
         # 最後の試行で上のボタンがクリックされた
