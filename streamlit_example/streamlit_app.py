@@ -277,12 +277,15 @@ def main():
             step=0.01,
         )
 
-    rev_color = st.checkbox("Reverse color", value=False)
-    rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
-    show_fps = st.checkbox("Show FPS", value=True)
-    show_2d = st.checkbox("Show 2D", value=True)
-    save_video = st.checkbox("Save Video", value=False)
-    save_pose = st.checkbox("Save Pose", value=False)
+    with st.expander("Display settings"):
+        rev_color = st.checkbox("Reverse color", value=False)
+        rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
+        show_fps = st.checkbox("Show FPS", value=True)
+        show_2d = st.checkbox("Show 2D", value=True)
+
+    with st.expander("Save settings"):
+        save_video = st.checkbox("Save Video", value=False)
+        save_pose = st.checkbox("Save Pose", value=False)
 
     uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
 
