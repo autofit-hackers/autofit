@@ -1,7 +1,5 @@
-import json
-import os
-import time
 import copy
+import json
 import os
 import pickle
 import time
@@ -75,12 +73,13 @@ class PosefitVideoProcessor(VideoProcessorBase):
         model_complexity,
         min_detection_confidence,
         min_tracking_confidence,
-        rev_color,
+        rev_color: bool,
+        rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
         video_save_path: Union[str, None],
         pose_save_path: Union[str, None],
-        uploaded_file: Union[str, None],
+        uploaded_pose: Union[str, None],
         screenshot: bool,
     ) -> None:
         self._in_queue = Queue()
@@ -99,6 +98,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self._cvFpsCalc = CvFpsCalc(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         self.rev_color = rev_color
+        self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
         self.show_2d = show_2d
         self.screenshot = screenshot
@@ -110,8 +110,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
 
         # お手本ポーズを3DでLoad
-        if uploaded_file is not None:
-            self.loaded_poses = self._load_pose(uploaded_file)
+        self.loaded_poses: List[FakeResultObject] = []
+        if uploaded_pose is not None:
+            self.loaded_poses = self._load_pose(uploaded_pose)
 
         self._pose_process.start()
 
@@ -139,7 +140,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
             "full_arm": 0,
             "pelvic_width": 0,
         }
-        with open('data.json', 'w') as fp:
+        with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
 
     def _stop_pose_process(self):
@@ -166,6 +167,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         image = frame.to_ndarray(format="bgr24")
 
         image = cv.flip(image, 1)  # ミラー表示
+        if self.rotate_webcam_input:
+            image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
         debug_image01 = copy.deepcopy(image)
         debug_image02 = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
         cv.rectangle(
@@ -274,19 +277,13 @@ def main():
             step=0.01,
         )
 
-    rev_color = st.checkbox("Reverse color")
+    rev_color = st.checkbox("Reverse color", value=False)
+    rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
     show_fps = st.checkbox("Show FPS", value=True)
     show_2d = st.checkbox("Show 2D", value=True)
-    screenshot = False
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
-    uploaded_file = st.file_uploader("Load File", type="pkl")
-    video_save_path: Union[str, None] = (
-        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
-    )
-    pose_save_path: Union[str, None] = (
-        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
-    )
+    uploaded_pose = st.file_uploader("Load File", type="pkl")
     screenshot = False
     if st.button("Save"):
         # 最後の試行で上のボタンがクリックされた
@@ -296,6 +293,13 @@ def main():
         # クリックされなかった
         st.write("Not saved yet")
 
+    video_save_path: Union[str, None] = (
+        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
+    )
+    pose_save_path: Union[str, None] = (
+        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    )
+
     def processor_factory():
         return PosefitVideoProcessor(
             static_image_mode=static_image_mode,
@@ -303,11 +307,12 @@ def main():
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence,
             rev_color=rev_color,
+            rotate_webcam_input=rotate_webcam_input,
             show_fps=show_fps,
             show_2d=show_2d,
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
-            uploaded_file=uploaded_file,
+            uploaded_pose=uploaded_pose,
             screenshot=screenshot,
         )
 
@@ -324,11 +329,12 @@ def main():
 
     if webrtc_ctx.video_processor:
         webrtc_ctx.video_processor.rev_color = rev_color
+        webrtc_ctx.video_processor.rotate_webcam_input = rotate_webcam_input
         webrtc_ctx.video_processor.show_fps = show_fps
         webrtc_ctx.video_processor.show_2d = show_2d
         webrtc_ctx.video_processor.video_save_path = video_save_path
         webrtc_ctx.video_processor.pose_save_path = pose_save_path
-        webrtc_ctx.video_processor.uploaded_file = uploaded_file
+        webrtc_ctx.video_processor.uploaded_file = uploaded_pose
         webrtc_ctx.video_processor.screenshot = screenshot
 
 

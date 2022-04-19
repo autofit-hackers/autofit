@@ -275,6 +275,7 @@ def draw_landmarks(
     else:
         color = (0, 255, 0)
 
+    """Keypointの描画"""
     for index, landmark in enumerate(landmarks.landmark):
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
@@ -363,7 +364,8 @@ def draw_landmarks(
                 1,
                 cv.LINE_AA,
             )
-
+            
+    """Keypointを結ぶLineの描画"""
     # 右目
     if landmark_point[1][0] > visibility_th and landmark_point[2][0] > visibility_th:
         cv.line(image, landmark_point[1][1], landmark_point[2][1], color, 2)
@@ -444,6 +446,7 @@ def draw_landmarks(
             cv.line(image, landmark_point[28][1], landmark_point[30][1], color, 2)
         if landmark_point[30][0] > visibility_th and landmark_point[32][0] > visibility_th:
             cv.line(image, landmark_point[30][1], landmark_point[32][1], color, 2)
+            
     return image
 
 
