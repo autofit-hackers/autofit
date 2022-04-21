@@ -80,7 +80,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         video_save_path: Union[str, None],
         pose_save_path: Union[str, None],
         uploaded_pose: Union[str, None],
-        screenshot: bool,
+        capture_skelton: bool,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -101,7 +101,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
         self.show_2d = show_2d
-        self.screenshot = screenshot
+        self.capture_skelton = capture_skelton
 
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
@@ -117,7 +117,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self._pose_process.start()
 
     def _infer_pose(self, image):
-        # print("inferring")
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
@@ -132,16 +131,47 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _save_bone_info(self, results):
         print("save!!!")
-        bone_dict = {
-            "foot_neck_height": 0,
-            "shoulder_width": 0,
-            "upper_arm": 0,
-            "forearm": 0,
-            "full_arm": 0,
-            "pelvic_width": 0,
+        # TODO: この辺はurilsに連れて行く
+        bone_edge_names = {
+                "shoulder_width": (11, 12),
+                "shin": (27, 25),
+                "thigh": (25, 23),
+                "full_leg": (27, 23),
+                "pelvic_width": (23, 24),
+                "flank": (23, 11),
+                "upper_arm": (11, 13),
+                "fore_arm": (13, 15),
+                "full_arm": (11, 15)
         }
+        
+        bone_dict = {
+            "foot_neck_height": self._calculate_height(results.pose_landmarks.landmark)
+        }
+        for bone_edge_key in bone_edge_names.keys():
+            bone_dict[bone_edge_key] = self._calculate_3d_distance(results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][0]], results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][1]])
+
         with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
+    
+    def _calculate_3d_distance(self, joint1, joint2):
+        self.joint1_pos = np.array([joint1.x, joint1.y, joint1.z])
+        self.joint2_pos = np.array([joint2.x, joint2.y, joint2.z])
+        return np.linalg.norm(self.joint2_pos-self.joint1_pos)
+    
+    def _calculate_height(self, pose_landmark):
+        shoulder1 = pose_landmark[11]
+        shoulder2 = pose_landmark[12]
+        foot1 = pose_landmark[27]
+        foot2 = pose_landmark[28]
+        self.neck = np.array([shoulder1.x+shoulder2.x,shoulder1.y+shoulder2.y,shoulder1.z+shoulder2.z])
+        self.foot_center = np.array([foot1.x+foot2.x,foot1.y+foot2.y,foot1.z+foot2.z])
+        return np.linalg.norm(self.neck/2-self.foot_center/2)
+    
+    # def _cast_landmark_nparr(self, pose_landmark):
+        
+
+    def _caluculate_slkelton():
+        print("hello skelton")
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -194,9 +224,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
             if self.pose_save_path is not None:
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
-            if self.screenshot:
-                self._save_bone_info(image)
-                self.screenshot = False
+            if self.capture_skelton:
+                self._save_bone_info(results)
+                self.capture_skelton = False
+                
 
             # Poseの描画 ################################################################
             if results.pose_landmarks is not None:
@@ -284,11 +315,11 @@ def main():
     save_video = st.checkbox("Save Video", value=False)
     save_pose = st.checkbox("Save Pose", value=False)
     uploaded_pose = st.file_uploader("Load File", type="pkl")
-    screenshot = False
+    capture_skelton = False
     if st.button("Save"):
         # 最後の試行で上のボタンがクリックされた
         st.write("Pose Saved")
-        screenshot = True
+        capture_skelton = True
     else:
         # クリックされなかった
         st.write("Not saved yet")
@@ -313,7 +344,7 @@ def main():
             video_save_path=video_save_path,
             pose_save_path=pose_save_path,
             uploaded_pose=uploaded_pose,
-            screenshot=screenshot,
+            capture_skelton=capture_skelton,
         )
 
     webrtc_ctx = webrtc_streamer(
@@ -335,7 +366,7 @@ def main():
         webrtc_ctx.video_processor.video_save_path = video_save_path
         webrtc_ctx.video_processor.pose_save_path = pose_save_path
         webrtc_ctx.video_processor.uploaded_file = uploaded_pose
-        webrtc_ctx.video_processor.screenshot = screenshot
+        webrtc_ctx.video_processor.capture_skelton = capture_skelton
 
 
 if __name__ == "__main__":
