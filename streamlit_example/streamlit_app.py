@@ -135,42 +135,42 @@ class PosefitVideoProcessor(VideoProcessorBase):
         print("save!!!")
         # TODO: この辺はurilsに連れて行く
         bone_edge_names = {
-                "shoulder_width": (11, 12),
-                "shin": (27, 25),
-                "thigh": (25, 23),
-                "full_leg": (27, 23),
-                "pelvic_width": (23, 24),
-                "flank": (23, 11),
-                "upper_arm": (11, 13),
-                "fore_arm": (13, 15),
-                "full_arm": (11, 15)
+            "shoulder_width": (11, 12),
+            "shin": (27, 25),
+            "thigh": (25, 23),
+            "full_leg": (27, 23),
+            "pelvic_width": (23, 24),
+            "flank": (23, 11),
+            "upper_arm": (11, 13),
+            "fore_arm": (13, 15),
+            "full_arm": (11, 15),
         }
-        
-        bone_dict = {
-            "foot_neck_height": self._calculate_height(results.pose_landmarks.landmark)
-        }
+
+        bone_dict = {"foot_neck_height": self._calculate_height(results.pose_landmarks.landmark)}
         for bone_edge_key in bone_edge_names.keys():
-            bone_dict[bone_edge_key] = self._calculate_3d_distance(results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][0]], results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][1]])
+            bone_dict[bone_edge_key] = self._calculate_3d_distance(
+                results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][0]],
+                results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][1]],
+            )
 
         with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
-    
+
     def _calculate_3d_distance(self, joint1, joint2):
         self.joint1_pos = np.array([joint1.x, joint1.y, joint1.z])
         self.joint2_pos = np.array([joint2.x, joint2.y, joint2.z])
-        return np.linalg.norm(self.joint2_pos-self.joint1_pos)
-    
+        return np.linalg.norm(self.joint2_pos - self.joint1_pos)
+
     def _calculate_height(self, pose_landmark):
         shoulder1 = pose_landmark[11]
         shoulder2 = pose_landmark[12]
         foot1 = pose_landmark[27]
         foot2 = pose_landmark[28]
-        self.neck = np.array([shoulder1.x+shoulder2.x,shoulder1.y+shoulder2.y,shoulder1.z+shoulder2.z])
-        self.foot_center = np.array([foot1.x+foot2.x,foot1.y+foot2.y,foot1.z+foot2.z])
-        return np.linalg.norm(self.neck/2-self.foot_center/2)
-    
+        self.neck = np.array([shoulder1.x + shoulder2.x, shoulder1.y + shoulder2.y, shoulder1.z + shoulder2.z])
+        self.foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
+        return np.linalg.norm(self.neck / 2 - self.foot_center / 2)
+
     # def _cast_landmark_nparr(self, pose_landmark):
-        
 
     def _caluculate_slkelton():
         print("hello skelton")
@@ -229,7 +229,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
             if self.capture_skelton:
                 self._save_bone_info(results)
                 self.capture_skelton = False
-                
 
             # Poseの描画 ################################################################
             if results.pose_landmarks is not None:
