@@ -11,9 +11,11 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
+from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
+                              webrtc_streamer)
 
-from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
+from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
+                          FakeResultObject)
 from main import draw_landmarks, draw_stick_figure
 from utils import CvFpsCalc
 
@@ -81,6 +83,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         pose_save_path: Union[str, None],
         uploaded_pose: Union[str, None],
         screenshot: bool,
+        reset_button: bool,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -96,12 +99,17 @@ class PosefitVideoProcessor(VideoProcessorBase):
             },
         )
         self._cvFpsCalc = CvFpsCalc(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
+        self.frame_index = 0
+        self.is_lifting_up = False
+        self.body_length = 0
+        self.rep_count = 0
 
         self.rev_color = rev_color
         self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
         self.show_2d = show_2d
         self.screenshot = screenshot
+        self.reset_button = reset_button
 
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
@@ -110,9 +118,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
 
         # お手本ポーズを3DでLoad
+        self.uploaded_pose = uploaded_pose
         self.loaded_poses: List[FakeResultObject] = []
-        if uploaded_pose is not None:
-            self.loaded_poses = self._load_pose(uploaded_pose)
+        if self.uploaded_pose is not None:
+            self.loaded_poses = self._load_pose(self.uploaded_pose)
 
         self._pose_process.start()
 
@@ -130,6 +139,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
             loaded_poses = pickle.load(handle)
         return loaded_poses
 
+    def _reset_training_set(self):
+        if self.uploaded_pose is not None:
+            self.loaded_poses = self._load_pose(self.uploaded_pose)
+
     def _save_bone_info(self, results):
         print("save!!!")
         bone_dict = {
@@ -142,6 +155,17 @@ class PosefitVideoProcessor(VideoProcessorBase):
         }
         with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
+
+    def _update_rep_count(self, results, upper_thre=0.9, lower_thre=0.5):
+        if self.frame_index == 0:
+            self.initial_body_length = results.pose_landmarks.landmark[17].y - results.pose_landmarks.landmark[15].y
+        else:
+            self.body_length = results.pose_landmarks.landmark[17].y - results.pose_landmarks.landmark[15].y
+            if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
+                self.rep_count += 1
+                self.is_lifting_up = False
+            elif not self.is_lifting_up and self.body_length < lower_thre * self.initial_body_length:
+                self.is_lifting_up = True
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -189,6 +213,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         if self.show_2d:
             results = self._infer_pose(image)
+
+            # 足から鼻までの長さの初期値を保持
+            self._update_rep_count(results)
 
             # pose の保存
             if self.pose_save_path is not None:
@@ -243,6 +270,22 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
+        cv.putText(
+            debug_image01,
+            f"Rep:{str(self.rep_count)}, flag:{str(self.is_lifting_up)},cur:{str(round(self.body_length, 3))},ini:{str(round(self.initial_body_length, 3))}",
+            (10, 100),
+            cv.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 0, 255),
+            1,
+            cv.LINE_AA,
+        )
+
+        if self.reset_button:
+            self._reset_training_set()
+            self.reset_button = False
+
+        self.frame_index += 1
         return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
 
     def __del__(self):
@@ -292,6 +335,7 @@ def main():
     else:
         # クリックされなかった
         st.write("Not saved yet")
+    reset_button = st.button("Reset")
 
     video_save_path: Union[str, None] = (
         os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
@@ -314,6 +358,7 @@ def main():
             pose_save_path=pose_save_path,
             uploaded_pose=uploaded_pose,
             screenshot=screenshot,
+            reset_button=reset_button,
         )
 
     webrtc_ctx = webrtc_streamer(
@@ -336,6 +381,7 @@ def main():
         webrtc_ctx.video_processor.pose_save_path = pose_save_path
         webrtc_ctx.video_processor.uploaded_file = uploaded_pose
         webrtc_ctx.video_processor.screenshot = screenshot
+        webrtc_ctx.video_processor.reset_button = reset_button
 
 
 if __name__ == "__main__":
