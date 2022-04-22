@@ -1,3 +1,4 @@
+from pathlib import Path
 import copy
 import json
 import os
@@ -79,10 +80,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
-        video_save_path: Union[str, None],
-        pose_save_path: Union[str, None],
         uploaded_pose: Union[str, None],
         capture_skelton: bool,
+        video_save_path: Union[str, None] = None,
+        pose_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -316,7 +317,7 @@ def main():
         show_2d = st.checkbox("Show 2D", value=True)
 
     with st.expander("Save settings"):
-        save_video = st.checkbox("Save Video", value=False)
+        save_video = st.checkbox("Save Video", value=True)
         save_pose = st.checkbox("Save Pose", value=False)
 
     use_two_cam: bool = st.checkbox("Use two cam", value=False)
@@ -331,12 +332,13 @@ def main():
         # クリックされなかった
         st.write("Not saved yet")
 
-    video_save_path: Union[str, None] = (
-        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
-    )
-    pose_save_path: Union[str, None] = (
-        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
-    )
+    now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
+    # video_save_path: Union[str, None] = (
+    #     os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
+    # )
+    # pose_save_path: Union[str, None] = (
+    #     os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    # )
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -348,8 +350,6 @@ def main():
             rotate_webcam_input=rotate_webcam_input,
             show_fps=show_fps,
             show_2d=show_2d,
-            video_save_path=video_save_path,
-            pose_save_path=pose_save_path,
             uploaded_pose=uploaded_pose,
             capture_skelton=capture_skelton,
         )
@@ -365,32 +365,40 @@ def main():
             video_processor_factory=processor_factory,
         )
 
-    webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main")
+    webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
     if webrtc_ctx_main.video_processor:
+        cam_type: str = "main"
         webrtc_ctx_main.video_processor.rev_color = rev_color
         webrtc_ctx_main.video_processor.rotate_webcam_input = rotate_webcam_input
         webrtc_ctx_main.video_processor.show_fps = show_fps
         webrtc_ctx_main.video_processor.show_2d = show_2d
-        webrtc_ctx_main.video_processor.video_save_path = video_save_path
-        webrtc_ctx_main.video_processor.pose_save_path = pose_save_path
+        webrtc_ctx_main.video_processor.video_save_path = (
+            str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
+        )
+        webrtc_ctx_main.video_processor.pose_save_path = (
+            str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
+        )
         webrtc_ctx_main.video_processor.uploaded_file = uploaded_pose
         webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
 
     if use_two_cam:
-        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub")
+        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
 
         if webrtc_ctx_sub.video_processor:
+            cam_type: str = "sub"
             webrtc_ctx_sub.video_processor.rev_color = rev_color
             # TODO: rotate をカメラごとに設定可能にする
             webrtc_ctx_sub.video_processor.rotate_webcam_input = rotate_webcam_input
             webrtc_ctx_sub.video_processor.show_fps = show_fps
             webrtc_ctx_sub.video_processor.show_2d = show_2d
-            # TODO: カメラごとに異なる video_save_path を自動設定する
-            webrtc_ctx_sub.video_processor.video_save_path = video_save_path
-            # TODO: カメラごとに異なる pose_save_path を自動設定する
-            webrtc_ctx_sub.video_processor.pose_save_path = pose_save_path
+            webrtc_ctx_sub.video_processor.video_save_path = (
+                str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
+            )
+            webrtc_ctx_sub.video_processor.pose_save_path = (
+                str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
+            )
             # TODO: カメラごとに異なる uploaded_file を自動設定する
             webrtc_ctx_sub.video_processor.uploaded_file = uploaded_pose
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
