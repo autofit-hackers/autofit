@@ -1,0 +1,52 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.formatOnSave": true,
+  "eslint.format.enable": true,
+  "extensions.ignoreRecommendations": false,
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "[html]": {
+    "editor.tabSize": 2
+  },
+  "[css]": {
+    "editor.suggest.insertMode": "replace"
+  },
+  "[scss]": {
+    "editor.suggest.insertMode": "replace"
+  },
+  "[json]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.tabSize": 2
+  },
+  "[typescript]": {
+    "editor.tabSize": 2
+  },
+  "[vue]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "octref.vetur"
+  },
+  "[vue-html]": {
+    "editor.tabSize": 2
+  },
+  "[vue-postcss]": {
+    "editor.tabSize": 2
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python",
+    "editor.tabSize": 4,
+  },
+  "autoDocstring.docstringFormat": "google",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": [
+    "--line-length",
+    "119"
+  ],
+  "python.languageServer": "Pylance",
+  "python.linting.enabled": true,
+}
