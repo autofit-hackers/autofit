@@ -4,6 +4,7 @@ import os
 import pickle
 import time
 from multiprocessing import Process, Queue
+from pathlib import Path
 from typing import List, Union
 
 import av
@@ -11,11 +12,9 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
-                              webrtc_streamer)
+from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
 
-from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                          FakeResultObject)
+from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
 from utils import CvFpsCalc
 
@@ -44,6 +43,8 @@ def pose_process(
             break
 
         results = pose.process(input_item)
+        if results.pose_landmarks.landmark is None:
+            continue
         picklable_results = FakeResultObject(
             pose_landmarks=FakeLandmarksObject(
                 landmark=[
@@ -79,11 +80,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
-        video_save_path: Union[str, None],
-        pose_save_path: Union[str, None],
-        uploaded_pose: Union[str, None],
-        screenshot: bool,
+        uploaded_pose_file,
+        capture_skelton: bool,
         reset_button: bool,
+        video_save_path: Union[str, None] = None,
+        pose_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -108,9 +109,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
         self.show_2d = show_2d
-        self.screenshot = screenshot
+        self.capture_skelton = capture_skelton
         self.reset_button = reset_button
-
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
 
@@ -118,15 +118,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
 
         # お手本ポーズを3DでLoad
-        self.uploaded_pose = uploaded_pose
+        self.uploaded_pose_file = uploaded_pose_file
         self.loaded_poses: List[FakeResultObject] = []
-        if self.uploaded_pose is not None:
-            self.loaded_poses = self._load_pose(self.uploaded_pose)
+        if self.uploaded_pose_file is not None:
+            self.loaded_poses = self._load_pose(self.uploaded_pose_file)
 
         self._pose_process.start()
 
     def _infer_pose(self, image):
-        # print("inferring")
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
@@ -140,19 +139,31 @@ class PosefitVideoProcessor(VideoProcessorBase):
         return loaded_poses
 
     def _reset_training_set(self):
-        if self.uploaded_pose is not None:
-            self.loaded_poses = self._load_pose(self.uploaded_pose)
+        if self.uploaded_pose_file is not None:
+            self.loaded_poses = self._load_pose(self.uploaded_pose_file)
 
     def _save_bone_info(self, results):
         print("save!!!")
-        bone_dict = {
-            "foot_neck_height": 0,
-            "shoulder_width": 0,
-            "upper_arm": 0,
-            "forearm": 0,
-            "full_arm": 0,
-            "pelvic_width": 0,
+        # TODO: この辺はurilsに連れて行く
+        bone_edge_names = {
+            "shoulder_width": (11, 12),
+            "shin": (27, 25),
+            "thigh": (25, 23),
+            "full_leg": (27, 23),
+            "pelvic_width": (23, 24),
+            "flank": (23, 11),
+            "upper_arm": (11, 13),
+            "fore_arm": (13, 15),
+            "full_arm": (11, 15),
         }
+
+        bone_dict = {"foot_neck_height": self._calculate_height(results.pose_landmarks.landmark)}
+        for bone_edge_key in bone_edge_names.keys():
+            bone_dict[bone_edge_key] = self._calculate_3d_distance(
+                results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][0]],
+                results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][1]],
+            )
+
         with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
 
@@ -166,6 +177,25 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 self.is_lifting_up = False
             elif not self.is_lifting_up and self.body_length < lower_thre * self.initial_body_length:
                 self.is_lifting_up = True
+
+    def _calculate_3d_distance(self, joint1, joint2):
+        self.joint1_pos = np.array([joint1.x, joint1.y, joint1.z])
+        self.joint2_pos = np.array([joint2.x, joint2.y, joint2.z])
+        return np.linalg.norm(self.joint2_pos - self.joint1_pos)
+
+    def _calculate_height(self, pose_landmark):
+        shoulder1 = pose_landmark[11]
+        shoulder2 = pose_landmark[12]
+        foot1 = pose_landmark[27]
+        foot2 = pose_landmark[28]
+        self.neck = np.array([shoulder1.x + shoulder2.x, shoulder1.y + shoulder2.y, shoulder1.z + shoulder2.z])
+        self.foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
+        return np.linalg.norm(self.neck / 2 - self.foot_center / 2)
+
+    # def _cast_landmark_nparr(self, pose_landmark):
+
+    def _caluculate_skeleton(self):
+        print("hello skelton")
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -221,9 +251,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
             if self.pose_save_path is not None:
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
-            if self.screenshot:
-                self._save_bone_info(image)
-                self.screenshot = False
+            if self.capture_skelton:
+                self._save_bone_info(results)
+                self.capture_skelton = False
 
             # Poseの描画 ################################################################
             if results.pose_landmarks is not None:
@@ -320,29 +350,36 @@ def main():
             step=0.01,
         )
 
-    rev_color = st.checkbox("Reverse color", value=False)
-    rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
-    show_fps = st.checkbox("Show FPS", value=True)
-    show_2d = st.checkbox("Show 2D", value=True)
-    save_video = st.checkbox("Save Video", value=False)
-    save_pose = st.checkbox("Save Pose", value=False)
-    uploaded_pose = st.file_uploader("Load File", type="pkl")
-    screenshot = False
+    with st.expander("Display settings"):
+        rev_color = st.checkbox("Reverse color", value=False)
+        rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
+        show_fps = st.checkbox("Show FPS", value=True)
+        show_2d = st.checkbox("Show 2D", value=True)
+
+    with st.expander("Save settings"):
+        save_video = st.checkbox("Save Video", value=True)
+        save_pose = st.checkbox("Save Pose", value=False)
+
+    use_two_cam: bool = st.checkbox("Use two cam", value=False)
+    uploaded_pose_file = st.file_uploader("Load example pose file (.pkl)", type="pkl")
+
+    capture_skelton = False
     if st.button("Save"):
         # 最後の試行で上のボタンがクリックされた
         st.write("Pose Saved")
-        screenshot = True
+        capture_skelton = True
     else:
         # クリックされなかった
         st.write("Not saved yet")
     reset_button = st.button("Reset")
 
-    video_save_path: Union[str, None] = (
-        os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
-    )
-    pose_save_path: Union[str, None] = (
-        os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
-    )
+    now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
+    # video_save_path: Union[str, None] = (
+    #     os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
+    # )
+    # pose_save_path: Union[str, None] = (
+    #     os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    # )
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -354,34 +391,61 @@ def main():
             rotate_webcam_input=rotate_webcam_input,
             show_fps=show_fps,
             show_2d=show_2d,
-            video_save_path=video_save_path,
-            pose_save_path=pose_save_path,
-            uploaded_pose=uploaded_pose,
-            screenshot=screenshot,
+            uploaded_pose_file=uploaded_pose_file,
+            capture_skelton=capture_skelton,
             reset_button=reset_button,
         )
 
-    webrtc_ctx = webrtc_streamer(
-        key="posefit",
-        mode=WebRtcMode.SENDRECV,
-        client_settings=ClientSettings(
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-            media_stream_constraints={"video": True, "audio": False},
-        ),
-        video_processor_factory=processor_factory,
-    )
-    st.session_state["started"] = webrtc_ctx.state.playing
+    def gen_webrtc_ctx(key: str):
+        return webrtc_streamer(
+            key=key,
+            mode=WebRtcMode.SENDRECV,
+            client_settings=ClientSettings(
+                rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+                media_stream_constraints={"video": True, "audio": False},
+            ),
+            video_processor_factory=processor_factory,
+        )
 
-    if webrtc_ctx.video_processor:
-        webrtc_ctx.video_processor.rev_color = rev_color
-        webrtc_ctx.video_processor.rotate_webcam_input = rotate_webcam_input
-        webrtc_ctx.video_processor.show_fps = show_fps
-        webrtc_ctx.video_processor.show_2d = show_2d
-        webrtc_ctx.video_processor.video_save_path = video_save_path
-        webrtc_ctx.video_processor.pose_save_path = pose_save_path
-        webrtc_ctx.video_processor.uploaded_file = uploaded_pose
-        webrtc_ctx.video_processor.screenshot = screenshot
-        webrtc_ctx.video_processor.reset_button = reset_button
+    webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
+    st.session_state["started"] = webrtc_ctx_main.state.playing
+
+    if webrtc_ctx_main.video_processor:
+        cam_type: str = "main"
+        webrtc_ctx_main.video_processor.rev_color = rev_color
+        webrtc_ctx_main.video_processor.rotate_webcam_input = rotate_webcam_input
+        webrtc_ctx_main.video_processor.show_fps = show_fps
+        webrtc_ctx_main.video_processor.show_2d = show_2d
+        webrtc_ctx_main.video_processor.video_save_path = (
+            str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
+        )
+        webrtc_ctx_main.video_processor.pose_save_path = (
+            str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
+        )
+        webrtc_ctx_main.video_processor.uploaded_pose_file = uploaded_pose_file
+        webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
+        webrtc_ctx_main.video_processor.reset_button = reset_button
+
+    if use_two_cam:
+        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
+
+        if webrtc_ctx_sub.video_processor:
+            cam_type: str = "sub"
+            webrtc_ctx_sub.video_processor.rev_color = rev_color
+            # TODO: rotate をカメラごとに設定可能にする
+            webrtc_ctx_sub.video_processor.rotate_webcam_input = rotate_webcam_input
+            webrtc_ctx_sub.video_processor.show_fps = show_fps
+            webrtc_ctx_sub.video_processor.show_2d = show_2d
+            webrtc_ctx_sub.video_processor.video_save_path = (
+                str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
+            )
+            webrtc_ctx_sub.video_processor.pose_save_path = (
+                str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
+            )
+            # TODO: カメラごとに異なる uploaded_file を自動設定する
+            webrtc_ctx_sub.video_processor.uploaded_pose_file = uploaded_pose_file
+            webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
+            webrtc_ctx_sub.video_processor.reset_button = reset_button
 
 
 if __name__ == "__main__":
