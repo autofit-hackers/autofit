@@ -12,9 +12,11 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
+from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
+                              webrtc_streamer)
 
-from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
+from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
+                          FakeResultObject)
 from main import draw_landmarks, draw_stick_figure
 from utils import CvFpsCalc
 
@@ -83,6 +85,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         uploaded_pose_file,
         capture_skelton: bool,
         reset_button: bool,
+        debug_rep_count: bool,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
     ) -> None:
@@ -113,6 +116,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.reset_button = reset_button
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
+        self.debug_rep_count = debug_rep_count
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
@@ -141,6 +145,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
     def _reset_training_set(self):
         if self.uploaded_pose_file is not None:
             self.loaded_poses = self._load_pose(self.uploaded_pose_file)
+        self.frame_index = 0
 
     def _save_bone_info(self, results):
         print("save!!!")
@@ -169,9 +174,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _update_rep_count(self, results, upper_thre=0.9, lower_thre=0.5):
         if self.frame_index == 0:
-            self.initial_body_length = results.pose_landmarks.landmark[17].y - results.pose_landmarks.landmark[15].y
+            self.initial_body_length = results.pose_landmarks.landmark[11].y - results.pose_landmarks.landmark[29].y
         else:
-            self.body_length = results.pose_landmarks.landmark[17].y - results.pose_landmarks.landmark[15].y
+            self.body_length = results.pose_landmarks.landmark[11].y - results.pose_landmarks.landmark[29].y
             if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
                 self.rep_count += 1
                 self.is_lifting_up = False
@@ -244,7 +249,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         if self.show_2d:
             results = self._infer_pose(image)
 
-            # 足から鼻までの長さの初期値を保持
+            # レップカウントを更新
             self._update_rep_count(results)
 
             # pose の保存
@@ -300,16 +305,29 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        cv.putText(
-            debug_image01,
-            f"Rep:{str(self.rep_count)}, flag:{str(self.is_lifting_up)},cur:{str(round(self.body_length, 3))},ini:{str(round(self.initial_body_length, 3))}",
-            (10, 100),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (0, 0, 255),
-            1,
-            cv.LINE_AA,
-        )
+        # for debug
+        if self.debug_rep_count:
+            cv.putText(
+                debug_image01,
+                f"Rep:{str(self.rep_count)}, up:{str(self.is_lifting_up)}, shoulder:{round(results.pose_landmarks.landmark[11].y, 3)}, foot:{round(results.pose_landmarks.landmark[29].y, 3)}",
+                (10, 30),
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 0, 255),
+                1,
+                cv.LINE_AA,
+            )
+
+            cv.putText(
+                debug_image01,
+                f"current_len:{str(round(self.body_length, 3))},ini_len:{str(round(self.initial_body_length, 3))}",
+                (10, 60),
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 0, 255),
+                1,
+                cv.LINE_AA,
+            )
 
         if self.reset_button:
             self._reset_training_set()
@@ -372,6 +390,7 @@ def main():
         # クリックされなかった
         st.write("Not saved yet")
     reset_button = st.button("Reset")
+    debug_rep_count: bool = st.checkbox("Debug rep count", value=False)
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
     # video_save_path: Union[str, None] = (
@@ -394,6 +413,7 @@ def main():
             uploaded_pose_file=uploaded_pose_file,
             capture_skelton=capture_skelton,
             reset_button=reset_button,
+            debug_rep_count=debug_rep_count,
         )
 
     def gen_webrtc_ctx(key: str):
@@ -425,6 +445,8 @@ def main():
         webrtc_ctx_main.video_processor.uploaded_pose_file = uploaded_pose_file
         webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
         webrtc_ctx_main.video_processor.reset_button = reset_button
+        webrtc_ctx_main.video_processor.debug_rep_count = debug_rep_count
+        
 
     if use_two_cam:
         webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
