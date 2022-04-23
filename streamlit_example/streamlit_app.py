@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime
 import json
 import os
 import pickle
@@ -48,7 +49,8 @@ def pose_process(
             break
 
         results = pose.process(input_item)
-        if results.pose_landmarks.landmark is None:
+        if results.pose_landmarks is None:
+            out_queue.put_nowait(None)
             continue
         picklable_results = FakeResultObject(
             pose_landmarks=FakeLandmarksObject(
@@ -196,6 +198,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
             elif not self.is_lifting_up and self.body_length < lower_thre * self.initial_body_length:
                 self.is_lifting_up = True
 
+    def _is_key_frame(self, results, upper_thre=0.96, lower_thre=0.94):
+        if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
+
+            print("return true if is key frame")
+
     def _calculate_3d_distance(self, joint1, joint2):
         self.joint1_pos = np.array([joint1.x, joint1.y, joint1.z])
         self.joint2_pos = np.array([joint2.x, joint2.y, joint2.z])
@@ -273,8 +280,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
         # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-        if self.show_2d:
-            results = self._infer_pose(image)
+        results = self._infer_pose(image)
+        if self.show_2d and results:
+            # results = self._infer_pose(image)
 
             # レップカウントを更新
             self._update_rep_count(results)
@@ -284,7 +292,9 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
             if self.capture_skelton:
+                # print(self.skelton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
                 self._save_bone_info(results)
+                # print(self.skelton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
                 self.capture_skelton = False
 
             # Poseの描画 ################################################################
@@ -489,8 +499,9 @@ def main():
             # TODO: カメラごとに異なる uploaded_pose を自動設定する
             webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
-            webrtc_ctx_main.video_processor.count_rep = count_rep
+            webrtc_ctx_sub.video_processor.count_rep = count_rep
             webrtc_ctx_sub.video_processor.reload_pose = reload_pose
+            webrtc_ctx_sub.video_processor.reset_button = reset_button
 
 
 if __name__ == "__main__":
