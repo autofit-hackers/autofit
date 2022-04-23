@@ -85,7 +85,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         uploaded_pose,
         capture_skelton: bool,
         reset_button: bool,
-        debug_rep_count: bool,
+        count_rep: bool,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skelton_save_path: Union[str, None] = None,
@@ -110,11 +110,15 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.show_fps = show_fps
         self.show_2d = show_2d
         self.capture_skelton = capture_skelton
+        self.count_rep = count_rep
         self.rep_count = 0
+        self.frame_index = 0
+        self.is_lifting_up = False
+        self.body_length = 0
+        self.initial_body_length = 0
 
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
-        self.debug_rep_count = debug_rep_count
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
@@ -146,6 +150,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         if self.uploaded_pose is not None:
             self.loaded_poses = self._load_pose(self.uploaded_pose)
         self.frame_index = 0
+        self.rep_count = 0
+        self.is_lifting_up = False
 
     def _save_bone_info(self, results):
         print("save!!!")
@@ -172,11 +178,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
         with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
 
-    def _update_rep_count(self, results, upper_thre=0.9, lower_thre=0.5):
+    def _update_rep_count(self, results, upper_thre=0.9, lower_thre=0.6):
         if self.frame_index == 0:
-            self.initial_body_length = results.pose_landmarks.landmark[11].y - results.pose_landmarks.landmark[29].y
+            self.initial_body_length = results.pose_landmarks.landmark[29].y - results.pose_landmarks.landmark[11].y
         else:
-            self.body_length = results.pose_landmarks.landmark[11].y - results.pose_landmarks.landmark[29].y
+            self.body_length = results.pose_landmarks.landmark[29].y - results.pose_landmarks.landmark[11].y
             if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
                 self.rep_count += 1
                 self.is_lifting_up = False
@@ -208,6 +214,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._cvFpsCalc.get()
+
+        if self.reset_button:
+            self._reset_training_set()
+            self.reset_button = False
 
         if (self.video_save_path is not None) and (self.video_writer is None):
             # video_writer の初期化
@@ -309,22 +319,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        # for debug
-        if self.debug_rep_count:
+        # show rep count
+        if self.count_rep:
             cv.putText(
                 debug_image01,
-                f"Rep:{str(self.rep_count)}, up:{str(self.is_lifting_up)}, shoulder:{round(results.pose_landmarks.landmark[11].y, 3)}, foot:{round(results.pose_landmarks.landmark[29].y, 3)}",
-                (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
-                0.6,
-                (0, 0, 255),
-                1,
-                cv.LINE_AA,
-            )
-
-            cv.putText(
-                debug_image01,
-                f"current_len:{str(round(self.body_length, 3))},ini_len:{str(round(self.initial_body_length, 3))}",
+                f"Rep:{self.rep_count}",
                 (10, 60),
                 cv.FONT_HERSHEY_SIMPLEX,
                 0.6,
@@ -332,10 +331,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 1,
                 cv.LINE_AA,
             )
-
-        if self.reset_button:
-            self._reset_training_set()
-            self.reset_button = False
 
         self.frame_index += 1
         return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
@@ -377,6 +372,7 @@ def main():
         rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
         show_fps = st.checkbox("Show FPS", value=True)
         show_2d = st.checkbox("Show 2D", value=True)
+        count_rep: bool = st.checkbox("Count rep", value=True)
 
     with st.expander("Save settings"):
         save_video = st.checkbox("Save Video", value=True)
@@ -386,6 +382,7 @@ def main():
     uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
 
     capture_skelton = False
+
     if st.button("Save"):
         # 最後の試行で上のボタンがクリックされた
         st.write("Pose Saved")
@@ -394,7 +391,6 @@ def main():
         # クリックされなかった
         st.write("Not saved yet")
     reset_button = st.button("Reset")
-    debug_rep_count: bool = st.checkbox("Debug rep count", value=False)
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
     # video_save_path: Union[str, None] = (
@@ -417,7 +413,7 @@ def main():
             uploaded_pose=uploaded_pose,
             capture_skelton=capture_skelton,
             reset_button=reset_button,
-            debug_rep_count=debug_rep_count,
+            count_rep=count_rep,
         )
 
     def gen_webrtc_ctx(key: str):
@@ -450,8 +446,7 @@ def main():
         webrtc_ctx_main.video_processor.uploaded_pose = uploaded_pose
         webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
         webrtc_ctx_main.video_processor.reset_button = reset_button
-        webrtc_ctx_main.video_processor.debug_rep_count = debug_rep_count
-        
+        webrtc_ctx_main.video_processor.count_rep = count_rep
 
     if use_two_cam:
         webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
@@ -473,6 +468,7 @@ def main():
             # TODO: カメラごとに異なる uploaded_pose を自動設定する
             webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
+            webrtc_ctx_main.video_processor.count_rep = count_rep
 
 
 if __name__ == "__main__":
