@@ -5,7 +5,7 @@ import pickle
 import time
 from multiprocessing import Process, Queue
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Callable
 
 import av
 import cv2 as cv
@@ -13,6 +13,7 @@ import mediapipe as mp
 import numpy as np
 import streamlit as st
 from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
+from aiortc.contrib.media import MediaRecorder
 
 from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
@@ -66,14 +67,6 @@ def pose_process(
         out_queue.put_nowait(picklable_results)
 
 
-def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
-    """Save video as mp4."""
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
-    video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
-    return video
-
-
 class PosefitVideoProcessor(VideoProcessorBase):
     def __init__(
         self,
@@ -90,7 +83,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
         reset_button: bool,
         count_rep: bool,
         reload_pose: bool,
-        video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skelton_save_path: Union[str, None] = None,
     ) -> None:
@@ -121,9 +113,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.body_length = 0
         self.initial_body_length = 0
         self.reload_pose = reload_pose
-
-        self.video_save_path = video_save_path
-        self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
@@ -226,11 +215,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
             self._reset_training_set()
             self.reset_button = False
 
-        if (self.video_save_path is not None) and (self.video_writer is None):
-            # video_writer の初期化
-            # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
-            self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
-
         # 色指定
         if self.rev_color:
             color = (255, 255, 255)
@@ -254,12 +238,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
             bg_color,
             thickness=-1,
         )
-
-        # 動画の保存
-        if self.video_save_path is not None:
-            assert self.video_writer is not None
-            # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
-            self.video_writer.write(image)
 
         # 画像の保存
         if self.capture_skelton:
@@ -351,9 +329,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
     def __del__(self):
         print("Stop the inference process...")
         self._stop_pose_process()
-        if self.video_writer is not None:
-            print("Stop writing video process...")
-            self.video_writer.release()
         if self.pose_save_path is not None:
             print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
             os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
@@ -430,6 +405,10 @@ def main():
             reload_pose=reload_pose,
         )
 
+    def gen_in_recorder_factory(video_save_path: str) -> Callable[[], MediaRecorder]:
+        # assert Path(video_save_path).parent.exists() and Path(video_save_path).parent.is_dir()
+        return lambda: MediaRecorder(video_save_path, format="mp4")
+
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
             key=key,
@@ -439,9 +418,12 @@ def main():
                 media_stream_constraints={"video": True, "audio": False},
             ),
             video_processor_factory=processor_factory,
+            in_recorder_factory=gen_in_recorder_factory(str(Path("videos") / f"{now_str}_{key}.mp4"))
+            if save_video
+            else None,
         )
 
-    webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
+    webrtc_ctx_main = gen_webrtc_ctx(key="main_cam")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
     if webrtc_ctx_main.video_processor:
@@ -450,9 +432,6 @@ def main():
         webrtc_ctx_main.video_processor.rotate_webcam_input = rotate_webcam_input
         webrtc_ctx_main.video_processor.show_fps = show_fps
         webrtc_ctx_main.video_processor.show_2d = show_2d
-        webrtc_ctx_main.video_processor.video_save_path = (
-            str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
-        )
         webrtc_ctx_main.video_processor.pose_save_path = (
             str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
@@ -464,7 +443,7 @@ def main():
         webrtc_ctx_main.video_processor.reload_pose = reload_pose
 
     if use_two_cam:
-        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
+        webrtc_ctx_sub = gen_webrtc_ctx(key="sub_cam")
 
         if webrtc_ctx_sub.video_processor:
             cam_type: str = "sub"
@@ -473,9 +452,6 @@ def main():
             webrtc_ctx_sub.video_processor.rotate_webcam_input = rotate_webcam_input
             webrtc_ctx_sub.video_processor.show_fps = show_fps
             webrtc_ctx_sub.video_processor.show_2d = show_2d
-            webrtc_ctx_sub.video_processor.video_save_path = (
-                str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
-            )
             webrtc_ctx_sub.video_processor.pose_save_path = (
                 str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
             )
