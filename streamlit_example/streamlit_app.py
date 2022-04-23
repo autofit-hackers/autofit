@@ -1,9 +1,6 @@
 import copy
-<<<<<<< HEAD
 from datetime import datetime
 from distutils.command.upload import upload
-=======
->>>>>>> 8e66c1659c38a07a88c478ad157e576f7c3a638c
 import json
 import os
 import pickle
@@ -118,6 +115,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         )
         self._cvFpsCalc = CvFpsCalc(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
+        # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
         self.rev_color = rev_color
         self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
@@ -166,21 +164,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _show_loaded_pose(self, frame):
         loaded_pose = self.loaded_poses.pop(0)
-<<<<<<< HEAD
-=======
-        foot1 = results.pose_landmarks.landmark[27]
-        foot2 = results.pose_landmarks.landmark[28]
-        foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
-        foot1_load = loaded_pose.pose_landmarks.landmark[27]
-        foot2_load = loaded_pose.pose_landmarks.landmark[28]
-        foot_center_load = np.array(
-            [foot1_load.x + foot2_load.x, foot1_load.y + foot2_load.y, foot1_load.z + foot2_load.z]
-        )
-        estimated_height = self._calculate_height(results.pose_landmarks.landmark)
-        loaded_height = self._calculate_height(loaded_pose.pose_landmarks.landmark)
-        height_ratio = estimated_height / loaded_height
-
->>>>>>> 8e66c1659c38a07a88c478ad157e576f7c3a638c
         frame = draw_landmarks(
             frame,
             loaded_pose.pose_landmarks,
@@ -285,13 +268,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         poses_array = []
         if results.pose_landmarks:
             for i, landmark in enumerate(results.pose_landmarks.landmark):
-<<<<<<< HEAD
                 pose_array = [landmark.x, landmark.y, landmark.z, landmark.visibility]
                 poses_array.append(pose_array)
-=======
-                keypoint = [landmark.x, landmark.y, landmark.z, landmark.visibility]
-                frame_keypoints.append(keypoint)
->>>>>>> 8e66c1659c38a07a88c478ad157e576f7c3a638c
         else:
             # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
             poses_array = [[-1.0, -1.0]] * len(results.pose_landmarks.landmark)
@@ -388,8 +366,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
             # お手本Poseの描画
             if self.loaded_poses:
-                # TODO: お手本poseを毎フレーム変換するか先に変換しておいてここでは呼ぶだけとするか
+                # お手本poseは先に変換しておいてここでは呼ぶだけとする
                 debug_image01 = self._show_loaded_pose(debug_image01)
+
+            # NOTE: ここに指導がくるので、ndarrayで持ちたい
+            # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
 
         if self.show_fps:
             cv.putText(
