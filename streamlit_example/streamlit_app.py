@@ -1,10 +1,10 @@
+from pathlib import Path
 import copy
 import json
 import os
 import pickle
 import time
 from multiprocessing import Process, Queue
-from pathlib import Path
 from typing import List, Union
 
 import av
@@ -80,11 +80,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
-        uploaded_pose_file,
+        uploaded_pose: Union[str, None],
         capture_skelton: bool,
-        reset_button: bool,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
+        skelton_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -100,28 +100,25 @@ class PosefitVideoProcessor(VideoProcessorBase):
             },
         )
         self._cvFpsCalc = CvFpsCalc(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
-        self.frame_index = 0
-        self.is_lifting_up = False
-        self.body_length = 0
-        self.rep_count = 0
 
         self.rev_color = rev_color
         self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
         self.show_2d = show_2d
         self.capture_skelton = capture_skelton
-        self.reset_button = reset_button
+
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
 
+        self.skelton_save_path: Union[str, None] = skelton_save_path
+
         # お手本ポーズを3DでLoad
-        self.uploaded_pose_file = uploaded_pose_file
         self.loaded_poses: List[FakeResultObject] = []
-        if self.uploaded_pose_file is not None:
-            self.loaded_poses = self._load_pose(self.uploaded_pose_file)
+        if uploaded_pose is not None:
+            self.loaded_poses = self._load_pose(uploaded_pose)
 
         self._pose_process.start()
 
@@ -137,10 +134,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
         with open(f"poses/{uploaded_file.name}", "rb") as handle:
             loaded_poses = pickle.load(handle)
         return loaded_poses
-
-    def _reset_training_set(self):
-        if self.uploaded_pose_file is not None:
-            self.loaded_poses = self._load_pose(self.uploaded_pose_file)
 
     def _save_bone_info(self, results):
         print("save!!!")
@@ -167,17 +160,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
         with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
 
-    def _update_rep_count(self, results, upper_thre=0.9, lower_thre=0.5):
-        if self.frame_index == 0:
-            self.initial_body_length = results.pose_landmarks.landmark[17].y - results.pose_landmarks.landmark[15].y
-        else:
-            self.body_length = results.pose_landmarks.landmark[17].y - results.pose_landmarks.landmark[15].y
-            if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
-                self.rep_count += 1
-                self.is_lifting_up = False
-            elif not self.is_lifting_up and self.body_length < lower_thre * self.initial_body_length:
-                self.is_lifting_up = True
-
     def _calculate_3d_distance(self, joint1, joint2):
         self.joint1_pos = np.array([joint1.x, joint1.y, joint1.z])
         self.joint2_pos = np.array([joint2.x, joint2.y, joint2.z])
@@ -194,7 +176,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     # def _cast_landmark_nparr(self, pose_landmark):
 
-    def _caluculate_skeleton(self):
+    def _caluculate_slkelton():
         print("hello skelton")
 
     def _stop_pose_process(self):
@@ -239,13 +221,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
             # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
             self.video_writer.write(image)
 
+        if self.capture_skelton:
+            print(self.skelton_save_path)
+            cv.imwrite(self.skelton_save_path, image)
+
         # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         if self.show_2d:
             results = self._infer_pose(image)
-
-            # 足から鼻までの長さの初期値を保持
-            self._update_rep_count(results)
 
             # pose の保存
             if self.pose_save_path is not None:
@@ -300,22 +283,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        cv.putText(
-            debug_image01,
-            f"Rep:{str(self.rep_count)}, flag:{str(self.is_lifting_up)},cur:{str(round(self.body_length, 3))},ini:{str(round(self.initial_body_length, 3))}",
-            (10, 100),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (0, 0, 255),
-            1,
-            cv.LINE_AA,
-        )
-
-        if self.reset_button:
-            self._reset_training_set()
-            self.reset_button = False
-
-        self.frame_index += 1
         return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
 
     def __del__(self):
@@ -361,7 +328,7 @@ def main():
         save_pose = st.checkbox("Save Pose", value=False)
 
     use_two_cam: bool = st.checkbox("Use two cam", value=False)
-    uploaded_pose_file = st.file_uploader("Load example pose file (.pkl)", type="pkl")
+    uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
 
     capture_skelton = False
     if st.button("Save"):
@@ -371,9 +338,14 @@ def main():
     else:
         # クリックされなかった
         st.write("Not saved yet")
-    reset_button = st.button("Reset")
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
+    # video_save_path: Union[str, None] = (
+    #     os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
+    # )
+    # pose_save_path: Union[str, None] = (
+    #     os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
+    # )
 
     def processor_factory():
         return PosefitVideoProcessor(
@@ -385,9 +357,8 @@ def main():
             rotate_webcam_input=rotate_webcam_input,
             show_fps=show_fps,
             show_2d=show_2d,
-            uploaded_pose_file=uploaded_pose_file,
+            uploaded_pose=uploaded_pose,
             capture_skelton=capture_skelton,
-            reset_button=reset_button,
         )
 
     def gen_webrtc_ctx(key: str):
@@ -416,9 +387,9 @@ def main():
         webrtc_ctx_main.video_processor.pose_save_path = (
             str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
-        webrtc_ctx_main.video_processor.uploaded_pose_file = uploaded_pose_file
+        webrtc_ctx_main.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
+        webrtc_ctx_main.video_processor.uploaded_file = uploaded_pose
         webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
-        webrtc_ctx_main.video_processor.reset_button = reset_button
 
     if use_two_cam:
         webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
@@ -436,10 +407,10 @@ def main():
             webrtc_ctx_sub.video_processor.pose_save_path = (
                 str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
             )
+            webrtc_ctx_sub.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
             # TODO: カメラごとに異なる uploaded_file を自動設定する
-            webrtc_ctx_sub.video_processor.uploaded_pose_file = uploaded_pose_file
+            webrtc_ctx_sub.video_processor.uploaded_file = uploaded_pose
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
-            webrtc_ctx_sub.video_processor.reset_button = reset_button
 
 
 if __name__ == "__main__":
