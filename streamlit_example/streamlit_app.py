@@ -90,6 +90,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         reset_button: bool,
         count_rep: bool,
         reload_pose: bool,
+        upper_threshold,
+        lower_threshold,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skelton_save_path: Union[str, None] = None,
@@ -116,6 +118,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.capture_skelton = capture_skelton
         self.count_rep = count_rep
         self.rep_count = 0
+        self.upper_threshold = upper_threshold
+        self.lower_threshold = lower_threshold
         self.frame_index = 0
         self.is_lifting_up = False
         self.body_length = 0
@@ -185,7 +189,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         with open("data.json", "w") as fp:
             json.dump(bone_dict, fp)
 
-    def _update_rep_count(self, results, upper_thre=0.9, lower_thre=0.6):
+    def _update_rep_count(self, results, upper_thre, lower_thre):
         if self.frame_index == 0:
             self.initial_body_length = results.pose_landmarks.landmark[29].y - results.pose_landmarks.landmark[11].y
         else:
@@ -279,7 +283,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
             results = self._infer_pose(image)
 
             # レップカウントを更新
-            self._update_rep_count(results)
+            self._update_rep_count(results, upper_thre=self.upper_threshold, lower_thre=self.lower_threshold)
 
             # pose の保存
             if self.pose_save_path is not None:
@@ -348,6 +352,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
             )
 
         self.frame_index += 1
+        print(f"debug image01 shape:{debug_image01.shape}")
         return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
 
     def __del__(self):
@@ -387,7 +392,11 @@ def main():
         rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
         show_fps = st.checkbox("Show FPS", value=True)
         show_2d = st.checkbox("Show 2D", value=True)
+
+    with st.expander("rep counter settings"):
         count_rep: bool = st.checkbox("Count rep", value=True)
+        upper_threshold = st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01)
+        lower_threshold = st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
 
     with st.expander("Save settings"):
         save_video = st.checkbox("Save Video", value=False)
@@ -430,6 +439,8 @@ def main():
             reset_button=reset_button,
             count_rep=count_rep,
             reload_pose=reload_pose,
+            upper_threshold=upper_threshold,
+            lower_threshold=lower_threshold,
         )
 
     def gen_webrtc_ctx(key: str):
@@ -464,6 +475,8 @@ def main():
         webrtc_ctx_main.video_processor.reset_button = reset_button
         webrtc_ctx_main.video_processor.count_rep = count_rep
         webrtc_ctx_main.video_processor.reload_pose = reload_pose
+        webrtc_ctx_main.video_processor.upper_threshold = upper_threshold
+        webrtc_ctx_main.video_processor.lower_threshold = lower_threshold
 
     if use_two_cam:
         webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
@@ -487,6 +500,8 @@ def main():
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
             webrtc_ctx_sub.video_processor.count_rep = count_rep
             webrtc_ctx_sub.video_processor.reload_pose = reload_pose
+            webrtc_ctx_sub.video_processor.upper_threshold = upper_threshold
+            webrtc_ctx_sub.video_processor.lower_threshold = lower_threshold
 
 
 if __name__ == "__main__":
