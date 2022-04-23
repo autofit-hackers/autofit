@@ -12,11 +12,9 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
-                              webrtc_streamer)
+from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
 
-from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                          FakeResultObject)
+from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
 from utils import CvFpsCalc
 
@@ -166,11 +164,13 @@ class PosefitVideoProcessor(VideoProcessorBase):
         foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
         foot1_load = loaded_pose.pose_landmarks.landmark[27]
         foot2_load = loaded_pose.pose_landmarks.landmark[28]
-        foot_center_load = np.array([foot1_load.x + foot2_load.x, foot1_load.y + foot2_load.y, foot1_load.z + foot2_load.z])
+        foot_center_load = np.array(
+            [foot1_load.x + foot2_load.x, foot1_load.y + foot2_load.y, foot1_load.z + foot2_load.z]
+        )
         estimated_height = self._calculate_height(results.pose_landmarks.landmark)
         loaded_height = self._calculate_height(loaded_pose.pose_landmarks.landmark)
         height_ratio = estimated_height / loaded_height
-        
+
         frame = draw_landmarks(
             frame,
             loaded_pose.pose_landmarks,
@@ -249,7 +249,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         frame_keypoints = []
         if results.pose_landmarks:
             for i, landmark in enumerate(results.pose_landmarks.landmark):
-                keypoint = [landmark.x, landmark.y, landmark.z, landmark.visibility] 
+                keypoint = [landmark.x, landmark.y, landmark.z, landmark.visibility]
                 frame_keypoints.append(keypoint)
         else:
             # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
