@@ -12,11 +12,9 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
-                              webrtc_streamer)
+from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
 
-from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                          FakeResultObject)
+from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
 from utils import CvFpsCalc
 
@@ -40,7 +38,12 @@ def pose_process(
     )
 
     while True:
-        input_item = in_queue.get(timeout=10)
+        try:
+            input_item = in_queue.get(timeout=10)
+        except Exception as e:
+            print(e)
+            continue
+
         if isinstance(input_item, type(_SENTINEL_)) and input_item == _SENTINEL_:
             break
 
@@ -86,6 +89,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         capture_skelton: bool,
         reset_button: bool,
         count_rep: bool,
+        reload_pose: bool,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skelton_save_path: Union[str, None] = None,
@@ -116,6 +120,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.is_lifting_up = False
         self.body_length = 0
         self.initial_body_length = 0
+        self.reload_pose = reload_pose
 
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
@@ -128,8 +133,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         # お手本ポーズを3DでLoad
         self.uploaded_pose = uploaded_pose
         self.loaded_poses: List[FakeResultObject] = []
+        self.uploaded_poses: List[FakeResultObject] = []
         if uploaded_pose is not None:
             self.loaded_poses = self._load_pose(uploaded_pose)
+            self.uploaded_poses = self.loaded_poses.copy()
 
         self._pose_process.start()
 
@@ -254,9 +261,15 @@ class PosefitVideoProcessor(VideoProcessorBase):
             # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
             self.video_writer.write(image)
 
+        # 画像の保存
         if self.capture_skelton:
             print(self.skelton_save_path)
             cv.imwrite(self.skelton_save_path, image)
+
+        # リロード
+        if self.reload_pose:
+            self.loaded_poses = self.uploaded_poses.copy()
+            self.reload_pose = False
 
         # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -375,7 +388,7 @@ def main():
         count_rep: bool = st.checkbox("Count rep", value=True)
 
     with st.expander("Save settings"):
-        save_video = st.checkbox("Save Video", value=True)
+        save_video = st.checkbox("Save Video", value=False)
         save_pose = st.checkbox("Save Pose", value=False)
 
     use_two_cam: bool = st.checkbox("Use two cam", value=False)
@@ -391,6 +404,12 @@ def main():
         # クリックされなかった
         st.write("Not saved yet")
     reset_button = st.button("Reset")
+
+    if st.button("RELOAD"):
+        reload_pose = True
+        st.write("RELOADED")
+    else:
+        reload_pose = False
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
     # video_save_path: Union[str, None] = (
@@ -414,6 +433,7 @@ def main():
             capture_skelton=capture_skelton,
             reset_button=reset_button,
             count_rep=count_rep,
+            reload_pose=reload_pose,
         )
 
     def gen_webrtc_ctx(key: str):
@@ -447,6 +467,7 @@ def main():
         webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
         webrtc_ctx_main.video_processor.reset_button = reset_button
         webrtc_ctx_main.video_processor.count_rep = count_rep
+        webrtc_ctx_main.video_processor.reload_pose = reload_pose
 
     if use_two_cam:
         webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
@@ -469,6 +490,7 @@ def main():
             webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
             webrtc_ctx_main.video_processor.count_rep = count_rep
+            webrtc_ctx_sub.video_processor.reload_pose = reload_pose
 
 
 if __name__ == "__main__":
