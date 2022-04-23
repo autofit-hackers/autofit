@@ -241,10 +241,12 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
         # カメラキャプチャ #####################################################
         image = frame.to_ndarray(format="bgr24")
+        print(f"original shape:{image.shape}")
 
         image = cv.flip(image, 1)  # ミラー表示
         if self.rotate_webcam_input:
             image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
+        print(f"rotated shape:{image.shape}")
         debug_image01 = copy.deepcopy(image)
         debug_image02 = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
         cv.rectangle(
@@ -483,7 +485,7 @@ def main():
             # TODO: カメラごとに異なる uploaded_pose を自動設定する
             webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
-            webrtc_ctx_main.video_processor.count_rep = count_rep
+            webrtc_ctx_sub.video_processor.count_rep = count_rep
             webrtc_ctx_sub.video_processor.reload_pose = reload_pose
 
 
