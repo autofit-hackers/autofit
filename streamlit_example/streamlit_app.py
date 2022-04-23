@@ -374,12 +374,6 @@ def main():
     reset_button = st.button("Reset")
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
-    # video_save_path: Union[str, None] = (
-    #     os.path.join("videos", time.strftime("%Y-%m-%d-%H-%M-%S.mp4")) if save_video else None
-    # )
-    # pose_save_path: Union[str, None] = (
-    #     os.path.join("poses", time.strftime("%Y-%m-%d-%H-%M-%S.pkl")) if save_pose else None
-    # )
 
     def processor_factory():
         return PosefitVideoProcessor(
