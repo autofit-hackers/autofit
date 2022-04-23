@@ -1,10 +1,14 @@
 import copy
+<<<<<<< HEAD
 from datetime import datetime
 from distutils.command.upload import upload
+=======
+>>>>>>> 8e66c1659c38a07a88c478ad157e576f7c3a638c
 import json
 import os
 import pickle
 import time
+from datetime import datetime
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
@@ -162,6 +166,21 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _show_loaded_pose(self, frame):
         loaded_pose = self.loaded_poses.pop(0)
+<<<<<<< HEAD
+=======
+        foot1 = results.pose_landmarks.landmark[27]
+        foot2 = results.pose_landmarks.landmark[28]
+        foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
+        foot1_load = loaded_pose.pose_landmarks.landmark[27]
+        foot2_load = loaded_pose.pose_landmarks.landmark[28]
+        foot_center_load = np.array(
+            [foot1_load.x + foot2_load.x, foot1_load.y + foot2_load.y, foot1_load.z + foot2_load.z]
+        )
+        estimated_height = self._calculate_height(results.pose_landmarks.landmark)
+        loaded_height = self._calculate_height(loaded_pose.pose_landmarks.landmark)
+        height_ratio = estimated_height / loaded_height
+
+>>>>>>> 8e66c1659c38a07a88c478ad157e576f7c3a638c
         frame = draw_landmarks(
             frame,
             loaded_pose.pose_landmarks,
@@ -266,8 +285,13 @@ class PosefitVideoProcessor(VideoProcessorBase):
         poses_array = []
         if results.pose_landmarks:
             for i, landmark in enumerate(results.pose_landmarks.landmark):
+<<<<<<< HEAD
                 pose_array = [landmark.x, landmark.y, landmark.z, landmark.visibility]
                 poses_array.append(pose_array)
+=======
+                keypoint = [landmark.x, landmark.y, landmark.z, landmark.visibility]
+                frame_keypoints.append(keypoint)
+>>>>>>> 8e66c1659c38a07a88c478ad157e576f7c3a638c
         else:
             # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
             poses_array = [[-1.0, -1.0]] * len(results.pose_landmarks.landmark)
@@ -307,22 +331,12 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
         # カメラキャプチャ #####################################################
         image = frame.to_ndarray(format="bgr24")
-        print(f"original shape:{image.shape}")
 
         image = cv.flip(image, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
         if self.rotate_webcam_input:
             image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
-        print(f"rotated shape:{image.shape}")
         debug_image01 = copy.deepcopy(image)
-        debug_image02 = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
-        cv.rectangle(
-            debug_image02,
-            (0, 0),
-            (image.shape[1], image.shape[0]),
-            bg_color,
-            thickness=-1,
-        )
 
         # 動画の保存
         if self.video_save_path is not None:
@@ -371,12 +385,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
                     debug_image01,
                     results.pose_landmarks,
                 )
-                debug_image02 = draw_stick_figure(
-                    debug_image02,
-                    results.pose_landmarks,
-                    color=color,
-                    bg_color=bg_color,
-                )
 
             # お手本Poseの描画
             if self.loaded_poses:
@@ -391,16 +399,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 cv.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 255, 0),
-                2,
-                cv.LINE_AA,
-            )
-            cv.putText(
-                debug_image02,
-                "FPS:" + str(display_fps),
-                (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                color,
                 2,
                 cv.LINE_AA,
             )
@@ -419,7 +417,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
             )
 
         self.frame_index += 1
-        print(f"debug image01 shape:{debug_image01.shape}")
         return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
 
     def __del__(self):
@@ -522,6 +519,7 @@ def main():
         )
 
     webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
+    print("a")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
     if webrtc_ctx_main.video_processor:
