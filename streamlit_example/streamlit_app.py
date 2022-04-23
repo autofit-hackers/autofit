@@ -1,9 +1,9 @@
 import copy
-from datetime import datetime
 import json
 import os
 import pickle
 import time
+from datetime import datetime
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
@@ -168,11 +168,13 @@ class PosefitVideoProcessor(VideoProcessorBase):
         foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
         foot1_load = loaded_pose.pose_landmarks.landmark[27]
         foot2_load = loaded_pose.pose_landmarks.landmark[28]
-        foot_center_load = np.array([foot1_load.x + foot2_load.x, foot1_load.y + foot2_load.y, foot1_load.z + foot2_load.z])
+        foot_center_load = np.array(
+            [foot1_load.x + foot2_load.x, foot1_load.y + foot2_load.y, foot1_load.z + foot2_load.z]
+        )
         estimated_height = self._calculate_height(results.pose_landmarks.landmark)
         loaded_height = self._calculate_height(loaded_pose.pose_landmarks.landmark)
         height_ratio = estimated_height / loaded_height
-        
+
         frame = draw_landmarks(
             frame,
             loaded_pose.pose_landmarks,
@@ -256,7 +258,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         frame_keypoints = []
         if results.pose_landmarks:
             for i, landmark in enumerate(results.pose_landmarks.landmark):
-                keypoint = [landmark.x, landmark.y, landmark.z, landmark.visibility] 
+                keypoint = [landmark.x, landmark.y, landmark.z, landmark.visibility]
                 frame_keypoints.append(keypoint)
         else:
             # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
@@ -301,21 +303,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
         # カメラキャプチャ #####################################################
         image = frame.to_ndarray(format="bgr24")
-        print(f"original shape:{image.shape}")
 
         image = cv.flip(image, 1)  # ミラー表示
         if self.rotate_webcam_input:
             image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
-        print(f"rotated shape:{image.shape}")
         debug_image01 = copy.deepcopy(image)
-        debug_image02 = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
-        cv.rectangle(
-            debug_image02,
-            (0, 0),
-            (image.shape[1], image.shape[0]),
-            bg_color,
-            thickness=-1,
-        )
 
         # 動画の保存
         if self.video_save_path is not None:
@@ -358,12 +350,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
                     debug_image01,
                     results.pose_landmarks,
                 )
-                debug_image02 = draw_stick_figure(
-                    debug_image02,
-                    results.pose_landmarks,
-                    color=color,
-                    bg_color=bg_color,
-                )
 
             # お手本Poseの描画
             if self.loaded_poses:
@@ -377,16 +363,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
                 cv.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 255, 0),
-                2,
-                cv.LINE_AA,
-            )
-            cv.putText(
-                debug_image02,
-                "FPS:" + str(display_fps),
-                (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                color,
                 2,
                 cv.LINE_AA,
             )
@@ -405,7 +381,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
             )
 
         self.frame_index += 1
-        print(f"debug image01 shape:{debug_image01.shape}")
         return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
 
     def __del__(self):
@@ -508,6 +483,7 @@ def main():
         )
 
     webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
+    print("a")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
     if webrtc_ctx_main.video_processor:
