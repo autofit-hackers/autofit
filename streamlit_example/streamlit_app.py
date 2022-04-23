@@ -173,32 +173,47 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     # TODO: adjust webcam input aspect when rotate
     def _reset_training_set(self, results):
-        if self.uploaded_poses and False:
+        is_adjust_on = True
+        if self.uploaded_poses and is_adjust_on:
             # loaded posesの重ね合わせ
             realtime_single_pose_array = self._results_to_ndarray(results)
-            loaded_poses_array = self._results_to_ndarray(self.uploaded_poses)
+            loaded_poses_array = []
+            for i, uploaded_pose in enumerate(self.uploaded_poses):
+                loaded_poses_array.append(self._results_to_ndarray(uploaded_pose))
             adjusted_poses_array = self._adjust_poses(realtime_single_pose_array, loaded_poses_array)
-            for adjusted_pose_arr in enumerate(adjusted_poses_array):
+            self.loaded_poses = []
+            for i, adjusted_pose_arr in enumerate(adjusted_poses_array):
                 self.loaded_poses.append(self._ndarray_to_results(adjusted_pose_arr))
+        elif self.uploaded_poses:
+            self.loaded_poses = self.uploaded_poses.copy()
 
         self.frame_index = 0
         self.rep_count = 0
         self.is_lifting_up = False
 
-    def _adjust_poses(self, real_time_pose, loaded_poses):
+    def _adjust_poses(self, realtime_pose, loaded_poses):
         # TODO: foot pos を計算する関数を作成
         # TODO: [Fakes]かndarrayでheightの計算も統一
-        real_time_height = self._calculate_height(real_time_pose)
-        loaded_height = self._calculate_height(loaded_poses[0])
-        scale = real_time_height / loaded_height  # スケーリング用の定数
+        realtime_height = self._calculate_height_np(realtime_pose)
+        loaded_height = self._calculate_height_np(loaded_poses[0])
+        scale = realtime_height / loaded_height  # スケーリング用の定数
 
-        real_time_foot_pos = [x, y, 0, 0]
-        loaded_foot_pos = [x, y, 0, 0] * scale
+        realtime_foot_pos = self._calculate_foot_pos_np(realtime_pose)
+        loaded_foot_pos = self._calculate_foot_pos_np(loaded_poses[0]) * scale
 
-        slide = real_time_foot_pos - loaded_foot_pos  # 位置合わせ用の[x,y,0,0]のベクター
+        slide = np.array(
+            [(realtime_foot_pos - loaded_foot_pos)[0], (realtime_foot_pos - loaded_foot_pos)[1], 0, 0]
+        )  # 位置合わせ用の[x,y,0,0]のベクター
+        print(scale, slide)
 
-        adjusted_poses = loaded_poses * scale + slide  # TODO: visibility に干渉しない掛け算と足し算
-        return []
+        adjusted_poses = []
+        for i, loaded_pose in enumerate(loaded_poses):
+            adjusted_pose = []
+            for j, joint in enumerate(loaded_pose):
+                adjusted_pose.append(joint * scale + slide)
+            adjusted_poses.append(adjusted_pose)
+
+        return adjusted_poses
 
     def _save_bone_info(self, results):
         print("save!!!")
@@ -254,6 +269,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.neck = np.array([shoulder1.x + shoulder2.x, shoulder1.y + shoulder2.y, shoulder1.z + shoulder2.z])
         self.foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
         return np.linalg.norm(self.neck / 2 - self.foot_center / 2)
+
+    def _calculate_height_np(self, pose_array):
+        neck = (pose_array[11] + pose_array[12]) / 2
+        foot_center = (pose_array[27] + pose_array[28]) / 2
+        return np.linalg.norm(neck - foot_center)
+
+    def _calculate_foot_pos_np(self, pose_array):
+        return (pose_array[27] + pose_array[28]) / 2
 
     # def _cast_landmark_nparr(self, pose_landmark):
 
@@ -500,7 +523,6 @@ def main():
         )
 
     webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
-    print("a")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
     if webrtc_ctx_main.video_processor:
