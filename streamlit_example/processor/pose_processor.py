@@ -15,10 +15,8 @@ import mediapipe as mp
 import numpy as np
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-from utils.calculate_fps import FpsCalculator
-from utils.draw_pose import draw_landmarks
-from utils.fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                                FakeResultObject)
+from utils import (FakeLandmarkObject, FakeLandmarksObject, FakeResultObject,
+                   FpsCalculator, draw_landmarks)
 
 _SENTINEL_ = "_SENTINEL_"
 

@@ -14,8 +14,7 @@ import mediapipe as mp
 import numpy as np
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-
-from utils.calib_cam import calibrate_camera, stereo_calibrate
+from utils import calibrate_camera, stereo_calibrate
 
 _SENTINEL_ = "_SENTINEL_"
 
