@@ -8,7 +8,6 @@ from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
 
 def app():
-    reset_button = st.button("Reset Pose and Start Training")
     capture_skelton = False
     if st.button("Save Screen Capture"):
         capture_skelton = True
@@ -16,12 +15,8 @@ def app():
         capture_skelton = False
 
     with st.sidebar:
-        uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
         rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
-        use_two_cam: bool = st.checkbox("Use two cam", value=False)
-        with st.expander("Save settings"):
-            save_video = st.checkbox("Save Video", value=False)
-            save_pose = st.checkbox("Save Pose", value=False)
+        use_two_cam: bool = st.checkbox("Use two cam", value=True)
 
         with st.expander("Model parameters (there parameters are effective only at initialization)"):
             static_image_mode = st.checkbox("Static image mode")
@@ -40,15 +35,6 @@ def app():
                 value=0.5,
                 step=0.01,
             )
-
-        with st.expander("rep counter settings"):
-            count_rep: bool = st.checkbox("Count rep", value=True)
-            upper_threshold = st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01)
-            lower_threshold = st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
-
-        # with st.expander("Save settings"):
-        #     save_video = st.checkbox("Save Video", value=False)
-        #     save_pose = st.checkbox("Save Pose", value=False)
 
         with st.expander("Display settings"):
             show_fps = st.checkbox("Show FPS", value=True)
