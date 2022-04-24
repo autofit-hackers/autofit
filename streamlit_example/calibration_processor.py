@@ -21,27 +21,16 @@ _SENTINEL_ = "_SENTINEL_"
 
 
 class CalbrationProcessor(VideoProcessorBase):
-    def __init__(self, save_frame, finish_capture, calibration_parameters, cam_type):
+    def __init__(self, save_frame, start_calibrate, calibration_parameters, cam_type):
         self.save_frame = save_frame
-        self.finish_capture = finish_capture
+        self.start_calibrate = start_calibrate
         self.calibration_parameters = calibration_parameters
         self.cam_type = cam_type
         self.capture_index = 0
         return
-
-    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-        frame = frame.to_ndarray(format="bgr24")
-        frame = cv.flip(frame, 1)  # ミラー表示
-
-        if self.save_frame:
-            cv.imwrite(f"camera{idx}_img{self.capture_index}.png", frame)
-            self.capture_index += 1
-            self.save_frame = False
-
-        return av.VideoFrame.from_ndarray(frame, format="bgr24")
-
-    def __del__(self):
-        print("Caliculate camera matrix...")
+    
+    def _calculate_camera_matrix(self):
+        print("Calculating camera matrix...")
         now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
         mtx_front, dist_front = calibrate_camera(
             image_folder=f"{self.cam_type}", calibration_parameters=self.calibration_parameters
@@ -52,3 +41,21 @@ class CalbrationProcessor(VideoProcessorBase):
         R, T = stereo_calibrate(
             mtx_front, dist_front, mtx_side, dist_side, calibration_parameters=self.calibration_parameters
         )
+        print("Calculation finished!")
+
+    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        frame = frame.to_ndarray(format="bgr24")
+        frame = cv.flip(frame, 1)  # ミラー表示
+
+        if self.save_frame:
+            cv.imwrite(f"camera{idx}_img{self.capture_index}.png", frame)
+            self.capture_index += 1
+            self.save_frame = False
+
+        if self.start_calibrate:
+            self._calculate_camera_matrix()
+        
+        return av.VideoFrame.from_ndarray(frame, format="bgr24")
+
+    def __del__(self):
+        return
