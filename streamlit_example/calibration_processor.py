@@ -13,8 +13,7 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
-                              webrtc_streamer)
+from streamlit_webrtc import VideoProcessorBase
 
 from utils.calib_cam import calibrate_camera, stereo_calibrate
 
@@ -53,4 +52,3 @@ class CalbrationProcessor(VideoProcessorBase):
         R, T = stereo_calibrate(
             mtx_front, dist_front, mtx_side, dist_side, calibration_parameters=self.calibration_parameters
         )
-

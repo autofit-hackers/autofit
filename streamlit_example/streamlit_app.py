@@ -1,27 +1,11 @@
-import copy
-import json
-import os
-import pickle
 import time
-from datetime import datetime
-from distutils.command.upload import upload
-from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
 
-import av
-import cv2 as cv
-import mediapipe as mp
-import numpy as np
 import streamlit as st
-from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
-                              webrtc_streamer)
+from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
-from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                          FakeResultObject)
-from main import draw_landmarks, draw_stick_figure
 from pose_processor import PoseProcessor
-from utils import CvFpsCalc
 
 
 def main():

@@ -14,13 +14,12 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
-                              webrtc_streamer)
+from streamlit_webrtc import VideoProcessorBase
 
-from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                          FakeResultObject)
-from main import draw_landmarks, draw_stick_figure
-from utils import CvFpsCalc
+from utils.calculate_fps import FpsCalculator
+from utils.draw_pose import draw_landmarks
+from utils.fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
+                                FakeResultObject)
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -116,7 +115,7 @@ class PoseProcessor(VideoProcessorBase):
                 "min_tracking_confidence": min_tracking_confidence,
             },
         )
-        self._cvFpsCalc = CvFpsCalc(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
+        self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
         self.rev_color = rev_color
@@ -319,7 +318,7 @@ class PoseProcessor(VideoProcessorBase):
         return results
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-        display_fps = self._cvFpsCalc.get()
+        display_fps = self._FpsCalculator.get()
 
         if (self.video_save_path is not None) and (self.video_writer is None):
             # video_writer の初期化
