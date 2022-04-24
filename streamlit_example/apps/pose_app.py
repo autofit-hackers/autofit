@@ -103,10 +103,10 @@ def app():
         webrtc_ctx_main.video_processor.show_fps = show_fps
         webrtc_ctx_main.video_processor.show_2d = show_2d
         webrtc_ctx_main.video_processor.video_save_path = (
-            str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
+            str(Path("recorded_videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
         )
         webrtc_ctx_main.video_processor.pose_save_path = (
-            str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
+            str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
         webrtc_ctx_main.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
         webrtc_ctx_main.video_processor.uploaded_pose = uploaded_pose
@@ -128,10 +128,10 @@ def app():
             webrtc_ctx_sub.video_processor.show_fps = show_fps
             webrtc_ctx_sub.video_processor.show_2d = show_2d
             webrtc_ctx_sub.video_processor.video_save_path = (
-                str(Path("videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
+                str(Path("recorded_videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
             )
             webrtc_ctx_sub.video_processor.pose_save_path = (
-                str(Path("poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
+                str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
             )
             webrtc_ctx_sub.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
             # TODO: カメラごとに異なる uploaded_pose を自動設定する

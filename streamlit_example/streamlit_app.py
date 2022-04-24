@@ -1,7 +1,7 @@
 import streamlit as st
 
 from apps import calibration_app, pose_app  # import your app modules here
-from utils.multiapp import MultiApp
+from utils import MultiApp
 
 
 def main():

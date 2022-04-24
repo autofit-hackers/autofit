@@ -15,11 +15,8 @@ import mediapipe as mp
 import numpy as np
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-
-from utils.calculate_fps import FpsCalculator
-from utils.draw_pose import draw_landmarks
-from utils.fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                                FakeResultObject)
+from utils import (FakeLandmarkObject, FakeLandmarksObject, FakeResultObject,
+                   FpsCalculator, draw_landmarks)
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -77,7 +74,6 @@ def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.Vi
     fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
     video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
     return video
-
 
 class PoseProcessor(VideoProcessorBase):
     # NOTE: メンバ変数多すぎ。減らすorまとめたい
@@ -159,6 +155,12 @@ class PoseProcessor(VideoProcessorBase):
     def _save_estimated_pose(self, obj, save_path) -> None:
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    def _save_pose(self):
+        if self.pose_save_path is not None:
+            print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
+            os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
+            self._save_estimated_pose(self.pose_mem, self.pose_save_path)
 
     def _load_pose(self, uploaded_pose):
         with open(f"poses/{uploaded_pose.name}", "rb") as handle:
@@ -433,8 +435,5 @@ class PoseProcessor(VideoProcessorBase):
         if self.video_writer is not None:
             print("Stop writing video process...")
             self.video_writer.release()
-        if self.pose_save_path is not None:
-            print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
-            os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
-            self._save_estimated_pose(self.pose_mem, self.pose_save_path)
+        self._save_pose()
         print("Stopped!")
