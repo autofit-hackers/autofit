@@ -16,6 +16,7 @@ def app():
         capture_skelton = False
 
     with st.sidebar:
+        st.markdown("""---""")
         uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
         rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
         use_two_cam: bool = st.checkbox("Use two cam", value=False)
