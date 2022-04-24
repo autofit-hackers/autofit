@@ -1,4 +1,6 @@
 import copy
+from datetime import datetime
+from distutils.command.upload import upload
 import json
 import os
 import pickle
@@ -116,6 +118,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         )
         self._cvFpsCalc = CvFpsCalc(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
+        # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
         self.rev_color = rev_color
         self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
@@ -163,20 +166,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
             loaded_poses = pickle.load(handle)
         return loaded_poses
 
-    def _show_loaded_pose(self, frame, results):
+    def _show_loaded_pose(self, frame):
         loaded_pose = self.loaded_poses.pop(0)
-        foot1 = results.pose_landmarks.landmark[27]
-        foot2 = results.pose_landmarks.landmark[28]
-        foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
-        foot1_load = loaded_pose.pose_landmarks.landmark[27]
-        foot2_load = loaded_pose.pose_landmarks.landmark[28]
-        foot_center_load = np.array(
-            [foot1_load.x + foot2_load.x, foot1_load.y + foot2_load.y, foot1_load.z + foot2_load.z]
-        )
-        estimated_height = self._calculate_height(results.pose_landmarks.landmark)
-        loaded_height = self._calculate_height(loaded_pose.pose_landmarks.landmark)
-        height_ratio = estimated_height / loaded_height
-
         frame = draw_landmarks(
             frame,
             loaded_pose.pose_landmarks,
@@ -184,12 +175,49 @@ class PosefitVideoProcessor(VideoProcessorBase):
         )
         return frame
 
-    def _reset_training_set(self):
-        if self.uploaded_pose is not None:
-            self.loaded_poses = self._load_pose(self.uploaded_pose)
+    # TODO: adjust webcam input aspect when rotate
+    def _reset_training_set(self, results):
+        is_adjust_on = True
+        if self.uploaded_poses and is_adjust_on:
+            # loaded posesの重ね合わせ
+            realtime_single_pose_array = self._results_to_ndarray(results)
+            loaded_poses_array = []
+            for i, uploaded_pose in enumerate(self.uploaded_poses):
+                loaded_poses_array.append(self._results_to_ndarray(uploaded_pose))
+            adjusted_poses_array = self._adjust_poses(realtime_single_pose_array, loaded_poses_array)
+            self.loaded_poses = []
+            for i, adjusted_pose_arr in enumerate(adjusted_poses_array):
+                self.loaded_poses.append(self._ndarray_to_results(adjusted_pose_arr))
+        elif self.uploaded_poses:
+            self.loaded_poses = self.uploaded_poses.copy()
+
         self.frame_index = 0
         self.rep_count = 0
         self.is_lifting_up = False
+
+    def _adjust_poses(self, realtime_pose, loaded_poses):
+        # TODO: foot pos を計算する関数を作成
+        # TODO: [Fakes]かndarrayでheightの計算も統一
+        realtime_height = self._calculate_height_np(realtime_pose)
+        loaded_height = self._calculate_height_np(loaded_poses[0])
+        scale = realtime_height / loaded_height  # スケーリング用の定数
+
+        realtime_foot_pos = self._calculate_foot_pos_np(realtime_pose)
+        loaded_foot_pos = self._calculate_foot_pos_np(loaded_poses[0]) * scale
+
+        slide = np.array(
+            [(realtime_foot_pos - loaded_foot_pos)[0], (realtime_foot_pos - loaded_foot_pos)[1], 0, 0]
+        )  # 位置合わせ用の[x,y,0,0]のベクター
+        print(scale, slide)
+
+        adjusted_poses = []
+        for i, loaded_pose in enumerate(loaded_poses):
+            adjusted_pose = []
+            for j, joint in enumerate(loaded_pose):
+                adjusted_pose.append(joint * scale + slide)
+            adjusted_poses.append(adjusted_pose)
+
+        return adjusted_poses
 
     def _save_bone_info(self, results):
         print("save!!!")
@@ -246,6 +274,14 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
         return np.linalg.norm(self.neck / 2 - self.foot_center / 2)
 
+    def _calculate_height_np(self, pose_array):
+        neck = (pose_array[11] + pose_array[12]) / 2
+        foot_center = (pose_array[27] + pose_array[28]) / 2
+        return np.linalg.norm(neck - foot_center)
+
+    def _calculate_foot_pos_np(self, pose_array):
+        return (pose_array[27] + pose_array[28]) / 2
+
     # def _cast_landmark_nparr(self, pose_landmark):
 
     def _caluculate_slkelton():
@@ -256,27 +292,27 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self._pose_process.join(timeout=10)
 
     def _results_to_ndarray(self, results):
-        frame_keypoints = []
+        poses_array = []
         if results.pose_landmarks:
             for i, landmark in enumerate(results.pose_landmarks.landmark):
-                keypoint = [landmark.x, landmark.y, landmark.z, landmark.visibility]
-                frame_keypoints.append(keypoint)
+                pose_array = [landmark.x, landmark.y, landmark.z, landmark.visibility]
+                poses_array.append(pose_array)
         else:
             # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
-            frame_keypoints = [[-1, -1]] * len(results.pose_landmarks.landmark)
-        return np.array(frame_keypoints)
+            poses_array = [[-1.0, -1.0]] * len(results.pose_landmarks.landmark)
+        return np.array(poses_array)
 
-    def _ndarray_to_results(self, frame_keypoints):
+    def _ndarray_to_results(self, poses_array):
         results = FakeResultObject(
             pose_landmarks=FakeLandmarksObject(
                 landmark=[
                     FakeLandmarkObject(
-                        x=keypoint[0],
-                        y=keypoint[1],
-                        z=keypoint[2],
-                        visibility=keypoint[3],
+                        x=pose_array[0],
+                        y=pose_array[1],
+                        z=pose_array[2],
+                        visibility=pose_array[3],
                     )
-                    for keypoint in frame_keypoints
+                    for pose_array in poses_array
                 ]
             )
         )
@@ -284,10 +320,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def recv(self, raw_frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._cvFpsCalc.get()
-
-        if self.reset_button:
-            self._reset_training_set()
-            self.reset_button = False
 
         if (self.video_save_path is not None) and (self.video_writer is None):
             # video_writer の初期化
@@ -303,8 +335,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
             color = (100, 33, 3)
             bg_color = (255, 255, 255)
 
-        raw_frame = raw_frame.to_ndarray(format="bgr24")
-        raw_frame = cv.flip(raw_frame, 1)  # ミラー表示
+        # カメラキャプチャ #####################################################
+        image = frame.to_ndarray(format="bgr24")
+
+        image = cv.flip(image, 1)  # ミラー表示
+        # TODO: ここで image に対して single camera calibration
         if self.rotate_webcam_input:
             raw_frame = cv.rotate(raw_frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(raw_frame)
@@ -315,9 +350,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
             self.video_writer.write(raw_frame)
 
         # 画像の保存
-        if self.capture_skelton:
+        # TODO: capture skelton の rename or jsonの保存までするように関数書き換え
+        if self.capture_skelton and self.skelton_save_path:
             print(self.skelton_save_path)
-            cv.imwrite(self.skelton_save_path, raw_frame)
+            cv.imwrite(self.skelton_save_path, image)
+            self.capture_skelton = False
 
         # リロード
         if self.reload_pose:
@@ -328,7 +365,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
         raw_frame = cv.cvtColor(raw_frame, cv.COLOR_BGR2RGB)
         results = self._infer_pose(raw_frame)
         if self.show_2d and results:
-            # results = self._infer_pose(image)
+
+            # reset params and adjust scale and position
+            if self.reset_button:
+                self._reset_training_set(results)
+                self.reset_button = False
 
             # レップカウントを更新
             self._update_rep_count(results, upper_thre=self.upper_threshold, lower_thre=self.lower_threshold)
@@ -353,7 +394,11 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
             # お手本Poseの描画
             if self.loaded_poses:
-                processed_frame = self._show_loaded_pose(processed_frame, results)
+                # お手本poseは先に変換しておいてここでは呼ぶだけとする
+                debug_image01 = self._show_loaded_pose(debug_image01)
+
+            # NOTE: ここに指導がくるので、ndarrayで持ちたい
+            # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
 
         if self.show_fps:
             cv.putText(
@@ -483,7 +528,6 @@ def main():
         )
 
     webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
-    print("a")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
     # NOTE: 動的に監視したい変数以外は以下に含める必要なし?
