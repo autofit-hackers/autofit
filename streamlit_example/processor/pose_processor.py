@@ -15,10 +15,10 @@ import mediapipe as mp
 import numpy as np
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-from utils import (FakeLandmarkObject, FakeLandmarksObject, FakeResultObject,
-                   FpsCalculator, draw_landmarks)
+from utils import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject, FpsCalculator, draw_landmarks
 
 _SENTINEL_ = "_SENTINEL_"
+
 
 def pose_process(
     in_queue: Queue,
@@ -74,6 +74,7 @@ def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.Vi
     fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
     video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
     return video
+
 
 class PoseProcessor(VideoProcessorBase):
     # NOTE: メンバ変数多すぎ。減らすorまとめたい
@@ -155,7 +156,7 @@ class PoseProcessor(VideoProcessorBase):
     def _save_estimated_pose(self, obj, save_path) -> None:
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
+
     def _save_pose(self):
         if self.pose_save_path is not None:
             print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
@@ -168,10 +169,10 @@ class PoseProcessor(VideoProcessorBase):
         return loaded_poses
 
     def _show_loaded_pose(self, frame):
-        loaded_pose = self.loaded_poses.pop(0)
+        self.loaded_one_shot_pose = self.loaded_poses.pop(0)
         frame = draw_landmarks(
             frame,
-            loaded_pose.pose_landmarks,
+            self.loaded_one_shot_pose.pose_landmarks,
             is_loaded=True,
         )
         return frame
@@ -282,6 +283,21 @@ class PoseProcessor(VideoProcessorBase):
 
     def _calculate_foot_pos_np(self, pose_array):
         return (pose_array[27] + pose_array[28]) / 2
+
+    def _realtime_coaching(self, results):
+        result_array = self._results_to_ndarray(results)
+        realtime_pose_array = self._results_to_ndarray(self.loaded_one_shot_pose)
+
+        reccomend = []
+        if np.linalg.norm(realtime_pose_array[27] - realtime_pose_array[28]) < np.linalg.norm(
+            result_array[27] - result_array[28]
+        ):
+            reccomend.append("もう少し足幅を広げましょう")
+        if np.linalg.norm(realtime_pose_array[15] - realtime_pose_array[16]) < np.linalg.norm(
+            result_array[15] - result_array[16]
+        ):
+            reccomend.append("手幅を広げましょう")
+        return reccomend
 
     # def _cast_landmark_nparr(self, pose_landmark):
 
@@ -400,6 +416,8 @@ class PoseProcessor(VideoProcessorBase):
 
             # NOTE: ここに指導がくるので、ndarrayで持ちたい
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
+            if True:
+                print(self._realtime_coaching(results))
 
         if self.show_fps:
             cv.putText(

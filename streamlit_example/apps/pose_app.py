@@ -52,8 +52,15 @@ def app():
         #     save_pose = st.checkbox("Save Pose", value=False)
 
         with st.expander("Display settings"):
+            rev_color = st.checkbox("Reverse color", value=False)
             show_fps = st.checkbox("Show FPS", value=True)
             show_2d = st.checkbox("Show 2D", value=True)
+
+            if st.button("RELOAD"):
+                reload_pose = True
+                st.write("RELOADED")
+            else:
+                reload_pose = False
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
 
