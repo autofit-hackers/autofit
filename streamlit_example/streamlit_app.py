@@ -13,11 +13,9 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import (ClientSettings, VideoProcessorBase, WebRtcMode,
-                              webrtc_streamer)
+from streamlit_webrtc import ClientSettings, VideoProcessorBase, WebRtcMode, webrtc_streamer
 
-from fake_objects import (FakeLandmarkObject, FakeLandmarksObject,
-                          FakeResultObject)
+from fake_objects import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject
 from main import draw_landmarks, draw_stick_figure
 from utils import CvFpsCalc
 
@@ -51,6 +49,8 @@ def pose_process(
             break
 
         results = pose.process(input_item)
+        # NOTE: 検出失敗時の例外処理をシンプルにできないか
+        # NOTE: resultsっていう変数名分かりにくくね?
         if results.pose_landmarks is None:
             out_queue.put_nowait(None)
             continue
@@ -79,6 +79,7 @@ def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.Vi
 
 
 class PosefitVideoProcessor(VideoProcessorBase):
+    # NOTE: メンバ変数多すぎ。減らすorまとめたい
     def __init__(
         self,
         static_image_mode: bool,
@@ -148,11 +149,12 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
         self._pose_process.start()
 
+    # NOTE: infer or estimate で用語統一する?
     def _infer_pose(self, image):
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
-    def _save_as_pickle(self, obj, save_path) -> None:
+    def _save_estimated_pose(self, obj, save_path) -> None:
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -182,7 +184,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
         )
         return frame
 
-    # TODO:adjust webcam input aspect when rotate
     def _reset_training_set(self):
         if self.uploaded_pose is not None:
             self.loaded_poses = self._load_pose(self.uploaded_pose)
@@ -192,7 +193,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _save_bone_info(self, results):
         print("save!!!")
-        # TODO: この辺はurilsに連れて行く
+        # TODO: この辺はutilsに連れて行く
         bone_edge_names = {
             "shoulder_width": (11, 12),
             "shin": (27, 25),
@@ -228,7 +229,6 @@ class PosefitVideoProcessor(VideoProcessorBase):
 
     def _is_key_frame(self, results, upper_thre=0.96, lower_thre=0.94):
         if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
-
             print("return true if is key frame")
 
     def _calculate_3d_distance(self, joint1, joint2):
@@ -236,6 +236,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         self.joint2_pos = np.array([joint2.x, joint2.y, joint2.z])
         return np.linalg.norm(self.joint2_pos - self.joint1_pos)
 
+    # NOTE: ResultObject or ndarrayで計算
     def _calculate_height(self, landmark):
         shoulder1 = landmark[11]
         shoulder2 = landmark[12]
@@ -281,7 +282,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         )
         return results
 
-    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+    def recv(self, raw_frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._cvFpsCalc.get()
 
         if self.reset_button:
@@ -291,9 +292,10 @@ class PosefitVideoProcessor(VideoProcessorBase):
         if (self.video_save_path is not None) and (self.video_writer is None):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
-            self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
+            self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=raw_frame)
 
         # 色指定
+        # NOTE: 必要?
         if self.rev_color:
             color = (255, 255, 255)
             bg_color = (100, 33, 3)
@@ -301,23 +303,21 @@ class PosefitVideoProcessor(VideoProcessorBase):
             color = (100, 33, 3)
             bg_color = (255, 255, 255)
 
-        # カメラキャプチャ #####################################################
-        image = frame.to_ndarray(format="bgr24")
-
-        image = cv.flip(image, 1)  # ミラー表示
+        raw_frame = raw_frame.to_ndarray(format="bgr24")
+        raw_frame = cv.flip(raw_frame, 1)  # ミラー表示
         if self.rotate_webcam_input:
-            image = cv.rotate(image, cv.ROTATE_90_CLOCKWISE)
-        debug_image01 = copy.deepcopy(image)
+            raw_frame = cv.rotate(raw_frame, cv.ROTATE_90_CLOCKWISE)
+        processed_frame = copy.deepcopy(raw_frame)
 
         # 動画の保存
         if self.video_save_path is not None:
             assert self.video_writer is not None
-            self.video_writer.write(image)
+            self.video_writer.write(raw_frame)
 
         # 画像の保存
         if self.capture_skelton:
             print(self.skelton_save_path)
-            cv.imwrite(self.skelton_save_path, image)
+            cv.imwrite(self.skelton_save_path, raw_frame)
 
         # リロード
         if self.reload_pose:
@@ -325,8 +325,8 @@ class PosefitVideoProcessor(VideoProcessorBase):
             self.reload_pose = False
 
         # 検出実施 #############################################################
-        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-        results = self._infer_pose(image)
+        raw_frame = cv.cvtColor(raw_frame, cv.COLOR_BGR2RGB)
+        results = self._infer_pose(raw_frame)
         if self.show_2d and results:
             # results = self._infer_pose(image)
 
@@ -346,18 +346,18 @@ class PosefitVideoProcessor(VideoProcessorBase):
             # Poseの描画 ################################################################
             if results.pose_landmarks is not None:
                 # 描画
-                debug_image01 = draw_landmarks(
-                    debug_image01,
+                processed_frame = draw_landmarks(
+                    processed_frame,
                     results.pose_landmarks,
                 )
 
             # お手本Poseの描画
             if self.loaded_poses:
-                debug_image01 = self._show_loaded_pose(debug_image01, results)
+                processed_frame = self._show_loaded_pose(processed_frame, results)
 
         if self.show_fps:
             cv.putText(
-                debug_image01,
+                processed_frame,
                 "FPS:" + str(display_fps),
                 (10, 30),
                 cv.FONT_HERSHEY_SIMPLEX,
@@ -370,7 +370,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         # show rep count
         if self.count_rep:
             cv.putText(
-                debug_image01,
+                processed_frame,
                 f"Rep:{self.rep_count}",
                 (10, 60),
                 cv.FONT_HERSHEY_SIMPLEX,
@@ -381,7 +381,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
             )
 
         self.frame_index += 1
-        return av.VideoFrame.from_ndarray(debug_image01, format="bgr24")
+        return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):
         print("Stop the inference process...")
@@ -392,7 +392,7 @@ class PosefitVideoProcessor(VideoProcessorBase):
         if self.pose_save_path is not None:
             print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
             os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
-            self._save_as_pickle(self.pose_mem, self.pose_save_path)
+            self._save_estimated_pose(self.pose_mem, self.pose_save_path)
         print("Stopped!")
 
 
@@ -486,6 +486,8 @@ def main():
     print("a")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
+    # NOTE: 動的に監視したい変数以外は以下に含める必要なし?
+    # NOTE: mainとsubをカメラ構造体or辞書にまとめる?
     if webrtc_ctx_main.video_processor:
         cam_type: str = "main"
         webrtc_ctx_main.video_processor.rev_color = rev_color
