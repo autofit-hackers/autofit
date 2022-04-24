@@ -8,58 +8,56 @@ from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
 
 def app():
-    with st.expander("Model parameters (there parameters are effective only at initialization)"):
-        static_image_mode = st.checkbox("Static image mode")
-        model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
-        min_detection_confidence = st.slider(
-            "Min detection confidence",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.5,
-            step=0.01,
-        )
-        min_tracking_confidence = st.slider(
-            "Min tracking confidence",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.5,
-            step=0.01,
-        )
-
-    with st.expander("Display settings"):
-        rev_color = st.checkbox("Reverse color", value=False)
-        rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
-        show_fps = st.checkbox("Show FPS", value=True)
-        show_2d = st.checkbox("Show 2D", value=True)
-
-    with st.expander("rep counter settings"):
-        count_rep: bool = st.checkbox("Count rep", value=True)
-        upper_threshold = st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01)
-        lower_threshold = st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
-
-    with st.expander("Save settings"):
-        save_video = st.checkbox("Save Video", value=False)
-        save_pose = st.checkbox("Save Pose", value=False)
-
-    use_two_cam: bool = st.checkbox("Use two cam", value=False)
-    uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
-
+    reset_button = st.button("Reset Pose and Start Training")
     capture_skelton = False
-
-    if st.button("Save"):
+    if st.button("Save Screen Capture"):
         # 最後の試行で上のボタンがクリックされた
-        st.write("Pose Saved")
+        # st.write("Pose Saved")
         capture_skelton = True
     else:
         # クリックされなかった
-        st.write("Not saved yet")
-    reset_button = st.button("Reset")
+        # st.write("Not saved yet")
+        capture_skelton = False
+        # if st.button("Reload pose, which is no longer used"):
+        #     reload_pose = True
+        #     # st.write("RELOADED")
+        # else:
+        #     reload_pose = False
 
-    if st.button("RELOAD"):
-        reload_pose = True
-        st.write("RELOADED")
-    else:
-        reload_pose = False
+    with st.sidebar:
+        uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
+        rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
+        use_two_cam: bool = st.checkbox("Use two cam", value=False)
+        with st.expander("Model parameters (there parameters are effective only at initialization)"):
+            static_image_mode = st.checkbox("Static image mode")
+            model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
+            min_detection_confidence = st.slider(
+                "Min detection confidence",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.5,
+                step=0.01,
+            )
+            min_tracking_confidence = st.slider(
+                "Min tracking confidence",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.5,
+                step=0.01,
+            )
+
+        with st.expander("rep counter settings"):
+            count_rep: bool = st.checkbox("Count rep", value=True)
+            upper_threshold = st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01)
+            lower_threshold = st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
+
+        # with st.expander("Save settings"):
+        #     save_video = st.checkbox("Save Video", value=False)
+        #     save_pose = st.checkbox("Save Pose", value=False)
+
+        with st.expander("Display settings"):
+            show_fps = st.checkbox("Show FPS", value=True)
+            show_2d = st.checkbox("Show 2D", value=True)
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
 
