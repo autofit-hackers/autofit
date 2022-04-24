@@ -15,10 +15,10 @@ import mediapipe as mp
 import numpy as np
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-from utils import (FakeLandmarkObject, FakeLandmarksObject, FakeResultObject,
-                   FpsCalculator, draw_landmarks)
+from utils import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject, FpsCalculator, draw_landmarks
 
 _SENTINEL_ = "_SENTINEL_"
+
 
 def pose_process(
     in_queue: Queue,
@@ -75,8 +75,9 @@ def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.Vi
     video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
     return video
 
+
 class PoseProcessor(VideoProcessorBase):
-    # NOTE: メンバ変数多すぎ。減らすorまとめたい
+    # NOTE: 変数多すぎ。減らすorまとめたい
     def __init__(
         self,
         static_image_mode: bool,
@@ -155,7 +156,7 @@ class PoseProcessor(VideoProcessorBase):
     def _save_estimated_pose(self, obj, save_path) -> None:
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
+
     def _save_pose(self):
         if self.pose_save_path is not None:
             print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")

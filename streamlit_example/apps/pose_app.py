@@ -144,3 +144,7 @@ def app():
             webrtc_ctx_sub.video_processor.reset_button = reset_button
             webrtc_ctx_sub.video_processor.upper_threshold = upper_threshold
             webrtc_ctx_sub.video_processor.lower_threshold = lower_threshold
+
+
+if __name__ == "__main__":
+    app()

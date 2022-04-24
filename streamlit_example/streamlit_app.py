@@ -9,7 +9,7 @@ def main():
 
     # Add all your application here
     app.add_app("Pose", pose_app.app)
-    app.add_app("Calibration", calibration_app.app)
+    # app.add_app("Calibration", calibration_app.app)
 
     # The main app
     app.run()
