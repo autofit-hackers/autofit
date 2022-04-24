@@ -20,7 +20,7 @@ from utils.calib_cam import calibrate_camera, stereo_calibrate
 _SENTINEL_ = "_SENTINEL_"
 
 
-class CalbrationProcessor(VideoProcessorBase):
+class CalibrationProcessor(VideoProcessorBase):
     def __init__(self, save_frame, start_calibrate, calibration_parameters, cam_type):
         self.save_frame = save_frame
         self.start_calibrate = start_calibrate

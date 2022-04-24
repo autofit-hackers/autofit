@@ -27,9 +27,7 @@ def load_video_frames(video_path: str) -> Union[List[cv.Mat], None]:
     return frames
 
 
-def calib_mono_cam(
-    frames: List[cv.Mat], board_shape: Tuple[int, int] = (6, 9), world_scaling: float = 1.0
-) -> typing.Any:
+def calib_mono_cam(frames: List[cv.Mat], board_shape: Tuple[int, int] = (6, 9), world_scaling: float = 1.0):
     """Calibrate mono camera
 
     Args:
