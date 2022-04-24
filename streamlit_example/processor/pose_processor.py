@@ -77,7 +77,7 @@ def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.Vi
 
 
 class PoseProcessor(VideoProcessorBase):
-    # NOTE: メンバ変数多すぎ。減らすorまとめたい
+    # NOTE: 変数多すぎ。減らすorまとめたい
     def __init__(
         self,
         static_image_mode: bool,
