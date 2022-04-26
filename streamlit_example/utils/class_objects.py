@@ -1,22 +1,6 @@
 from typing import List, NamedTuple, Union
 
 import numpy as np
-import mediapipe as mp
-
-
-class FakeLandmarkObject(NamedTuple):
-    x: float
-    y: float
-    z: float
-    visibility: bool
-
-
-class FakeLandmarksObject(NamedTuple):
-    landmark: List[FakeLandmarkObject]
-
-
-class FakeResultObject(NamedTuple):
-    pose_landmarks: FakeLandmarksObject
 
 
 class PoseLandmarkObject(NamedTuple):
