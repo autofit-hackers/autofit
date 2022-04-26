@@ -10,7 +10,7 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
-from utils import FpsCalculator, draw_landmarks, PoseLandmarksObject, mp_res_to_pose_obj
+from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -141,7 +141,7 @@ class PoseProcessor(VideoProcessorBase):
 
     def _show_loaded_pose(self, frame):
         self.loaded_one_shot_pose = self.loaded_poses.pop(0)
-        frame = draw_landmarks(
+        frame = draw_landmarks_pose(
             frame,
             self.loaded_one_shot_pose,
             is_loaded=True,
@@ -206,7 +206,7 @@ class PoseProcessor(VideoProcessorBase):
             "full_arm": (11, 15),
         }
 
-        bone_dict = {"foot_neck_height": self._calculate_height(results.landmark)}
+        bone_dict = {"foot_neck_height": self._calculate_height(results)}
         for bone_edge_key in bone_edge_names.keys():
             bone_dict[bone_edge_key] = self._calculate_3d_distance(
                 results.landmark[bone_edge_names[bone_edge_key][0]],
@@ -217,35 +217,35 @@ class PoseProcessor(VideoProcessorBase):
             # TODO: data.json のパスをインスタンス変数化
             json.dump(bone_dict, fp)
 
-    def _update_rep_count(self, results: PoseLandmarksObject, upper_thre: float, lower_thre: float):
+    def _update_rep_count(self, results: PoseLandmarksObject, upper_thre: float, lower_thre: float) -> None:
         if self.frame_index == 0:
             self.initial_body_length = results.landmark[29][1] - results.landmark[11][1]
         else:
-            self.body_length = results.pose_landmarks.landmark[29].y - results.pose_landmarks.landmark[11].y
+            self.body_length = results.landmark[29][1] - results.landmark[11][1]
             if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
                 self.rep_count += 1
                 self.is_lifting_up = False
             elif not self.is_lifting_up and self.body_length < lower_thre * self.initial_body_length:
                 self.is_lifting_up = True
 
-    def _is_key_frame(self, results, upper_thre=0.96, lower_thre=0.94):
+    def _is_key_frame(self, results, upper_thre=0.96, lower_thre=0.94) -> None:
         if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
             print("return true if is key frame")
 
-    def _calculate_3d_distance(self, joint1, joint2):
-        self.joint1_pos = np.array([joint1.x, joint1.y, joint1.z])
-        self.joint2_pos = np.array([joint2.x, joint2.y, joint2.z])
-        return np.linalg.norm(self.joint2_pos - self.joint1_pos)
+    def _calculate_3d_distance(self, joint1: np.ndarray, joint2: np.ndarray):
+        joint1_pos = np.array([joint1[0], joint1[1], joint1[2]])
+        joint2_pos = np.array([joint2[0], joint2[1], joint2[2]])
+        return np.linalg.norm(joint2_pos - joint1_pos)
 
     # NOTE: ResultObject or ndarrayで計算
-    def _calculate_height(self, landmark):
+    def _calculate_height(self, landmark: PoseLandmarksObject):
         shoulder1 = landmark[11]
         shoulder2 = landmark[12]
         foot1 = landmark[27]
         foot2 = landmark[28]
-        self.neck = np.array([shoulder1.x + shoulder2.x, shoulder1.y + shoulder2.y, shoulder1.z + shoulder2.z])
-        self.foot_center = np.array([foot1.x + foot2.x, foot1.y + foot2.y, foot1.z + foot2.z])
-        return np.linalg.norm(self.neck / 2 - self.foot_center / 2)
+        neck = np.array([shoulder1[0] + shoulder2[0], shoulder1[1] + shoulder2[1], shoulder1[2] + shoulder2[2]])
+        foot_center = np.array([foot1[0] + foot2[0], foot1[1] + foot2[1], foot1[2] + foot2[2]])
+        return np.linalg.norm(neck / 2 - foot_center / 2)
 
     def _calculate_height_np(self, pose_array):
         neck = (pose_array[11] + pose_array[12]) / 2
@@ -304,8 +304,8 @@ class PoseProcessor(VideoProcessorBase):
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        results = self._infer_pose(frame)
-        print(results)
+        results: PoseLandmarksObject = self._infer_pose(frame)
+
         if self.show_2d and results:
 
             # reset params and adjust scale and position
@@ -327,11 +327,11 @@ class PoseProcessor(VideoProcessorBase):
                 self.capture_skelton = False
 
             # Poseの描画 ################################################################
-            if results.pose_landmarks is not None:
+            if results.landmark is not None:
                 # 描画
-                processed_frame = draw_landmarks(
+                processed_frame = draw_landmarks_pose(
                     processed_frame,
-                    results.pose_landmarks,
+                    results,
                 )
 
             # お手本Poseの描画

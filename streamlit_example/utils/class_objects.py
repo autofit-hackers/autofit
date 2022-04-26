@@ -85,7 +85,7 @@ class CalibrationSettings:
 
 def mp_res_to_pose_obj(mp_res) -> PoseLandmarksObject:
     assert hasattr(mp_res, "pose_landmarks")
-    assert hasattr(mp_res.pose_landmarks, "pose_landmarks")
+    assert hasattr(mp_res.pose_landmarks, "landmark")
     picklable_results = PoseLandmarksObject(
         landmark=np.array(
             [[pose_landmark.x, pose_landmark.y, pose_landmark.z] for pose_landmark in mp_res.pose_landmarks.landmark]
