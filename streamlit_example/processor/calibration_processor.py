@@ -14,7 +14,6 @@ import mediapipe as mp
 import numpy as np
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-from utils import calibrate_camera, stereo_calibrate
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -31,23 +30,23 @@ class CalibrationProcessor(VideoProcessorBase):
     def _calculate_camera_matrix(self):
         print("Calculating camera matrix...")
         now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
-        mtx_front, dist_front = calibrate_camera(
-            image_folder=f"{self.cam_type}", calibration_parameters=self.calibration_parameters
-        )
-        mtx_side, dist_side = calibrate_camera(
-            image_folder=f"", calibration_parameters=self.calibration_parameters
-        )
-        R, T = stereo_calibrate(
-            mtx_front, dist_front, mtx_side, dist_side, calibration_parameters=self.calibration_parameters
-        )
-        print("Calculation finished!")
+        # mtx_front, dist_front = calibrate_camera(
+        #     image_folder=f"{self.cam_type}", calibration_parameters=self.calibration_parameters
+        # )
+        # mtx_side, dist_side = calibrate_camera(
+        #     image_folder=f"", calibration_parameters=self.calibration_parameters
+        # )
+        # R, T = stereo_calibrate(
+        #     mtx_front, dist_front, mtx_side, dist_side, calibration_parameters=self.calibration_parameters
+        # )
+        # print("Calculation finished!")
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         frame = frame.to_ndarray(format="bgr24")
         frame = cv.flip(frame, 1)  # ミラー表示
 
         if self.save_frame:
-            cv.imwrite(f"camera{idx}_img{self.capture_index}.png", frame)
+            cv.imwrite(f"camera_img{self.capture_index}.png", frame)
             self.capture_index += 1
             self.save_frame = False
 
