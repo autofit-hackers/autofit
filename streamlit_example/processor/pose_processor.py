@@ -394,6 +394,7 @@ class PoseProcessor(VideoProcessorBase):
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         results = self._infer_pose(frame)
+        print(results)
         if self.show_2d and results:
 
             # reset params and adjust scale and position
