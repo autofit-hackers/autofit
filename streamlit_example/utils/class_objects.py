@@ -1,25 +1,9 @@
 from typing import List, NamedTuple, Union
 
 import numpy as np
-import mediapipe as mp
 
 
-class FakeLandmarkObject(NamedTuple):
-    x: float
-    y: float
-    z: float
-    visibility: bool
-
-
-class FakeLandmarksObject(NamedTuple):
-    landmark: List[FakeLandmarkObject]
-
-
-class FakeResultObject(NamedTuple):
-    pose_landmarks: FakeLandmarksObject
-
-
-class PoseLandmarkObject(NamedTuple):
+class PoseLandmarksObject(NamedTuple):
     """
     landmark.shape == (関節数, 3)
     visibility.shape == (関節数, 1)
@@ -27,12 +11,6 @@ class PoseLandmarkObject(NamedTuple):
 
     landmark: np.ndarray
     visibility: np.ndarray
-
-
-class PoseLandmarksObject(NamedTuple):
-    """ """
-
-    landmark: List[PoseLandmarkObject]
 
 
 class ModelSettings:
@@ -50,7 +28,6 @@ class ModelSettings:
 class DisplaySetting:
     def __init__(
         self,
-        rev_color: bool,
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
@@ -106,10 +83,10 @@ class CalibrationSettings:
                 self.__dict__[variable_name] = value
 
 
-def mp_res_to_pose_obj(mp_res) -> PoseLandmarkObject:
+def mp_res_to_pose_obj(mp_res) -> PoseLandmarksObject:
     assert hasattr(mp_res, "pose_landmarks")
-    assert hasattr(mp_res.pose_landmarks, "pose_landmarks")
-    picklable_results = PoseLandmarkObject(
+    assert hasattr(mp_res.pose_landmarks, "landmark")
+    picklable_results = PoseLandmarksObject(
         landmark=np.array(
             [[pose_landmark.x, pose_landmark.y, pose_landmark.z] for pose_landmark in mp_res.pose_landmarks.landmark]
         ),

@@ -1,18 +1,7 @@
-import copy
-import json
-import os
-import pickle
 import time
-from datetime import datetime
-from multiprocessing import Process, Queue
-from pathlib import Path
-from typing import List, Union
 
 import av
 import cv2 as cv
-import mediapipe as mp
-import numpy as np
-import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
 
 _SENTINEL_ = "_SENTINEL_"
@@ -26,7 +15,7 @@ class CalibrationProcessor(VideoProcessorBase):
         self.cam_type = cam_type
         self.capture_index = 0
         return
-    
+
     def _calculate_camera_matrix(self):
         print("Calculating camera matrix...")
         now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
@@ -52,7 +41,7 @@ class CalibrationProcessor(VideoProcessorBase):
 
         if self.start_calibrate:
             self._calculate_camera_matrix()
-        
+
         return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
     def __del__(self):
