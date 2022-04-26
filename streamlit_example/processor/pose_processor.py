@@ -59,7 +59,6 @@ class PoseProcessor(VideoProcessorBase):
         model_complexity: int,
         min_detection_confidence: float,
         min_tracking_confidence: float,
-        rev_color: bool,
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
@@ -89,7 +88,6 @@ class PoseProcessor(VideoProcessorBase):
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
-        self.rev_color = rev_color
         self.rotate_webcam_input = rotate_webcam_input
         self.show_fps = show_fps
         self.show_2d = show_2d
@@ -282,15 +280,6 @@ class PoseProcessor(VideoProcessorBase):
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._FpsCalculator.get()
-
-        # 色指定
-        # NOTE: 必要?
-        if self.rev_color:
-            color = (255, 255, 255)
-            bg_color = (100, 33, 3)
-        else:
-            color = (100, 33, 3)
-            bg_color = (255, 255, 255)
 
         # カメラキャプチャ #####################################################
         frame = frame.to_ndarray(format="bgr24")

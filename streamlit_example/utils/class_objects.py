@@ -28,7 +28,6 @@ class ModelSettings:
 class DisplaySetting:
     def __init__(
         self,
-        rev_color: bool,
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
