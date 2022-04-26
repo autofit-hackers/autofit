@@ -26,7 +26,7 @@ class CalibrationProcessor(VideoProcessorBase):
         self.cam_type = cam_type
         self.capture_index = 0
         return
-    
+
     def _calculate_camera_matrix(self):
         print("Calculating camera matrix...")
         now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
@@ -52,7 +52,7 @@ class CalibrationProcessor(VideoProcessorBase):
 
         if self.start_calibrate:
             self._calculate_camera_matrix()
-        
+
         return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
     def __del__(self):

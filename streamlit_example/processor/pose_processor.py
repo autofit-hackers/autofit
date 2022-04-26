@@ -11,12 +11,9 @@ import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
 from utils import (
-    FakeLandmarkObject,
-    FakeLandmarksObject,
-    FakeResultObject,
     FpsCalculator,
     draw_landmarks,
-    PoseLandmarkObject,
+    PoseLandmarksObject,
 )
 
 _SENTINEL_ = "_SENTINEL_"
@@ -55,7 +52,7 @@ def pose_process(
             out_queue.put_nowait(None)
             continue
 
-        picklable_results = PoseLandmarkObject(
+        picklable_results = PoseLandmarksObject(
             landmark=np.array(
                 [
                     [pose_landmark.x, pose_landmark.y, pose_landmark.z]
@@ -65,19 +62,6 @@ def pose_process(
             visibility=np.array([pose_landmark.visibility for pose_landmark in results.pose_landmarks.landmark]),
         )
 
-        # picklable_results = FakeResultObject(
-        #     pose_landmarks=FakeLandmarksObject(
-        #         landmark=[
-        #             FakeLandmarkObject(
-        #                 x=pose_landmark.x,
-        #                 y=pose_landmark.y,
-        #                 z=pose_landmark.z,
-        #                 visibility=pose_landmark.visibility,
-        #             )
-        #             for pose_landmark in results.pose_landmarks.landmark
-        #         ]
-        #     )
-        # )
         out_queue.put_nowait(picklable_results)
 
 
@@ -147,14 +131,14 @@ class PoseProcessor(VideoProcessorBase):
         self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
-        self.pose_mem: List[PoseLandmarkObject] = []
+        self.pose_mem: List[PoseLandmarksObject] = []
 
         self.skelton_save_path: Union[str, None] = skelton_save_path
 
         # お手本ポーズを3DでLoad
         self.uploaded_pose = uploaded_pose
-        self.loaded_poses: List[PoseLandmarkObject] = []
-        self.uploaded_poses: List[PoseLandmarkObject] = []
+        self.loaded_poses: List[PoseLandmarksObject] = []
+        self.uploaded_poses: List[PoseLandmarksObject] = []
         if uploaded_pose is not None:
             self.loaded_poses = self._load_pose(uploaded_pose)
             self.uploaded_poses = self.loaded_poses.copy()

@@ -3,7 +3,7 @@ import math
 import cv2 as cv
 import numpy as np
 
-from class_objects import PoseLandmarkObject
+from class_objects import PoseLandmarksObject
 
 
 def draw_stick_figure(
@@ -331,7 +331,7 @@ def draw_landmarks(
 
 def draw_landmarks_pose(
     image,
-    landmarks: PoseLandmarkObject,
+    landmarks: PoseLandmarksObject,
     visibility_th: float = 0.5,
     is_loaded: bool = False,
 ):
