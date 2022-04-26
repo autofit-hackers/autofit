@@ -341,8 +341,7 @@ class PoseProcessor(VideoProcessorBase):
 
             # NOTE: ここに指導がくるので、ndarrayで持ちたい
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
-            if True:
-                print(self._realtime_coaching(results))
+            # self._realtime_coaching(results)
 
         if self.show_fps:
             cv.putText(
