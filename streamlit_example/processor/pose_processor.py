@@ -10,11 +10,7 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
-from utils import (
-    FpsCalculator,
-    draw_landmarks,
-    PoseLandmarksObject,
-)
+from utils import FpsCalculator, draw_landmarks, PoseLandmarksObject, mp_res_to_pose_obj
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -26,7 +22,7 @@ def pose_process(
     model_complexity: int,
     min_detection_confidence: float,
     min_tracking_confidence: float,
-):
+) -> None:
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
         static_image_mode=static_image_mode,
@@ -52,17 +48,7 @@ def pose_process(
             out_queue.put_nowait(None)
             continue
 
-        picklable_results = PoseLandmarksObject(
-            landmark=np.array(
-                [
-                    [pose_landmark.x, pose_landmark.y, pose_landmark.z]
-                    for pose_landmark in results.pose_landmarks.landmark
-                ]
-            ),
-            visibility=np.array([pose_landmark.visibility for pose_landmark in results.pose_landmarks.landmark]),
-        )
-
-        out_queue.put_nowait(picklable_results)
+        out_queue.put_nowait(mp_res_to_pose_obj(results))
 
 
 class PoseProcessor(VideoProcessorBase):
@@ -165,18 +151,17 @@ class PoseProcessor(VideoProcessorBase):
         return frame
 
     # TODO: adjust webcam input aspect when rotate
-    def _reset_training_set(self, results: PoseLandmarksObject):
+    def _reset_training_set(self, realtime_single_pose_array: PoseLandmarksObject):
         is_adjust_on = True
         if self.uploaded_poses and is_adjust_on:
             # loaded posesの重ね合わせ
-            realtime_single_pose_array = self._results_to_ndarray(results)
             loaded_poses_array = []
             for i, uploaded_pose in enumerate(self.uploaded_poses):
-                loaded_poses_array.append(self._results_to_ndarray(uploaded_pose))
+                loaded_poses_array.append(uploaded_pose)
             adjusted_poses_array = self._adjust_poses(realtime_single_pose_array, loaded_poses_array)
             self.loaded_poses = []
             for i, adjusted_pose_arr in enumerate(adjusted_poses_array):
-                self.loaded_poses.append(self._ndarray_to_results(adjusted_pose_arr))
+                self.loaded_poses.append(adjusted_pose_arr)
         elif self.uploaded_poses:
             self.loaded_poses = self.uploaded_poses.copy()
 
@@ -272,9 +257,8 @@ class PoseProcessor(VideoProcessorBase):
     def _calculate_foot_pos_np(self, pose_array):
         return (pose_array[27] + pose_array[28]) / 2
 
-    def _realtime_coaching(self, results):
-        result_array = self._results_to_ndarray(results)
-        realtime_pose_array = self._results_to_ndarray(self.loaded_one_shot_pose)
+    def _realtime_coaching(self, result_array: PoseLandmarksObject):
+        realtime_pose_array = self.loaded_one_shot_pose
 
         reccomend = []
         if np.linalg.norm(realtime_pose_array[27] - realtime_pose_array[28]) < np.linalg.norm(
@@ -295,33 +279,6 @@ class PoseProcessor(VideoProcessorBase):
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
         self._pose_process.join(timeout=10)
-
-    def _results_to_ndarray(self, results):
-        poses_array = []
-        if results.pose_landmarks:
-            for i, landmark in enumerate(results.pose_landmarks.landmark):
-                pose_array = [landmark.x, landmark.y, landmark.z, landmark.visibility]
-                poses_array.append(pose_array)
-        else:
-            # if no keypoints are found, simply fill the frame data with [-1,-1] for each kpt
-            poses_array = [[-1.0, -1.0]] * len(results.pose_landmarks.landmark)
-        return np.array(poses_array)
-
-    def _ndarray_to_results(self, poses_array):
-        results = FakeResultObject(
-            pose_landmarks=FakeLandmarksObject(
-                landmark=[
-                    FakeLandmarkObject(
-                        x=pose_array[0],
-                        y=pose_array[1],
-                        z=pose_array[2],
-                        visibility=pose_array[3],
-                    )
-                    for pose_array in poses_array
-                ]
-            )
-        )
-        return results
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._FpsCalculator.get()
