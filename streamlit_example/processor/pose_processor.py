@@ -159,13 +159,13 @@ class PoseProcessor(VideoProcessorBase):
         self.loaded_one_shot_pose = self.loaded_poses.pop(0)
         frame = draw_landmarks(
             frame,
-            self.loaded_one_shot_pose.pose_landmarks,
+            self.loaded_one_shot_pose,
             is_loaded=True,
         )
         return frame
 
     # TODO: adjust webcam input aspect when rotate
-    def _reset_training_set(self, results):
+    def _reset_training_set(self, results: PoseLandmarksObject):
         is_adjust_on = True
         if self.uploaded_poses and is_adjust_on:
             # loaded posesの重ね合わせ
@@ -184,7 +184,7 @@ class PoseProcessor(VideoProcessorBase):
         self.rep_count = 0
         self.is_lifting_up = False
 
-    def _adjust_poses(self, realtime_pose, loaded_poses):
+    def _adjust_poses(self, realtime_pose: PoseLandmarksObject, loaded_poses: PoseLandmarksObject):
         # TODO: foot pos を計算する関数を作成
         # TODO: [Fakes]かndarrayでheightの計算も統一
         realtime_height = self._calculate_height_np(realtime_pose)
@@ -208,7 +208,7 @@ class PoseProcessor(VideoProcessorBase):
 
         return adjusted_poses
 
-    def _save_bone_info(self, results):
+    def _save_bone_info(self, results: PoseLandmarksObject):
         print("save!!!")
         # TODO: この辺はutilsに連れて行く
         bone_edge_names = {
@@ -223,19 +223,20 @@ class PoseProcessor(VideoProcessorBase):
             "full_arm": (11, 15),
         }
 
-        bone_dict = {"foot_neck_height": self._calculate_height(results.pose_landmarks.landmark)}
+        bone_dict = {"foot_neck_height": self._calculate_height(results.landmark)}
         for bone_edge_key in bone_edge_names.keys():
             bone_dict[bone_edge_key] = self._calculate_3d_distance(
-                results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][0]],
-                results.pose_landmarks.landmark[bone_edge_names[bone_edge_key][1]],
+                results.landmark[bone_edge_names[bone_edge_key][0]],
+                results.landmark[bone_edge_names[bone_edge_key][1]],
             )
 
         with open("data.json", "w") as fp:
+            # TODO: data.json のパスをインスタンス変数化
             json.dump(bone_dict, fp)
 
-    def _update_rep_count(self, results, upper_thre, lower_thre):
+    def _update_rep_count(self, results: PoseLandmarksObject, upper_thre: float, lower_thre: float):
         if self.frame_index == 0:
-            self.initial_body_length = results.pose_landmarks.landmark[29].y - results.pose_landmarks.landmark[11].y
+            self.initial_body_length = results.landmark[29][1] - results.landmark[11][1]
         else:
             self.body_length = results.pose_landmarks.landmark[29].y - results.pose_landmarks.landmark[11].y
             if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
