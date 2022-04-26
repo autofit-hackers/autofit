@@ -26,9 +26,9 @@ def pose_process(
     in_queue: Queue,
     out_queue: Queue,
     static_image_mode,
-    model_complexity,
-    min_detection_confidence,
-    min_tracking_confidence,
+    model_complexity: int,
+    min_detection_confidence: float,
+    min_tracking_confidence: float,
 ):
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(

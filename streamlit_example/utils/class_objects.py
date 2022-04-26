@@ -1,17 +1,7 @@
 from typing import List, NamedTuple, Union
+
 import numpy as np
-
-
-# def Fake
-#     picklable_results = PoseLandmarkObject(
-#         landmark=np.array(
-#             [
-#                 [pose_landmark.x, pose_landmark.y, pose_landmark.z]
-#                 for pose_landmark in results.pose_landmarks.landmark
-#             ]
-#         ),
-#         visibility=np.array([pose_landmark.visibility for pose_landmark in results.pose_landmarks.landmark]),
-#     )
+import mediapipe as mp
 
 
 class FakeLandmarkObject(NamedTuple):
@@ -114,3 +104,15 @@ class CalibrationSettings:
         for variable_name, value in locals().items():
             if not variable_name == "self":
                 self.__dict__[variable_name] = value
+
+
+def mp_res_to_pose_obj(mp_res) -> PoseLandmarkObject:
+    assert hasattr(mp_res, "pose_landmarks")
+    assert hasattr(mp_res.pose_landmarks, "pose_landmarks")
+    picklable_results = PoseLandmarkObject(
+        landmark=np.array(
+            [[pose_landmark.x, pose_landmark.y, pose_landmark.z] for pose_landmark in mp_res.pose_landmarks.landmark]
+        ),
+        visibility=np.array([pose_landmark.visibility for pose_landmark in mp_res.pose_landmarks.landmark]),
+    )
+    return picklable_results
