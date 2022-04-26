@@ -28,5 +28,5 @@ GitHub で管理することが難しい容量が大きいファイル（wav, mp
   * `<type>/<issue_id>/<issue-name>` の命名規則で切る
     * 例: `refactor/27/use-numpy-to-deal-with-mediapipe-result`
 * コミットメッセージ
-  * `<type>: <commit-message> #<issue_id>
+  * `<type>: <commit-message> #<issue_id>`
     * 例: `refactor: hogehoge #27`
