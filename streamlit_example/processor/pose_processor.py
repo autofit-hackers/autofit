@@ -65,14 +65,6 @@ def pose_process(
         out_queue.put_nowait(picklable_results)
 
 
-def create_video_writer(save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
-    """Save video as mp4."""
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
-    video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
-    return video
-
-
 class PoseProcessor(VideoProcessorBase):
     # NOTE: 変数多すぎ。減らすorまとめたい
     def __init__(
@@ -92,7 +84,6 @@ class PoseProcessor(VideoProcessorBase):
         reload_pose: bool,
         upper_threshold: float,
         lower_threshold: float,
-        video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skelton_save_path: Union[str, None] = None,
     ) -> None:
@@ -127,7 +118,6 @@ class PoseProcessor(VideoProcessorBase):
         self.initial_body_length = 0
         self.reload_pose = reload_pose
 
-        self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
@@ -335,11 +325,6 @@ class PoseProcessor(VideoProcessorBase):
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._FpsCalculator.get()
 
-        if (self.video_save_path is not None) and (self.video_writer is None):
-            # video_writer の初期化
-            # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
-            self.video_writer = create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
-
         # 色指定
         # NOTE: 必要?
         if self.rev_color:
@@ -357,11 +342,6 @@ class PoseProcessor(VideoProcessorBase):
         if self.rotate_webcam_input:
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
-
-        # 動画の保存
-        if self.video_save_path is not None:
-            assert self.video_writer is not None
-            self.video_writer.write(frame)
 
         # 画像の保存
         # TODO: capture skelton の rename or jsonの保存までするように関数書き換え
@@ -448,8 +428,5 @@ class PoseProcessor(VideoProcessorBase):
     def __del__(self):
         print("Stop the inference process...")
         self._stop_pose_process()
-        if self.video_writer is not None:
-            print("Stop writing video process...")
-            self.video_writer.release()
         self._save_pose()
         print("Stopped!")

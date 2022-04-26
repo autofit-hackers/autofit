@@ -84,9 +84,6 @@ def app():
         webrtc_ctx_main.video_processor.rotate_webcam_input = rotate_webcam_input
         webrtc_ctx_main.video_processor.show_fps = show_fps
         webrtc_ctx_main.video_processor.show_2d = show_2d
-        webrtc_ctx_main.video_processor.video_save_path = (
-            str(Path("recorded_videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
-        )
         webrtc_ctx_main.video_processor.pose_save_path = (
             str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
@@ -109,9 +106,6 @@ def app():
             webrtc_ctx_sub.video_processor.rotate_webcam_input = rotate_webcam_input
             webrtc_ctx_sub.video_processor.show_fps = show_fps
             webrtc_ctx_sub.video_processor.show_2d = show_2d
-            webrtc_ctx_sub.video_processor.video_save_path = (
-                str(Path("recorded_videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
-            )
             webrtc_ctx_sub.video_processor.pose_save_path = (
                 str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
             )
