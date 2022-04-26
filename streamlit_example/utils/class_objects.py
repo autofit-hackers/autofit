@@ -1,4 +1,17 @@
 from typing import List, NamedTuple, Union
+import numpy as np
+
+
+# def Fake
+#     picklable_results = PoseLandmarkObject(
+#         landmark=np.array(
+#             [
+#                 [pose_landmark.x, pose_landmark.y, pose_landmark.z]
+#                 for pose_landmark in results.pose_landmarks.landmark
+#             ]
+#         ),
+#         visibility=np.array([pose_landmark.visibility for pose_landmark in results.pose_landmarks.landmark]),
+#     )
 
 
 class FakeLandmarkObject(NamedTuple):
@@ -14,6 +27,22 @@ class FakeLandmarksObject(NamedTuple):
 
 class FakeResultObject(NamedTuple):
     pose_landmarks: FakeLandmarksObject
+
+
+class PoseLandmarkObject(NamedTuple):
+    """
+    landmark.shape == (関節数, 3)
+    visibility.shape == (関節数, 1)
+    """
+
+    landmark: np.ndarray
+    visibility: np.ndarray
+
+
+class PoseLandmarksObject(NamedTuple):
+    """ """
+
+    landmark: List[PoseLandmarkObject]
 
 
 class ModelSettings:

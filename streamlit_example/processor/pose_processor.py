@@ -2,20 +2,22 @@ import copy
 import json
 import os
 import pickle
-import time
-from datetime import datetime
-from distutils.command.upload import upload
 from multiprocessing import Process, Queue
-from pathlib import Path
 from typing import List, Union
 
 import av
 import cv2 as cv
 import mediapipe as mp
 import numpy as np
-import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-from utils import FakeLandmarkObject, FakeLandmarksObject, FakeResultObject, FpsCalculator, draw_landmarks
+from utils import (
+    FakeLandmarkObject,
+    FakeLandmarksObject,
+    FakeResultObject,
+    FpsCalculator,
+    draw_landmarks,
+    PoseLandmarkObject,
+)
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -52,19 +54,30 @@ def pose_process(
         if results.pose_landmarks is None:
             out_queue.put_nowait(None)
             continue
-        picklable_results = FakeResultObject(
-            pose_landmarks=FakeLandmarksObject(
-                landmark=[
-                    FakeLandmarkObject(
-                        x=pose_landmark.x,
-                        y=pose_landmark.y,
-                        z=pose_landmark.z,
-                        visibility=pose_landmark.visibility,
-                    )
+
+        picklable_results = PoseLandmarkObject(
+            landmark=np.array(
+                [
+                    [pose_landmark.x, pose_landmark.y, pose_landmark.z]
                     for pose_landmark in results.pose_landmarks.landmark
                 ]
-            )
+            ),
+            visibility=np.array([pose_landmark.visibility for pose_landmark in results.pose_landmarks.landmark]),
         )
+
+        # picklable_results = FakeResultObject(
+        #     pose_landmarks=FakeLandmarksObject(
+        #         landmark=[
+        #             FakeLandmarkObject(
+        #                 x=pose_landmark.x,
+        #                 y=pose_landmark.y,
+        #                 z=pose_landmark.z,
+        #                 visibility=pose_landmark.visibility,
+        #             )
+        #             for pose_landmark in results.pose_landmarks.landmark
+        #         ]
+        #     )
+        # )
         out_queue.put_nowait(picklable_results)
 
 
@@ -81,9 +94,9 @@ class PoseProcessor(VideoProcessorBase):
     def __init__(
         self,
         static_image_mode: bool,
-        model_complexity,
-        min_detection_confidence,
-        min_tracking_confidence,
+        model_complexity: int,
+        min_detection_confidence: float,
+        min_tracking_confidence: float,
         rev_color: bool,
         rotate_webcam_input: bool,
         show_fps: bool,
@@ -93,8 +106,8 @@ class PoseProcessor(VideoProcessorBase):
         reset_button: bool,
         count_rep: bool,
         reload_pose: bool,
-        upper_threshold,
-        lower_threshold,
+        upper_threshold: float,
+        lower_threshold: float,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skelton_save_path: Union[str, None] = None,
@@ -134,14 +147,14 @@ class PoseProcessor(VideoProcessorBase):
         self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
-        self.pose_mem: List[FakeLandmarksObject] = []  # HACK: List[FakeResultObject]では?
+        self.pose_mem: List[PoseLandmarkObject] = []
 
         self.skelton_save_path: Union[str, None] = skelton_save_path
 
         # お手本ポーズを3DでLoad
         self.uploaded_pose = uploaded_pose
-        self.loaded_poses: List[FakeResultObject] = []
-        self.uploaded_poses: List[FakeResultObject] = []
+        self.loaded_poses: List[PoseLandmarkObject] = []
+        self.uploaded_poses: List[PoseLandmarkObject] = []
         if uploaded_pose is not None:
             self.loaded_poses = self._load_pose(uploaded_pose)
             self.uploaded_poses = self.loaded_poses.copy()
