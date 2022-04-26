@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import copy
 import json
 import os
@@ -461,6 +462,24 @@ def main():
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
             webrtc_ctx_main.video_processor.count_rep = count_rep
             webrtc_ctx_sub.video_processor.reload_pose = reload_pose
+=======
+import streamlit as st
+
+from apps import calibration_app, pose_app, get_physical_info_app  # import your app modules here
+from utils import MultiApp
+
+
+def main():
+    app = MultiApp()
+
+    # Add all your application here
+    #app.add_app("Calibration", calibration_app.app)
+    app.add_app("Pose", pose_app.app)
+    app.add_app("Get physical info", get_physical_info_app.app)
+
+    # The main app
+    app.run()
+>>>>>>> ec8e8f681f4a72890a686e4995537ce5ca630255
 
 
 if __name__ == "__main__":
