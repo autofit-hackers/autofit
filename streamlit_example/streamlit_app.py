@@ -8,7 +8,11 @@ def main():
     app = MultiApp()
 
     # Add all your application here
+<<<<<<< HEAD
     app.add_app("Calibration", calibration_app.app)
+=======
+    # app.add_app("Calibration", calibration_app.app)
+>>>>>>> origin
     app.add_app("Pose", pose_app.app)
     app.add_app("Get physical info", get_physical_info_app.app)
     # TODO: pkl編集画面を立てる
