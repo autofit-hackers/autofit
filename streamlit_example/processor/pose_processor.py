@@ -231,7 +231,7 @@ class PoseProcessor(VideoProcessorBase):
     def _is_key_frame(self, realtime_array, upper_thre=0.96, lower_thre=0.94):
         if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
             print("return true if is key frame")
-            self._reset_training_set(results=results)
+            self._reset_training_set(realtime_array)
             return False
 
     def _calculate_3d_distance(self, joint1: np.ndarray, joint2: np.ndarray):
