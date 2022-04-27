@@ -88,7 +88,7 @@ class PoseProcessor(VideoProcessorBase):
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
-        uploaded_pose,
+        uploaded_pose_file,
         capture_skelton: bool,
         reset_button: bool,
         count_rep: bool,
@@ -139,12 +139,12 @@ class PoseProcessor(VideoProcessorBase):
         self.skelton_save_path: Union[str, None] = skelton_save_path
 
         # お手本ポーズを3DでLoad
-        self.uploaded_pose = uploaded_pose
-        self.loaded_poses: List[FakeResultObject] = []
-        self.uploaded_poses: List[FakeResultObject] = []
-        if uploaded_pose is not None:
-            self.loaded_poses = self._load_pose(uploaded_pose)
-            self.uploaded_poses = self.loaded_poses.copy()
+        self.uploaded_pose = uploaded_pose_file
+        self.loaded_frames: List[FakeResultObject] = []
+        self.uploaded_frames: List[FakeResultObject] = []
+        if uploaded_pose_file is not None:
+            self.uploaded_frames = self._load_pose(uploaded_pose_file)
+            self.loaded_frames = self.uploaded_frames.copy()  # 消す
 
         self._pose_process.start()
 
@@ -163,13 +163,13 @@ class PoseProcessor(VideoProcessorBase):
             os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
             self._save_estimated_pose(self.pose_mem, self.pose_save_path)
 
-    def _load_pose(self, uploaded_pose):
-        with open(f"poses/{uploaded_pose.name}", "rb") as handle:
-            loaded_poses = pickle.load(handle)
-        return loaded_poses
+    def _load_pose(self, uploaded_pose_file):
+        with open(f"recorded_poses/{uploaded_pose_file.name}", "rb") as handle:
+            loaded_frames = pickle.load(handle)
+        return loaded_frames
 
     def _show_loaded_pose(self, frame):
-        self.loaded_one_shot_pose = self.loaded_poses.pop(0)
+        self.loaded_one_shot_pose = self.loaded_frames.pop(0)
         frame = draw_landmarks(
             frame,
             self.loaded_one_shot_pose.pose_landmarks,
@@ -178,20 +178,19 @@ class PoseProcessor(VideoProcessorBase):
         return frame
 
     # TODO: adjust webcam input aspect when rotate
-    def _reset_training_set(self, results):
-        is_adjust_on = True
-        if self.uploaded_poses and is_adjust_on:
-            # loaded posesの重ね合わせ
-            realtime_single_pose_array = self._results_to_ndarray(results)
-            loaded_poses_array = []
-            for i, uploaded_pose in enumerate(self.uploaded_poses):
-                loaded_poses_array.append(self._results_to_ndarray(uploaded_pose))
-            adjusted_poses_array = self._adjust_poses(realtime_single_pose_array, loaded_poses_array)
-            self.loaded_poses = []
-            for i, adjusted_pose_arr in enumerate(adjusted_poses_array):
-                self.loaded_poses.append(self._ndarray_to_results(adjusted_pose_arr))
-        elif self.uploaded_poses:
-            self.loaded_poses = self.uploaded_poses.copy()
+    def _reset_training_set(self, realtime_array):
+        if self.uploaded_frames:
+            # この3行はRefactor後に消える
+            uploaded_frames_array = []
+            for i, uploaded_pose in enumerate(self.uploaded_frames):
+                uploaded_frames_array.append(self._results_to_ndarray(uploaded_pose))
+            positioned_frames_array = self._adjust_poses(realtime_array, uploaded_frames_array)
+            # この3行はRefactor後に消える
+            self.positioned_frames = []
+            for i, adjusted_pose_arr in enumerate(positioned_frames_array):
+                self.positioned_frames.append(self._ndarray_to_results(adjusted_pose_arr))
+        elif self.uploaded_frames:
+            self.positioned_frames = self.uploaded_frames.copy()
 
         self.frame_index = 0
         self.rep_count = 0
@@ -257,9 +256,10 @@ class PoseProcessor(VideoProcessorBase):
             elif not self.is_lifting_up and self.body_length < lower_thre * self.initial_body_length:
                 self.is_lifting_up = True
 
-    def _is_key_frame(self, results, upper_thre=0.96, lower_thre=0.94):
+    def _is_key_frame(self, realtime_array, upper_thre=0.96, lower_thre=0.94):
         if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_length:
             print("return true if is key frame")
+            self._reset_training_set(results=results)
 
     def _calculate_3d_distance(self, joint1, joint2):
         self.joint1_pos = np.array([joint1.x, joint1.y, joint1.z])
@@ -373,17 +373,21 @@ class PoseProcessor(VideoProcessorBase):
             cv.imwrite(self.skelton_save_path, frame)
             self.capture_skelton = False
 
-        # リロード
-        if self.reload_pose:
-            self.loaded_poses = self.uploaded_poses.copy()
-            self.reload_pose = False
-
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         results = self._infer_pose(frame)
         if self.show_2d and results:
 
-            # reset params and adjust scale and position
+            # results -> ndarray (named: realtime_array)
+            self.realtime_array = self._results_to_ndarray(results)
+
+            # リアルタイム処理 ################################################################
+            # キーフレームを検出してフレームをリロード
+            if self._is_key_frame(self.realtime_array):
+                self.loaded_frames = self.positioned_frames.copy()
+
+            # セットの最初にリセットする
+            # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
             if self.reset_button:
                 self._reset_training_set(results)
                 self.reset_button = False
@@ -391,7 +395,12 @@ class PoseProcessor(VideoProcessorBase):
             # レップカウントを更新
             self._update_rep_count(results, upper_thre=self.upper_threshold, lower_thre=self.lower_threshold)
 
-            # pose の保存
+            # NOTE: ここに指導がくるので、ndarrayで持ちたい
+            # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
+            if False:
+                print(self._realtime_coaching(results))
+
+            # pose の保存 ################################################################
             if self.pose_save_path is not None:
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
@@ -410,14 +419,9 @@ class PoseProcessor(VideoProcessorBase):
                 )
 
             # お手本Poseの描画
-            if self.loaded_poses:
+            if self.loaded_frames:
                 # お手本poseは先に変換しておいてここでは呼ぶだけとする
                 processed_frame = self._show_loaded_pose(processed_frame)
-
-            # NOTE: ここに指導がくるので、ndarrayで持ちたい
-            # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
-            if True:
-                print(self._realtime_coaching(results))
 
         if self.show_fps:
             cv.putText(

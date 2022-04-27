@@ -53,7 +53,7 @@ def app():
             rotate_webcam_input=rotate_webcam_input,
             show_fps=show_fps,
             show_2d=show_2d,
-            uploaded_pose=uploaded_pose,
+            uploaded_pose_file=uploaded_pose,
             capture_skelton=capture_skelton,
             reset_button=reset_button,
             count_rep=count_rep,
