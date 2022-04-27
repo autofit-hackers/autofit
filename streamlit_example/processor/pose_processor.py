@@ -151,47 +151,44 @@ class PoseProcessor(VideoProcessorBase):
     # TODO: adjust webcam input aspect when rotate
     def _reset_training_set(self, realtime_array: PoseLandmarksObject):
         if self.uploaded_frames:
-            # この3行はRefactor後に消える
-            uploaded_frames_array = []
-            for i, uploaded_pose in enumerate(self.uploaded_frames):
-                uploaded_frames_array.append(uploaded_pose)
-            positioned_frames_array = self._adjust_poses(realtime_array, uploaded_frames_array)
-            # この3行はRefactor後に消える
-            self.positioned_frames = []
-            for i, adjusted_pose_arr in enumerate(positioned_frames_array):
-                self.positioned_frames.append(adjusted_pose_arr)
-        elif self.uploaded_frames:
-            self.positioned_frames = self.uploaded_frames.copy()
-
+            self.positioned_frames = self._adjust_poses(realtime_array, self.uploaded_frames)
         self.frame_index = 0
         self.rep_count = 0
         self.is_lifting_up = False
 
-    def _adjust_poses(self, realtime_pose: PoseLandmarksObject, loaded_poses: PoseLandmarksObject):
-        # TODO: foot pos を計算する関数を作成
-        # TODO: [Fakes]かndarrayでheightの計算も統一
-        realtime_height = self._calculate_height_np(realtime_pose)
-        loaded_height = self._calculate_height_np(loaded_poses[0])
+    def _adjust_poses(
+        self, realtime_pose: PoseLandmarksObject, loaded_frames: List[PoseLandmarksObject], start_frame_idx: int = 0
+    ) -> List[PoseLandmarksObject]:
+        """拡大縮小・平行移動により、ロードしたお手本フォームを現在のトレーニーのフォームに重ね合わせる
+
+        Args:
+            realtime_pose (PoseLandmarksObject): トレーニーのリアルタイムのポーズ1フレーム
+            loaded_frames (List[PoseLandmarksObject]): ロードしたお手本フォーム
+            start_frame_idx (int, optional): お手本フォームのキーフレーム. Defaults to 0.
+
+        Returns:
+            List[PoseLandmarksObject]: 重ね合わせ後のお手本フォーム
+        """
+        realtime_height = self._calculate_height(realtime_pose)
+        loaded_height = self._calculate_height(loaded_frames[start_frame_idx])
         scale = realtime_height / loaded_height  # スケーリング用の定数
 
-        realtime_foot_pos = self._calculate_foot_pos_np(realtime_pose)
-        loaded_foot_pos = self._calculate_foot_pos_np(loaded_poses[0]) * scale
+        realtime_foot_position = self._calculate_foot_position(realtime_pose)
+        loaded_foot_position = self._calculate_foot_position(loaded_frames[start_frame_idx]) * scale
 
-        slide = np.array(
-            [(realtime_foot_pos - loaded_foot_pos)[0], (realtime_foot_pos - loaded_foot_pos)[1], 0, 0]
-        )  # 位置合わせ用の[x,y,0,0]のベクター
+        # 位置合わせ用の[x,y,0]のベクター
+        slide: np.ndarray = realtime_foot_position - loaded_foot_position
+        slide[2] = 0
         print(scale, slide)
 
-        adjusted_poses = []
-        for i, loaded_pose in enumerate(loaded_poses):
-            adjusted_pose = []
-            for j, joint in enumerate(loaded_pose):
-                adjusted_pose.append(joint * scale + slide)
-            adjusted_poses.append(adjusted_pose)
+        adjusted_poses = [
+            PoseLandmarksObject(landmark=frame.landmark * scale + slide, visibility=frame.visibility)
+            for frame in loaded_frames
+        ]
 
         return adjusted_poses
 
-    def _save_bone_info(self, results: PoseLandmarksObject):
+    def _save_bone_info(self, captured_skelton: PoseLandmarksObject):
         print("save!!!")
         # TODO: この辺はutilsに連れて行く
         bone_edge_names = {
@@ -206,11 +203,11 @@ class PoseProcessor(VideoProcessorBase):
             "full_arm": (11, 15),
         }
 
-        bone_dict = {"foot_neck_height": self._calculate_height(results)}
+        bone_dict = {"foot_neck_height": self._calculate_height(captured_skelton)}
         for bone_edge_key in bone_edge_names.keys():
-            bone_dict[bone_edge_key] = self._calculate_3d_distance(
-                results.landmark[bone_edge_names[bone_edge_key][0]],
-                results.landmark[bone_edge_names[bone_edge_key][1]],
+            bone_dict[bone_edge_key] = np.linalg.norm(
+                captured_skelton.landmark[bone_edge_names[bone_edge_key][0]]
+                - captured_skelton.landmark[bone_edge_names[bone_edge_key][1]]
             )
 
         with open("data.json", "w") as fp:
@@ -234,44 +231,27 @@ class PoseProcessor(VideoProcessorBase):
             self._reset_training_set(realtime_array)
             return False
 
-    def _calculate_3d_distance(self, joint1: np.ndarray, joint2: np.ndarray):
-        joint1_pos = np.array([joint1[0], joint1[1], joint1[2]])
-        joint2_pos = np.array([joint2[0], joint2[1], joint2[2]])
-        return np.linalg.norm(joint2_pos - joint1_pos)
-
-    # NOTE: ResultObject or ndarrayで計算
-    def _calculate_height(self, landmark: PoseLandmarksObject):
-        shoulder1 = landmark[11]
-        shoulder2 = landmark[12]
-        foot1 = landmark[27]
-        foot2 = landmark[28]
-        neck = np.array([shoulder1[0] + shoulder2[0], shoulder1[1] + shoulder2[1], shoulder1[2] + shoulder2[2]])
-        foot_center = np.array([foot1[0] + foot2[0], foot1[1] + foot2[1], foot1[2] + foot2[2]])
-        return np.linalg.norm(neck / 2 - foot_center / 2)
-
-    def _calculate_height_np(self, pose_array):
-        neck = (pose_array[11] + pose_array[12]) / 2
-        foot_center = (pose_array[27] + pose_array[28]) / 2
+    def _calculate_height(self, pose: PoseLandmarksObject):
+        neck = (pose[11] + pose[12]) / 2
+        foot_center = (pose[27] + pose[28]) / 2
         return np.linalg.norm(neck - foot_center)
 
-    def _calculate_foot_pos_np(self, pose_array):
-        return (pose_array[27] + pose_array[28]) / 2
+    def _calculate_foot_position(self, pose: PoseLandmarksObject):
+        return (pose.landmark[27] + pose.landmark[28]) / 2
 
     def _realtime_coaching(self, result_array: PoseLandmarksObject):
         realtime_pose_array = self.loaded_one_shot_pose
 
-        reccomend = []
-        if np.linalg.norm(realtime_pose_array[27] - realtime_pose_array[28]) < np.linalg.norm(
-            result_array[27] - result_array[28]
+        recommend = []
+        if np.linalg.norm(realtime_pose_array.landmark[27] - realtime_pose_array.landmark[28]) < np.linalg.norm(
+            result_array.landmark[27] - result_array.landmark[28]
         ):
-            reccomend.append("もう少し足幅を広げましょう")
-        if np.linalg.norm(realtime_pose_array[15] - realtime_pose_array[16]) < np.linalg.norm(
-            result_array[15] - result_array[16]
+            recommend.append("もう少し足幅を広げましょう")
+        if np.linalg.norm(realtime_pose_array.landmark[15] - realtime_pose_array.landmark[16]) < np.linalg.norm(
+            result_array.landmark[15] - result_array.landmark[16]
         ):
-            reccomend.append("手幅を広げましょう")
-        return reccomend
-
-    # def _cast_landmark_nparr(self, pose_landmark):
+            recommend.append("手幅を広げましょう")
+        return recommend
 
     def _caluculate_slkelton():
         print("hello skelton")
