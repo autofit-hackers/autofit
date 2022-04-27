@@ -1,19 +1,16 @@
 from typing import List, NamedTuple, Union
 
-
-class FakeLandmarkObject(NamedTuple):
-    x: float
-    y: float
-    z: float
-    visibility: bool
+import numpy as np
 
 
-class FakeLandmarksObject(NamedTuple):
-    landmark: List[FakeLandmarkObject]
+class PoseLandmarksObject(NamedTuple):
+    """
+    landmark.shape == (関節数, 3)
+    visibility.shape == (関節数, 1)
+    """
 
-
-class FakeResultObject(NamedTuple):
-    pose_landmarks: FakeLandmarksObject
+    landmark: np.ndarray
+    visibility: np.ndarray
 
 
 class ModelSettings:
@@ -31,7 +28,6 @@ class ModelSettings:
 class DisplaySetting:
     def __init__(
         self,
-        rev_color: bool,
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
@@ -85,3 +81,15 @@ class CalibrationSettings:
         for variable_name, value in locals().items():
             if not variable_name == "self":
                 self.__dict__[variable_name] = value
+
+
+def mp_res_to_pose_obj(mp_res) -> PoseLandmarksObject:
+    assert hasattr(mp_res, "pose_landmarks")
+    assert hasattr(mp_res.pose_landmarks, "landmark")
+    picklable_results = PoseLandmarksObject(
+        landmark=np.array(
+            [[pose_landmark.x, pose_landmark.y, pose_landmark.z] for pose_landmark in mp_res.pose_landmarks.landmark]
+        ),
+        visibility=np.array([pose_landmark.visibility for pose_landmark in mp_res.pose_landmarks.landmark]),
+    )
+    return picklable_results

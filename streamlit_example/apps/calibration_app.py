@@ -52,7 +52,6 @@ def app():
         #     save_pose = st.checkbox("Save Pose", value=False)
 
         with st.expander("Display settings"):
-            rev_color = st.checkbox("Reverse color", value=False)
             show_fps = st.checkbox("Show FPS", value=True)
             show_2d = st.checkbox("Show 2D", value=True)
 
@@ -70,7 +69,6 @@ def app():
             model_complexity=model_complexity,
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence,
-            rev_color=rev_color,
             rotate_webcam_input=rotate_webcam_input,
             show_fps=show_fps,
             show_2d=show_2d,
@@ -101,13 +99,9 @@ def app():
     # NOTE: mainとsubをカメラ構造体or辞書にまとめる?
     if webrtc_ctx_main.video_processor:
         cam_type: str = "main"
-        webrtc_ctx_main.video_processor.rev_color = rev_color
         webrtc_ctx_main.video_processor.rotate_webcam_input = rotate_webcam_input
         webrtc_ctx_main.video_processor.show_fps = show_fps
         webrtc_ctx_main.video_processor.show_2d = show_2d
-        webrtc_ctx_main.video_processor.video_save_path = (
-            str(Path("recorded_videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
-        )
         webrtc_ctx_main.video_processor.pose_save_path = (
             str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
@@ -125,14 +119,10 @@ def app():
 
         if webrtc_ctx_sub.video_processor:
             cam_type: str = "sub"
-            webrtc_ctx_sub.video_processor.rev_color = rev_color
             # TODO: rotate をカメラごとに設定可能にする
             webrtc_ctx_sub.video_processor.rotate_webcam_input = rotate_webcam_input
             webrtc_ctx_sub.video_processor.show_fps = show_fps
             webrtc_ctx_sub.video_processor.show_2d = show_2d
-            webrtc_ctx_sub.video_processor.video_save_path = (
-                str(Path("recorded_videos") / f"{now_str}_{cam_type}_cam.mp4") if save_video else None
-            )
             webrtc_ctx_sub.video_processor.pose_save_path = (
                 str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
             )
