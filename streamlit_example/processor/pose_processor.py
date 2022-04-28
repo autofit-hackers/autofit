@@ -152,6 +152,8 @@ class PoseProcessor(VideoProcessorBase):
     def _reset_training_set(self, realtime_array: PoseLandmarksObject):
         if self.uploaded_frames:
             self.positioned_frames = self._adjust_poses(realtime_array, self.uploaded_frames)
+            print(len(self.positioned_frames))
+            self.loaded_frames = self.positioned_frames.copy()
         self.frame_index = 0
         self.rep_count = 0
         self.is_lifting_up = False
@@ -232,8 +234,8 @@ class PoseProcessor(VideoProcessorBase):
             return False
 
     def _calculate_height(self, pose: PoseLandmarksObject):
-        neck = (pose[11] + pose[12]) / 2
-        foot_center = (pose[27] + pose[28]) / 2
+        neck = (pose.landmark[11] + pose.landmark[12]) / 2
+        foot_center = (pose.landmark[27] + pose.landmark[28]) / 2
         return np.linalg.norm(neck - foot_center)
 
     def _calculate_foot_position(self, pose: PoseLandmarksObject):
