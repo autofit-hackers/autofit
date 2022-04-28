@@ -6,7 +6,7 @@ import streamlit as st
 from processor import PoseProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
-from utils.class_objects import ModelSettings
+from utils.class_objects import DisplaySettings, ModelSettings
 
 
 def app():
@@ -20,7 +20,6 @@ def app():
     with st.sidebar:
         st.markdown("""---""")
         uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
-        rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
         use_two_cam: bool = st.checkbox("Use two cam", value=False)
         with st.expander("Save settings"):
             save_video = st.checkbox("Save Video", value=False)
@@ -58,8 +57,14 @@ def app():
         #     save_pose = st.checkbox("Save Pose", value=False)
 
         with st.expander("Display settings"):
+            rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
             show_fps = st.checkbox("Show FPS", value=True)
             show_2d = st.checkbox("Show 2D", value=True)
+            display_settings = DisplaySettings(
+                rotate_webcam_input=rotate_webcam_input,
+                show_2d=show_2d,
+                show_fps=show_fps,
+            )
 
             if st.button("RELOAD"):
                 reload_pose = True
@@ -72,9 +77,7 @@ def app():
     def processor_factory():
         return PoseProcessor(
             model_settings=model_settings,
-            rotate_webcam_input=rotate_webcam_input,
-            show_fps=show_fps,
-            show_2d=show_2d,
+            display_settings=display_settings,
             uploaded_pose=uploaded_pose,
             capture_skelton=capture_skelton,
             reset_button=reset_button,
@@ -102,9 +105,7 @@ def app():
     # NOTE: mainとsubをカメラ構造体or辞書にまとめる?
     if webrtc_ctx_main.video_processor:
         cam_type: str = "main"
-        webrtc_ctx_main.video_processor.rotate_webcam_input = rotate_webcam_input
-        webrtc_ctx_main.video_processor.show_fps = show_fps
-        webrtc_ctx_main.video_processor.show_2d = show_2d
+        webrtc_ctx_main.video_processor.display_settings = display_settings
         webrtc_ctx_main.video_processor.pose_save_path = (
             str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
@@ -123,9 +124,7 @@ def app():
         if webrtc_ctx_sub.video_processor:
             cam_type: str = "sub"
             # TODO: rotate をカメラごとに設定可能にする
-            webrtc_ctx_sub.video_processor.rotate_webcam_input = rotate_webcam_input
-            webrtc_ctx_sub.video_processor.show_fps = show_fps
-            webrtc_ctx_sub.video_processor.show_2d = show_2d
+            webrtc_ctx_sub.video_processor.display_settings = display_settings
             webrtc_ctx_sub.video_processor.pose_save_path = (
                 str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
             )

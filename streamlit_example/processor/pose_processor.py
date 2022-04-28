@@ -12,7 +12,7 @@ import numpy as np
 from streamlit_webrtc import VideoProcessorBase
 
 from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
-from utils.class_objects import ModelSettings
+from utils.class_objects import ModelSettings, DisplaySettings
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -50,9 +50,7 @@ class PoseProcessor(VideoProcessorBase):
     def __init__(
         self,
         model_settings: ModelSettings,
-        rotate_webcam_input: bool,
-        show_fps: bool,
-        show_2d: bool,
+        display_settings: DisplaySettings,
         uploaded_pose,
         capture_skelton: bool,
         reset_button: bool,
@@ -76,9 +74,9 @@ class PoseProcessor(VideoProcessorBase):
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
-        self.rotate_webcam_input = rotate_webcam_input
-        self.show_fps = show_fps
-        self.show_2d = show_2d
+        self.model_settings = model_settings
+        self.display_settings = display_settings
+
         self.capture_skelton = capture_skelton
         self.count_rep = count_rep
         self.rep_count = 0
@@ -274,7 +272,7 @@ class PoseProcessor(VideoProcessorBase):
 
         frame = cv.flip(frame, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
-        if self.rotate_webcam_input:
+        if self.display_settings.rotate_webcam_input:
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
@@ -294,7 +292,7 @@ class PoseProcessor(VideoProcessorBase):
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         results: PoseLandmarksObject = self._infer_pose(frame)
 
-        if self.show_2d and results:
+        if self.display_settings.show_2d and results:
 
             # reset params and adjust scale and position
             if self.reset_button:
@@ -331,7 +329,7 @@ class PoseProcessor(VideoProcessorBase):
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
             # self._realtime_coaching(results)
 
-        if self.show_fps:
+        if self.display_settings.show_fps:
             cv.putText(
                 processed_frame,
                 "FPS:" + str(display_fps),

@@ -21,17 +21,16 @@ class ModelSettings:
     min_tracking_confidence: float
 
 
-class DisplaySetting:
-    def __init__(
-        self,
-        rotate_webcam_input: bool,
-        show_fps: bool,
-        show_2d: bool,
-        count_rep: bool,
-    ):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
+@dataclass
+class DisplaySettings:
+    rotate_webcam_input: bool
+    show_fps: bool
+    show_2d: bool
+
+
+@dataclass
+class RepCntSettings:
+    do_rep_cnt: bool
 
 
 class SaveSettings:
