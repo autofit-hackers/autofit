@@ -58,13 +58,7 @@ def app():
         return PoseProcessor(
             model_settings=model_settings,
             display_settings=display_settings,
-            uploaded_pose_file=uploaded_pose,
             capture_skelton=capture_skelton,
-            reset_button=reset_button,
-            count_rep=count_rep,
-            reload_pose=reload_pose,
-            upper_threshold=upper_threshold,
-            lower_threshold=lower_threshold,
         )
 
     def gen_webrtc_ctx(key: str):
@@ -86,34 +80,24 @@ def app():
     if webrtc_ctx_main.video_processor:
         cam_type: str = "main"
         webrtc_ctx_main.video_processor.display_settings = display_settings
-        webrtc_ctx_main.video_processor.pose_save_path = (
+        webrtc_ctx_main.video_processor.pose_save_path = str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl")
+        webrtc_ctx_main.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
+        webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
+
+    webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
+    if webrtc_ctx_sub.video_processor:
+        cam_type: str = "sub"
+        # TODO: rotate をカメラごとに設定可能にする
+        webrtc_ctx_sub.video_processor.display_settings = display_settings
+        webrtc_ctx_sub.video_processor.pose_save_path = (
             str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
-        webrtc_ctx_main.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
-        webrtc_ctx_main.video_processor.uploaded_pose = uploaded_pose
-        webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
-        webrtc_ctx_main.video_processor.reset_button = reset_button
-        webrtc_ctx_main.video_processor.count_rep = count_rep
-        webrtc_ctx_main.video_processor.reload_pose = reload_pose
-        webrtc_ctx_main.video_processor.upper_threshold = upper_threshold
-        webrtc_ctx_main.video_processor.lower_threshold = lower_threshold
-
-    if use_two_cam:
-        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
-
-        if webrtc_ctx_sub.video_processor:
-            cam_type: str = "sub"
-            # TODO: rotate をカメラごとに設定可能にする
-            webrtc_ctx_sub.video_processor.display_settings = display_settings
-            webrtc_ctx_sub.video_processor.pose_save_path = (
-                str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
-            )
-            webrtc_ctx_sub.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
-            # TODO: カメラごとに異なる uploaded_pose を自動設定する
-            webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
-            webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
-            webrtc_ctx_sub.video_processor.count_rep = count_rep
-            webrtc_ctx_sub.video_processor.reload_pose = reload_pose
-            webrtc_ctx_sub.video_processor.reset_button = reset_button
-            webrtc_ctx_sub.video_processor.upper_threshold = upper_threshold
-            webrtc_ctx_sub.video_processor.lower_threshold = lower_threshold
+        webrtc_ctx_sub.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
+        # TODO: カメラごとに異なる uploaded_pose を自動設定する
+        webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
+        webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
+        webrtc_ctx_sub.video_processor.count_rep = count_rep
+        webrtc_ctx_sub.video_processor.reload_pose = reload_pose
+        webrtc_ctx_sub.video_processor.reset_button = reset_button
+        webrtc_ctx_sub.video_processor.upper_threshold = upper_threshold
+        webrtc_ctx_sub.video_processor.lower_threshold = lower_threshold

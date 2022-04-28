@@ -80,7 +80,6 @@ def app():
             display_settings=display_settings,
             uploaded_pose_file=uploaded_pose_file,
             capture_skelton=capture_skelton,
-            reset_button=reset_button,
             count_rep=count_rep,
             reload_pose=reload_pose,
             upper_threshold=upper_threshold,
@@ -117,6 +116,9 @@ def app():
         webrtc_ctx_main.video_processor.reload_pose = reload_pose
         webrtc_ctx_main.video_processor.upper_threshold = upper_threshold
         webrtc_ctx_main.video_processor.lower_threshold = lower_threshold
+        if st.button("BODY"):
+            st.write(webrtc_ctx_main.video_processor.body_length)
+            print(webrtc_ctx_main.video_processor.body_length)
 
     if use_two_cam:
         webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")

@@ -3,6 +3,7 @@ import json
 import os
 import pickle
 from multiprocessing import Process, Queue
+from turtle import st
 from typing import List, Union
 
 import av
@@ -49,16 +50,16 @@ def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSetting
 class PoseProcessor(VideoProcessorBase):
     # NOTE: 変数多すぎ。減らすorまとめたい
     def __init__(
+        # NOTE: ここはinitの瞬間に必要ないものは消していいらしい
         self,
         model_settings: ModelSettings,
         display_settings: DisplaySettings,
-        uploaded_pose_file,
         capture_skelton: bool,
-        reset_button: bool,
-        count_rep: bool,
-        reload_pose: bool,
-        upper_threshold: float,
-        lower_threshold: float,
+        upper_threshold: Union[float, None] = None,
+        lower_threshold: Union[float, None] = None,
+        count_rep: Union[bool, None] = None,
+        reload_pose: Union[bool, None] = None,
+        uploaded_pose_file: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skelton_save_path: Union[str, None] = None,
     ) -> None:
@@ -221,16 +222,15 @@ class PoseProcessor(VideoProcessorBase):
     def _is_key_frame(self, realtime_array, upper_thre=0.8, lower_thre=0.94) -> bool:
         is_key_frame: bool = False
         if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_height:
-            print("return true if is key frame")
             # self.(realtime_array)
             is_key_frame = True
-        print(
-            self.is_lifting_up,
-            (self.body_length > upper_thre * self.initial_body_height),
-            self.body_length,
-            self.initial_body_height,
-            is_key_frame,
-        )
+        # print(
+        #     self.is_lifting_up,
+        #     (self.body_length > upper_thre * self.initial_body_height),
+        #     self.body_length,
+        #     self.initial_body_height,
+        #     is_key_frame,
+        # )
         return is_key_frame
 
     def _calculate_height(self, pose: PoseLandmarksObject):
@@ -313,11 +313,12 @@ class PoseProcessor(VideoProcessorBase):
                 self.reset_button = False
 
             # レップカウントを更新
+            assert self.lower_threshold is not None and self.upper_threshold is not None
             self._update_rep_count(results, upper_thre=self.upper_threshold, lower_thre=self.lower_threshold)
 
             # NOTE: ここに指導がくるので、ndarrayで持ちたい
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
-            print(self._realtime_coaching(results))
+            # print(self._realtime_coaching(results))
 
             # pose の保存 ################################################################
             if self.pose_save_path is not None:
