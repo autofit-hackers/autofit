@@ -19,7 +19,7 @@ def app():
 
     with st.sidebar:
         st.markdown("""---""")
-        uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
+        uploaded_pose_file = st.file_uploader("Load example pose file (.pkl)", type="pkl")
         use_two_cam: bool = st.checkbox("Use two cam", value=False)
         with st.expander("Save settings"):
             save_video = st.checkbox("Save Video", value=False)
@@ -78,7 +78,7 @@ def app():
         return PoseProcessor(
             model_settings=model_settings,
             display_settings=display_settings,
-            uploaded_pose=uploaded_pose,
+            uploaded_pose_file=uploaded_pose_file,
             capture_skelton=capture_skelton,
             reset_button=reset_button,
             count_rep=count_rep,
@@ -110,7 +110,7 @@ def app():
             str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
         webrtc_ctx_main.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
-        webrtc_ctx_main.video_processor.uploaded_pose = uploaded_pose
+        webrtc_ctx_main.video_processor.uploaded_pose = uploaded_pose_file
         webrtc_ctx_main.video_processor.capture_skelton = capture_skelton
         webrtc_ctx_main.video_processor.reset_button = reset_button
         webrtc_ctx_main.video_processor.count_rep = count_rep
@@ -130,7 +130,7 @@ def app():
             )
             webrtc_ctx_sub.video_processor.skelton_save_path = str(Path("skeltons") / f"{now_str}_{cam_type}_cam.jpg")
             # TODO: カメラごとに異なる uploaded_pose を自動設定する
-            webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
+            webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose_file
             webrtc_ctx_sub.video_processor.capture_skelton = capture_skelton
             webrtc_ctx_sub.video_processor.count_rep = count_rep
             webrtc_ctx_sub.video_processor.reload_pose = reload_pose

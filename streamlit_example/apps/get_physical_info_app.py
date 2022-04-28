@@ -58,7 +58,7 @@ def app():
         return PoseProcessor(
             model_settings=model_settings,
             display_settings=display_settings,
-            uploaded_pose=uploaded_pose,
+            uploaded_pose_file=uploaded_pose,
             capture_skelton=capture_skelton,
             reset_button=reset_button,
             count_rep=count_rep,
