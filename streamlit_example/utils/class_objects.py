@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List, NamedTuple, Union
 
 import numpy as np
@@ -13,29 +14,23 @@ class PoseLandmarksObject(NamedTuple):
     visibility: np.ndarray
 
 
+@dataclass
 class ModelSettings:
-    def __init__(
-        self,
-        model_complexity,
-        min_detection_confidence,
-        min_tracking_confidence,
-    ):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
+    model_complexity: int
+    min_detection_confidence: float
+    min_tracking_confidence: float
 
 
-class DisplaySetting:
-    def __init__(
-        self,
-        rotate_webcam_input: bool,
-        show_fps: bool,
-        show_2d: bool,
-        count_rep: bool,
-    ):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
+@dataclass
+class DisplaySettings:
+    rotate_webcam_input: bool
+    show_fps: bool
+    show_2d: bool
+
+
+@dataclass
+class RepCntSettings:
+    do_rep_cnt: bool
 
 class SaveSettings:
     def __init__(

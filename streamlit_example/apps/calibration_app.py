@@ -9,6 +9,8 @@ from processor import CalibrationProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 from utils import CalibConfig, CameraState, single_calibrate, stereo_calibrate
 
+from utils.class_objects import ModelSettings, DisplaySettings
+
 
 def app():
     now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
