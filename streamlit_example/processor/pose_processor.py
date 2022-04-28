@@ -10,25 +10,20 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
+
 from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
+from utils.class_objects import ModelSettings, DisplaySettings
 
 _SENTINEL_ = "_SENTINEL_"
 
 
-def pose_process(
-    in_queue: Queue,
-    out_queue: Queue,
-    static_image_mode,
-    model_complexity: int,
-    min_detection_confidence: float,
-    min_tracking_confidence: float,
-) -> None:
-    mp_pose = mp.solutions.pose
+def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSettings) -> None:
+    mp_pose = mp.solutions.pose  # type: ignore
+    # XXX: ぶっ壊れてる可能性
     pose = mp_pose.Pose(
-        static_image_mode=static_image_mode,
-        model_complexity=model_complexity,
-        min_detection_confidence=min_detection_confidence,
-        min_tracking_confidence=min_tracking_confidence,
+        model_complexity=model_settings.model_complexity,
+        min_detection_confidence=model_settings.min_detection_confidence,
+        min_tracking_confidence=model_settings.min_tracking_confidence,
     )
 
     while True:
@@ -55,13 +50,8 @@ class PoseProcessor(VideoProcessorBase):
     # NOTE: 変数多すぎ。減らすorまとめたい
     def __init__(
         self,
-        static_image_mode: bool,
-        model_complexity: int,
-        min_detection_confidence: float,
-        min_tracking_confidence: float,
-        rotate_webcam_input: bool,
-        show_fps: bool,
-        show_2d: bool,
+        model_settings: ModelSettings,
+        display_settings: DisplaySettings,
         uploaded_pose_file,
         capture_skelton: bool,
         reset_button: bool,
@@ -79,18 +69,15 @@ class PoseProcessor(VideoProcessorBase):
             kwargs={
                 "in_queue": self._in_queue,
                 "out_queue": self._out_queue,
-                "static_image_mode": static_image_mode,
-                "model_complexity": model_complexity,
-                "min_detection_confidence": min_detection_confidence,
-                "min_tracking_confidence": min_tracking_confidence,
+                "model_settings": model_settings,
             },
         )
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
-        self.rotate_webcam_input = rotate_webcam_input
-        self.show_fps = show_fps
-        self.show_2d = show_2d
+        self.model_settings = model_settings
+        self.display_settings = display_settings
+
         self.capture_skelton = capture_skelton
         self.count_rep = count_rep
         self.rep_count = 0
@@ -281,7 +268,7 @@ class PoseProcessor(VideoProcessorBase):
 
         frame = cv.flip(frame, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
-        if self.rotate_webcam_input:
+        if self.display_settings.rotate_webcam_input:
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
@@ -296,7 +283,7 @@ class PoseProcessor(VideoProcessorBase):
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         results: PoseLandmarksObject = self._infer_pose(frame)
 
-        if self.show_2d and results:
+        if self.display_settings.show_2d and results:
 
             # results -> ndarray (named: realtime_array) : 不要
             self.realtime_array = results
@@ -355,7 +342,7 @@ class PoseProcessor(VideoProcessorBase):
                 # お手本poseは先に変換しておいてここでは呼ぶだけとする
                 processed_frame = self._show_loaded_pose(processed_frame)
 
-        if self.show_fps:
+        if self.display_settings.show_fps:
             cv.putText(
                 processed_frame,
                 "FPS:" + str(display_fps),
