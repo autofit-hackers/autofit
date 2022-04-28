@@ -104,6 +104,7 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState):
     camera_state.matrix = mtx
     camera_state.distortion_coeffs = dist
 
+    os.makedirs(f"{camera_state.dir}", exist_ok=True)
     np.savetxt(f"{camera_state.dir}/mtx.dat", mtx)
     np.savetxt(f"{camera_state.dir}/dist.dat", dist)
 
@@ -189,6 +190,8 @@ def stereo_calibrate(calib_config: CalibConfig, front_camera_state: CameraState,
 
     print("rmse:", ret)
 
+    os.makedirs(f"{front_camera_state.dir}", exist_ok=True)
+    os.makedirs(f"{side_camera_state.dir}", exist_ok=True)
     np.savetxt(f"{front_camera_state.dir}/rot.dat", np.eye(3))
     np.savetxt(f"{front_camera_state.dir}/trans.dat", np.array([[0], [0], [0]]))
     np.savetxt(f"{side_camera_state.dir}/rot.dat", R)
