@@ -37,7 +37,6 @@ class DisplaySetting:
             if not variable_name == "self":
                 self.__dict__[variable_name] = value
 
-
 class SaveSettings:
     def __init__(
         self,
