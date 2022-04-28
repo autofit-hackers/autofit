@@ -6,6 +6,8 @@ import streamlit as st
 from processor import PoseProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
+from utils.class_objects import ModelSettings
+
 
 def app():
     reset_button = st.button("Reset Pose and Start Training")
@@ -40,6 +42,11 @@ def app():
                 value=0.5,
                 step=0.01,
             )
+            model_settings = ModelSettings(
+                model_complexity=model_complexity,
+                min_detection_confidence=min_detection_confidence,
+                min_tracking_confidence=min_tracking_confidence,
+            )
 
         with st.expander("rep counter settings"):
             count_rep: bool = st.checkbox("Count rep", value=True)
@@ -64,9 +71,7 @@ def app():
 
     def processor_factory():
         return PoseProcessor(
-            model_complexity=model_complexity,
-            min_detection_confidence=min_detection_confidence,
-            min_tracking_confidence=min_tracking_confidence,
+            model_settings=model_settings,
             rotate_webcam_input=rotate_webcam_input,
             show_fps=show_fps,
             show_2d=show_2d,

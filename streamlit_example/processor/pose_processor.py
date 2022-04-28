@@ -10,23 +10,19 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
+
 from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
+from utils.class_objects import ModelSettings
 
 _SENTINEL_ = "_SENTINEL_"
 
 
-def pose_process(
-    in_queue: Queue,
-    out_queue: Queue,
-    model_complexity: int,
-    min_detection_confidence: float,
-    min_tracking_confidence: float,
-) -> None:
+def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSettings) -> None:
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
-        model_complexity=model_complexity,
-        min_detection_confidence=min_detection_confidence,
-        min_tracking_confidence=min_tracking_confidence,
+        model_complexity=model_settings.model_complexity,
+        min_detection_confidence=model_settings.min_detection_confidence,
+        min_tracking_confidence=model_settings.min_tracking_confidence,
     )
 
     while True:
@@ -53,9 +49,7 @@ class PoseProcessor(VideoProcessorBase):
     # NOTE: 変数多すぎ。減らすorまとめたい
     def __init__(
         self,
-        model_complexity: int,
-        min_detection_confidence: float,
-        min_tracking_confidence: float,
+        model_settings: ModelSettings,
         rotate_webcam_input: bool,
         show_fps: bool,
         show_2d: bool,
@@ -76,9 +70,7 @@ class PoseProcessor(VideoProcessorBase):
             kwargs={
                 "in_queue": self._in_queue,
                 "out_queue": self._out_queue,
-                "model_complexity": model_complexity,
-                "min_detection_confidence": min_detection_confidence,
-                "min_tracking_confidence": min_tracking_confidence,
+                "model_settings": model_settings,
             },
         )
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
