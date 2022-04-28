@@ -25,7 +25,6 @@ def app():
             save_pose = st.checkbox("Save Pose", value=False)
 
         with st.expander("Model parameters (there parameters are effective only at initialization)"):
-            static_image_mode = st.checkbox("Static image mode")
             model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
             min_detection_confidence = st.slider(
                 "Min detection confidence",
@@ -65,7 +64,6 @@ def app():
 
     def processor_factory():
         return PoseProcessor(
-            static_image_mode=static_image_mode,
             model_complexity=model_complexity,
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence,

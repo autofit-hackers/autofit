@@ -18,14 +18,12 @@ _SENTINEL_ = "_SENTINEL_"
 def pose_process(
     in_queue: Queue,
     out_queue: Queue,
-    static_image_mode,
     model_complexity: int,
     min_detection_confidence: float,
     min_tracking_confidence: float,
 ) -> None:
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
-        static_image_mode=static_image_mode,
         model_complexity=model_complexity,
         min_detection_confidence=min_detection_confidence,
         min_tracking_confidence=min_tracking_confidence,
@@ -55,7 +53,6 @@ class PoseProcessor(VideoProcessorBase):
     # NOTE: 変数多すぎ。減らすorまとめたい
     def __init__(
         self,
-        static_image_mode: bool,
         model_complexity: int,
         min_detection_confidence: float,
         min_tracking_confidence: float,
@@ -79,7 +76,6 @@ class PoseProcessor(VideoProcessorBase):
             kwargs={
                 "in_queue": self._in_queue,
                 "out_queue": self._out_queue,
-                "static_image_mode": static_image_mode,
                 "model_complexity": model_complexity,
                 "min_detection_confidence": min_detection_confidence,
                 "min_tracking_confidence": min_tracking_confidence,
