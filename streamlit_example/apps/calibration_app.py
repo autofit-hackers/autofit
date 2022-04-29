@@ -4,8 +4,8 @@ import time
 from io import StringIO
 from pathlib import Path
 from typing import List, Union
-import cv2 as cv
 
+import cv2 as cv
 import streamlit as st
 from processor import CalibrationProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
@@ -17,6 +17,7 @@ def app():
     calib_config = CalibConfig()
     front_camera_state = CameraState(name="front")
     side_camera_state = CameraState(name="side")
+    session_dir_path: str = ""
 
     with st.sidebar:
         session_meta_file = st.file_uploader("Session Dir", type="txt")
@@ -39,8 +40,22 @@ def app():
         )
         calculate_cam_mtx = False
         st.write("Calculation Finished!")
+    
+    def processor_factory():
+        return CalibrationProcessor()
 
-    webrtc_ctx_main = webrtc_streamer(key="main_cam", video_processor_factory=CalibrationProcessor)
+    def gen_webrtc_ctx(key: str):
+        return webrtc_streamer(
+            key=key,
+            mode=WebRtcMode.SENDRECV,
+            client_settings=ClientSettings(
+                rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+                media_stream_constraints={"video": True, "audio": False},
+            ),
+            video_processor_factory=processor_factory,
+        )
+
+    webrtc_ctx_main = gen_webrtc_ctx(key="main_cam")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
     if webrtc_ctx_main.video_processor:
@@ -48,7 +63,7 @@ def app():
         webrtc_ctx_main.video_processor.save_frame = save_frame
         webrtc_ctx_main.video_processor.imgs_dir = f"{session_dir_path}/front/imgs"
 
-    webrtc_ctx_sub = webrtc_streamer(key="sub_cam", video_processor_factory=CalibrationProcessor)
+    webrtc_ctx_sub = gen_webrtc_ctx(key="sub_cam")
 
     if webrtc_ctx_sub.video_processor:
         cam_type: str = "sub"
