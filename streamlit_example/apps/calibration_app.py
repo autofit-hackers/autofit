@@ -43,7 +43,7 @@ def app():
         st.session_state["camera_info_meta"] = camera_info_meta
 
         os.makedirs(camera_info_path, exist_ok=True)
-        with open(f"{camera_info_path}/meta.json", "w") as f:
+        with open(f"{camera_info_path}/camera_meta.json", "w") as f:
             json.dump(camera_info_meta, f)
         make_dir = False
 

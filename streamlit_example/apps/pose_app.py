@@ -18,6 +18,7 @@ def app():
 
     if "session_meta" in st.session_state:
         session_meta = st.session_state["session_meta"]
+        st.json(session_meta)
     # else:
     #     session_meta_json = st.file_uploader("Select Session Info", type="json")
     #     session_meta = json.load(session_meta_json)

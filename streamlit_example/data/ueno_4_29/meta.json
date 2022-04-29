@@ -1,6 +1,0 @@
-{
-    "camera_info_path": "/cameras/date",
-    "camera_names": {"front": "name-1", "side": "name-2"},
-    "created_at": "YY-MM~",
-    "used_in": ["session_path"]
-}
