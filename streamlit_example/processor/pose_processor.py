@@ -54,7 +54,6 @@ class PoseProcessor(VideoProcessorBase):
         self,
         model_settings: ModelSettings,
         display_settings: DisplaySettings,
-        capture_skeleton: bool,
         upper_threshold: float,
         lower_threshold: float,
         count_rep: bool,
@@ -79,7 +78,6 @@ class PoseProcessor(VideoProcessorBase):
         self.model_settings = model_settings
         self.display_settings = display_settings
 
-        self.capture_skeleton = capture_skeleton
         self.count_rep = count_rep
         self.rep_count = 0
         self.upper_threshold = upper_threshold

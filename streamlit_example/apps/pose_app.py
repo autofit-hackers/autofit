@@ -1,4 +1,5 @@
 from curses import meta
+import json
 import time
 from pathlib import Path
 from tkinter.tix import Tree
@@ -13,16 +14,14 @@ from utils import gen_in_recorder_factory, video_recorder
 
 
 def app():
-    reset_button = st.button("Reset Pose and Start Training")
-    capture_skeleton = False
-    if st.button("Save Screen Capture"):
-        capture_skeleton = True
-    else:
-        capture_skeleton = False
+    reset_button = st.button("Reset Pose and Start Training Set")
 
     if "session_meta" in st.session_state:
         session_meta = st.session_state["session_meta"]
-        st.write(session_meta)
+    # else:
+    #     session_meta_json = st.file_uploader("Select Session Info", type="json")
+    #     session_meta = json.load(session_meta_json)
+    #     st.write(session_meta)
 
     with st.sidebar:
         st.markdown("""---""")
@@ -86,7 +85,6 @@ def app():
             model_settings=model_settings,
             display_settings=display_settings,
             uploaded_pose_file=uploaded_pose_file,
-            capture_skeleton=capture_skeleton,
             count_rep=count_rep,
             reload_pose=reload_pose,
             upper_threshold=upper_threshold,
@@ -121,7 +119,6 @@ def app():
         )
         webrtc_ctx_main.video_processor.skeleton_save_path = str(Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg")
         webrtc_ctx_main.video_processor.uploaded_pose_file = uploaded_pose_file
-        webrtc_ctx_main.video_processor.capture_skeleton = capture_skeleton
         webrtc_ctx_main.video_processor.reset_button = reset_button
         webrtc_ctx_main.video_processor.count_rep = count_rep
         webrtc_ctx_main.video_processor.reload_pose = reload_pose
@@ -146,7 +143,6 @@ def app():
             )
             # TODO: カメラごとに異なる uploaded_pose を自動設定する
             webrtc_ctx_sub.video_processor.uploaded_pose_file = uploaded_pose_file
-            webrtc_ctx_sub.video_processor.capture_skeleton = capture_skeleton
             webrtc_ctx_sub.video_processor.count_rep = count_rep
             webrtc_ctx_sub.video_processor.reload_pose = reload_pose
             webrtc_ctx_sub.video_processor.reset_button = reset_button
