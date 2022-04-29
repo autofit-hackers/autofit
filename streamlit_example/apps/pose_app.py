@@ -116,7 +116,7 @@ def app():
             str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
         )
         webrtc_ctx_main.video_processor.skeleton_save_path = str(Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg")
-        webrtc_ctx_main.video_processor.uploaded_pose = uploaded_pose_file
+        webrtc_ctx_main.video_processor.uploaded_pose_file = uploaded_pose_file
         webrtc_ctx_main.video_processor.capture_skeleton = capture_skeleton
         webrtc_ctx_main.video_processor.reset_button = reset_button
         webrtc_ctx_main.video_processor.count_rep = count_rep
@@ -141,7 +141,7 @@ def app():
                 Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg"
             )
             # TODO: カメラごとに異なる uploaded_pose を自動設定する
-            webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose_file
+            webrtc_ctx_sub.video_processor.uploaded_pose_file = uploaded_pose_file
             webrtc_ctx_sub.video_processor.capture_skeleton = capture_skeleton
             webrtc_ctx_sub.video_processor.count_rep = count_rep
             webrtc_ctx_sub.video_processor.reload_pose = reload_pose
