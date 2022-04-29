@@ -11,12 +11,12 @@ import streamlit as st
 
 def app():
     user_name = st.text_input("User Name")
-    session_date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
-    session_name = user_name + session_date
     camera_meta_json = st.file_uploader("Select Camera Info", type="json")
     make_dir = st.button("Make Directory")
 
     if make_dir and camera_meta_json:
+        session_date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
+        session_name = user_name + session_date
         session_meta = dict()
         session_meta["session_path"] = f"data/session/{session_name}"
         session_meta["created_at"] = session_date

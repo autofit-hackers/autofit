@@ -47,19 +47,20 @@ session_meta = {
 
 
 camera_meta = {
-    "camera_params_path": "/cameras/date",
+    "camera_info_path": "/cameras/date",
     "camera-names": {"front": "name-1", "side": "name-2"}
     "created_at": "YY-MM~"
     "used_in": ["session_path"]
 }
 
-/camera_params
-    /front
-        /mtx.dat
-        /dist.dat
-    /side
-        /~.dat
-    /camera_meta.json
+/camera_info
+    /datetime
+        /front
+            /mtx.dat
+            /dist.dat
+        /side
+            /~.dat
+        /camera_meta.json
     
     
 /user_info

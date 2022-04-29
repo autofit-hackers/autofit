@@ -14,3 +14,41 @@ $ streamlit run streamlit_app.py
 
 ## Resources
 * [カメラキャリブレーションのサンプル用画像・動画](https://drive.google.com/drive/folders/1r3Z7lHwwfGPrODKtyt3r8PVc50vcdApI?usp=sharing)
+
+## データベース構造
+session_meta = {
+    "session_path": "data/date_name",
+    "camera_info_path": "/cameras/date",
+    "created_at": "YYMMDD",
+    "user_name": "TaroYamada",
+}
+
+/session
+    /video,
+    /pose,
+    /session_meta.json
+
+
+camera_meta = {
+    "camera_info_path": "/cameras/date",
+    "camera-names": {"front": "name-1", "side": "name-2"}
+    "created_at": "YY-MM~"
+    "used_in": ["session_path"]
+}
+
+/camera_info
+    /datetime
+        /front
+            /mtx.dat
+            /dist.dat
+        /side
+            /~.dat
+        /camera_meta.json
+    
+    
+/user_info
+    /body_info
+        /skeleton
+        /flexibility
+        /muscle
+    /purpose
