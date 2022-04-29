@@ -24,12 +24,19 @@ def app():
         session_meta["user_name"] = user_name
         camera_meta = json.load(camera_meta_json)
         session_meta["camera_info_path"] = camera_meta["camera_info_path"]
+        st.session_state["session_meta"] = session_meta
 
         os.makedirs(f"data/session/{session_name}", exist_ok=True)
         with open(f"data/session/{session_name}/meta.json", "w") as f:
             json.dump(session_meta, f)
 
+        camera_meta["used_in"].append(session_meta["session_path"])
+        camera_path = camera_meta["camera_info_path"]
+        with open(f"{camera_path}/meta.json", "w") as f:
+            json.dump(camera_meta, f)
+
         st.json(session_meta)
+        st.json(camera_meta)
         make_dir = False
 
 

@@ -4,6 +4,7 @@ from typing import List, Union
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+from requests import session
 
 import streamlit as st
 from processor import PoseProcessor
@@ -19,6 +20,10 @@ def app():
         capture_skeleton = True
     else:
         capture_skeleton = False
+
+    if "session_meta" in st.session_state:
+        session_meta = st.session_state["session_meta"]
+        st.write(session_meta)
 
     with st.sidebar:
         st.markdown("""---""")

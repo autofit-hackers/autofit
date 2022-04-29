@@ -10,8 +10,7 @@ import cv2 as cv
 import streamlit as st
 from processor import CalibrationProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
-from utils import (CalibConfig, CameraState, gen_in_recorder_factory,
-                   single_calibrate, stereo_calibrate)
+from utils import CalibConfig, CameraState, gen_in_recorder_factory, single_calibrate, stereo_calibrate
 from utils.class_objects import DisplaySettings, ModelSettings
 
 
@@ -19,13 +18,19 @@ def app():
     calib_config = CalibConfig()
     front_camera_state = CameraState(name="front")
     side_camera_state = CameraState(name="side")
+    if "camera_info_meta" in st.session_state:
+        camera_info_meta = st.session_state["camera_info_meta"]
+        camera_info_path = camera_info_meta["camera_info_path"]
+    else:
+        camera_info_meta = dict()
+        camera_info_path = ""
 
     with st.sidebar:
         front_device_name = st.selectbox("front camera name", ("A", "B"))
         side_device_name = st.selectbox("side camera name", ("A", "B"))
         make_dir = st.button("make dir")
-        save_frame = st.button("Save frame")
-        calculate_cam_mtx = st.button("Start Calibrate")
+        save_frame = st.button("Save frame", disabled=(camera_info_meta == {}))
+        calculate_cam_mtx = st.button("Start Calibrate", disabled=(camera_info_meta == {}))
 
     if make_dir:
         calibration_date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
@@ -34,6 +39,8 @@ def app():
         camera_info_meta["camera_info_path"] = camera_info_path
         camera_info_meta["camera_name"] = {"front": front_device_name, "side": side_device_name}
         camera_info_meta["created_at"] = calibration_date
+        camera_info_meta["used_in"] = []
+        st.session_state["camera_info_meta"] = camera_info_meta
 
         os.makedirs(camera_info_path, exist_ok=True)
         with open(f"{camera_info_path}/meta.json", "w") as f:
@@ -99,6 +106,9 @@ def app():
         )
         webrtc_ctx_main.video_processor.capture_index += 1
         webrtc_ctx_main.video_processor.save_frame = False
+
+    if not camera_info_meta == {}:
+        st.write(camera_info_meta)
 
 
 if __name__ == "__main__":

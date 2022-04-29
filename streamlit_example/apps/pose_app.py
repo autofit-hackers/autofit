@@ -20,6 +20,10 @@ def app():
     else:
         capture_skeleton = False
 
+    if "session_meta" in st.session_state:
+        session_meta = st.session_state["session_meta"]
+        st.write(session_meta)
+
     with st.sidebar:
         st.markdown("""---""")
         uploaded_pose_file = st.file_uploader("Load example pose file (.pkl)", type="pkl")
