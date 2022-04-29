@@ -3,9 +3,10 @@ import json
 import os
 from io import StringIO
 from pathlib import Path
-from typing import List, Union
+from typing import List, Type, Union
 
 import cv2 as cv
+from soupsieve import select
 import streamlit as st
 
 
@@ -14,7 +15,7 @@ def app():
     session_date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     session_name = user_name + session_date
     camera_meta_json = st.file_uploader("Select Camera Info", type="json")
-    make_dir = st.button("Make Directory")
+    make_dir = st.button("Make Directory", disabled=((camera_meta_json is None) or (user_name == "")))
 
     if make_dir and camera_meta_json:
         session_meta = dict()
