@@ -21,7 +21,6 @@ class CalibConfig:
 @dataclass
 class CameraState:
     name: str
-    dir: str
     rmse: float = 0
     matrix: np.ndarray = np.zeros((3, 3))
     distortion_coeffs: np.ndarray = np.zeros((1, 5))
@@ -49,14 +48,14 @@ def load_video_frames(video_path: str) -> Union[List[cv.Mat], None]:
     return frames
 
 
-def single_calibrate(calib_config: CalibConfig, camera_state: CameraState):
-    images_dir = f"{camera_state.dir}/imgs/"
+def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_dir: str):
+    imgs_dir = f"{base_dir}/{camera_state.name}/imgs"
     rows = calib_config.board_shape[0]
     columns = calib_config.board_shape[1]
     world_scaling = calib_config.world_scaling
     criteria = calib_config.criteria
 
-    images_names = sorted(glob.glob(images_dir))
+    images_names = sorted(glob.glob(imgs_dir))
     images = []
     for imname in images_names:
         im = cv.imread(imname, 1)
@@ -104,16 +103,17 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState):
     camera_state.matrix = mtx
     camera_state.distortion_coeffs = dist
 
-    os.makedirs(f"{camera_state.dir}", exist_ok=True)
-    np.savetxt(f"{camera_state.dir}/mtx.dat", mtx)
-    np.savetxt(f"{camera_state.dir}/dist.dat", dist)
+    np.savetxt(f"{base_dir}/{camera_state.name}mtx.dat", mtx)
+    np.savetxt(f"{base_dir}/{camera_state.name}/dist.dat", dist)
 
     return
 
 
-def stereo_calibrate(calib_config: CalibConfig, front_camera_state: CameraState, side_camera_state: CameraState):
-    images_dir_front = f"{front_camera_state.dir}/imgs/"
-    images_dir_side = f"{side_camera_state.dir}/imgs/"
+def stereo_calibrate(
+    calib_config: CalibConfig, front_camera_state: CameraState, side_camera_state: CameraState, base_dir: str
+):
+    images_dir_front = f"{base_dir}/{front_camera_state.name}/imgs/"
+    images_dir_side = f"{base_dir}/{side_camera_state.name}/imgs/"
 
     rows = calib_config.board_shape[0]
     columns = calib_config.board_shape[1]
@@ -190,12 +190,10 @@ def stereo_calibrate(calib_config: CalibConfig, front_camera_state: CameraState,
 
     print("rmse:", ret)
 
-    os.makedirs(f"{front_camera_state.dir}", exist_ok=True)
-    os.makedirs(f"{side_camera_state.dir}", exist_ok=True)
-    np.savetxt(f"{front_camera_state.dir}/rot.dat", np.eye(3))
-    np.savetxt(f"{front_camera_state.dir}/trans.dat", np.array([[0], [0], [0]]))
-    np.savetxt(f"{side_camera_state.dir}/rot.dat", R)
-    np.savetxt(f"{front_camera_state.dir}/trans.dat", T)
+    np.savetxt(f"{base_dir}/{front_camera_state.name}/rot.dat", np.eye(3))
+    np.savetxt(f"{base_dir}/{front_camera_state.name}/trans.dat", np.array([[0], [0], [0]]))
+    np.savetxt(f"{base_dir}/{side_camera_state.name}/rot.dat", R)
+    np.savetxt(f"{base_dir}/{side_camera_state.name}/trans.dat", T)
 
     return
 

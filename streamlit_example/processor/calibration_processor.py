@@ -12,11 +12,10 @@ _SENTINEL_ = "_SENTINEL_"
 
 
 class CalibrationProcessor(VideoProcessorBase):
-    def __init__(self, save_frame, camera_state: CameraState):
-        self.save_frame = save_frame
+    def __init__(self):
+        self.save_frame: bool
+        self.imgs_dir: str
         self.capture_index = 0
-
-        self.imgs_dir = f"{camera_state.dir}/imgs"
 
         return
 
