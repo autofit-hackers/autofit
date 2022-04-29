@@ -1,5 +1,7 @@
+from curses import meta
 import time
 from pathlib import Path
+from tkinter.tix import Tree
 from typing import List, Union
 
 import streamlit as st
@@ -7,7 +9,7 @@ from processor import PoseProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
 from utils.class_objects import DisplaySettings, ModelSettings
-from utils import gen_in_recorder_factory
+from utils import gen_in_recorder_factory, video_recorder
 
 
 def app():
@@ -90,13 +92,16 @@ def app():
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
             key=key,
+            # desired_playing_state=False,
             mode=WebRtcMode.SENDRECV,
             client_settings=ClientSettings(
                 rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
                 media_stream_constraints={"video": True, "audio": False},
             ),
             video_processor_factory=processor_factory,
-            in_recorder_factory=gen_in_recorder_factory(str(Path("recorded_videos") / f"{now_str}_{key}.mp4")) if save_video else None
+            in_recorder_factory=gen_in_recorder_factory(str(Path("recorded_videos") / f"{now_str}_{key}.mp4"))
+            if save_video
+            else None,
         )
 
     webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
@@ -147,3 +152,26 @@ def app():
 
 if __name__ == "__main__":
     app()
+
+"""
+session_meta = {
+    "session_path": "/data/date_name",
+    "camera_params_path": "/cameras/date",
+    "created_at": "YYMMDD",
+    "subject_name": "TaroYamada",
+    "body_info_path": "/info"
+}
+
+
+/session
+    /video,
+    /camera_params,
+    /
+
+camera_meta = {
+    "camera_params_path": "/cameras/date",
+    "param": hoge,
+    "camera-unique-id": "id"
+
+}
+"""
