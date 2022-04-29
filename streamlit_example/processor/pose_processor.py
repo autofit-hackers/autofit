@@ -100,7 +100,7 @@ class PoseProcessor(VideoProcessorBase):
         self.key_frame_draw_count = 0
 
         # お手本ポーズを3DでLoad
-        self.uploaded_pose = uploaded_pose_file
+        self.uploaded_pose_file = uploaded_pose_file
         self.loaded_frames: List[PoseLandmarksObject] = []
         self.uploaded_frames: List[PoseLandmarksObject] = []
         if uploaded_pose_file is not None:
