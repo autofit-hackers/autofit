@@ -54,14 +54,14 @@ class PoseProcessor(VideoProcessorBase):
         self,
         model_settings: ModelSettings,
         display_settings: DisplaySettings,
-        capture_skelton: bool,
-        upper_threshold: Union[float, None] = None,
-        lower_threshold: Union[float, None] = None,
-        count_rep: Union[bool, None] = None,
-        reload_pose: Union[bool, None] = None,
+        capture_skeleton: bool,
+        upper_threshold: float,
+        lower_threshold: float,
+        count_rep: bool,
+        reload_pose: bool,
         uploaded_pose_file: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
-        skelton_save_path: Union[str, None] = None,
+        skeleton_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -75,11 +75,11 @@ class PoseProcessor(VideoProcessorBase):
         )
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
-        # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
+        # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settings, training_menu_settings）
         self.model_settings = model_settings
         self.display_settings = display_settings
 
-        self.capture_skelton = capture_skelton
+        self.capture_skeleton = capture_skeleton
         self.count_rep = count_rep
         self.rep_count = 0
         self.upper_threshold = upper_threshold
@@ -95,7 +95,7 @@ class PoseProcessor(VideoProcessorBase):
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[PoseLandmarksObject] = []
 
-        self.skelton_save_path: Union[str, None] = skelton_save_path
+        self.skeleton_save_path: Union[str, None] = skeleton_save_path
 
         self.key_frame_draw_count = 0
 
@@ -130,10 +130,10 @@ class PoseProcessor(VideoProcessorBase):
         return loaded_frames
 
     def _show_loaded_pose(self, frame):
-        self.loaded_one_shot_pose = self.loaded_frames.pop(0)
+        self.showing_coach_pose = self.loaded_frames.pop(0)
         frame = draw_landmarks_pose(
             frame,
-            self.loaded_one_shot_pose,
+            self.showing_coach_pose,
             is_loaded=True,
         )
         return frame
@@ -182,7 +182,7 @@ class PoseProcessor(VideoProcessorBase):
 
         return adjusted_poses
 
-    def _save_bone_info(self, captured_skelton: PoseLandmarksObject):
+    def _save_bone_info(self, captured_skeleton: PoseLandmarksObject):
         print("save!!!")
         # TODO: この辺はutilsに連れて行く
         bone_edge_names = {
@@ -197,11 +197,11 @@ class PoseProcessor(VideoProcessorBase):
             "full_arm": (11, 15),
         }
 
-        bone_dict = {"foot_neck_height": self._calculate_height(captured_skelton)}
+        bone_dict = {"foot_neck_height": self._calculate_height(captured_skeleton)}
         for bone_edge_key in bone_edge_names.keys():
             bone_dict[bone_edge_key] = np.linalg.norm(
-                captured_skelton.landmark[bone_edge_names[bone_edge_key][0]]
-                - captured_skelton.landmark[bone_edge_names[bone_edge_key][1]]
+                captured_skeleton.landmark[bone_edge_names[bone_edge_key][0]]
+                - captured_skeleton.landmark[bone_edge_names[bone_edge_key][1]]
             )
 
         with open("data.json", "w") as fp:
@@ -244,17 +244,14 @@ class PoseProcessor(VideoProcessorBase):
     def _realtime_coaching(self, pose: PoseLandmarksObject):
         recommend = []
         if np.linalg.norm(pose.landmark[27] - pose.landmark[28]) < np.linalg.norm(
-            pose.landmark[27] - pose.landmark[28]
+            self.showing_coach_pose.landmark[27] - self.showing_coach_pose.landmark[28]
         ):
             recommend.append("もう少し足幅を広げましょう")
         if np.linalg.norm(pose.landmark[15] - pose.landmark[16]) < np.linalg.norm(
-            pose.landmark[15] - pose.landmark[16]
+            self.showing_coach_pose.landmark[15] - self.showing_coach_pose.landmark[16]
         ):
             recommend.append("手幅を広げましょう")
         return recommend
-
-    def _caluculate_slkelton():
-        print("hello skelton")
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -273,11 +270,11 @@ class PoseProcessor(VideoProcessorBase):
         processed_frame = copy.deepcopy(frame)
 
         # 画像の保存
-        # TODO: capture skelton の rename or jsonの保存までするように関数書き換え
-        if self.capture_skelton and self.skelton_save_path:
-            print(self.skelton_save_path)
-            cv.imwrite(self.skelton_save_path, frame)
-            self.capture_skelton = False
+        # TODO: capture skeleton の rename or jsonの保存までするように関数書き換え
+        if self.capture_skeleton and self.skeleton_save_path:
+            print(self.skeleton_save_path)
+            cv.imwrite(self.skeleton_save_path, frame)
+            self.capture_skeleton = False
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -318,17 +315,17 @@ class PoseProcessor(VideoProcessorBase):
 
             # NOTE: ここに指導がくるので、ndarrayで持ちたい
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
-            # print(self._realtime_coaching(results))
+            print(self._realtime_coaching(results))
 
             # pose の保存 ################################################################
             if self.pose_save_path is not None:
                 self.pose_mem.append(results)
             # results = self._pose.process(image)
-            if self.capture_skelton:
-                # print(self.skelton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+            if self.capture_skeleton:
+                # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
                 self._save_bone_info(results)
-                # print(self.skelton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
-                self.capture_skelton = False
+                # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+                self.capture_skeleton = False
 
             # Poseの描画 ################################################################
             if results.landmark is not None:
