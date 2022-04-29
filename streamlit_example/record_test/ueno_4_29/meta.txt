@@ -1,1 +1,1 @@
-./record_test/ueno_4_29
+record_test/ueno_4_29

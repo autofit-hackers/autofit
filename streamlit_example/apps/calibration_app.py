@@ -4,6 +4,7 @@ import time
 from io import StringIO
 from pathlib import Path
 from typing import List, Union
+import cv2 as cv
 
 import streamlit as st
 from processor import CalibrationProcessor
@@ -26,9 +27,6 @@ def app():
         # TODO: remove type error about this variable
         session_dir_path = StringIO(session_meta_file.getvalue().decode("utf-8")).read()
 
-    if save_frame:
-        st.write("Frames captured")
-
     if calculate_cam_mtx:
         st.write("Caluculating Camera Matrix...")
         single_calibrate(calib_config=calib_config, camera_state=front_camera_state, base_dir=session_dir_path)
@@ -43,18 +41,34 @@ def app():
         st.write("Calculation Finished!")
 
     webrtc_ctx_main = webrtc_streamer(key="main_cam", video_processor_factory=CalibrationProcessor)
+    st.session_state["started"] = webrtc_ctx_main.state.playing
 
     if webrtc_ctx_main.video_processor:
         cam_type: str = "main"
         webrtc_ctx_main.video_processor.save_frame = save_frame
-        webrtc_ctx_main.video_processor.imgs_dir = f"{session_dir_path}/front"
+        webrtc_ctx_main.video_processor.imgs_dir = f"{session_dir_path}/front/imgs"
 
     webrtc_ctx_sub = webrtc_streamer(key="sub_cam", video_processor_factory=CalibrationProcessor)
 
     if webrtc_ctx_sub.video_processor:
         cam_type: str = "sub"
         webrtc_ctx_sub.video_processor.save_frame = save_frame
-        webrtc_ctx_sub.video_processor.imgs_dir = f"{session_dir_path}/side"
+        webrtc_ctx_sub.video_processor.imgs_dir = f"{session_dir_path}/side/imgs"
+
+    if save_frame:
+        st.write("Frames captured")
+        os.makedirs(f"{webrtc_ctx_main.video_processor.imgs_dir}", exist_ok=True)
+        os.makedirs(f"{webrtc_ctx_sub.video_processor.imgs_dir}", exist_ok=True)
+        cv.imwrite(
+            f"{webrtc_ctx_main.video_processor.imgs_dir}/img{webrtc_ctx_main.video_processor.capture_index}.png",
+            webrtc_ctx_main.video_processor.frame,
+        )
+        cv.imwrite(
+            f"{webrtc_ctx_sub.video_processor.imgs_dir}/img{webrtc_ctx_main.video_processor.capture_index}.png",
+            webrtc_ctx_sub.video_processor.frame,
+        )
+        webrtc_ctx_main.video_processor.capture_index += 1
+        webrtc_ctx_main.video_processor.save_frame = False
 
 
 if __name__ == "__main__":

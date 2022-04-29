@@ -23,12 +23,7 @@ class CalibrationProcessor(VideoProcessorBase):
         frame = frame.to_ndarray(format="bgr24")
         frame = cv.flip(frame, 1)  # ミラー表示
         frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
-
-        if self.save_frame:
-            os.makedirs(f"{self.imgs_dir}", exist_ok=True)
-            cv.imwrite(f"{self.imgs_dir}/img{self.capture_index}.png", frame)
-            self.capture_index += 1
-            self.save_frame = False
+        self.frame = frame
 
         return av.VideoFrame.from_ndarray(frame, format="bgr24")
 

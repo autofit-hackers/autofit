@@ -50,16 +50,19 @@ def load_video_frames(video_path: str) -> Union[List[cv.Mat], None]:
 
 def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_dir: str):
     imgs_dir = f"{base_dir}/{camera_state.name}/imgs"
+    print(imgs_dir)
     rows = calib_config.board_shape[0]
     columns = calib_config.board_shape[1]
     world_scaling = calib_config.world_scaling
     criteria = calib_config.criteria
 
-    images_names = sorted(glob.glob(imgs_dir))
+    images_names = sorted(glob.glob(f"{imgs_dir}/*.png"))
+    print(images_names)
     images = []
     for imname in images_names:
         im = cv.imread(imname, 1)
         images.append(im)
+    print(len(images))
 
     # coordinates of squares in the checkerboard world space
     objp = np.zeros((rows * columns, 3), np.float32)
@@ -120,8 +123,8 @@ def stereo_calibrate(
     world_scaling = calib_config.world_scaling
     criteria = calib_config.criteria
 
-    c1_images_names = sorted(glob.glob(images_dir_front))
-    c2_images_names = sorted(glob.glob(images_dir_side))
+    c1_images_names = sorted(glob.glob(f"{images_dir_front}/*.png"))
+    c2_images_names = sorted(glob.glob(f"{images_dir_side}/*.png"))
 
     c1_images = []
     c2_images = []
@@ -199,7 +202,6 @@ def stereo_calibrate(
 
 
 def _make_homogeneous_rep_matrix(R, t):
-
     P = np.zeros((4, 4))
     P[:3, :3] = R
     P[:3, 3] = t.reshape(3)
@@ -209,7 +211,6 @@ def _make_homogeneous_rep_matrix(R, t):
 
 # direct linear transform
 def DLT(P1, P2, point1, point2):
-
     A = [
         point1[1] * P1[2, :] - P1[1, :],
         P1[0, :] - point1[0] * P1[2, :],
@@ -230,7 +231,6 @@ def DLT(P1, P2, point1, point2):
 
 
 def read_camera_parameters(camera_id, savefolder="camera_parameters/"):
-
     cmtx = np.loadtxt(savefolder + "c" + str(camera_id) + "_mtx.dat")
     dist = np.loadtxt(savefolder + "c" + str(camera_id) + "_dist.dat")
 
@@ -238,7 +238,6 @@ def read_camera_parameters(camera_id, savefolder="camera_parameters/"):
 
 
 def read_rotation_translation(camera_id, savefolder="camera_parameters/"):
-
     rot = np.loadtxt(savefolder + "c" + str(camera_id) + "_rot.dat")
     trans = np.loadtxt(savefolder + "c" + str(camera_id) + "_trans.dat")
 
@@ -246,7 +245,6 @@ def read_rotation_translation(camera_id, savefolder="camera_parameters/"):
 
 
 def _convert_to_homogeneous(pts):
-
     pts = np.array(pts)
     if len(pts.shape) > 1:
         w = np.ones((pts.shape[0], 1))
@@ -256,7 +254,6 @@ def _convert_to_homogeneous(pts):
 
 
 def get_projection_matrix(camera_id):
-
     # read camera parameters
     cmtx, dist = read_camera_parameters(camera_id)
     rvec, tvec = read_rotation_translation(camera_id)
