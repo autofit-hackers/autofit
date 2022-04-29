@@ -32,7 +32,6 @@ class DisplaySettings:
 class RepCntSettings:
     do_rep_cnt: bool
 
-
 class SaveSettings:
     def __init__(
         self,

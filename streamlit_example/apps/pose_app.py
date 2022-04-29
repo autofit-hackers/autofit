@@ -7,6 +7,7 @@ from processor import PoseProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
 from utils.class_objects import DisplaySettings, ModelSettings
+from utils import gen_in_recorder_factory
 
 
 def app():
@@ -95,6 +96,7 @@ def app():
                 media_stream_constraints={"video": True, "audio": False},
             ),
             video_processor_factory=processor_factory,
+            in_recorder_factory=gen_in_recorder_factory(str(Path("recorded_videos") / f"{now_str}_{key}.mp4")) if save_video else None
         )
 
     webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")

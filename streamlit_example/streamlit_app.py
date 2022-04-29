@@ -1,6 +1,7 @@
 import streamlit as st
 
-from apps import calibration_app, pose_app, get_physical_info_app  # import your app modules here
+from apps import calibration_app  # import your app modules here
+from apps import get_physical_info_app, pose_app
 from utils import MultiApp
 
 

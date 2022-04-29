@@ -1,90 +1,48 @@
+import datetime
+import os
 import time
+from io import StringIO
 from pathlib import Path
 from typing import List, Union
 
+import cv2 as cv
 import streamlit as st
-from processor import PoseProcessor
+from processor import CalibrationProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
-
-from utils.class_objects import ModelSettings, DisplaySettings
+from utils import CalibConfig, CameraState, single_calibrate, stereo_calibrate, gen_in_recorder_factory
+from utils.class_objects import DisplaySettings, ModelSettings
 
 
 def app():
-    reset_button = st.button("Reset Pose and Start Training")
-    capture_skeleton = False
-    if st.button("Save Screen Capture"):
-        capture_skeleton = True
-    else:
-        capture_skeleton = False
+    calib_config = CalibConfig()
+    front_camera_state = CameraState(name="front")
+    side_camera_state = CameraState(name="side")
+    session_dir_path: str = ""
 
     with st.sidebar:
-        st.markdown("""---""")
-        uploaded_pose = st.file_uploader("Load example pose file (.pkl)", type="pkl")
-        use_two_cam: bool = st.checkbox("Use two cam", value=False)
-        with st.expander("Save settings"):
-            save_video = st.checkbox("Save Video", value=False)
-            save_pose = st.checkbox("Save Pose", value=False)
+        session_meta_file = st.file_uploader("Session Dir", type="txt")
+        save_frame = st.button("Save frame")
+        calculate_cam_mtx = st.button("Start Calibrate")
 
-        with st.expander("Model parameters (there parameters are effective only at initialization)"):
-            model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
-            min_detection_confidence = st.slider(
-                "Min detection confidence",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.5,
-                step=0.01,
-            )
-            min_tracking_confidence = st.slider(
-                "Min tracking confidence",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.5,
-                step=0.01,
-            )
-            model_settings = ModelSettings(
-                model_complexity=model_complexity,
-                min_detection_confidence=min_detection_confidence,
-                min_tracking_confidence=min_tracking_confidence,
-            )
+    if session_meta_file:
+        # TODO: remove type error about this variable
+        session_dir_path = StringIO(session_meta_file.getvalue().decode("utf-8")).read()
 
-        with st.expander("rep counter settings"):
-            count_rep: bool = st.checkbox("Count rep", value=True)
-            upper_threshold = st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01)
-            lower_threshold = st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
-
-        # with st.expander("Save settings"):
-        #     save_video = st.checkbox("Save Video", value=False)
-        #     save_pose = st.checkbox("Save Pose", value=False)
-
-        with st.expander("Display settings"):
-            rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
-            show_fps = st.checkbox("Show FPS", value=True)
-            show_2d = st.checkbox("Show 2D", value=True)
-            display_settings = DisplaySettings(
-                rotate_webcam_input=rotate_webcam_input,
-                show_2d=show_2d,
-                show_fps=show_fps,
-            )
-
-            if st.button("RELOAD"):
-                reload_pose = True
-                st.write("RELOADED")
-            else:
-                reload_pose = False
-
-    now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
+    if calculate_cam_mtx:
+        st.write("Caluculating Camera Matrix...")
+        single_calibrate(calib_config=calib_config, camera_state=front_camera_state, base_dir=session_dir_path)
+        single_calibrate(calib_config=calib_config, camera_state=side_camera_state, base_dir=session_dir_path)
+        stereo_calibrate(
+            calib_config=calib_config,
+            front_camera_state=front_camera_state,
+            side_camera_state=side_camera_state,
+            base_dir=session_dir_path,
+        )
+        calculate_cam_mtx = False
+        st.write("Calculation Finished!")
 
     def processor_factory():
-        return PoseProcessor(
-            model_settings=model_settings,
-            display_settings=display_settings,
-            uploaded_pose_file=uploaded_pose,
-            capture_skeleton=capture_skeleton,
-            count_rep=count_rep,
-            reload_pose=reload_pose,
-            upper_threshold=upper_threshold,
-            lower_threshold=lower_threshold,
-        )
+        return CalibrationProcessor()
 
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
@@ -97,47 +55,35 @@ def app():
             video_processor_factory=processor_factory,
         )
 
-    webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
+    webrtc_ctx_main = gen_webrtc_ctx(key="main_cam")
     st.session_state["started"] = webrtc_ctx_main.state.playing
 
-    # NOTE: 動的に監視したい変数以外は以下に含める必要なし?
-    # NOTE: mainとsubをカメラ構造体or辞書にまとめる?
     if webrtc_ctx_main.video_processor:
         cam_type: str = "main"
-        webrtc_ctx_main.video_processor.display_settings = display_settings
-        webrtc_ctx_main.video_processor.pose_save_path = (
-            str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
+        webrtc_ctx_main.video_processor.save_frame = save_frame
+        webrtc_ctx_main.video_processor.imgs_dir = f"{session_dir_path}/front/imgs"
+
+    webrtc_ctx_sub = gen_webrtc_ctx(key="sub_cam")
+
+    if webrtc_ctx_sub.video_processor:
+        cam_type: str = "sub"
+        webrtc_ctx_sub.video_processor.save_frame = save_frame
+        webrtc_ctx_sub.video_processor.imgs_dir = f"{session_dir_path}/side/imgs"
+
+    if save_frame:
+        st.write("Frames captured")
+        os.makedirs(f"{webrtc_ctx_main.video_processor.imgs_dir}", exist_ok=True)
+        os.makedirs(f"{webrtc_ctx_sub.video_processor.imgs_dir}", exist_ok=True)
+        cv.imwrite(
+            f"{webrtc_ctx_main.video_processor.imgs_dir}/img{webrtc_ctx_main.video_processor.capture_index}.png",
+            webrtc_ctx_main.video_processor.frame,
         )
-        webrtc_ctx_main.video_processor.skeleton_save_path = str(Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg")
-        webrtc_ctx_main.video_processor.uploaded_pose = uploaded_pose
-        webrtc_ctx_main.video_processor.capture_skeleton = capture_skeleton
-        webrtc_ctx_main.video_processor.reset_button = reset_button
-        webrtc_ctx_main.video_processor.count_rep = count_rep
-        webrtc_ctx_main.video_processor.reload_pose = reload_pose
-        webrtc_ctx_main.video_processor.upper_threshold = upper_threshold
-        webrtc_ctx_main.video_processor.lower_threshold = lower_threshold
-
-    if use_two_cam:
-        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
-
-        if webrtc_ctx_sub.video_processor:
-            cam_type: str = "sub"
-            # TODO: rotate をカメラごとに設定可能にする
-            webrtc_ctx_sub.video_processor.display_settings = display_settings
-            webrtc_ctx_sub.video_processor.pose_save_path = (
-                str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
-            )
-            webrtc_ctx_sub.video_processor.skeleton_save_path = str(
-                Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg"
-            )
-            # TODO: カメラごとに異なる uploaded_pose を自動設定する
-            webrtc_ctx_sub.video_processor.uploaded_pose = uploaded_pose
-            webrtc_ctx_sub.video_processor.capture_skeleton = capture_skeleton
-            webrtc_ctx_sub.video_processor.count_rep = count_rep
-            webrtc_ctx_sub.video_processor.reload_pose = reload_pose
-            webrtc_ctx_sub.video_processor.reset_button = reset_button
-            webrtc_ctx_sub.video_processor.upper_threshold = upper_threshold
-            webrtc_ctx_sub.video_processor.lower_threshold = lower_threshold
+        cv.imwrite(
+            f"{webrtc_ctx_sub.video_processor.imgs_dir}/img{webrtc_ctx_main.video_processor.capture_index}.png",
+            webrtc_ctx_sub.video_processor.frame,
+        )
+        webrtc_ctx_main.video_processor.capture_index += 1
+        webrtc_ctx_main.video_processor.save_frame = False
 
 
 if __name__ == "__main__":
