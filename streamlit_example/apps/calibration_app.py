@@ -21,8 +21,8 @@ def app():
 
     with st.sidebar:
         session_meta_file = st.file_uploader("Session Dir", type="txt")
-        save_frame = st.button("Save frame")
-        calculate_cam_mtx = st.button("Start Calibrate")
+        save_frame = st.button("Save frame", disabled=(session_meta_file is None))
+        calculate_cam_mtx = st.button("Start Calibrate", disabled=(session_meta_file is None))
 
     if session_meta_file:
         # TODO: remove type error about this variable
@@ -55,20 +55,23 @@ def app():
             video_processor_factory=processor_factory,
         )
 
-    webrtc_ctx_main = gen_webrtc_ctx(key="main_cam")
-    st.session_state["started"] = webrtc_ctx_main.state.playing
+    main_col, sub_col = st.columns(2)
+    with main_col:
+        webrtc_ctx_main = gen_webrtc_ctx(key="main_cam")
+        st.session_state["started"] = webrtc_ctx_main.state.playing
 
-    if webrtc_ctx_main.video_processor:
-        cam_type: str = "main"
-        webrtc_ctx_main.video_processor.save_frame = save_frame
-        webrtc_ctx_main.video_processor.imgs_dir = f"{session_dir_path}/front/imgs"
+        if webrtc_ctx_main.video_processor:
+            cam_type: str = "main"
+            webrtc_ctx_main.video_processor.save_frame = save_frame
+            webrtc_ctx_main.video_processor.imgs_dir = f"{session_dir_path}/front/imgs"
 
-    webrtc_ctx_sub = gen_webrtc_ctx(key="sub_cam")
+    with sub_col:
+        webrtc_ctx_sub = gen_webrtc_ctx(key="sub_cam")
 
-    if webrtc_ctx_sub.video_processor:
-        cam_type: str = "sub"
-        webrtc_ctx_sub.video_processor.save_frame = save_frame
-        webrtc_ctx_sub.video_processor.imgs_dir = f"{session_dir_path}/side/imgs"
+        if webrtc_ctx_sub.video_processor:
+            cam_type: str = "sub"
+            webrtc_ctx_sub.video_processor.save_frame = save_frame
+            webrtc_ctx_sub.video_processor.imgs_dir = f"{session_dir_path}/side/imgs"
 
     if save_frame:
         st.write("Frames captured")
