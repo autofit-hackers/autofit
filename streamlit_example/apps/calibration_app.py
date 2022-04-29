@@ -92,7 +92,7 @@ def app():
             webrtc_ctx_sub.video_processor.save_frame = save_frame
             webrtc_ctx_sub.video_processor.imgs_dir = f"{camera_info_path}/side/imgs"
 
-    if save_frame:
+    if save_frame and webrtc_ctx_main.video_processor and webrtc_ctx_sub.video_processor:
         st.write("Frames captured")
         os.makedirs(f"{webrtc_ctx_main.video_processor.imgs_dir}", exist_ok=True)
         os.makedirs(f"{webrtc_ctx_sub.video_processor.imgs_dir}", exist_ok=True)

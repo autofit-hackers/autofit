@@ -1,9 +1,11 @@
+import json
 import time
 from pathlib import Path
 from typing import List, Union
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+from pylibsrtp import Session
 from requests import session
 
 import streamlit as st
@@ -15,17 +17,21 @@ from utils.class_objects import ModelSettings, DisplaySettings
 
 
 def app():
-    capture_skeleton = False
-    if st.button("Save Screen Capture"):
-        capture_skeleton = True
-    else:
-        capture_skeleton = False
-
-    if "session_meta" in st.session_state:
-        session_meta = st.session_state["session_meta"]
-        st.write(session_meta)
 
     with st.sidebar:
+        st.markdown("---")
+        st.subheader("Session Meta Data")
+        if "session_meta" in st.session_state:
+            session_meta = st.session_state["session_meta"]
+            st.write(session_meta)
+        else:
+            session_meta_json = st.file_uploader("", type="json")
+            session_meta = dict()
+            if session_meta_json:
+                session_meta = json.load(session_meta_json)
+                st.session_state["session_meta"] = session_meta
+                st.write(session_meta)
+
         st.markdown("""---""")
 
         with st.expander("Model parameters (there parameters are effective only at initialization)"):
@@ -59,6 +65,8 @@ def app():
                 show_2d=show_2d,
                 show_fps=show_fps,
             )
+
+    capture_skeleton = st.button("Save Screen Capture", disabled=(session_meta == {}))
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
 
@@ -106,16 +114,7 @@ def app():
             )
             webrtc_ctx_sub.video_processor.capture_skeleton = capture_skeleton
 
-    # # 描画領域を用意する
-    # fig = plt.figure()
-    # ax = fig.add_subplot()
-    # # ランダムな値をヒストグラムとしてプロットする
-    # x = np.random.normal(loc=0.0, scale=1.0, size=(100,))
-    # ax.hist(x, bins=20)
-    # # Matplotlib の Figure を指定して可視化する
-    # st.pyplot(fig)
-
-    if capture_skeleton and webrtc_ctx_main.video_processor.result_pose is not None:
+    if capture_skeleton and webrtc_ctx_main.video_processor is not None:
         X = webrtc_ctx_main.video_processor.result_pose.landmark[:, 0]
         Y = 1 - webrtc_ctx_main.video_processor.result_pose.landmark[:, 1]
         Z = webrtc_ctx_main.video_processor.result_pose.landmark[:, 2]

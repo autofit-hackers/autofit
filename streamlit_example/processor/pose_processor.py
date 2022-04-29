@@ -58,7 +58,7 @@ class PoseProcessor(VideoProcessorBase):
         lower_threshold: float,
         count_rep: bool,
         reload_pose: bool,
-        uploaded_pose_file: Union[str, None] = None,
+        uploaded_pose_file=None,
         pose_save_path: Union[str, None] = None,
         skeleton_save_path: Union[str, None] = None,
     ) -> None:
