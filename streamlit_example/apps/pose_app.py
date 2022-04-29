@@ -153,25 +153,4 @@ def app():
 if __name__ == "__main__":
     app()
 
-"""
-session_meta = {
-    "session_path": "/data/date_name",
-    "camera_params_path": "/cameras/date",
-    "created_at": "YYMMDD",
-    "subject_name": "TaroYamada",
-    "body_info_path": "/info"
-}
 
-
-/session
-    /video,
-    /camera_params,
-    /
-
-camera_meta = {
-    "camera_params_path": "/cameras/date",
-    "param": hoge,
-    "camera-unique-id": "id"
-
-}
-"""

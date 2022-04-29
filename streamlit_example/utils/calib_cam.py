@@ -106,7 +106,7 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     camera_state.matrix = mtx
     camera_state.distortion_coeffs = dist
 
-    np.savetxt(f"{base_dir}/{camera_state.name}mtx.dat", mtx)
+    np.savetxt(f"{base_dir}/{camera_state.name}/mtx.dat", mtx)
     np.savetxt(f"{base_dir}/{camera_state.name}/dist.dat", dist)
 
     return
