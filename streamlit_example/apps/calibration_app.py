@@ -40,7 +40,7 @@ def app():
         )
         calculate_cam_mtx = False
         st.write("Calculation Finished!")
-    
+
     def processor_factory():
         return CalibrationProcessor()
 

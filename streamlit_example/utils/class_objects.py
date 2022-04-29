@@ -37,7 +37,7 @@ class SaveSettings:
         self,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
-        skelton_save_path: Union[str, None] = None,
+        skeleton_save_path: Union[str, None] = None,
     ):
         for variable_name, value in locals().items():
             if not variable_name == "self":
@@ -55,7 +55,7 @@ class OperationStates:
     def __init__(
         self,
         reload_pose: bool,
-        capture_skelton: bool,
+        capture_skeleton: bool,
         reset_button: bool,
     ):
         for variable_name, value in locals().items():
