@@ -2,23 +2,22 @@ import json
 import time
 from pathlib import Path
 from typing import List, Union
+
+import numpy as np
+import plotly.figure_factory as ff
+import plotly.graph_objs as go
+import streamlit as st
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import plotly.figure_factory as ff
-import numpy as np
+from processor import PoseProcessor
+from processor.get_physical_info_processor import GetPhysicalInfoProcessor
 from pylibsrtp import Session
 from requests import session
-
-import streamlit as st
-from processor import PoseProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
-from processor.get_physical_info_processor import GetPhysicalInfoProcessor
-
-from utils.class_objects import ModelSettings, DisplaySettings
+from utils.class_objects import DisplaySettings, ModelSettings
 
 
 def app():
-
     with st.sidebar:
         st.markdown("---")
         st.subheader("Session Meta Data")
