@@ -62,9 +62,7 @@ def app():
             base_dir=camera_info_path,
         )
         calculate_cam_mtx = False
-        camera_info_meta["front_rmse"] = front_rmse
-        camera_info_meta["side_rmse"] = side_rmse
-        camera_info_meta["stereo_rmse"] = stereo_rmse
+        camera_info_meta["rmse"] = {"front_rmse": front_rmse, "side_rmse": side_rmse, "stereo_rmse": stereo_rmse}
         st.session_state["camera_info_meta"] = camera_info_meta
 
     def processor_factory():
@@ -100,7 +98,7 @@ def app():
             webrtc_ctx_sub.video_processor.imgs_dir = f"{camera_info_path}/side/imgs"
 
     if save_frame and webrtc_ctx_main.video_processor and webrtc_ctx_sub.video_processor:
-        st.write("Frames captured")
+        st.write(str(webrtc_ctx_main.video_processor.capture_index + 1) + " Frames captured")
         os.makedirs(f"{webrtc_ctx_main.video_processor.imgs_dir}", exist_ok=True)
         os.makedirs(f"{webrtc_ctx_sub.video_processor.imgs_dir}", exist_ok=True)
         cv.imwrite(
