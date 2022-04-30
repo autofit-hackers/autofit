@@ -46,10 +46,13 @@ def app():
             reload_pose = False
 
     if session_meta_exists:
-        video_save_dir = Path(st.session_state["session_meta"]["session_path"]) / "video"
+        base_save_dir = Path(st.session_state["session_meta"]["session_path"])
+        video_save_dir = base_save_dir / "video"
         video_save_dir.mkdir(parents=True, exist_ok=True)
+        pose_save_dir = base_save_dir / "pose"
+        pose_save_dir.mkdir(parents=True, exist_ok=True)
     else:
-        video_save_dir = None
+        video_save_dir, pose_save_dir = None, None
 
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
@@ -74,7 +77,8 @@ def app():
     main_col, sub_col = st.columns(2)
 
     with main_col:
-        webrtc_ctx_main = gen_webrtc_ctx(key="front")
+        key: str = "front"
+        webrtc_ctx_main = gen_webrtc_ctx(key=key)
         st.session_state["started"] = webrtc_ctx_main.state.playing
 
         # NOTE: 動的に監視したい変数以外は以下に含める必要なし?
@@ -82,9 +86,11 @@ def app():
         if webrtc_ctx_main.video_processor:
             # cam_type: str = "front"
             webrtc_ctx_main.video_processor.display_settings = display_settings
-            # webrtc_ctx_main.video_processor.pose_save_path = (
-            #     str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
-            # )
+            webrtc_ctx_main.video_processor.rep_count_settings = rep_count_settings
+            webrtc_ctx_main.video_processor.pose_save_path = (
+                str(pose_save_dir / f"{key}.pkl") if (save_pose and (pose_save_dir is not None)) else None
+            )
+            # TODO: スケルトンの動作確認とデバッグ
             # webrtc_ctx_main.video_processor.skeleton_save_path = str(Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg")
             webrtc_ctx_main.video_processor.uploaded_pose_file = uploaded_pose_file
             webrtc_ctx_main.video_processor.reset_button = reset_button
@@ -93,7 +99,7 @@ def app():
             webrtc_ctx_main.video_processor.upper_threshold = upper_threshold
             webrtc_ctx_main.video_processor.lower_threshold = lower_threshold
             webrtc_ctx_main.video_processor.video_save_path = (
-                str(video_save_dir / "front.mp4") if (save_video and (video_save_dir is not None)) else None
+                str(video_save_dir / f"{key}.mp4") if (save_video and (video_save_dir is not None)) else None
             )
             if st.button("BODY"):
                 st.write(webrtc_ctx_main.video_processor.body_length)
@@ -101,14 +107,17 @@ def app():
 
     if use_two_cam:
         with sub_col:
-            webrtc_ctx_sub = gen_webrtc_ctx(key="side")
+            key: str = "side"
+            webrtc_ctx_sub = gen_webrtc_ctx(key=key)
 
             if webrtc_ctx_sub.video_processor:
                 # cam_type: str = "sub"
                 webrtc_ctx_sub.video_processor.display_settings = display_settings
-                # webrtc_ctx_sub.video_processor.pose_save_path = (
-                #     str(Path("recorded_poses") / f"{now_str}_{cam_type}_cam.pkl") if save_pose else None
-                # )
+                webrtc_ctx_sub.video_processor.rep_count_settings = rep_count_settings
+                webrtc_ctx_sub.video_processor.pose_save_path = (
+                    str(pose_save_dir / f"{key}.pkl") if (save_pose and (pose_save_dir is not None)) else None
+                )
+                # TODO: スケルトンの動作確認とデバッグ
                 # webrtc_ctx_sub.video_processor.skeleton_save_path = str(
                 #     Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg"
                 # )
@@ -120,7 +129,7 @@ def app():
                 webrtc_ctx_sub.video_processor.upper_threshold = upper_threshold
                 webrtc_ctx_sub.video_processor.lower_threshold = lower_threshold
                 webrtc_ctx_sub.video_processor.video_save_path = (
-                    str(video_save_dir / "side.mp4") if (save_video and (video_save_dir is not None)) else None
+                    str(video_save_dir / f"{key}.mp4") if (save_video and (video_save_dir is not None)) else None
                 )
 
 
