@@ -41,10 +41,12 @@ def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_fro
     return landmarks_3d
 
 
+# TODO: 自動再生中もグリグリできるようにする
 def visualize_pose3d(landmarks3d):
     number_frames = len(landmarks3d)
-    # ラベル
-    d_time = np.array([str(x) + "frame" for x in range(number_frames)], dtype="O")
+
+    # 時間軸
+    frame_axis = np.array([str(x) + "frame" for x in range(number_frames)], dtype="O")
 
     # スライダーの設定
     sliders = [
@@ -58,7 +60,7 @@ def visualize_pose3d(landmarks3d):
                     ],
                     label=risk_rate,
                 )
-                for risk_rate in d_time
+                for risk_rate in frame_axis
             ],  # ラベルを設定
             transition=dict(duration=0),
             x=0,
@@ -99,7 +101,7 @@ def visualize_pose3d(landmarks3d):
 
     # レイアウトの設定
     layout = go.Layout(
-        title="テストグラフ",
+        title="3D Pose Visualization",
         template="ggplot2",
         autosize=False,
         width=1000,
@@ -135,10 +137,10 @@ def visualize_pose3d(landmarks3d):
             mode="lines+markers",
             marker=dict(size=2.5, color="red"),
             line=dict(color="red", width=2),
-            text=d_time[frame],
+            text=frame_axis[frame],
         )
         data_k = pose3d_scatter
-        frames.append(dict(data=data_k, name=d_time[frame]))
+        frames.append(dict(data=data_k, name=frame_axis[frame]))
 
     fig = dict(data=data, layout=layout, frames=frames)
     st.plotly_chart(fig)
