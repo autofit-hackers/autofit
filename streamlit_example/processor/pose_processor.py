@@ -3,7 +3,6 @@ import json
 import os
 import pickle
 from multiprocessing import Process, Queue
-from turtle import st
 from typing import List, Union
 
 import av
