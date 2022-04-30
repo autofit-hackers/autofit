@@ -93,7 +93,7 @@ def app():
             webrtc_ctx_sub.video_processor.imgs_dir = f"{camera_info_path}/side/imgs"
 
     if save_frame and webrtc_ctx_main.video_processor and webrtc_ctx_sub.video_processor:
-        st.write("Frames captured")
+        st.write(str(webrtc_ctx_main.video_processor.capture_index + 1) + " Frames captured")
         os.makedirs(f"{webrtc_ctx_main.video_processor.imgs_dir}", exist_ok=True)
         os.makedirs(f"{webrtc_ctx_sub.video_processor.imgs_dir}", exist_ok=True)
         cv.imwrite(
@@ -106,6 +106,14 @@ def app():
         )
         webrtc_ctx_main.video_processor.capture_index += 1
         webrtc_ctx_main.video_processor.save_frame = False
+
+    with st.sidebar:
+        st.markdown("---")
+        camera_info_meta_json = st.file_uploader("camera_meta", "json")
+        if camera_info_meta_json:
+            camera_info_meta = json.load(camera_info_meta_json)
+            st.session_state["camera_info_meta"] = camera_info_meta
+            camera_info_path = camera_info_meta["camera_info_path"]
 
     if not camera_info_meta == {}:
         st.write(camera_info_meta)

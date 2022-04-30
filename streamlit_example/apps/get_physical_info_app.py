@@ -97,20 +97,20 @@ def app():
         webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
         st.session_state["started"] = webrtc_ctx_main.state.playing
         if webrtc_ctx_main.video_processor:
-            cam_type: str = "main"
+            cam_type: str = "front"
             webrtc_ctx_main.video_processor.display_settings = display_settings
-            webrtc_ctx_main.video_processor.skeleton_save_path = str(
-                Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg"
+            webrtc_ctx_main.video_processor.img_save_path = str(
+                Path(session_meta["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
             )
             webrtc_ctx_main.video_processor.capture_skeleton = capture_skeleton
 
     with sub_col:
         webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
         if webrtc_ctx_sub.video_processor:
-            cam_type: str = "sub"
+            cam_type: str = "side"
             webrtc_ctx_sub.video_processor.display_settings = display_settings
-            webrtc_ctx_sub.video_processor.skeleton_save_path = str(
-                Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg"
+            webrtc_ctx_sub.video_processor.img_save_path = str(
+                Path(session_meta["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
             )
             webrtc_ctx_sub.video_processor.capture_skeleton = capture_skeleton
 

@@ -74,7 +74,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         self.display_settings = display_settings
 
         self.capture_skeleton = capture_skeleton
-        self.skeleton_save_path: Union[str, None] = skeleton_save_path
+        self.img_save_path: Union[str, None] = skeleton_save_path
 
         self._pose_process.start()
 
@@ -121,9 +121,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
     def _calculate_foot_position(self, pose: PoseLandmarksObject):
         return (pose.landmark[27] + pose.landmark[28]) / 2
 
-    def _caluculate_slkelton():
-        print("hello skeleton")
-
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
         self._pose_process.join(timeout=10)
@@ -142,9 +139,10 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
 
         # 画像の保存
         # TODO: capture skeleton の rename or jsonの保存までするように関数書き換え
-        if self.capture_skeleton and self.skeleton_save_path:
-            print(self.skeleton_save_path)
-            cv.imwrite(self.skeleton_save_path, frame)
+        if self.capture_skeleton and self.img_save_path:
+            print(self.img_save_path)
+            os.makedirs(os.path.dirname(self.img_save_path), exist_ok=True)
+            cv.imwrite(self.img_save_path, frame)
             self.capture_skeleton = False
 
         # 検出実施 #############################################################
@@ -153,12 +151,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
 
         if result_pose:
             self.result_pose = result_pose
-
-            if self.capture_skeleton:
-                # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
-                self._save_bone_info(result_pose)
-                # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
-                self.capture_skeleton = False
 
             # Poseの描画 ################################################################
             if result_pose.landmark is not None:
