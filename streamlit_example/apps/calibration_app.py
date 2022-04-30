@@ -65,7 +65,13 @@ def app():
         camera_info_meta["front_rmse"] = front_rmse
         camera_info_meta["side_rmse"] = side_rmse
         camera_info_meta["stereo_rmse"] = stereo_rmse
+        print(camera_info_meta)
+        print("session")
         st.session_state["camera_info_meta"] = camera_info_meta
+        print("session_end")
+        print(camera_info_meta)
+        print("state↓")
+        print(st.session_state["camera_info_meta"])
 
     def processor_factory():
         return CalibrationProcessor()
@@ -117,12 +123,14 @@ def app():
     with st.sidebar:
         st.markdown("---")
         camera_info_meta_json = st.file_uploader("camera_meta", "json")
-        if camera_info_meta_json:
+        if camera_info_meta_json and camera_info_meta == {}:
             camera_info_meta = json.load(camera_info_meta_json)
             st.session_state["camera_info_meta"] = camera_info_meta
             camera_info_path = camera_info_meta["camera_info_path"]
 
     if not camera_info_meta == {}:
+        print("called")
+        print(camera_info_meta)
         st.write(camera_info_meta)
 
 
