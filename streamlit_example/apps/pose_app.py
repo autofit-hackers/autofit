@@ -54,7 +54,7 @@ def app():
                 min_tracking_confidence=min_tracking_confidence,
             )
 
-        with st.expander("rep counter settings"):
+        with st.expander("Rep counter settings"):
             count_rep: bool = st.checkbox("Count rep", value=True)
             upper_threshold = st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01)
             lower_threshold = st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
