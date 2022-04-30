@@ -25,9 +25,10 @@ def app():
     with st.sidebar:
         front_device_name = st.selectbox("front camera name", ("A", "B"))
         side_device_name = st.selectbox("side camera name", ("A", "B"))
-        board_rows = st.number_input("Row number", value=5)
-        board_columns = st.number_input("Column number", value=7)
-        square_size = st.number_input("Square size", value=7.0)
+        with st.expander("Board Settings"):
+            board_rows = st.number_input("Row number", value=5)
+            board_columns = st.number_input("Column number", value=7)
+            square_size = st.number_input("Square size", value=7.0)
         make_dir = st.button("make dir")
         save_frame = st.button("Save frame", disabled=(camera_info_meta == {}))
         calculate_cam_mtx = st.button("Start Calibrate", disabled=(camera_info_meta == {}))
