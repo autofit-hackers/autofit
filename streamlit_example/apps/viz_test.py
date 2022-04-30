@@ -117,18 +117,27 @@ def visualize_pose3d(landmarks3d):
         sliders=sliders,  # 上で設定したスライダーを設置
     )
 
+    data = go.Scatter3d(
+        x=landmarks3d[0][:, 0],
+        y=landmarks3d[0][:, 1],
+        z=landmarks3d[0][:, 2],
+        mode="lines+markers",
+        marker=dict(size=2.5, color="red"),
+        line=dict(color="red", width=2),
+    )
+
     frames = []
     for frame in range(number_frames):
         pose3d_scatter = go.Scatter3d(
-            x=landmarks3d[:frame][0],
-            y=landmarks3d[:frame][1],
-            z=landmarks3d[:frame][2],
+            x=landmarks3d[frame][:, 0],
+            y=landmarks3d[frame][:, 1],
+            z=landmarks3d[frame][:, 2],
             mode="lines+markers",
             marker=dict(size=2.5, color="red"),
             line=dict(color="red", width=2),
             text=d_time[frame],
         )
-        data_k = [pose3d_scatter]
+        data_k = pose3d_scatter
         frames.append(dict(data=data_k, name=d_time[frame]))
 
     fig = dict(data=data, layout=layout, frames=frames)
