@@ -139,15 +139,12 @@ def app():
     plt.style.use("seaborn")
 
     with st.sidebar:
-        session_meta_file = st.file_uploader("Select Session")
-        start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_meta_file)
+        pose_file = st.file_uploader("Select Pose File")
+        start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not pose_file)
 
-    if start_reconstruction and session_meta_file:
-        session_meta = json.load(session_meta_file)
-        camera_info_path = Path(session_meta["camera_info_path"])
-        with open(Path(f"{camera_info_path}/front.pickle"), "rb") as f:
-            poses_front = pickle.load(f)
-            landmarks_3d = [pose.landmark for pose in poses_front]
+    if start_reconstruction and pose_file:
+        poses_3d = pickle.load(pose_file)
+        landmarks_3d = [pose.landmark for pose in poses_3d]
 
         visualize_pose3d(landmarks_3d)
 
