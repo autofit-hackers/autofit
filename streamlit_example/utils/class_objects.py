@@ -29,19 +29,17 @@ class DisplaySettings:
 
 
 @dataclass
-class RepCntSettings:
-    do_rep_cnt: bool
+class RepCountSettings:
+    do_count_rep: bool
+    upper_thresh: float
+    lower_thresh: float
 
+
+@dataclass
 class SaveSettings:
-    def __init__(
-        self,
-        video_save_path: Union[str, None] = None,
-        pose_save_path: Union[str, None] = None,
-        skeleton_save_path: Union[str, None] = None,
-    ):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
+    video_save_path: Union[str, None] = None
+    pose_save_path: Union[str, None] = None
+    skeleton_save_path: Union[str, None] = None
 
 
 class UploadSettings:
