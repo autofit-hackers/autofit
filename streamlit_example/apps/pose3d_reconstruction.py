@@ -140,7 +140,7 @@ def app():
 
     with st.sidebar:
         session_meta_file = st.file_uploader("Select Session")
-        start_reconstruction = st.button("Start 3D Reconstruction", disabled=not session_meta_file)
+        start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_meta_file)
 
     if start_reconstruction and session_meta_file:
         session_meta = json.load(session_meta_file)
@@ -158,6 +158,7 @@ def app():
         if os.path.isfile(Path(f"{camera_info_path}/reconstructed3d.pickle")):
             with open(Path(f"{camera_info_path}/reconstructed3d.pickle"), "rb") as f:
                 landmarks3d = pickle.load(f)
+            st.write("3D Pose already exists")
         else:
             landmarks3d = pose3d_reconstruction(
                 landmarks_front=landmarks_front,
@@ -167,6 +168,7 @@ def app():
             )
             with open(Path(f"{camera_info_path}/reconstructed3d.pickle"), "wb") as f:
                 pickle.dump(landmarks3d, f)
+            st.write("3D Pose reconstruction finished!")
 
         visualize_pose3d(landmarks3d)
 
