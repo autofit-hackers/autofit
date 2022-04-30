@@ -11,8 +11,8 @@ from scipy import linalg
 
 @dataclass
 class CalibConfig:
-    board_shape: Tuple[int, int] = (6, 9)
-    world_scaling: float = 1.0
+    board_shape: Tuple[int, int] = (7, 10)
+    world_scaling: float = 3.0
     # criteria used by checkerboard pattern detector.
     # Change this if the code can't find the checkerboard
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -48,7 +48,7 @@ def load_video_frames(video_path: str) -> Union[List[cv.Mat], None]:
     return frames
 
 
-def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_dir: str):
+def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_dir: str) -> float:
     imgs_dir = f"{base_dir}/{camera_state.name}/imgs"
     print(imgs_dir)
     rows = calib_config.board_shape[0]
@@ -93,11 +93,13 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
             # opencv can attempt to improve the checkerboard coordinates
             corners = cv.cornerSubPix(gray, corners, conv_size, (-1, -1), criteria)
             cv.drawChessboardCorners(frame, (rows, columns), corners, ret)
-            cv.imshow("img", frame)
             k = cv.waitKey(500)
 
             objpoints.append(objp)
             imgpoints.append(corners)
+
+    assert len(objpoints) > 0
+    assert len(imgpoints) > 0
 
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, (width, height), None, None)
     print("rmse:", ret)
@@ -109,12 +111,12 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     np.savetxt(f"{base_dir}/{camera_state.name}/mtx.dat", mtx)
     np.savetxt(f"{base_dir}/{camera_state.name}/dist.dat", dist)
 
-    return
+    return ret
 
 
 def stereo_calibrate(
     calib_config: CalibConfig, front_camera_state: CameraState, side_camera_state: CameraState, base_dir: str
-):
+) -> float:
     images_dir_front = f"{base_dir}/{front_camera_state.name}/imgs/"
     images_dir_side = f"{base_dir}/{side_camera_state.name}/imgs/"
 
@@ -162,10 +164,8 @@ def stereo_calibrate(
             corners2 = cv.cornerSubPix(gray2, corners2, (11, 11), (-1, -1), criteria)
 
             cv.drawChessboardCorners(frame1, (rows, columns), corners1, c_ret1)
-            cv.imshow("img", frame1)
 
             cv.drawChessboardCorners(frame2, (rows, columns), corners2, c_ret2)
-            cv.imshow("img2", frame2)
             k = cv.waitKey(500)
 
             objpoints.append(objp)
@@ -198,7 +198,7 @@ def stereo_calibrate(
     np.savetxt(f"{base_dir}/{side_camera_state.name}/rot.dat", R)
     np.savetxt(f"{base_dir}/{side_camera_state.name}/trans.dat", T)
 
-    return
+    return ret
 
 
 def _make_homogeneous_rep_matrix(R, t):
