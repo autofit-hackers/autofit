@@ -21,28 +21,28 @@ from utils import DLT, PoseLandmarksObject, get_projection_matrix
 
 def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):
     assert len(landmarks_front) == len(landmarks_side), "len of landmarks differs among cameras"
-    landmarks_3d = []
+    landmarks3d = []
     for landmark_front, landmark_side in zip(landmarks_front, landmarks_side):
-        landmark_3d = []
+        landmark3d = []
         for uv1, uv2 in zip(landmark_front, landmark_side):
             if uv1[0] == -1 or uv2[0] == -1:
                 _p3d = [-1, -1, -1]
             else:
                 _p3d = DLT(projection_matrix_front, projection_matrix_side, uv1, uv2)
-            landmark_3d.append(_p3d)
+            landmark3d.append(_p3d)
 
-        landmark_3d = np.array(landmark_3d)
-        landmark_3d = (
-            landmark_3d - (landmark_3d[10, :] + landmark_3d[11, :]) / 2 + [0, 0, 50]
+        landmark3d = np.array(landmark3d)
+        landmark3d = (
+            landmark3d - (landmark3d[10, :] + landmark3d[11, :]) / 2 + [0, 0, 50]
         )  # set the center of feet to [0, 0, 50]
-        landmarks_3d.append(landmark_3d)
+        landmarks3d.append(landmark3d)
 
-    assert len(landmarks_3d) == len(landmarks_front), "len of landmarks3d differs from 2d"
-    return landmarks_3d
+    assert len(landmarks3d) == len(landmarks_front), "len of landmarks3d differs from 2d"
+    return landmarks3d
 
 
-def visualize_pose3d(landmarks_3d):
-    number_frames = len(landmarks_3d)
+def visualize_pose3d(landmarks3d):
+    number_frames = len(landmarks3d)
     # ラベル
     d_time = np.array([str(x) + "frame" for x in range(number_frames)], dtype="O")
 
@@ -120,9 +120,9 @@ def visualize_pose3d(landmarks_3d):
     frames = []
     for frame in range(number_frames):
         pose3d_scatter = go.Scatter3d(
-            x=landmarks_3d[:frame][0],
-            y=landmarks_3d[:frame][1],
-            z=landmarks_3d[:frame][2],
+            x=landmarks3d[:frame][0],
+            y=landmarks3d[:frame][1],
+            z=landmarks3d[:frame][2],
             mode="lines+markers",
             marker=dict(size=2.5, color="red"),
             line=dict(color="red", width=2),
@@ -147,28 +147,7 @@ def app():
         camera_info_path = Path(session_meta["camera_info_path"])
         with open(Path(f"{camera_info_path}/front.pickle"), "rb") as f:
             poses_front = pickle.load(f)
-            landmarks_front = [pose.landmark for pose in poses_front]
-        with open(Path(f"{camera_info_path}/side.pickle"), "rb") as f:
-            poses_side = pickle.load(f)
-            landmarks_side = [pose.landmark for pose in poses_side]
-
-        projection_matrix_front = get_projection_matrix(camera_info_path, "front")
-        projection_matrix_side = get_projection_matrix(camera_info_path, "side")
-
-        if os.path.isfile(Path(f"{camera_info_path}/reconstructed3d.pickle")):
-            with open(Path(f"{camera_info_path}/reconstructed3d.pickle"), "rb") as f:
-                landmarks_3d = pickle.load(f)
-            st.write("3D Pose already exists")
-        else:
-            landmarks_3d = pose3d_reconstruction(
-                landmarks_front=landmarks_front,
-                landmarks_side=landmarks_side,
-                projection_matrix_front=projection_matrix_front,
-                projection_matrix_side=projection_matrix_side,
-            )
-            with open(Path(f"{camera_info_path}/reconstructed3d.pickle"), "wb") as f:
-                pickle.dump(landmarks_3d, f)
-            st.write("3D Pose reconstruction finished!")
+            landmarks_3d = [pose.landmark for pose in poses_front]
 
         visualize_pose3d(landmarks_3d)
 
