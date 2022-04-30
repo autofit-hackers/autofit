@@ -15,9 +15,6 @@ from utils.class_objects import DisplaySettings, ModelSettings
 
 
 def app():
-    calib_config = CalibConfig()
-    front_camera_state = CameraState(name="front")
-    side_camera_state = CameraState(name="side")
     if "camera_info_meta" in st.session_state:
         camera_info_meta = st.session_state["camera_info_meta"]
         camera_info_path = camera_info_meta["camera_info_path"]
@@ -28,6 +25,9 @@ def app():
     with st.sidebar:
         front_device_name = st.selectbox("front camera name", ("A", "B"))
         side_device_name = st.selectbox("side camera name", ("A", "B"))
+        board_rows = st.number_input("Row number", value=5)
+        board_columns = st.number_input("Column number", value=7)
+        square_size = st.number_input("Square size", value=7.0)
         make_dir = st.button("make dir")
         save_frame = st.button("Save frame", disabled=(camera_info_meta == {}))
         calculate_cam_mtx = st.button("Start Calibrate", disabled=(camera_info_meta == {}))
@@ -49,6 +49,9 @@ def app():
 
     if calculate_cam_mtx:
         st.write("Caluculating Camera Matrix...")
+        calib_config = CalibConfig(board_shape=(board_rows, board_columns), square_size=square_size)  # type: ignore
+        front_camera_state = CameraState(name="front")
+        side_camera_state = CameraState(name="side")
         front_rmse: float = single_calibrate(
             calib_config=calib_config, camera_state=front_camera_state, base_dir=camera_info_path
         )
