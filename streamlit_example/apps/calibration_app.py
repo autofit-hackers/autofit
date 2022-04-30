@@ -1,8 +1,6 @@
 import datetime
 import json
 import os
-import time
-from io import StringIO
 from pathlib import Path
 from typing import List, Union
 
@@ -89,7 +87,6 @@ def app():
         st.session_state["started"] = webrtc_ctx_main.state.playing
 
         if webrtc_ctx_main.video_processor:
-            cam_type: str = "main"
             webrtc_ctx_main.video_processor.save_frame = save_frame
             webrtc_ctx_main.video_processor.imgs_dir = f"{camera_info_path}/front/imgs"
 
@@ -97,7 +94,6 @@ def app():
         webrtc_ctx_sub = gen_webrtc_ctx(key="sub_cam")
 
         if webrtc_ctx_sub.video_processor:
-            cam_type: str = "sub"
             webrtc_ctx_sub.video_processor.save_frame = save_frame
             webrtc_ctx_sub.video_processor.imgs_dir = f"{camera_info_path}/side/imgs"
 
