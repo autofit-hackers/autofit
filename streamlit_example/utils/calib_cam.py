@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Any, List, NamedTuple, Tuple, Union
 
@@ -11,8 +12,8 @@ from scipy import linalg
 
 @dataclass
 class CalibConfig:
-    board_shape: Tuple[int, int] = (7, 10)
-    world_scaling: float = 3.0
+    board_shape: Tuple[int, int] = (5, 7)
+    square_size: float = 7.0
     # criteria used by checkerboard pattern detector.
     # Change this if the code can't find the checkerboard
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -53,7 +54,7 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     print(imgs_dir)
     rows = calib_config.board_shape[0]
     columns = calib_config.board_shape[1]
-    world_scaling = calib_config.world_scaling
+    square_size = calib_config.square_size
     criteria = calib_config.criteria
 
     images_names = sorted(glob.glob(f"{imgs_dir}/*.png"))
@@ -67,7 +68,7 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     # coordinates of squares in the checkerboard world space
     objp = np.zeros((rows * columns, 3), np.float32)
     objp[:, :2] = np.mgrid[0:rows, 0:columns].T.reshape(-1, 2)
-    objp = world_scaling * objp
+    objp = square_size * objp
 
     # frame dimensions. Frames should be the same size.
     width = images[0].shape[1]
@@ -117,30 +118,30 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
 def stereo_calibrate(
     calib_config: CalibConfig, front_camera_state: CameraState, side_camera_state: CameraState, base_dir: str
 ) -> float:
-    images_dir_front = f"{base_dir}/{front_camera_state.name}/imgs/"
-    images_dir_side = f"{base_dir}/{side_camera_state.name}/imgs/"
+    images_dir_front = Path(f"{base_dir}/{front_camera_state.name}/imgs")
+    images_dir_side = Path(f"{base_dir}/{side_camera_state.name}/imgs")
 
     rows = calib_config.board_shape[0]
     columns = calib_config.board_shape[1]
-    world_scaling = calib_config.world_scaling
+    square_size = calib_config.square_size
     criteria = calib_config.criteria
 
-    c1_images_names = sorted(glob.glob(f"{images_dir_front}/*.png"))
-    c2_images_names = sorted(glob.glob(f"{images_dir_side}/*.png"))
+    c1_images_names = sorted(list(images_dir_front.glob("*.png")))
+    c2_images_names = sorted(list(images_dir_side.glob("*.png")))
 
     c1_images = []
     c2_images = []
     for im1, im2 in zip(c1_images_names, c2_images_names):
-        _im = cv.imread(im1, 1)
+        _im = cv.imread(str(im1), 1)
         c1_images.append(_im)
 
-        _im = cv.imread(im2, 1)
+        _im = cv.imread(str(im2), 1)
         c2_images.append(_im)
 
     # coordinates of squares in the checkerboard world space
     objp = np.zeros((rows * columns, 3), np.float32)
     objp[:, :2] = np.mgrid[0:rows, 0:columns].T.reshape(-1, 2)
-    objp = world_scaling * objp
+    objp = square_size * objp
 
     # frame dimensions. Frames should be the same size.
     width = c1_images[0].shape[1]
@@ -158,6 +159,8 @@ def stereo_calibrate(
         gray2 = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
         c_ret1, corners1 = cv.findChessboardCorners(gray1, (rows, columns), None)
         c_ret2, corners2 = cv.findChessboardCorners(gray2, (rows, columns), None)
+        print("c_ret1", c_ret1)
+        print("c_ret2", c_ret2)
 
         if c_ret1 == True and c_ret2 == True:
             corners1 = cv.cornerSubPix(gray1, corners1, (11, 11), (-1, -1), criteria)
@@ -171,6 +174,9 @@ def stereo_calibrate(
             objpoints.append(objp)
             imgpoints_left.append(corners1)
             imgpoints_right.append(corners2)
+
+    assert len(imgpoints_left) > 0
+    assert len(imgpoints_right) > 0
 
     stereocalibration_flags = cv.CALIB_FIX_INTRINSIC
     mtx_front = front_camera_state.matrix
@@ -244,13 +250,13 @@ def read_rotation_translation(camera_id, savefolder="camera_parameters/"):
     return rot, trans
 
 
-def _convert_to_homogeneous(pts):
-    pts = np.array(pts)
-    if len(pts.shape) > 1:
-        w = np.ones((pts.shape[0], 1))
-        return np.concatenate([pts, w], axis=1)
-    else:
-        return np.concatenate([pts, [1]], axis=0)
+# def _convert_to_homogeneous(pts):
+#     pts = np.array(pts)
+#     if len(pts.shape) > 1:
+#         w = np.ones((pts.shape[0], 1))
+#         return np.concatenate([pts, w], axis=1)
+#     else:
+#         return np.concatenate([pts, [1]], axis=0)
 
 
 def get_projection_matrix(camera_id):
