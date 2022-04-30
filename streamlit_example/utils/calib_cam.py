@@ -13,7 +13,7 @@ from scipy import linalg
 @dataclass
 class CalibConfig:
     board_shape: Tuple[int, int] = (5, 7)
-    world_scaling: float = 7.0
+    square_size: float = 7.0
     # criteria used by checkerboard pattern detector.
     # Change this if the code can't find the checkerboard
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)

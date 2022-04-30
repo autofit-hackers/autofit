@@ -1,5 +1,4 @@
 from curses import meta
-import json
 import time
 from pathlib import Path
 from tkinter.tix import Tree
