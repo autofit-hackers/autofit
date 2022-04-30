@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.class_objects import ModelSettings, DisplaySettings
+from utils.class_objects import ModelSettings, DisplaySettings, RepCountSettings
 
 
 def model_setting_ui() -> ModelSettings:
@@ -19,22 +19,26 @@ def model_setting_ui() -> ModelSettings:
             value=0.5,
             step=0.01,
         )
-        model_settings = ModelSettings(
-            model_complexity=model_complexity,
-            min_detection_confidence=min_detection_confidence,
-            min_tracking_confidence=min_tracking_confidence,
-        )
-    return model_settings
+    return ModelSettings(
+        model_complexity=model_complexity,
+        min_detection_confidence=min_detection_confidence,
+        min_tracking_confidence=min_tracking_confidence,
+    )
 
 
 def display_setting_ui() -> DisplaySettings:
     with st.expander("Display settings"):
-        rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
-        show_fps = st.checkbox("Show FPS", value=True)
-        show_2d = st.checkbox("Show 2D", value=True)
-        display_settings = DisplaySettings(
-            rotate_webcam_input=rotate_webcam_input,
-            show_2d=show_2d,
-            show_fps=show_fps,
+        return DisplaySettings(
+            rotate_webcam_input=st.checkbox("Rotate webcam input", value=False),
+            show_2d=st.checkbox("Show FPS", value=True),
+            show_fps=st.checkbox("Show 2D", value=True),
         )
-    return display_settings
+
+
+def rep_count_setting_ui() -> RepCountSettings:
+    with st.expander("Rep counter settings"):
+        return RepCountSettings(
+            do_count_rep=st.checkbox("Count rep", value=True),
+            upper_thresh=st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01),
+            lower_thresh=st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01),
+        )

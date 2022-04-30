@@ -1,16 +1,12 @@
 from curses import meta
-import time
 from pathlib import Path
-from typing import List, Union, Callable
+from typing import Dict, Any
 
 import streamlit as st
 from processor import PoseProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
-from ui_components.setting_ui import model_setting_ui, display_setting_ui
+from ui_components.setting_ui import model_setting_ui, display_setting_ui, rep_count_setting_ui
 from ui_components.session import load_session_meta_data
-
-from utils.class_objects import DisplaySettings, ModelSettings, SaveSettings
-from utils import gen_in_recorder_factory, video_recorder
 
 
 def app():
@@ -31,12 +27,7 @@ def app():
             save_pose = st.checkbox("Save Pose", value=False)
 
         model_settings = model_setting_ui()
-
-        with st.expander("Rep counter settings"):
-            count_rep: bool = st.checkbox("Count rep", value=True)
-            upper_threshold = st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01)
-            lower_threshold = st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
-
+        rep_count_settings = rep_count_setting_ui()
         display_settings = display_setting_ui()
 
         if st.button("RELOAD"):
@@ -66,11 +57,9 @@ def app():
             video_processor_factory=lambda: PoseProcessor(
                 model_settings=model_settings,
                 display_settings=display_settings,
+                rep_count_settings=rep_count_settings,
                 uploaded_pose_file=uploaded_pose_file,
-                count_rep=count_rep,
                 reload_pose=reload_pose,
-                upper_threshold=upper_threshold,
-                lower_threshold=lower_threshold,
             ),
         )
 
@@ -84,7 +73,6 @@ def app():
         # NOTE: 動的に監視したい変数以外は以下に含める必要なし?
         # NOTE: mainとsubをカメラ構造体or辞書にまとめる?
         if webrtc_ctx_main.video_processor:
-            # cam_type: str = "front"
             webrtc_ctx_main.video_processor.display_settings = display_settings
             webrtc_ctx_main.video_processor.rep_count_settings = rep_count_settings
             webrtc_ctx_main.video_processor.pose_save_path = (
@@ -94,10 +82,7 @@ def app():
             # webrtc_ctx_main.video_processor.skeleton_save_path = str(Path("skeletons") / f"{now_str}_{cam_type}_cam.jpg")
             webrtc_ctx_main.video_processor.uploaded_pose_file = uploaded_pose_file
             webrtc_ctx_main.video_processor.reset_button = reset_button
-            webrtc_ctx_main.video_processor.count_rep = count_rep
             webrtc_ctx_main.video_processor.reload_pose = reload_pose
-            webrtc_ctx_main.video_processor.upper_threshold = upper_threshold
-            webrtc_ctx_main.video_processor.lower_threshold = lower_threshold
             webrtc_ctx_main.video_processor.video_save_path = (
                 str(video_save_dir / f"{key}.mp4") if (save_video and (video_save_dir is not None)) else None
             )
@@ -111,7 +96,6 @@ def app():
             webrtc_ctx_sub = gen_webrtc_ctx(key=key)
 
             if webrtc_ctx_sub.video_processor:
-                # cam_type: str = "sub"
                 webrtc_ctx_sub.video_processor.display_settings = display_settings
                 webrtc_ctx_sub.video_processor.rep_count_settings = rep_count_settings
                 webrtc_ctx_sub.video_processor.pose_save_path = (
@@ -123,11 +107,8 @@ def app():
                 # )
                 # TODO: カメラごとに異なる uploaded_pose を自動設定する
                 webrtc_ctx_sub.video_processor.uploaded_pose_file = uploaded_pose_file
-                webrtc_ctx_sub.video_processor.count_rep = count_rep
                 webrtc_ctx_sub.video_processor.reload_pose = reload_pose
                 webrtc_ctx_sub.video_processor.reset_button = reset_button
-                webrtc_ctx_sub.video_processor.upper_threshold = upper_threshold
-                webrtc_ctx_sub.video_processor.lower_threshold = lower_threshold
                 webrtc_ctx_sub.video_processor.video_save_path = (
                     str(video_save_dir / f"{key}.mp4") if (save_video and (video_save_dir is not None)) else None
                 )

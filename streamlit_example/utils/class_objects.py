@@ -29,8 +29,10 @@ class DisplaySettings:
 
 
 @dataclass
-class RepCntSettings:
-    do_rep_cnt: bool
+class RepCountSettings:
+    do_count_rep: bool
+    upper_thresh: float
+    lower_thresh: float
 
 
 @dataclass
