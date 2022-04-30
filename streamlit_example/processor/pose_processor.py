@@ -59,6 +59,7 @@ class PoseProcessor(VideoProcessorBase):
         count_rep: bool,
         reload_pose: bool,
         uploaded_pose_file=None,
+        video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skeleton_save_path: Union[str, None] = None,
     ) -> None:
@@ -88,12 +89,14 @@ class PoseProcessor(VideoProcessorBase):
         self.initial_body_height = 0
         self.reload_pose = reload_pose
 
+        self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_mem: List[PoseLandmarksObject] = []
 
         self.skeleton_save_path: Union[str, None] = skeleton_save_path
+        self.capture_skeleton: bool = False
 
         self.key_frame_draw_count = 0
 
@@ -255,8 +258,21 @@ class PoseProcessor(VideoProcessorBase):
         self._in_queue.put_nowait(_SENTINEL_)
         self._pose_process.join(timeout=10)
 
+    def _create_video_writer(self, save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
+        """Save video as mp4."""
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
+        video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
+        return video
+
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._FpsCalculator.get()
+
+        # 動画の保存（初期化）
+        if (self.video_save_path is not None) and (self.video_writer is None):
+            # video_writer の初期化
+            # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
+            self.video_writer = self._create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
 
         # カメラキャプチャ #####################################################
         frame = frame.to_ndarray(format="bgr24")
@@ -273,6 +289,12 @@ class PoseProcessor(VideoProcessorBase):
             print(self.skeleton_save_path)
             cv.imwrite(self.skeleton_save_path, frame)
             self.capture_skeleton = False
+
+        # 動画の保存（フレームの追加）
+        if self.video_save_path is not None:
+            assert self.video_writer is not None
+            # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
+            self.video_writer.write(frame)
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -370,4 +392,6 @@ class PoseProcessor(VideoProcessorBase):
         print("Stop the inference process...")
         self._stop_pose_process()
         self._save_pose()
-        print("Stopped!")
+        if self.video_writer is not None:
+            print("Stop writing video process...")
+            self.video_writer.release()
