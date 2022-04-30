@@ -130,4 +130,6 @@ dmypy.json
 *.pkl
 
 data/
-!data/camera_info/2022-04-30-15-31/
+*.swp
+*.swn
+*.swn

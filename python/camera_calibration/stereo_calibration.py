@@ -7,9 +7,9 @@ import numpy as np
 # Change this if the code can't find the checkerboard
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-rows = 6  # number of checkerboard rows.
-columns = 9  # number of checkerboard columns.
-world_scaling = 1  # change this to the real world square size. Or not.
+rows = 7  # number of checkerboard rows.
+columns = 10  # number of checkerboard columns.
+world_scaling = 5  # change this to the real world square size. Or not.
 
 
 def calibrate_camera(images_folder):
@@ -39,6 +39,8 @@ def calibrate_camera(images_folder):
 
         # find the checkerboard
         ret, corners = cv.findChessboardCorners(gray, (rows, columns), None)
+
+        print(ret)
 
         if ret == True:
 
@@ -145,10 +147,12 @@ def stereo_calibrate(mtx_front, dist_front, mtx_side, dist_side, img_dir_front, 
 #     np.savetxt(f'../bodypose3d/camera_parameters/c{camera_id}_trans.dat', trans)
 
 
-mtx_front, dist_front = calibrate_camera(images_folder="front_img/*")
-mtx_side, dist_side = calibrate_camera(images_folder="side_img/*")
+front_folder = r"/Users/kondounagi/Library/Mobile Documents/com~apple~CloudDocs/work/posefit/streamlit_example/data/camera_info/2022-04-30-16-30/front/imgs/*"
+side_folder = r"/Users/kondounagi/Library/Mobile Documents/com~apple~CloudDocs/work/posefit/streamlit_example/data/camera_info/2022-04-30-16-30/side/imgs/*"
+mtx_front, dist_front = calibrate_camera(images_folder=front_folder)
+mtx_side, dist_side = calibrate_camera(images_folder=side_folder)
 R, T = stereo_calibrate(
-    mtx_front, dist_front, mtx_side, dist_side, img_dir_front="front_img/*", img_dir_side="side_img/*"
+    mtx_front, dist_front, mtx_side, dist_side, img_dir_front=front_folder, img_dir_side=side_folder
 )
 
 print(R)
