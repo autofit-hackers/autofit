@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Union
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import plotly.figure_factory as ff
 import numpy as np
 from pylibsrtp import Session
 from requests import session
@@ -120,11 +121,11 @@ def app():
         Z = webrtc_ctx_main.video_processor.result_pose.landmark[:, 2]
         # グラフの枠を作成
         fig = plt.figure()
-        ax = Axes3D(fig)
+        ax = fig.add_subplot(projection="3d")
         # X,Y,Z軸にラベルを設定
         ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.set_zlabel("Z")
+        ax.set_ylabel("Z")
+        ax.set_zlabel("Y")
         # .plotで描画
         ax.plot(X, Z, Y, marker="o", linestyle="None")
         # 最後に.show()を書いてグラフ表示
@@ -138,6 +139,22 @@ def app():
         ax.scatter(X, Y, c="b")
         # 表示する
         st.pyplot(fig2)
+
+    # Add histogram data
+    x1 = np.random.randn(200) - 2
+    x2 = np.random.randn(200)
+    x3 = np.random.randn(200) + 2
+
+    # Group data together
+    hist_data = [x1, x2, x3]
+
+    group_labels = ["Group 1", "Group 2", "Group 3"]
+
+    # Create distplot with custom bin_size
+    fig = ff.create_distplot(hist_data, group_labels, bin_size=[0.1, 0.25, 0.5])
+
+    # Plot!
+    st.plotly_chart(fig, use_container_width=True)
 
 
 if __name__ == "__main__":
