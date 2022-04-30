@@ -45,17 +45,6 @@ def app():
         else:
             reload_pose = False
 
-    def processor_factory():
-        return PoseProcessor(
-            model_settings=model_settings,
-            display_settings=display_settings,
-            uploaded_pose_file=uploaded_pose_file,
-            count_rep=count_rep,
-            reload_pose=reload_pose,
-            upper_threshold=upper_threshold,
-            lower_threshold=lower_threshold,
-        )
-
     if session_meta_exists:
         video_save_dir = Path(st.session_state["session_meta"]["session_path"]) / "video"
         video_save_dir.mkdir(parents=True, exist_ok=True)
@@ -71,7 +60,15 @@ def app():
                 rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
                 media_stream_constraints={"video": True, "audio": False},
             ),
-            video_processor_factory=processor_factory,
+            video_processor_factory=lambda: PoseProcessor(
+                model_settings=model_settings,
+                display_settings=display_settings,
+                uploaded_pose_file=uploaded_pose_file,
+                count_rep=count_rep,
+                reload_pose=reload_pose,
+                upper_threshold=upper_threshold,
+                lower_threshold=lower_threshold,
+            ),
         )
 
     main_col, sub_col = st.columns(2)
