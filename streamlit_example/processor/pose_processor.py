@@ -120,10 +120,10 @@ class PoseProcessor(VideoProcessorBase):
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def _save_pose(self):
-        if self.pose_save_path is not None:
-            print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
-            os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
-            self._save_estimated_pose(self.pose_mem, self.pose_save_path)
+        assert self.pose_save_path is not None
+        print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
+        os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
+        self._save_estimated_pose(self.pose_mem, self.pose_save_path)
 
     def _load_pose(self, uploaded_pose_file):
         with open(f"recorded_poses/{uploaded_pose_file.name}", "rb") as handle:
@@ -410,7 +410,8 @@ class PoseProcessor(VideoProcessorBase):
     def __del__(self):
         print("Stop the inference process...")
         self._stop_pose_process()
-        self._save_pose()
+        if len(self.pose_mem) > 0:
+            self._save_pose()
         if self.video_writer is not None:
             print("Stop writing video process...")
             self.video_writer.release()

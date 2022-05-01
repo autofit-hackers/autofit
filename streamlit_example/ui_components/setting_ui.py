@@ -48,20 +48,22 @@ def rep_count_setting_ui() -> RepCountSettings:
 
 def _stateful_bool_button(key: str) -> bool:
     _state: bool
-    _state = st.button("Start", key=key)
-    _state = not st.button("Stop", key="reverse_" + key)
+    left_col, right_col = st.columns([1, 1])
+    with left_col:
+        _state = st.button("Start", key=key)
+    with right_col:
+        _state = not st.button("Stop", key="reverse_" + key)
     return _state
 
 
 def save_state_ui() -> SaveStates:
-    st.markdown("### Video saving")
-    is_saving_video = _stateful_bool_button("is_saving_video_button")
-    print("is_saving_video", is_saving_video)
+    st.markdown("## Save")
+    do_save_video = st.checkbox("Video", key="do_save_video_button")
+    do_save_pose = st.checkbox("Pose", key="do_save_pose_button")
 
-    st.markdown("### Pose saving")
-    is_saving_pose = _stateful_bool_button("is_saving_pose_button")
+    is_saving = _stateful_bool_button("is_saving_button")
 
-    return SaveStates(is_saving_video=is_saving_video, is_saving_pose=is_saving_pose)
+    return SaveStates(is_saving_video=is_saving and do_save_video, is_saving_pose=is_saving and do_save_pose)
 
 
 # TODO: use ui component in pose_app
