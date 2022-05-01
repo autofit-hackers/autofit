@@ -350,10 +350,16 @@ class PoseProcessor(VideoProcessorBase):
             # TODO: realtime coaching の動作確認とデバッグ
             # print(self._realtime_coaching(results))
 
-            # pose の保存 ################################################################
-            if self.pose_save_path is not None:
+            # pose の保存 (pose_mem への追加) ########################################################
+            if self.save_state.is_saving_pose:
+                assert self.pose_save_path is not None
                 self.pose_mem.append(results)
-            # results = self._pose.process(image)
+
+            # pose の保存（書き出し）
+            if (len(self.pose_mem) > 0) and (not self.save_state.is_saving_pose):
+                self._save_pose()
+                self.pose_mem = []
+
             if self.capture_skeleton:
                 # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
                 self._save_bone_info(results)
