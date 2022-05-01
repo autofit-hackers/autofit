@@ -1,6 +1,7 @@
 {
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": true,
+    "source.organizeImports": false
   },
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
@@ -12,7 +13,7 @@
     "**/.git/subtree-cache/**": true,
     "**/node_modules/*/**": true,
     "**/.hg/store/**": true,
-    "**/__pycache__": true,
+    "**/__pycache__": true
   },
   "[html]": {
     "editor.tabSize": 2
@@ -33,27 +34,14 @@
   "[typescript]": {
     "editor.tabSize": 2
   },
-  "[vue]": {
-    "editor.tabSize": 2,
-    "editor.defaultFormatter": "octref.vetur"
-  },
-  "[vue-html]": {
-    "editor.tabSize": 2
-  },
-  "[vue-postcss]": {
-    "editor.tabSize": 2
-  },
   "[python]": {
     "editor.defaultFormatter": "ms-python.python",
-    "editor.tabSize": 4,
+    "editor.tabSize": 4
   },
   "autoDocstring.docstringFormat": "google",
   "python.analysis.typeCheckingMode": "basic",
   "python.formatting.provider": "black",
-  "python.formatting.blackArgs": [
-    "--line-length",
-    "119"
-  ],
+  "python.formatting.blackArgs": ["--line-length", "119"],
   "python.languageServer": "Pylance",
-  "python.linting.enabled": true,
+  "python.linting.enabled": true
 }
