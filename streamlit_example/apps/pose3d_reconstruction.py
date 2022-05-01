@@ -42,11 +42,10 @@ def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_fro
 
 
 # TODO: 自動再生中もグリグリできるようにする
-def visualize_pose3d(landmarks3d):
-    number_frames = len(landmarks3d)
-
-    # 時間軸
-    frame_axis = np.array([str(x) + "frame" for x in range(number_frames)], dtype="O")
+def visualize_pose3d(landmarks_3d):
+    number_frames = len(landmarks_3d)
+    # ラベル
+    d_time = np.array([str(x) + "frame" for x in range(number_frames)], dtype="O")
 
     # スライダーの設定
     sliders = [
@@ -60,7 +59,7 @@ def visualize_pose3d(landmarks3d):
                     ],
                     label=risk_rate,
                 )
-                for risk_rate in frame_axis
+                for risk_rate in d_time
             ],  # ラベルを設定
             transition=dict(duration=0),
             x=0,
@@ -101,28 +100,28 @@ def visualize_pose3d(landmarks3d):
 
     # レイアウトの設定
     layout = go.Layout(
-        title="3D Pose Visualization",
+        title="テストグラフ",
         template="ggplot2",
         autosize=False,
         width=1000,
         height=800,
         scene=dict(
             aspectmode="manual",
-            aspectratio=dict(x=1, y=1, z=1),  # アスペクト比
-            xaxis=dict(range=[-4, 4], title="x方向"),  # x軸の範囲
-            yaxis=dict(range=[-4, 4], title="y方向"),  # y軸の範囲
-            zaxis=dict(range=[-20, 20], title="z方向"),  # z軸の範囲
-            camera=dict(eye=dict(x=1.5, y=0.9, z=0.7)),
-        ),  # カメラの角度
+            aspectratio=dict(x=1, y=1, z=1),
+            xaxis=dict(range=[-3, 3], title="x"),
+            yaxis=dict(range=[-3, 3], title="y"),
+            zaxis=dict(range=[-3, 3], title="z"),
+            camera=dict(eye=dict(x=1.5, y=0.9, z=0.7)),  # カメラの角度
+        ),
         # font = dict(color="#fff"),
         updatemenus=updatemenus,  # 上で設定したアップデートを設置
         sliders=sliders,  # 上で設定したスライダーを設置
     )
 
     data = go.Scatter3d(
-        x=landmarks3d[0][:, 0],
-        y=landmarks3d[0][:, 1],
-        z=landmarks3d[0][:, 2],
+        x=landmarks_3d[0][:, 0],
+        y=landmarks_3d[0][:, 1],
+        z=landmarks_3d[0][:, 2],
         mode="lines+markers",
         marker=dict(size=2.5, color="red"),
         line=dict(color="red", width=2),
@@ -131,24 +130,22 @@ def visualize_pose3d(landmarks3d):
     frames = []
     for frame in range(number_frames):
         pose3d_scatter = go.Scatter3d(
-            x=landmarks3d[frame][:, 0],
-            y=landmarks3d[frame][:, 1],
-            z=landmarks3d[frame][:, 2],
+            x=landmarks_3d[frame][:, 0],
+            y=landmarks_3d[frame][:, 1],
+            z=landmarks_3d[frame][:, 2],
             mode="lines+markers",
             marker=dict(size=2.5, color="red"),
             line=dict(color="red", width=2),
-            text=frame_axis[frame],
+            text=d_time[frame],
         )
         data_k = pose3d_scatter
-        frames.append(dict(data=data_k, name=frame_axis[frame]))
+        frames.append(dict(data=data_k, name=d_time[frame]))
 
     fig = dict(data=data, layout=layout, frames=frames)
     st.plotly_chart(fig)
 
 
 def app():
-    plt.style.use("seaborn")
-
     with st.sidebar:
         session_meta_file = st.file_uploader("Select Session")
         start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_meta_file)
