@@ -166,7 +166,10 @@ def app():
         landmarks_3d = [pose.landmark for pose in poses_3d]
         if save_trimmed_pose:
             assert trimmed_frame_end <= len(landmarks_3d), st.write("fuck you")
-            trimmed_pose_3d = PoseLandmarksObject(landmark=landmarks_3d[trimmed_frame_start : trimmed_frame_end + 1], visibility=np.ones(trimmed_frame_end-trimmed_frame_start))
+            trimmed_pose_3d = PoseLandmarksObject(
+                landmark=landmarks_3d[trimmed_frame_start : trimmed_frame_end + 1],
+                visibility=np.ones(trimmed_frame_end - trimmed_frame_start),
+            )
             os.makedirs("test_data")
             with open(Path(f"test_data/trimmed_pose.pkl"), "wb") as f:
                 pickle.dump(trimmed_pose_3d, f)

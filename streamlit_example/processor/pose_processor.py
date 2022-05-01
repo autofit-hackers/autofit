@@ -10,8 +10,10 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
-from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
+from utils import (FpsCalculator, PoseLandmarksObject, draw_landmarks_pose,
+                   mp_res_to_pose_obj)
+from utils.class_objects import (DisplaySettings, ModelSettings,
+                                 RepCountSettings, SaveStates)
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -115,15 +117,12 @@ class PoseProcessor(VideoProcessorBase):
         self._in_queue.put_nowait(image)
         return self._out_queue.get(timeout=10)
 
-    def _save_estimated_pose(self, obj, save_path) -> None:
-        with open(save_path, "wb") as handle:
-            pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
     def _save_pose(self):
         assert self.pose_save_path is not None
         print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
         os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
-        self._save_estimated_pose(self.pose_mem, self.pose_save_path)
+        with open(self.pose_save_path, "wb") as f:
+            pickle.dump(self.pose_mem, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def _load_pose(self, uploaded_pose_file):
         with open(f"recorded_poses/{uploaded_pose_file.name}", "rb") as handle:
@@ -373,7 +372,7 @@ class PoseProcessor(VideoProcessorBase):
             self.pose_mem.append(
                 results
                 if results
-                else PoseLandmarksObject(landmark=np.zeros(shape=(3, 33)), visibility=np.zeros(shape=(1, 33)))
+                else PoseLandmarksObject(landmark=np.zeros(shape=(33, 3)), visibility=np.zeros(shape=(33, 1)))
             )  # NOTE: ビデオのフレームインデックスとposeのフレームインデックスを一致させるために、2D Pose Estimation ができなかった場合は zero padding
 
         # pose の保存（書き出し）

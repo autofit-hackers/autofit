@@ -20,8 +20,8 @@ from utils import DLT, PoseLandmarksObject, get_projection_matrix
 
 
 def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):
-    assert len(landmarks_front) == len(landmarks_side), "len of landmarks differs among cameras"
     landmarks_3d = []
+    i = 0
     for landmark_front, landmark_side in zip(landmarks_front, landmarks_side):
         landmark_3d = []
         for uv1, uv2 in zip(landmark_front, landmark_side):
@@ -152,19 +152,20 @@ def app():
 
     if start_reconstruction and session_meta_file:
         session_meta = json.load(session_meta_file)
+        session_path = session_meta["session_path"]
         camera_info_path = Path(session_meta["camera_info_path"])
-        with open(Path(f"{camera_info_path}/front.pickle"), "rb") as f:
+        with open(Path(f"{session_path}/pose/front.pkl"), "rb") as f:
             poses_front = pickle.load(f)
             landmarks_front = [pose.landmark for pose in poses_front]
-        with open(Path(f"{camera_info_path}/side.pickle"), "rb") as f:
+        with open(Path(f"{session_path}/pose/side.pkl"), "rb") as f:
             poses_side = pickle.load(f)
             landmarks_side = [pose.landmark for pose in poses_side]
 
         projection_matrix_front = get_projection_matrix(camera_info_path, "front")
         projection_matrix_side = get_projection_matrix(camera_info_path, "side")
 
-        if os.path.isfile(Path(f"{camera_info_path}/reconstructed3d.pickle")):
-            with open(Path(f"{camera_info_path}/reconstructed3d.pickle"), "rb") as f:
+        if os.path.isfile(Path(f"{camera_info_path}/reconstructed3d.pkl")):
+            with open(Path(f"{camera_info_path}/reconstructed3d.pkl"), "rb") as f:
                 landmarks_3d = pickle.load(f)
             st.write("3D Pose already exists")
         else:
@@ -174,10 +175,10 @@ def app():
                 projection_matrix_front=projection_matrix_front,
                 projection_matrix_side=projection_matrix_side,
             )
-            with open(Path(f"{camera_info_path}/reconstructed3d.pickle"), "wb") as f:
+            with open(Path(f"{camera_info_path}/reconstructed3d.pkl"), "wb") as f:
                 pickle.dump(landmarks_3d, f)
             st.write("3D Pose reconstruction finished!")
-
+        st.write(landmarks_3d)
         visualize_pose3d(landmarks_3d)
 
 
