@@ -267,7 +267,7 @@ class PoseProcessor(VideoProcessorBase):
 
     def _release_video_writer(self) -> None:
         print("Releasing video_writer...")
-        print(self.video_writer.release())
+        self.video_writer.release()
         self.video_writer = None
         print(f"Video has saved to {self.video_save_path}")
 
