@@ -341,14 +341,15 @@ class PoseProcessor(VideoProcessorBase):
                 self._reset_training_set(results)
                 self.reset_button = False
 
-            # レップカウントを更新
-            assert self.rep_count_settings.upper_thresh is not None
-            assert self.rep_count_settings.lower_thresh is not None
-            self._update_rep_count(
-                results,
-                upper_thre=self.rep_count_settings.upper_thresh,
-                lower_thre=self.rep_count_settings.lower_thresh,
-            )
+            if self.rep_count_settings.do_count_rep:
+                # レップカウントを更新
+                assert self.rep_count_settings.upper_thresh is not None
+                assert self.rep_count_settings.lower_thresh is not None
+                self._update_rep_count(
+                    results,
+                    upper_thre=self.rep_count_settings.upper_thresh,
+                    lower_thre=self.rep_count_settings.lower_thresh,
+                )
 
             # NOTE: ここに指導がくるので、ndarrayで持ちたい
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
@@ -400,7 +401,7 @@ class PoseProcessor(VideoProcessorBase):
             )
 
         # show rep count
-        if self.rep_count_settings:
+        if self.rep_count_settings.do_count_rep:
             cv.putText(
                 processed_frame,
                 f"Rep:{self.rep_count}",
