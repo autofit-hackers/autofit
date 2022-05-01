@@ -10,10 +10,18 @@ class PoseLandmarksObject(NamedTuple):
     landmark.shape == (関節数, 3)
     visibility.shape == (関節数, 1)
     """
-
     landmark: np.ndarray
     visibility: np.ndarray
 
+class PoseFrames(NamedTuple):
+    """
+    landmark.shape == (frame数, 関節数, 3)
+    visibility.shape == (frame数, 関節数, 1)
+    keyframes: key_frameのindexを格納
+    """
+    landmark: np.ndarray
+    visibility: np.ndarray
+    keyframes: List
 
 @dataclass
 class ModelSettings:
