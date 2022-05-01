@@ -1,3 +1,4 @@
+from pathlib import Path
 from dataclasses import dataclass
 from typing import List, NamedTuple, Union
 
@@ -37,9 +38,25 @@ class RepCountSettings:
 
 @dataclass
 class SaveSettings:
-    video_save_path: Union[str, None] = None
-    pose_save_path: Union[str, None] = None
+    base_save_dir: Union[Path, None] = None
+    key: Union[str, None] = None
+
+    # video
+    video_save_dir: Union[Path, None] = None
+    video_save_path: Union[str, None] = None  # FIXME: duplicated
+
+    # pose
+    pose_save_dir: Union[Path, None] = None
+    pose_save_path: Union[str, None] = None  # FIXME: duplicated
+
+    # skeleton
     skeleton_save_path: Union[str, None] = None
+
+
+@dataclass(frozen=False)
+class SaveStates:
+    is_saving_video: bool = False
+    is_saving_pose: bool = False
 
 
 class UploadSettings:

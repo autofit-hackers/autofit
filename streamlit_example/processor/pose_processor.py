@@ -10,9 +10,8 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
-
-from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
-from utils.class_objects import ModelSettings, DisplaySettings, RepCountSettings
+from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
+from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -52,10 +51,13 @@ class PoseProcessor(VideoProcessorBase):
         # NOTE: ここはinitの瞬間に必要ないものは消していいらしい
         self,
         model_settings: ModelSettings,
+        save_state: SaveStates,
+        # save_settings: SaveSettings,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
         reload_pose: bool,
         uploaded_pose_file=None,
+        reset_button: bool = False,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
         skeleton_save_path: Union[str, None] = None,
@@ -74,6 +76,8 @@ class PoseProcessor(VideoProcessorBase):
 
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settings, training_menu_settings）
         self.model_settings = model_settings
+        # TODO: self.save_settings = save_settings
+        self.save_state = save_state
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
@@ -83,6 +87,7 @@ class PoseProcessor(VideoProcessorBase):
         self.body_length = 0
         self.initial_body_height = 0
         self.reload_pose = reload_pose
+        self.reset_button = reset_button
 
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
@@ -264,9 +269,10 @@ class PoseProcessor(VideoProcessorBase):
         display_fps = self._FpsCalculator.get()
 
         # 動画の保存（初期化）
-        if (self.video_save_path is not None) and (self.video_writer is None):
+        if (self.save_state.is_saving_video) and (self.video_writer is None):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
+            assert self.video_save_path is not None
             self.video_writer = self._create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
 
         # カメラキャプチャ #####################################################
@@ -286,10 +292,16 @@ class PoseProcessor(VideoProcessorBase):
             self.capture_skeleton = False
 
         # 動画の保存（フレームの追加）
-        if self.video_save_path is not None:
+        if self.save_state.is_saving_video:
             assert self.video_writer is not None
             # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
             self.video_writer.write(frame)
+
+        # 動画の保存（writerの解放）
+        if (not self.save_state.is_saving_video) and (self.video_writer is not None):
+            print("Releasing video_writer...")
+            self.video_writer.release()
+            self.video_writer = None
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
