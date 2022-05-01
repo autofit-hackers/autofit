@@ -102,9 +102,7 @@ def visualize_pose3d(landmarks_3d):
     layout = go.Layout(
         title="テストグラフ",
         template="ggplot2",
-        autosize=False,
-        width=1000,
-        height=800,
+        autosize=True,
         scene=dict(
             aspectmode="manual",
             aspectratio=dict(x=1, y=1, z=1),

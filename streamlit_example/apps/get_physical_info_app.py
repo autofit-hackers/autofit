@@ -118,42 +118,33 @@ def app():
         X = webrtc_ctx_main.video_processor.result_pose.landmark[:, 0]
         Y = 1 - webrtc_ctx_main.video_processor.result_pose.landmark[:, 1]
         Z = webrtc_ctx_main.video_processor.result_pose.landmark[:, 2]
-        # グラフの枠を作成
-        fig = plt.figure()
-        ax = fig.add_subplot(projection="3d")
-        # X,Y,Z軸にラベルを設定
-        ax.set_xlabel("X")
-        ax.set_ylabel("Z")
-        ax.set_zlabel("Y")
-        # .plotで描画
-        ax.plot(X, Z, Y, marker="o", linestyle="None")
-        # 最後に.show()を書いてグラフ表示
-        st.pyplot(fig)
 
-        # figureを生成する
-        fig2 = plt.figure()
-        # axをfigureに設定する
-        ax = fig2.add_subplot()
-        # axesに散布図を設定する
-        ax.scatter(X, Y, c="b")
-        # 表示する
-        st.pyplot(fig2)
+        # レイアウトの設定
+        layout = go.Layout(
+            title=session_meta["user_name"] + "さんの骨格",
+            template="ggplot2",
+            autosize=True,
+            scene=dict(
+                aspectmode="manual",
+                aspectratio=dict(x=1, y=1, z=1),
+                xaxis=dict(range=[-3, 3], title="x"),
+                yaxis=dict(range=[-3, 3], title="y"),
+                zaxis=dict(range=[-3, 3], title="z"),
+                camera=dict(eye=dict(x=1.5, y=0.9, z=0.7)),  # カメラの角度
+            ),
+        )
 
-    # Add histogram data
-    x1 = np.random.randn(200) - 2
-    x2 = np.random.randn(200)
-    x3 = np.random.randn(200) + 2
+        data = go.Scatter3d(
+            x=X,
+            y=Y,
+            z=Z,
+            mode="lines+markers",
+            marker=dict(size=2.5, color="red"),
+            line=dict(color="red", width=2),
+        )
 
-    # Group data together
-    hist_data = [x1, x2, x3]
-
-    group_labels = ["Group 1", "Group 2", "Group 3"]
-
-    # Create distplot with custom bin_size
-    fig = ff.create_distplot(hist_data, group_labels, bin_size=[0.1, 0.25, 0.5])
-
-    # Plot!
-    st.plotly_chart(fig, use_container_width=True)
+        fig = dict(data=data, layout=layout)
+        st.plotly_chart(fig)
 
 
 if __name__ == "__main__":
