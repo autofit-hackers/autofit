@@ -9,7 +9,6 @@ import plotly.graph_objs as go
 import streamlit as st
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from processor import PoseProcessor
 from processor.get_physical_info_processor import GetPhysicalInfoProcessor
 from pylibsrtp import Session
 from requests import session
