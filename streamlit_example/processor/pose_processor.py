@@ -269,7 +269,7 @@ class PoseProcessor(VideoProcessorBase):
         display_fps = self._FpsCalculator.get()
 
         # 動画の保存（初期化）
-        if (self.save_state.is_saving_video) and (self.video_writer is None):
+        if (self.save_state.is_saving_video) and (self.video_writer is None) and (self.video_save_path is not None):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
             assert self.video_save_path is not None
@@ -292,8 +292,7 @@ class PoseProcessor(VideoProcessorBase):
             self.capture_skeleton = False
 
         # 動画の保存（フレームの追加）
-        if self.save_state.is_saving_video:
-            assert self.video_writer is not None
+        if self.save_state.is_saving_video and self.video_writer:
             # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
             self.video_writer.write(frame)
 
@@ -370,8 +369,7 @@ class PoseProcessor(VideoProcessorBase):
                 processed_frame = self._show_loaded_pose(processed_frame)
 
         # pose の保存 (pose_mem への追加) ########################################################
-        if self.save_state.is_saving_pose:
-            assert self.pose_save_path is not None
+        if self.save_state.is_saving_pose and self.pose_save_path is not None:
             self.pose_mem.append(
                 results
                 if results
