@@ -32,8 +32,8 @@ def display_setting_ui() -> DisplaySettings:
     with st.expander("Display settings"):
         return DisplaySettings(
             rotate_webcam_input=st.checkbox("Rotate webcam input", value=False),
-            show_2d=st.checkbox("Show FPS", value=True),
-            show_fps=st.checkbox("Show 2D", value=True),
+            show_2d=st.checkbox("Show 2D", value=True),
+            show_fps=st.checkbox("Show FPS", value=True),
         )
 
 
