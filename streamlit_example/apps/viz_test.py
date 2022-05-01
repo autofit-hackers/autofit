@@ -43,9 +43,9 @@ def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_fro
 
 
 def visualize_pose3d(landmarks_3d):
-    number_frames = len(landmarks_3d)
+    num_frames = len(landmarks_3d)
     # ラベル
-    d_time = np.array([str(x) + "frame" for x in range(number_frames)], dtype="O")
+    d_time = np.array([str(x) + "frame" for x in range(num_frames)], dtype="O")
 
     # スライダーの設定
     sliders = [
@@ -126,7 +126,7 @@ def visualize_pose3d(landmarks_3d):
     )
 
     frames = []
-    for frame in range(number_frames):
+    for frame in range(num_frames):
         pose3d_scatter = go.Scatter3d(
             x=landmarks_3d[frame][:, 0],
             y=landmarks_3d[frame][:, 1],
@@ -144,13 +144,34 @@ def visualize_pose3d(landmarks_3d):
 
 
 def app():
+    # Initialization
+    if "start_reconstruction" not in st.session_state:
+        st.session_state["start_reconstruction"] = False
+
     with st.sidebar:
         pose_file = st.file_uploader("Select Pose File")
         start_reconstruction = st.button("Vizualize 3D Pose", disabled=not pose_file)
+        # trim pose
+        trimmed_frame_start = st.number_input("Trim pose from frame:", min_value=0)
+        trimmed_frame_end = st.number_input(
+            "to frame:",
+            min_value=trimmed_frame_start,
+            disabled=not trimmed_frame_start,
+        )
+        save_trimmed_pose = st.button("Save Trimmed Pose", disabled=not trimmed_frame_end)
 
-    if start_reconstruction and pose_file:
+    if (start_reconstruction or st.session_state["start_reconstruction"]) and pose_file:
+        st.session_state["start_reconstruction"] = True
         poses_3d = pickle.load(pose_file)
         landmarks_3d = [pose.landmark for pose in poses_3d]
+        if save_trimmed_pose:
+            assert trimmed_frame_end <= len(landmarks_3d), st.write("fuck you")
+            trimmed_pose_3d = PoseLandmarksObject(landmark=landmarks_3d[trimmed_frame_start : trimmed_frame_end + 1], visibility=np.ones(trimmed_frame_end-trimmed_frame_start))
+            os.makedirs("test_data")
+            with open(Path(f"test_data/trimmed_pose.pkl"), "wb") as f:
+                pickle.dump(trimmed_pose_3d, f)
+            st.write("Trimmed Pose Successfully Saved!")
+
         visualize_pose3d(landmarks_3d)
 
 
