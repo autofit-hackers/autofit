@@ -49,9 +49,11 @@ camera_meta = {
 ```
 ./camera_info/<datetime>
 ├── front
+    |---imgs/
 │   ├── mtx.dat
 │   └── dist.dat
 ├── side
+|   |---imgs/
 │   ├── mtx.dat
 │   └── dist.dat
 └── camera_meta.json
