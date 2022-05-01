@@ -350,16 +350,6 @@ class PoseProcessor(VideoProcessorBase):
             # TODO: realtime coaching の動作確認とデバッグ
             # print(self._realtime_coaching(results))
 
-            # pose の保存 (pose_mem への追加) ########################################################
-            if self.save_state.is_saving_pose:
-                assert self.pose_save_path is not None
-                self.pose_mem.append(results)
-
-            # pose の保存（書き出し）
-            if (len(self.pose_mem) > 0) and (not self.save_state.is_saving_pose):
-                self._save_pose()
-                self.pose_mem = []
-
             if self.capture_skeleton:
                 # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
                 self._save_bone_info(results)
@@ -378,6 +368,20 @@ class PoseProcessor(VideoProcessorBase):
             if self.loaded_frames:
                 # お手本poseは先に変換しておいてここでは呼ぶだけとする
                 processed_frame = self._show_loaded_pose(processed_frame)
+
+        # pose の保存 (pose_mem への追加) ########################################################
+        if self.save_state.is_saving_pose:
+            assert self.pose_save_path is not None
+            self.pose_mem.append(
+                results
+                if results
+                else PoseLandmarksObject(landmark=np.zeros(shape=(3, 33)), visibility=np.zeros(shape=(1, 33)))
+            )  # NOTE: ビデオのフレームインデックスとposeのフレームインデックスを一致させるために、2D Pose Estimation ができなかった場合は zero padding
+
+        # pose の保存（書き出し）
+        if (len(self.pose_mem) > 0) and (not self.save_state.is_saving_pose):
+            self._save_pose()
+            self.pose_mem = []
 
         if self.display_settings.show_fps:
             cv.putText(
