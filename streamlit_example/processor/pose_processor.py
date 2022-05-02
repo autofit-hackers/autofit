@@ -419,7 +419,3 @@ class PoseProcessor(VideoProcessorBase):
     def __del__(self):
         print("Stop the inference process...")
         self._stop_pose_process()
-        if len(self.pose_mem) > 0:
-            self._save_pose()
-        if self.video_writer is not None:
-            self._release_video_writer()
