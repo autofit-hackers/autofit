@@ -1,5 +1,5 @@
-import json
 import copy
+import json
 import os
 import pickle
 from multiprocessing import Process, Queue
@@ -9,6 +9,7 @@ import av
 import cv2 as cv
 import mediapipe as mp
 import numpy as np
+from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
@@ -122,6 +123,10 @@ class PoseProcessor(VideoProcessorBase):
         with open(self.pose_save_path, "wb") as f:
             pickle.dump(self.pose_mem, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+    def _reconstruct_pose_3d(self):
+
+        return
+
     def _load_pose(self, uploaded_pose_file):
         with open(f"recorded_poses/{uploaded_pose_file.name}", "rb") as handle:
             loaded_frames = pickle.load(handle)
@@ -142,7 +147,7 @@ class PoseProcessor(VideoProcessorBase):
             self.positioned_frames = self._adjust_poses(realtime_pose, self.uploaded_frames)
             print(len(self.positioned_frames))
             self.loaded_frames = self.positioned_frames.copy()
-        self.initial_body_height = self._calculate_height(realtime_pose)
+        self.initial_body_height = realtime_pose.get_height()
         print(self.initial_body_height)
         self.frame_index = 0
         self.rep_count = 0
@@ -161,12 +166,12 @@ class PoseProcessor(VideoProcessorBase):
         Returns:
             List[PoseLandmarksObject]: 重ね合わせ後のお手本フォーム
         """
-        realtime_height = self._calculate_height(realtime_pose)
-        loaded_height = self._calculate_height(loaded_frames[start_frame_idx])
+        realtime_height = realtime_pose.get_height()
+        loaded_height = loaded_frames[start_frame_idx].get_height()
         scale = realtime_height / loaded_height  # スケーリング用の定数
 
-        realtime_foot_position = self._calculate_foot_position(realtime_pose)
-        loaded_foot_position = self._calculate_foot_position(loaded_frames[start_frame_idx]) * scale
+        realtime_foot_position = realtime_pose.get_foot_position()
+        loaded_foot_position = loaded_frames[start_frame_idx].get_foot_position() * scale
 
         # 位置合わせ用の[x,y,0]のベクター
         slide: np.ndarray = realtime_foot_position - loaded_foot_position
@@ -195,7 +200,7 @@ class PoseProcessor(VideoProcessorBase):
             "full_arm": (11, 15),
         }
 
-        bone_dict = {"foot_neck_height": self._calculate_height(captured_skeleton)}
+        bone_dict = {"foot_neck_height": captured_skeleton.get_height()}
         for bone_edge_key in bone_edge_names.keys():
             bone_dict[bone_edge_key] = np.linalg.norm(
                 captured_skeleton.landmark[bone_edge_names[bone_edge_key][0]]
@@ -208,7 +213,7 @@ class PoseProcessor(VideoProcessorBase):
 
     def _update_rep_count(self, pose: PoseLandmarksObject, upper_thre: float, lower_thre: float) -> None:
         if self.frame_index == 0:
-            self.initial_body_height = self._calculate_height(pose)
+            self.initial_body_height = pose.get_height()
         else:
             self.body_length = pose.landmark[29][1] - pose.landmark[11][1]
             if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_height:
@@ -230,14 +235,6 @@ class PoseProcessor(VideoProcessorBase):
         #     is_key_frame,
         # )
         return is_key_frame
-
-    def _calculate_height(self, pose: PoseLandmarksObject):
-        neck = (pose.landmark[11] + pose.landmark[12]) / 2
-        foot_center = (pose.landmark[27] + pose.landmark[28]) / 2
-        return np.linalg.norm(neck - foot_center)
-
-    def _calculate_foot_position(self, pose: PoseLandmarksObject):
-        return (pose.landmark[27] + pose.landmark[28]) / 2
 
     def _realtime_coaching(self, pose: PoseLandmarksObject):
         recommend = []
@@ -386,6 +383,7 @@ class PoseProcessor(VideoProcessorBase):
         # pose の保存（書き出し）
         if (len(self.pose_mem) > 0) and (not self.save_state.is_saving_pose):
             self._save_pose()
+            self._reconstruct_pose_3d
             self.pose_mem = []
 
         if self.display_settings.show_fps:

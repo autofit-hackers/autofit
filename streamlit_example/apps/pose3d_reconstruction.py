@@ -18,8 +18,10 @@ from mpl_toolkits.mplot3d import Axes3D
 from soupsieve import select
 from utils import DLT, PoseLandmarksObject, get_projection_matrix
 
+from visualize_pose import visualize_pose
 
-def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):
+
+def reconstruct_pose_3d(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):
     landmarks_3d = []
     for landmark_front, landmark_side in zip(landmarks_front, landmarks_side):
         landmark_3d = []
@@ -40,114 +42,13 @@ def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_fro
     return landmarks_3d
 
 
-# TODO: 自動再生中もグリグリできるようにする
-def visualize_pose3d(landmarks_3d):
-    st.write(landmarks_3d)
-    num_frames = len(landmarks_3d)
-    # ラベル
-    d_time = np.array([str(x) + "frame" for x in range(num_frames)], dtype="O")
-
-    # スライダーの設定
-    sliders = [
-        dict(
-            steps=[
-                dict(
-                    method="animate",
-                    args=[
-                        [risk_rate],
-                        dict(mode="immediate", frame=dict(duration=10, redraw=True), transition=dict(duration=0)),
-                    ],
-                    label=risk_rate,
-                )
-                for risk_rate in d_time
-            ],  # ラベルを設定
-            transition=dict(duration=0),
-            x=0,
-            y=0,
-            currentvalue=dict(font=dict(size=12), prefix="", visible=True, xanchor="center"),
-            len=1.0,
-        )
-    ]
-
-    # アップデートの設定
-    updatemenus = [
-        dict(
-            type="buttons",
-            showactive=False,
-            y=1,
-            x=-0.05,
-            xanchor="right",
-            yanchor="top",
-            pad=dict(t=0, r=10),
-            buttons=[
-                dict(
-                    label="Play",  # 再生ボタン
-                    method="animate",
-                    args=[
-                        None,
-                        dict(
-                            frame=dict(duration=10, redraw=True),  # 再生の速度
-                            transition=dict(duration=0),  # このdurationはよくわからない
-                            fromcurrent=True,
-                            mode="immediate",
-                        ),
-                    ],
-                ),
-                dict(args=[[None], dict(mode="immediate", frame=dict(redraw=True))], label="Pause", method="animate"),
-            ],
-        )
-    ]
-
-    # レイアウトの設定
-    layout = go.Layout(
-        title="テストグラフ",
-        template="ggplot2",
-        autosize=True,
-        scene=dict(
-            aspectmode="manual",
-            aspectratio=dict(x=1, y=1, z=1),
-            xaxis=dict(range=[-3, 3], title="x"),
-            yaxis=dict(range=[-3, 3], title="y"),
-            zaxis=dict(range=[-3, 3], title="z"),
-            camera=dict(eye=dict(x=1.5, y=0.9, z=0.7)),  # カメラの角度
-        ),
-        # font = dict(color="#fff"),
-        updatemenus=updatemenus,  # 上で設定したアップデートを設置
-        sliders=sliders,  # 上で設定したスライダーを設置
-    )
-
-    data = go.Scatter3d(
-        x=landmarks_3d[0][:, 0],
-        y=landmarks_3d[0][:, 1],
-        z=landmarks_3d[0][:, 2],
-        mode="lines+markers",
-        marker=dict(size=2.5, color="red"),
-        line=dict(color="red", width=2),
-    )
-
-    frames = []
-    for frame in range(num_frames):
-        pose3d_scatter = go.Scatter3d(
-            x=landmarks_3d[frame][:, 0],
-            y=landmarks_3d[frame][:, 1],
-            z=landmarks_3d[frame][:, 2],
-            mode="lines+markers",
-            marker=dict(size=2.5, color="red"),
-            line=dict(color="red", width=2),
-            text=d_time[frame],
-        )
-        data_k = pose3d_scatter
-        frames.append(dict(data=data_k, name=d_time[frame]))
-
-    fig = dict(data=data, layout=layout, frames=frames)
-    st.plotly_chart(fig)
-
-
 def app():
+    # User input
     with st.sidebar:
         session_meta_file = st.file_uploader("Select Session")
         start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_meta_file)
 
+    # Load uploaded poses and reconstruct 3D pose from them
     if start_reconstruction and session_meta_file:
         session_meta = json.load(session_meta_file)
         session_path = session_meta["session_path"]
@@ -162,21 +63,17 @@ def app():
         projection_matrix_front = get_projection_matrix(camera_info_path, "front")
         projection_matrix_side = get_projection_matrix(camera_info_path, "side")
 
-        if os.path.isfile(Path(f"{camera_info_path}/reconstructed3d.pkl")):
-            with open(Path(f"{camera_info_path}/reconstructed3d.pkl"), "rb") as f:
-                landmarks_3d = pickle.load(f)
-            st.write("3D Pose already exists")
-        else:
-            landmarks_3d = pose3d_reconstruction(
-                landmarks_front=landmarks_front,
-                landmarks_side=landmarks_side,
-                projection_matrix_front=projection_matrix_front,
-                projection_matrix_side=projection_matrix_side,
-            )
-            with open(Path(f"{camera_info_path}/reconstructed3d.pkl"), "wb") as f:
-                pickle.dump(landmarks_3d, f)
-            st.write("3D Pose reconstruction finished!")
-        visualize_pose3d(landmarks_3d)
+        landmarks_3d = reconstruct_pose_3d(
+            landmarks_front=landmarks_front,
+            landmarks_side=landmarks_side,
+            projection_matrix_front=projection_matrix_front,
+            projection_matrix_side=projection_matrix_side,
+        )
+        with open(Path(f"{camera_info_path}/reconstructed3d.pkl"), "wb") as f:
+            pickle.dump(landmarks_3d, f)
+        st.write("3D Pose reconstruction finished!")
+
+        visualize_pose(landmarks_3d)
 
 
 if __name__ == "__main__":

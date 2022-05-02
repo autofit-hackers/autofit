@@ -1,8 +1,9 @@
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, NamedTuple, Union
 
 import numpy as np
+from this import d
 
 
 class PoseLandmarksObject(NamedTuple):
@@ -10,18 +11,30 @@ class PoseLandmarksObject(NamedTuple):
     landmark.shape == (関節数, 3)
     visibility.shape == (関節数, 1)
     """
+
     landmark: np.ndarray
     visibility: np.ndarray
 
+    def get_height(self):
+        neck = (self.landmark[11] + self.landmark[12]) / 2
+        foot_center = (self.landmark[27] + self.landmark[28]) / 2
+        return np.linalg.norm(neck - foot_center)
+
+    def get_foot_position(self):
+        return (self.landmark[27] + self.landmark[28]) / 2
+
+# Not used yet
 class PoseFrames(NamedTuple):
     """
-    landmark.shape == (frame数, 関節数, 3)
+    landmark.shape == List(frame数, 関節数, 3)
     visibility.shape == (frame数, 関節数, 1)
     keyframes: key_frameのindexを格納
     """
-    landmark: np.ndarray
-    visibility: np.ndarray
+
+    landmarks: List
+    visibilities: np.ndarray
     keyframes: List
+
 
 @dataclass
 class ModelSettings:
