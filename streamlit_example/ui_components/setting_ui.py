@@ -1,3 +1,4 @@
+from email.policy import default
 from pathlib import Path
 
 import streamlit as st
@@ -31,7 +32,7 @@ def model_setting_ui() -> ModelSettings:
 def display_setting_ui() -> DisplaySettings:
     with st.expander("Display settings"):
         return DisplaySettings(
-            rotate_webcam_input=st.checkbox("Rotate webcam input", value=False),
+            rotate_webcam_input=st.checkbox("Rotate webcam input", value=True),
             show_2d=st.checkbox("Show 2D", value=True),
             show_fps=st.checkbox("Show FPS", value=True),
         )
@@ -58,21 +59,19 @@ def _stateful_bool_button(key: str) -> bool:
 
 def save_state_ui() -> SaveStates:
     st.markdown("## Save")
-    do_save_video = st.checkbox("Video", key="do_save_video_button")
-    do_save_pose = st.checkbox("Pose", key="do_save_pose_button")
+    do_save_video = st.checkbox("Video", key="do_save_video_button", value=True)
+    do_save_pose = st.checkbox("Pose", key="do_save_pose_button", value=True)
 
     is_saving = _stateful_bool_button("is_saving_button")
 
-    return SaveStates(is_saving_video=is_saving and do_save_video, is_saving_pose=is_saving and do_save_pose)
+    return SaveStates(is_saving_video=(is_saving and do_save_video), is_saving_pose=(is_saving and do_save_pose))
 
 
 # TODO: use ui component in pose_app
 def save_setting_ui(session_meta_exists: bool) -> SaveSettings:
-    # save_video = st.checkbox("Start Video", value=False)
     st.markdown("### Video saving")
     is_saving_video = st.button("Start", key="is_saving_video")
 
-    # save_pose = st.checkbox("Save Pose", value=False)
     st.markdown("### Pose saving")
     is_saving_video = st.button("Start", key="is_saving_video")
 

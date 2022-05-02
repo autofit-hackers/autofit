@@ -22,15 +22,11 @@ def app():
         session_meta_exists = load_session_meta_data()
         if session_meta_exists:
             base_save_dir = Path(st.session_state["session_meta"]["session_path"])
-            video_save_dir = base_save_dir / "video"
-            video_save_dir.mkdir(parents=True, exist_ok=True)
-            pose_save_dir = base_save_dir / "pose"
-            pose_save_dir.mkdir(parents=True, exist_ok=True)
         else:
-            video_save_dir, pose_save_dir = None, None
+            base_save_dir = None
 
         st.markdown("""---""")
-        use_two_cam: bool = st.checkbox("Use two cam", value=False)
+        use_two_cam: bool = st.checkbox("Use two cam", value=True)
 
         settings_to_refresh.update(
             {
@@ -59,9 +55,8 @@ def app():
 
     def _gen_and_refresh_webrtc_ctx(key: str):
         webrtc_ctx = gen_webrtc_ctx(key=key)
-        settings_to_refresh.update(
-            _gen_save_paths(pose_save_dir=pose_save_dir, video_save_dir=video_save_dir, key=key)
-        )
+        if base_save_dir is not None:
+            settings_to_refresh.update(_gen_save_paths(base_save_dir=base_save_dir, key=key))
         if webrtc_ctx.video_processor:
             _update_video_processor(webrtc_ctx.video_processor, settings_to_refresh)
 
@@ -81,12 +76,11 @@ def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:
     return
 
 
-def _gen_save_paths(
-    pose_save_dir: Union[Path, None], video_save_dir: Union[Path, None], key: str
-) -> Dict[str, Union[str, None]]:
+def _gen_save_paths(base_save_dir: Path, key: str) -> Dict[str, str]:
+    st.write(str(base_save_dir))
     return {
-        "pose_save_path": str(pose_save_dir / f"{key}.pkl") if (pose_save_dir is not None) else None,
-        "video_save_path": str(video_save_dir / f"{key}.mp4") if (video_save_dir is not None) else None,
+        "pose_save_path": str(base_save_dir / "pose" / f"{key}.pkl"),
+        "video_save_path": str(base_save_dir / "video" / f"{key}.mp4"),
     }
 
 

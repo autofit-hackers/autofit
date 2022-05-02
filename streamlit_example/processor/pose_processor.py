@@ -1,5 +1,5 @@
-import copy
 import json
+import copy
 import os
 import pickle
 from multiprocessing import Process, Queue
@@ -255,22 +255,31 @@ class PoseProcessor(VideoProcessorBase):
         self._in_queue.put_nowait(_SENTINEL_)
         self._pose_process.join(timeout=10)
 
-    def _create_video_writer(self, save_path: str, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
+    def _create_video_writer(self, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
         """Save video as mp4."""
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        assert self.video_save_path is not None
+        assert isinstance(frame, av.VideoFrame)
+        os.makedirs(os.path.dirname(self.video_save_path), exist_ok=True)
         fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
-        video = cv.VideoWriter(save_path, fourcc, fps, (frame.width, frame.height))
+        video = cv.VideoWriter(self.video_save_path, fourcc, fps, (frame.width, frame.height))
+        print(f"Start saving video to {self.video_save_path} ...")
         return video
+
+    def _release_video_writer(self) -> None:
+        print("Releasing video_writer...")
+        self.video_writer.release()
+        self.video_writer = None
+        print(f"Video has saved to {self.video_save_path}")
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         display_fps = self._FpsCalculator.get()
 
-        # 動画の保存（初期化）
-        if (self.save_state.is_saving_video) and (self.video_writer is None) and (self.video_save_path is not None):
+        if self.save_state.is_saving_video and (self.video_writer is None):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
             assert self.video_save_path is not None
-            self.video_writer = self._create_video_writer(save_path=self.video_save_path, fps=30, frame=frame)
+            self.video_writer = self._create_video_writer(fps=30, frame=frame)
+            print(f"initialized video writer to save {self.video_save_path}")
 
         # カメラキャプチャ #####################################################
         frame = frame.to_ndarray(format="bgr24")
@@ -288,16 +297,16 @@ class PoseProcessor(VideoProcessorBase):
             cv.imwrite(self.skeleton_save_path, frame)
             self.capture_skeleton = False
 
-        # 動画の保存（フレームの追加）
-        if self.save_state.is_saving_video and self.video_writer:
+        # 動画の保存（初期化
+        # if (self.save_state.is_saving_video) and (self.video_writer is None) and (self.video_save_path is not None):
+        if self.save_state.is_saving_video:
+            # 動画の保存（フレームの追加）
             # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
             self.video_writer.write(frame)
 
         # 動画の保存（writerの解放）
         if (not self.save_state.is_saving_video) and (self.video_writer is not None):
-            print("Releasing video_writer...")
-            self.video_writer.release()
-            self.video_writer = None
+            self._release_video_writer()
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -332,14 +341,15 @@ class PoseProcessor(VideoProcessorBase):
                 self._reset_training_set(results)
                 self.reset_button = False
 
-            # レップカウントを更新
-            assert self.rep_count_settings.upper_thresh is not None
-            assert self.rep_count_settings.lower_thresh is not None
-            self._update_rep_count(
-                results,
-                upper_thre=self.rep_count_settings.upper_thresh,
-                lower_thre=self.rep_count_settings.lower_thresh,
-            )
+            if self.rep_count_settings.do_count_rep:
+                # レップカウントを更新
+                assert self.rep_count_settings.upper_thresh is not None
+                assert self.rep_count_settings.lower_thresh is not None
+                self._update_rep_count(
+                    results,
+                    upper_thre=self.rep_count_settings.upper_thresh,
+                    lower_thre=self.rep_count_settings.lower_thresh,
+                )
 
             # NOTE: ここに指導がくるので、ndarrayで持ちたい
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
@@ -391,7 +401,7 @@ class PoseProcessor(VideoProcessorBase):
             )
 
         # show rep count
-        if self.rep_count_settings:
+        if self.rep_count_settings.do_count_rep:
             cv.putText(
                 processed_frame,
                 f"Rep:{self.rep_count}",
