@@ -1,21 +1,10 @@
-import datetime
-import json
 import os
 import pickle
-import sys
-import time
-from io import StringIO
-from math import ceil
 from pathlib import Path
-from typing import List, Type, Union
 
-import cv2 as cv
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from mpl_toolkits.mplot3d import Axes3D
 from soupsieve import select
 from utils import DLT, PoseLandmarksObject, get_projection_matrix
 
