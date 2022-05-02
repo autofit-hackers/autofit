@@ -21,7 +21,6 @@ from utils import DLT, PoseLandmarksObject, get_projection_matrix
 
 def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):
     landmarks_3d = []
-    i = 0
     for landmark_front, landmark_side in zip(landmarks_front, landmarks_side):
         landmark_3d = []
         for uv1, uv2 in zip(landmark_front, landmark_side):
@@ -43,9 +42,10 @@ def pose3d_reconstruction(landmarks_front, landmarks_side, projection_matrix_fro
 
 # TODO: 自動再生中もグリグリできるようにする
 def visualize_pose3d(landmarks_3d):
-    number_frames = len(landmarks_3d)
+    st.write(landmarks_3d)
+    num_frames = len(landmarks_3d)
     # ラベル
-    d_time = np.array([str(x) + "frame" for x in range(number_frames)], dtype="O")
+    d_time = np.array([str(x) + "frame" for x in range(num_frames)], dtype="O")
 
     # スライダーの設定
     sliders = [
@@ -102,9 +102,7 @@ def visualize_pose3d(landmarks_3d):
     layout = go.Layout(
         title="テストグラフ",
         template="ggplot2",
-        autosize=False,
-        width=1000,
-        height=800,
+        autosize=True,
         scene=dict(
             aspectmode="manual",
             aspectratio=dict(x=1, y=1, z=1),
@@ -128,7 +126,7 @@ def visualize_pose3d(landmarks_3d):
     )
 
     frames = []
-    for frame in range(number_frames):
+    for frame in range(num_frames):
         pose3d_scatter = go.Scatter3d(
             x=landmarks_3d[frame][:, 0],
             y=landmarks_3d[frame][:, 1],
@@ -178,7 +176,6 @@ def app():
             with open(Path(f"{camera_info_path}/reconstructed3d.pkl"), "wb") as f:
                 pickle.dump(landmarks_3d, f)
             st.write("3D Pose reconstruction finished!")
-        st.write(landmarks_3d)
         visualize_pose3d(landmarks_3d)
 
 

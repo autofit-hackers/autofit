@@ -10,10 +10,8 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
-from utils import (FpsCalculator, PoseLandmarksObject, draw_landmarks_pose,
-                   mp_res_to_pose_obj)
-from utils.class_objects import (DisplaySettings, ModelSettings,
-                                 RepCountSettings, SaveStates)
+from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
+from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -411,8 +409,3 @@ class PoseProcessor(VideoProcessorBase):
     def __del__(self):
         print("Stop the inference process...")
         self._stop_pose_process()
-        if len(self.pose_mem) > 0:
-            self._save_pose()
-        if self.video_writer is not None:
-            print("Stop writing video process...")
-            self.video_writer.release()
