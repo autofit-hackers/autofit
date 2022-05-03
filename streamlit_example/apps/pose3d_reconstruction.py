@@ -45,7 +45,7 @@ def reconstruct_pose_3d(landmarks_front, landmarks_side, projection_matrix_front
 def app():
     # User input
     with st.sidebar:
-        session_meta_file = st.file_uploader("Select Session")
+        session_meta_file = st.file_uploader("Select Session meta.json")
         start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_meta_file)
 
     # Load uploaded poses and reconstruct 3D pose from them
