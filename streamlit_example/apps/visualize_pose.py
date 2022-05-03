@@ -7,10 +7,16 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 from soupsieve import select
+
 from utils import PoseLandmarksObject
+
+import plotly.io as pio
+
+pio.renderers.default = "iframe"
 
 
 # TODO: 自動再生中もグリグリできるようにする
+@st.cache(hash_funcs={dict: lambda _: None})
 def visualize_pose(landmarks):
     landmarks = np.array(landmarks)
     connections = mp.solutions.pose.POSE_CONNECTIONS  # type: ignore
@@ -157,8 +163,7 @@ def visualize_pose(landmarks):
         ]
         frames.append(dict(data=data_k, name=d_time[frame]))
 
-    fig = dict(data=data, layout=layout, frames=frames)
-    st.plotly_chart(fig)
+    return dict(data=data, layout=layout, frames=frames)
 
 
 def app():
@@ -201,7 +206,8 @@ def app():
                 pickle.dump(trimmed_pose_3d, f)
             st.write("Trimmed Pose Successfully Saved!")
 
-        visualize_pose(landmarks_3d)
+        fig = visualize_pose(landmarks_3d)
+        st.plotly_chart(fig)
 
 
 if __name__ == "__main__":
