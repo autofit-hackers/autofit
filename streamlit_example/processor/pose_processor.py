@@ -94,7 +94,7 @@ class PoseProcessor(VideoProcessorBase):
         self.video_writer: Union[cv.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
-        self.pose_mem: List[PoseLandmarksObject] = []
+        self.pose_memory: List[PoseLandmarksObject] = []
 
         self.skeleton_save_path: Union[str, None] = skeleton_save_path
         self.capture_skeleton: bool = False
@@ -118,10 +118,10 @@ class PoseProcessor(VideoProcessorBase):
 
     def _save_pose(self):
         assert self.pose_save_path is not None
-        print(f"Saving {len(self.pose_mem)} pose frames to {self.pose_save_path}")
+        print(f"Saving {len(self.pose_memory)} pose frames to {self.pose_save_path}")
         os.makedirs(os.path.dirname(self.pose_save_path), exist_ok=True)
         with open(self.pose_save_path, "wb") as f:
-            pickle.dump(self.pose_mem, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.pose_memory, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def _reconstruct_pose_3d(self):
 
@@ -278,9 +278,7 @@ class PoseProcessor(VideoProcessorBase):
             self.video_writer = self._create_video_writer(fps=30, frame=frame)
             print(f"initialized video writer to save {self.video_save_path}")
 
-        # カメラキャプチャ #####################################################
         frame = frame.to_ndarray(format="bgr24")
-
         frame = cv.flip(frame, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
         if self.display_settings.rotate_webcam_input:
@@ -314,7 +312,6 @@ class PoseProcessor(VideoProcessorBase):
             # results -> ndarray (named: realtime_array) : 不要
             self.realtime_array = results
 
-            # リアルタイム処理 ################################################################
             # キーフレームを検出してフレームをリロード
             if self._is_key_frame(self.realtime_array):
                 self.key_frame_draw_count = 30
@@ -374,18 +371,19 @@ class PoseProcessor(VideoProcessorBase):
 
         # pose の保存 (pose_mem への追加) ########################################################
         if self.save_state.is_saving_pose and self.pose_save_path is not None:
-            self.pose_mem.append(
+            self.pose_memory.append(
                 results
                 if results
                 else PoseLandmarksObject(landmark=np.zeros(shape=(33, 3)), visibility=np.zeros(shape=(33, 1)))
             )  # NOTE: ビデオのフレームインデックスとposeのフレームインデックスを一致させるために、2D Pose Estimation ができなかった場合は zero padding
 
         # pose の保存（書き出し）
-        if (len(self.pose_mem) > 0) and (not self.save_state.is_saving_pose):
+        if (len(self.pose_memory) > 0) and (not self.save_state.is_saving_pose):
             self._save_pose()
             self._reconstruct_pose_3d
-            self.pose_mem = []
+            self.pose_memory = []
 
+        # Show fps
         if self.display_settings.show_fps:
             cv.putText(
                 processed_frame,
@@ -398,7 +396,7 @@ class PoseProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        # show rep count
+        # Show rep count
         if self.rep_count_settings.do_count_rep:
             cv.putText(
                 processed_frame,

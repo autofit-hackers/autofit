@@ -18,7 +18,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from soupsieve import select
 from utils import DLT, PoseLandmarksObject, get_projection_matrix
 
-from visualize_pose import visualize_pose
+from apps.visualize_pose import visualize_pose
 
 
 def reconstruct_pose_3d(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):

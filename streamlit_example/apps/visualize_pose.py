@@ -2,17 +2,25 @@ import os
 import pickle
 from pathlib import Path
 
+import mediapipe as mp
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 from soupsieve import select
-from utils import DLT, PoseLandmarksObject, get_projection_matrix
+from utils import PoseLandmarksObject
 
 
 # TODO: 自動再生中もグリグリできるようにする
-def visualize_pose(landmarks_3d):
-    st.write(landmarks_3d)
-    num_frames = len(landmarks_3d)
+def visualize_pose(landmarks):
+    landmarks = np.array(landmarks)
+    connections = mp.solutions.pose.POSE_CONNECTIONS  # type: ignore
+    num_frames = landmarks.shape[0]
+    num_frames = len(landmarks)
+    camera_resolution = [1080, 1920]
+    aspect_ratio = camera_resolution[0] / camera_resolution[1]
+    # exchange x and y for good pose view
+    landmarks = landmarks[:, :, [1, 0, 2]]
+
     # ラベル
     d_time = np.array([str(x) + "frame" for x in range(num_frames)], dtype="O")
 
@@ -24,7 +32,7 @@ def visualize_pose(landmarks_3d):
                     method="animate",
                     args=[
                         [risk_rate],
-                        dict(mode="immediate", frame=dict(duration=10, redraw=True), transition=dict(duration=0)),
+                        dict(mode="immediate", frame=dict(duration=0, redraw=True), transition=dict(duration=0)),
                     ],
                     label=risk_rate,
                 )
@@ -55,7 +63,7 @@ def visualize_pose(landmarks_3d):
                     args=[
                         None,
                         dict(
-                            frame=dict(duration=10, redraw=True),  # 再生の速度
+                            frame=dict(duration=0, redraw=True),  # 再生の速度
                             transition=dict(duration=0),  # このdurationはよくわからない
                             fromcurrent=True,
                             mode="immediate",
@@ -69,43 +77,84 @@ def visualize_pose(landmarks_3d):
 
     # レイアウトの設定
     layout = go.Layout(
-        title="テストグラフ",
+        title="Pose",
         template="ggplot2",
         autosize=True,
         scene=dict(
             aspectmode="manual",
-            aspectratio=dict(x=1, y=1, z=1),
-            xaxis=dict(range=[-3, 3], title="x"),
-            yaxis=dict(range=[-3, 3], title="y"),
-            zaxis=dict(range=[-3, 3], title="z"),
-            camera=dict(eye=dict(x=1.5, y=0.9, z=0.7)),  # カメラの角度
+            aspectratio=dict(x=1, y=aspect_ratio, z=1),
+            xaxis=dict(range=[landmarks[:, :, 0].max(), landmarks[:, :, 0].min()], title="x"),  # reverse range
+            yaxis=dict(range=[landmarks[:, :, 1].min(), landmarks[:, :, 1].max()], title="y"),
+            zaxis=dict(range=[landmarks[:, :, 2].min(), landmarks[:, :, 2].max()], title="z"),
+            camera=dict(eye=dict(x=0, y=0, z=-2)),  # カメラの角度
         ),
         # font = dict(color="#fff"),
         updatemenus=updatemenus,  # 上で設定したアップデートを設置
         sliders=sliders,  # 上で設定したスライダーを設置
     )
 
-    data = go.Scatter3d(
-        x=landmarks_3d[0][:, 0],
-        y=landmarks_3d[0][:, 1],
-        z=landmarks_3d[0][:, 2],
-        mode="lines+markers",
-        marker=dict(size=2.5, color="red"),
-        line=dict(color="red", width=2),
-    )
+    # Prepare connection data between landmarks
+    out_connection_list = []
+    for frame_idx in range(num_frames):
+        out_connection = []
+        for connection in connections:
+            start_idx = connection[0]
+            end_idx = connection[1]
+            out_connection.append(
+                dict(
+                    x=[landmarks[frame_idx, start_idx, 0], landmarks[frame_idx, end_idx, 0]],
+                    y=[landmarks[frame_idx, start_idx, 1], landmarks[frame_idx, end_idx, 1]],
+                    z=[landmarks[frame_idx, start_idx, 2], landmarks[frame_idx, end_idx, 2]],
+                )
+            )
+        out_connection_list.append(out_connection)
+
+    out_connection_series = []
+    for out_connection in out_connection_list:
+        cn2 = {"x": [], "y": [], "z": []}
+        for pair in out_connection:
+            for k in pair.keys():
+                cn2[k].append(pair[k][0])
+                cn2[k].append(pair[k][1])
+                cn2[k].append(None)
+        out_connection_series.append(cn2)
+
+    # Initial plot
+    data = [
+        go.Scatter3d(
+            x=landmarks[0, :, 0],
+            y=landmarks[0, :, 1],
+            z=landmarks[0, :, 2],
+            mode="markers",
+            marker=dict(size=2.5, color="red"),
+        ),
+        go.Scatter3d(
+            x=out_connection_series[0]["x"],
+            y=out_connection_series[0]["y"],
+            z=out_connection_series[0]["z"],
+            mode="lines",
+            line={"color": "black", "width": 3},
+        ),
+    ]
 
     frames = []
     for frame in range(num_frames):
-        pose3d_scatter = go.Scatter3d(
-            x=landmarks_3d[frame][:, 0],
-            y=landmarks_3d[frame][:, 1],
-            z=landmarks_3d[frame][:, 2],
-            mode="lines+markers",
-            marker=dict(size=2.5, color="red"),
-            line=dict(color="red", width=2),
-            text=d_time[frame],
-        )
-        data_k = pose3d_scatter
+        data_k = [
+            go.Scatter3d(
+                x=landmarks[frame, :, 0],
+                y=landmarks[frame, :, 1],
+                z=landmarks[frame, :, 2],
+                mode="markers",
+                marker=dict(size=2.5, color="red"),
+            ),
+            go.Scatter3d(
+                x=out_connection_series[frame]["x"],
+                y=out_connection_series[frame]["y"],
+                z=out_connection_series[frame]["z"],
+                mode="lines",
+                line={"color": "black", "width": 3},
+            ),
+        ]
         frames.append(dict(data=data_k, name=d_time[frame]))
 
     fig = dict(data=data, layout=layout, frames=frames)
