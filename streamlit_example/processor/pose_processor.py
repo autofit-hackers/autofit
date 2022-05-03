@@ -261,8 +261,7 @@ class PoseProcessor(VideoProcessorBase):
         assert self.video_save_path is not None
         assert isinstance(frame, av.VideoFrame)
         os.makedirs(os.path.dirname(self.video_save_path), exist_ok=True)
-        fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
-        video = cv.VideoWriter(self.video_save_path, fourcc, fps, (frame.width, frame.height))
+        video = cv.VideoWriter(self.video_save_path, fps=fps, frame_size=(frame.width, frame.height))
         print(f"Start saving video to {self.video_save_path} ...")
         return video
 
