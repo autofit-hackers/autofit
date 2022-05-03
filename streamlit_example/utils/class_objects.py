@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, NamedTuple, Union
@@ -14,6 +15,7 @@ class PoseLandmarksObject(NamedTuple):
 
     landmark: np.ndarray
     visibility: np.ndarray
+    timestamp: Union[float, None]
 
     def get_height(self):
         neck = (self.landmark[11] + self.landmark[12]) / 2
@@ -22,6 +24,7 @@ class PoseLandmarksObject(NamedTuple):
 
     def get_foot_position(self):
         return (self.landmark[27] + self.landmark[28]) / 2
+
 
 # Not used yet
 class PoseFrames(NamedTuple):
@@ -113,7 +116,7 @@ class CalibrationSettings:
                 self.__dict__[variable_name] = value
 
 
-def mp_res_to_pose_obj(mp_res) -> PoseLandmarksObject:
+def mp_res_to_pose_obj(mp_res, timestamp: Union[float, None]) -> PoseLandmarksObject:
     assert hasattr(mp_res, "pose_landmarks")
     assert hasattr(mp_res.pose_landmarks, "landmark")
     picklable_results = PoseLandmarksObject(
@@ -121,5 +124,6 @@ def mp_res_to_pose_obj(mp_res) -> PoseLandmarksObject:
             [[pose_landmark.x, pose_landmark.y, pose_landmark.z] for pose_landmark in mp_res.pose_landmarks.landmark]
         ),
         visibility=np.array([pose_landmark.visibility for pose_landmark in mp_res.pose_landmarks.landmark]),
+        timestamp=timestamp,
     )
     return picklable_results

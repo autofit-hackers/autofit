@@ -5,6 +5,7 @@ import pickle
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
+import time
 
 import av
 import cv2 as cv
@@ -30,6 +31,7 @@ def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSetting
     while True:
         try:
             input_item = in_queue.get(timeout=10)
+            outqueue_timestamp: float = time.time()
         except Exception as e:
             print(e)
             continue
@@ -44,7 +46,7 @@ def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSetting
             out_queue.put_nowait(None)
             continue
 
-        out_queue.put_nowait(mp_res_to_pose_obj(results))
+        out_queue.put_nowait(mp_res_to_pose_obj(results, timestamp=outqueue_timestamp))
 
 
 class PoseProcessor(VideoProcessorBase):
@@ -183,7 +185,9 @@ class PoseProcessor(VideoProcessorBase):
         print(scale, slide)
 
         adjusted_poses = [
-            PoseLandmarksObject(landmark=frame.landmark * scale + slide, visibility=frame.visibility)
+            PoseLandmarksObject(
+                landmark=frame.landmark * scale + slide, visibility=frame.visibility, timestamp=frame.timestamp
+            )
             for frame in loaded_frames
         ]
 
@@ -272,6 +276,7 @@ class PoseProcessor(VideoProcessorBase):
         print(f"Video has saved to {self.video_save_path}")
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        recv_timestamp: float = time.time()
         display_fps = self._FpsCalculator.get()
 
         if self.save_state.is_saving_video and (self.video_writer is None):
@@ -377,7 +382,9 @@ class PoseProcessor(VideoProcessorBase):
             self.pose_memory.append(
                 results
                 if results
-                else PoseLandmarksObject(landmark=np.zeros(shape=(33, 3)), visibility=np.zeros(shape=(33, 1)))
+                else PoseLandmarksObject(
+                    landmark=np.zeros(shape=(33, 3)), visibility=np.zeros(shape=(33, 1)), timestamp=recv_timestamp
+                )
             )  # NOTE: ビデオのフレームインデックスとposeのフレームインデックスを一致させるために、2D Pose Estimation ができなかった場合は zero padding
 
         # pose の保存（書き出し）
