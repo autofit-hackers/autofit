@@ -18,7 +18,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from soupsieve import select
 from utils import DLT, PoseLandmarksObject, get_projection_matrix
 
-from apps.visualize_pose import visualize_pose
+from apps.pose_visualization import visualize_pose
 
 
 def reconstruct_pose_3d(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):
@@ -63,17 +63,24 @@ def app():
         projection_matrix_front = get_projection_matrix(camera_info_path, "front")
         projection_matrix_side = get_projection_matrix(camera_info_path, "side")
 
-        landmarks_3d = reconstruct_pose_3d(
+        reconstructed_landmarks = reconstruct_pose_3d(
             landmarks_front=landmarks_front,
             landmarks_side=landmarks_side,
             projection_matrix_front=projection_matrix_front,
             projection_matrix_side=projection_matrix_side,
         )
-        with open(Path(f"{camera_info_path}/reconstructed3d.pkl"), "wb") as f:
-            pickle.dump(landmarks_3d, f)
-        st.write("3D Pose reconstruction finished!")
+        reconstructed_pose = [
+            PoseLandmarksObject(landmark=landmark, visibility=visibility)
+            for landmark, visibility in zip(
+                reconstructed_landmarks,
+                np.ones(shape=(len(reconstructed_landmarks), 33, 1)),
+            )
+        ]
+        with open(Path(f"{session_path}/pose/reconstructed3d.pkl"), "wb") as f:
+            pickle.dump(reconstructed_pose, f)
+        st.write("Reconstructed 3D Pose has been saved!")
 
-        visualize_pose(landmarks_3d)
+        visualize_pose(reconstructed_landmarks)
 
 
 if __name__ == "__main__":
