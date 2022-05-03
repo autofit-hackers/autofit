@@ -218,6 +218,7 @@ fabric.properties
 *.jpg
 *.mp4
 *.dat
+*.html
 
 # cache
 __pycache__/

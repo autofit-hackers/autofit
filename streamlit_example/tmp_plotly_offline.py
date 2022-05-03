@@ -1,3 +1,4 @@
+import argparse
 import os
 import pickle
 from pathlib import Path
@@ -6,8 +7,10 @@ from unicodedata import name
 import mediapipe as mp
 import numpy as np
 import plotly.graph_objects as go
+import plotly.offline as offline
 import streamlit as st
 from soupsieve import select
+
 from utils import PoseLandmarksObject
 
 
@@ -162,51 +165,20 @@ def visualize_pose(landmarks):
         ]
         frames.append(dict(data=data_k, name=d_time[frame]))
 
-    fig = dict(data=data, layout=layout, frames=frames)
-    st.plotly_chart(fig)
+    fig = go.Figure(data=data, layout=layout, frames=frames)
+    fig.show()
 
 
 def app():
-    # Initialize st.session_state
-    if "start_visualize" not in st.session_state:
-        st.session_state["start_visualize"] = False
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path")
+    args = parser.parse_args()
 
-    # User inputs
-    with st.sidebar:
-        pose_file = st.file_uploader("Select Pose File")
-        start_visualize_2d = st.button("Vizualize Pose", disabled=not pose_file)
-        trimmed_frame_start = st.number_input("Trim pose from frame:", min_value=0)
-        trimmed_frame_end = st.number_input(
-            "to frame:",
-            min_value=trimmed_frame_start,
-            disabled=not trimmed_frame_start,
-        )
-        save_trimmed_pose = st.button("Save Trimmed Pose", disabled=not trimmed_frame_end)
-
-    # Update st.session_state to hold flags between page refresh
-    if start_visualize_2d:
-        st.session_state["start_visualize"] = True
-
-    # Load uploaded pose and vizualize it
-    if st.session_state["start_visualize"] and pose_file:
+    with open(args.path, "rb") as pose_file:
         uploaded_pose = pickle.load(pose_file)
-        landmarks_3d = [pose.landmark for pose in uploaded_pose]
+    landmarks_3d = [pose.landmark for pose in uploaded_pose]
 
-        # Trim uploaded pose based on selected frame numbers
-        if save_trimmed_pose:
-            trimmed_pose_3d = [
-                PoseLandmarksObject(landmark=landmark, visibility=visibility)
-                for landmark, visibility in zip(
-                    landmarks_3d[trimmed_frame_start : trimmed_frame_end + 1],
-                    np.ones(shape=(int(trimmed_frame_end), 33, 1)),
-                )
-            ]
-            os.makedirs("test_data")
-            with open(Path(f"test_data/trimmed_pose.pkl"), "wb") as f:
-                pickle.dump(trimmed_pose_3d, f)
-            st.write("Trimmed Pose Successfully Saved!")
-
-        visualize_pose(landmarks_3d)
+    visualize_pose(landmarks_3d)
 
 
 if __name__ == "__main__":
