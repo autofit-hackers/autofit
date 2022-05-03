@@ -43,7 +43,7 @@ def reconstruct_pose_3d(session_path, camera_info_path):
 
         landmark_3d = np.array(landmark_3d)
         landmark_3d = (
-            landmark_3d - (landmark_3d[10, :] + landmark_3d[11, :]) / 2 + [0, 0, 50]
+            landmark_3d - (landmark_3d[10, :] + landmark_3d[11, :]) / 2 + [0, 0, 0]
         )  # set the center of feet to [0, 0, 50]
         landmarks_3d.append(landmark_3d)
 

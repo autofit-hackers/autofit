@@ -1,8 +1,7 @@
 import streamlit as st
 
 from apps import calibration_app  # import your app modules here
-from apps import (get_physical_info_app, make_session_app,
-                  pose3d_reconstruction, pose_app, pose_visualization)
+from apps import get_physical_info_app, make_session_app, pose3d_reconstruction, pose_app, pose_visualization
 from utils import MultiApp
 
 
