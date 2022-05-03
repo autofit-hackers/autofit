@@ -21,7 +21,16 @@ from utils import DLT, PoseLandmarksObject, get_projection_matrix
 from apps.pose_visualization import visualize_pose
 
 
-def reconstruct_pose_3d(landmarks_front, landmarks_side, projection_matrix_front, projection_matrix_side):
+def reconstruct_pose_3d(session_path, camera_info_path):
+    with open(Path(f"{session_path}/pose/front.pkl"), "rb") as f:
+        poses_front = pickle.load(f)
+        landmarks_front = [pose.landmark for pose in poses_front]
+    with open(Path(f"{session_path}/pose/side.pkl"), "rb") as f:
+        poses_side = pickle.load(f)
+        landmarks_side = [pose.landmark for pose in poses_side]
+    projection_matrix_front = get_projection_matrix(camera_info_path, "front")
+    projection_matrix_side = get_projection_matrix(camera_info_path, "side")
+
     landmarks_3d = []
     for landmark_front, landmark_side in zip(landmarks_front, landmarks_side):
         landmark_3d = []
@@ -53,22 +62,8 @@ def app():
         session_meta = json.load(session_meta_file)
         session_path = session_meta["session_path"]
         camera_info_path = Path(session_meta["camera_info_path"])
-        with open(Path(f"{session_path}/pose/front.pkl"), "rb") as f:
-            poses_front = pickle.load(f)
-            landmarks_front = [pose.landmark for pose in poses_front]
-        with open(Path(f"{session_path}/pose/side.pkl"), "rb") as f:
-            poses_side = pickle.load(f)
-            landmarks_side = [pose.landmark for pose in poses_side]
 
-        projection_matrix_front = get_projection_matrix(camera_info_path, "front")
-        projection_matrix_side = get_projection_matrix(camera_info_path, "side")
-
-        reconstructed_landmarks = reconstruct_pose_3d(
-            landmarks_front=landmarks_front,
-            landmarks_side=landmarks_side,
-            projection_matrix_front=projection_matrix_front,
-            projection_matrix_side=projection_matrix_side,
-        )
+        reconstructed_landmarks = reconstruct_pose_3d(session_path=session_path, camera_info_path=camera_info_path)
         reconstructed_pose = [
             PoseLandmarksObject(landmark=landmark, visibility=visibility)
             for landmark, visibility in zip(

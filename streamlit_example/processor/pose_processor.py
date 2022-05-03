@@ -3,6 +3,7 @@ import json
 import os
 import pickle
 from multiprocessing import Process, Queue
+from pathlib import Path
 from typing import List, Union
 
 import av
@@ -123,9 +124,12 @@ class PoseProcessor(VideoProcessorBase):
         with open(self.pose_save_path, "wb") as f:
             pickle.dump(self.pose_memory, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+    # TODO: auto-reconstruction when save pose
     def _reconstruct_pose_3d(self):
-
-        return
+        assert self.pose_save_path is not None
+        pose_dir = os.path.dirname(self.pose_save_path)
+        if os.path.isfile(f"{pose_dir}/front.pkl") and os.path.isfile(f"{pose_dir}/side.pkl"):
+            return
 
     def _load_pose(self, uploaded_pose_file):
         with open(f"recorded_poses/{uploaded_pose_file.name}", "rb") as handle:
@@ -380,7 +384,7 @@ class PoseProcessor(VideoProcessorBase):
         # pose の保存（書き出し）
         if (len(self.pose_memory) > 0) and (not self.save_state.is_saving_pose):
             self._save_pose()
-            self._reconstruct_pose_3d
+            # self._reconstruct_pose_3d
             self.pose_memory = []
 
         # Show fps
