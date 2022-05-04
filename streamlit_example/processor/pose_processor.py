@@ -14,7 +14,7 @@ import numpy as np
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
+from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -84,11 +84,11 @@ class PoseProcessor(VideoProcessorBase):
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
-        self.rep_count = 0
-        self.frame_index = 0
-        self.is_lifting_up = False
-        self.body_length = 0
-        self.initial_body_height = 0
+        # self.rep_count = 0
+        # self.frame_index = 0
+        # self.is_lifting_up = False
+        # self.body_length = 0
+        # self.initial_body_height = 0
         self.reload_pose = reload_pose
         self.reset_button = reset_button
 
@@ -98,8 +98,7 @@ class PoseProcessor(VideoProcessorBase):
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_memory: List[PoseLandmarksObject] = []
 
-        self.key_frame_draw_count = 0
-        self.tmp_body_heights: List = []
+        self.rep_state: RepState = RepState()
 
         # お手本ポーズを3DでLoad
         self.uploaded_pose_file = uploaded_pose_file
@@ -148,7 +147,6 @@ class PoseProcessor(VideoProcessorBase):
     def _reset_training_set(self, realtime_pose: PoseLandmarksObject):
         if self.uploaded_frames:
             self.positioned_frames = self._adjust_poses(realtime_pose, self.uploaded_frames)
-            print(len(self.positioned_frames))
             self.loaded_frames = self.positioned_frames.copy()
         self.initial_body_height = realtime_pose.get_height()
         print(self.initial_body_height)
@@ -189,37 +187,6 @@ class PoseProcessor(VideoProcessorBase):
         ]
 
         return adjusted_poses
-
-    def _update_rep_state(self, pose: PoseLandmarksObject, upper_thre: float, lower_thre: float):
-        self.realtime_body_height = pose.get_height()
-        if self.tmp_body_heights == []:
-            self.tmp_body_heights = []
-        self.tmp_body_heights = self.tmp_body_heights.pop()
-
-    def _update_rep_count(self, pose: PoseLandmarksObject, upper_thre: float, lower_thre: float) -> None:
-        if self.frame_index == 0:
-            self.initial_body_height = pose.get_height()
-        else:
-            self.body_length = pose.get_height()
-            if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_height:
-                self.rep_count += 1
-                self.is_lifting_up = False
-            elif not self.is_lifting_up and self.body_length < lower_thre * self.initial_body_height:
-                self.is_lifting_up = True
-
-    def _is_key_frame(self, realtime_array, upper_thre=0.8, lower_thre=0.94) -> bool:
-        is_key_frame: bool = False
-        if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_height:
-            # self.(realtime_array)
-            is_key_frame = True
-        # print(
-        #     self.is_lifting_up,
-        #     (self.body_length > upper_thre * self.initial_body_height),
-        #     self.body_length,
-        #     self.initial_body_height,
-        #     is_key_frame,
-        # )
-        return is_key_frame
 
     def _realtime_coaching(self, pose: PoseLandmarksObject):
         recommend = []
@@ -287,23 +254,6 @@ class PoseProcessor(VideoProcessorBase):
 
         if self.display_settings.show_2d and result_pose:
 
-            # キーフレームを検出してフレームをリロード
-            if self._is_key_frame(result_pose):
-                self.key_frame_draw_count = 30
-                # self.loaded_frames = self.positioned_frames.copy()
-            if self.key_frame_draw_count > 0:
-                cv.putText(
-                    processed_frame,
-                    "KEY FRAME",
-                    (10, 90),
-                    cv.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    (0, 255, 128),
-                    2,
-                    cv.LINE_AA,
-                )
-                self.key_frame_draw_count -= 1
-
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
             if self.reset_button:
@@ -314,15 +264,16 @@ class PoseProcessor(VideoProcessorBase):
                 # レップカウントを更新
                 assert self.rep_count_settings.upper_thresh is not None
                 assert self.rep_count_settings.lower_thresh is not None
-                self._update_rep_count(
-                    result_pose,
+                self.rep_state.update_counter(
+                    pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
 
-            # NOTE: ここに指導がくるので、ndarrayで持ちたい
-            # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
-            # TODO: realtime coaching の動作確認とデバッグ
+            # キーフレームを検出してフレームをリロード
+            if self.rep_state.is_keyframe(pose=result_pose):
+                self.loaded_frames = self.positioned_frames.copy()
+
             # print(self._realtime_coaching(results))
 
             # Poseの描画 ################################################################
@@ -371,7 +322,7 @@ class PoseProcessor(VideoProcessorBase):
         if self.rep_count_settings.do_count_rep:
             cv.putText(
                 processed_frame,
-                f"Rep:{self.rep_count}",
+                f"Rep:{self.rep_state.rep_count}",
                 (10, 60),
                 cv.FONT_HERSHEY_SIMPLEX,
                 0.6,
@@ -380,7 +331,7 @@ class PoseProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        self.frame_index += 1
+        # self.frame_index += 1
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):
