@@ -24,6 +24,7 @@ class PoseLandmarksObject(NamedTuple):
     def get_foot_position(self):
         return (self.landmark[27] + self.landmark[28]) / 2
 
+
 @dataclass
 class ModelSettings:
     model_complexity: int
