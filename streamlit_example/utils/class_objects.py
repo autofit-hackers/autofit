@@ -4,7 +4,6 @@ from turtle import update
 from typing import List, NamedTuple, Union
 
 import numpy as np
-from this import d
 from frozendict import frozendict
 
 
