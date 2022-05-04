@@ -1,4 +1,3 @@
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, NamedTuple, Union
@@ -24,20 +23,6 @@ class PoseLandmarksObject(NamedTuple):
 
     def get_foot_position(self):
         return (self.landmark[27] + self.landmark[28]) / 2
-
-
-# Not used yet
-class PoseFrames(NamedTuple):
-    """
-    landmark.shape == List(frame数, 関節数, 3)
-    visibility.shape == (frame数, 関節数, 1)
-    keyframes: key_frameのindexを格納
-    """
-
-    landmarks: List
-    visibilities: np.ndarray
-    keyframes: List
-
 
 @dataclass
 class ModelSettings:
