@@ -4,6 +4,7 @@ from typing import List, NamedTuple, Union
 
 import numpy as np
 from this import d
+from frozendict import frozendict
 
 
 class PoseLandmarksObject(NamedTuple):
@@ -15,14 +16,42 @@ class PoseLandmarksObject(NamedTuple):
     landmark: np.ndarray
     visibility: np.ndarray
     timestamp: Union[float, None]
+    bone_edge_names = frozendict(
+        {
+            "shoulder_width": (11, 12),
+            "shin": (27, 25),
+            "thigh": (25, 23),
+            "full_leg": (27, 23),
+            "pelvic_width": (23, 24),
+            "flank": (23, 11),
+            "upper_arm": (11, 13),
+            "fore_arm": (13, 15),
+            "full_arm": (11, 15),
+        }
+    )
 
-    def get_height(self):
+    def get_height(self) -> np.double:
         neck = (self.landmark[11] + self.landmark[12]) / 2
         foot_center = (self.landmark[27] + self.landmark[28]) / 2
         return np.linalg.norm(neck - foot_center)
 
-    def get_foot_position(self):
+    def get_foot_position(self) -> np.ndarray:
         return (self.landmark[27] + self.landmark[28]) / 2
+
+    def get_keypoint(self, training_name: str) -> np.ndarray:
+        if training_name == "squat":
+            return (self.landmark[11] + self.landmark[12]) / 2
+        else:
+            return (self.landmark[11] + self.landmark[12]) / 2
+
+    def get_bone_lengths(self) -> dict:
+        bone_dict = {"foot_neck_height": self.get_height()}
+        for bone_edge_key in self.bone_edge_names.keys():
+            bone_dict[bone_edge_key] = np.linalg.norm(
+                self.landmark[self.bone_edge_names[bone_edge_key][0]]
+                - self.landmark[self.bone_edge_names[bone_edge_key][1]]
+            )
+        return bone_dict
 
 
 @dataclass

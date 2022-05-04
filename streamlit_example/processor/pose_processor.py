@@ -99,6 +99,7 @@ class PoseProcessor(VideoProcessorBase):
         self.pose_memory: List[PoseLandmarksObject] = []
 
         self.key_frame_draw_count = 0
+        self.tmp_body_heights: List = []
 
         # お手本ポーズを3DでLoad
         self.uploaded_pose_file = uploaded_pose_file
@@ -189,11 +190,17 @@ class PoseProcessor(VideoProcessorBase):
 
         return adjusted_poses
 
+    def _update_rep_state(self, pose: PoseLandmarksObject, upper_thre: float, lower_thre: float):
+        self.realtime_body_height = pose.get_height()
+        if self.tmp_body_heights == []:
+            self.tmp_body_heights = []
+        self.tmp_body_heights = self.tmp_body_heights.pop()
+
     def _update_rep_count(self, pose: PoseLandmarksObject, upper_thre: float, lower_thre: float) -> None:
         if self.frame_index == 0:
             self.initial_body_height = pose.get_height()
         else:
-            self.body_length = pose.landmark[29][1] - pose.landmark[11][1]
+            self.body_length = pose.get_height()
             if self.is_lifting_up and self.body_length > upper_thre * self.initial_body_height:
                 self.rep_count += 1
                 self.is_lifting_up = False
@@ -276,15 +283,12 @@ class PoseProcessor(VideoProcessorBase):
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        results: PoseLandmarksObject = self._infer_pose(frame)
+        result_pose: PoseLandmarksObject = self._infer_pose(frame)
 
-        if self.display_settings.show_2d and results:
-
-            # results -> ndarray (named: realtime_array) : 不要
-            self.realtime_array = results
+        if self.display_settings.show_2d and result_pose:
 
             # キーフレームを検出してフレームをリロード
-            if self._is_key_frame(self.realtime_array):
+            if self._is_key_frame(result_pose):
                 self.key_frame_draw_count = 30
                 # self.loaded_frames = self.positioned_frames.copy()
             if self.key_frame_draw_count > 0:
@@ -303,7 +307,7 @@ class PoseProcessor(VideoProcessorBase):
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
             if self.reset_button:
-                self._reset_training_set(results)
+                self._reset_training_set(result_pose)
                 self.reset_button = False
 
             if self.rep_count_settings.do_count_rep:
@@ -311,7 +315,7 @@ class PoseProcessor(VideoProcessorBase):
                 assert self.rep_count_settings.upper_thresh is not None
                 assert self.rep_count_settings.lower_thresh is not None
                 self._update_rep_count(
-                    results,
+                    result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
@@ -322,11 +326,11 @@ class PoseProcessor(VideoProcessorBase):
             # print(self._realtime_coaching(results))
 
             # Poseの描画 ################################################################
-            if results.landmark is not None:
+            if result_pose.landmark is not None:
                 # 描画
                 processed_frame = draw_landmarks_pose(
                     processed_frame,
-                    results,
+                    result_pose,
                 )
 
             # お手本Poseの描画
@@ -337,8 +341,8 @@ class PoseProcessor(VideoProcessorBase):
         # pose の保存 (pose_mem への追加) ########################################################
         if self.save_state.is_saving_pose and self.pose_save_path is not None:
             self.pose_memory.append(
-                results
-                if results
+                result_pose
+                if result_pose
                 else PoseLandmarksObject(
                     landmark=np.zeros(shape=(33, 3)), visibility=np.zeros(shape=(33, 1)), timestamp=recv_timestamp
                 )
