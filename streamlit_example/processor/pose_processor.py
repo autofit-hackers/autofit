@@ -248,7 +248,7 @@ class PoseProcessor(VideoProcessorBase):
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
             if self.is_clicked_reset_button:
                 self._reset_training_set(result_pose)
-                self.rep_state.reset_rep()
+                self.rep_state.reset_rep(pose=result_pose)
                 self.is_clicked_reset_button = False
 
             if self.rep_count_settings.do_count_rep:
@@ -263,7 +263,7 @@ class PoseProcessor(VideoProcessorBase):
 
             # キーフレームを検出してフレームをリロード
             if self.rep_state.is_keyframe(pose=result_pose):
-                self.loaded_frames = self.positioned_frames.copy()
+                # self.loaded_frames = self.positioned_frames.copy()
                 color = (0, 0, 255)
             else:
                 color = (128, 128, 0)

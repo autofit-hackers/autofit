@@ -179,24 +179,24 @@ class RepState:
         self.tmp_body_heights.pop(0)
         self.tmp_body_heights.append(height)
 
-    def is_keyframe(self, pose: PoseLandmarksObject, threshold=0.95):
-        if len(self.tmp_body_heights) == 10:
-            is_delta_lifting_up = self.tmp_body_heights[9] > self.tmp_body_heights[0]
-            # print(is_delta_lifting_up, self.tmp_body_heights[9], self.tmp_body_heights[0])
-            if (
-                self.is_lifting_up
-                and is_delta_lifting_up
-                and pose.get_2d_height() > self.initial_body_height * threshold
-            ):
-                print("keyframe!!")
-                return True
-            else:
-                return False
+    def is_keyframe(self, pose: PoseLandmarksObject, lower_thre=0.96, upper_thre=0.97):
+        height = pose.get_2d_height()
+        print(self.did_touch_top)
+        if self.did_touch_top and height < self.initial_body_height * lower_thre:
+            self.did_touch_top = False
+            print("keyframe!!!!")
+            return True
+        elif not self.did_touch_top and height > self.initial_body_height * upper_thre:
+            self.did_touch_top = True
+
+            print("flag")
+            return False
         else:
             return False
 
-    def reset_rep(self):
+    def reset_rep(self, pose: PoseLandmarksObject):
         self.rep_count: int = 0
         self.is_lifting_up = False
         self.did_touch_bottom = False
         self.did_touch_top = True
+        self.initial_body_height = pose.get_2d_height()
