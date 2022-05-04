@@ -60,19 +60,9 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
     def _save_bone_info(self, captured_skeleton: PoseLandmarksObject):
         print("save!!!")
         # TODO: この辺はutilsに連れて行く
-        bone_edge_names = {
-            "shoulder_width": (11, 12),
-            "shin": (27, 25),
-            "thigh": (25, 23),
-            "full_leg": (27, 23),
-            "pelvic_width": (23, 24),
-            "flank": (23, 11),
-            "upper_arm": (11, 13),
-            "fore_arm": (13, 15),
-            "full_arm": (11, 15),
-        }
+        bone_edge_names = captured_skeleton.bone_edge_names
 
-        bone_dict = {"foot_neck_height": self._calculate_height(captured_skeleton)}
+        bone_dict = {"foot_neck_height": captured_skeleton.get_height()}
         for bone_edge_key in bone_edge_names.keys():
             bone_dict[bone_edge_key] = np.linalg.norm(
                 captured_skeleton.landmark[bone_edge_names[bone_edge_key][0]]
@@ -82,14 +72,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         with open("data.json", "w") as fp:
             # TODO: data.json のパスをインスタンス変数化
             json.dump(bone_dict, fp)
-
-    def _calculate_height(self, pose: PoseLandmarksObject):
-        neck = (pose.landmark[11] + pose.landmark[12]) / 2
-        foot_center = (pose.landmark[27] + pose.landmark[28]) / 2
-        return np.linalg.norm(neck - foot_center)
-
-    def _calculate_foot_position(self, pose: PoseLandmarksObject):
-        return (pose.landmark[27] + pose.landmark[28]) / 2
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
