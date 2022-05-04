@@ -30,14 +30,13 @@ def app():
 
         settings_to_refresh.update(
             {
-                "reset_button": st.button("Reset Pose and Start Training Set"),
+                "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
                 "uploaded_pose_file": st.file_uploader("Load example pose file (.pkl)", type="pkl"),
                 "model_settings": model_setting_ui(),
                 "save_state": save_state_ui(),
                 # TODO: save_settings = save_setting_ui(session_meta_exists=session_meta_exists)
                 "rep_count_settings": rep_count_setting_ui(),
                 "display_settings": display_setting_ui(),
-                "reload_pose": reload_button_ui,
             }
         )
 

@@ -59,9 +59,8 @@ class PoseProcessor(VideoProcessorBase):
         # save_settings: SaveSettings,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
-        reload_pose: bool,
         uploaded_pose_file=None,
-        reset_button: bool = False,
+        is_clicked_reset_button: bool = False,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
     ) -> None:
@@ -84,13 +83,7 @@ class PoseProcessor(VideoProcessorBase):
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
-        # self.rep_count = 0
-        # self.frame_index = 0
-        # self.is_lifting_up = False
-        # self.body_length = 0
-        # self.initial_body_height = 0
-        self.reload_pose = reload_pose
-        self.reset_button = reset_button
+        self.is_clicked_reset_button = is_clicked_reset_button
 
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
@@ -256,9 +249,9 @@ class PoseProcessor(VideoProcessorBase):
 
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
-            if self.reset_button:
+            if self.is_clicked_reset_button:
                 self._reset_training_set(result_pose)
-                self.reset_button = False
+                self.is_clicked_reset_button = False
 
             if self.rep_count_settings.do_count_rep:
                 # レップカウントを更新
@@ -331,7 +324,6 @@ class PoseProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        # self.frame_index += 1
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):

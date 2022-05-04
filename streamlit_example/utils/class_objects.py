@@ -110,7 +110,7 @@ class OperationStates:
         self,
         reload_pose: bool,
         capture_skeleton: bool,
-        reset_button: bool,
+        is_clicked_reset_button: bool,
     ):
         for variable_name, value in locals().items():
             if not variable_name == "self":
