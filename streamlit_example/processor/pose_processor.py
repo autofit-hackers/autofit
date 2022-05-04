@@ -2,10 +2,10 @@ import copy
 import json
 import os
 import pickle
+import time
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
-import time
 
 import av
 import cv2 as cv
@@ -64,7 +64,6 @@ class PoseProcessor(VideoProcessorBase):
         reset_button: bool = False,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
-        skeleton_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -98,9 +97,6 @@ class PoseProcessor(VideoProcessorBase):
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_memory: List[PoseLandmarksObject] = []
-
-        self.skeleton_save_path: Union[str, None] = skeleton_save_path
-        self.capture_skeleton: bool = False
 
         self.key_frame_draw_count = 0
 
@@ -193,32 +189,6 @@ class PoseProcessor(VideoProcessorBase):
 
         return adjusted_poses
 
-    def _save_bone_info(self, captured_skeleton: PoseLandmarksObject):
-        print("save!!!")
-        # TODO: この辺はutilsに連れて行く
-        bone_edge_names = {
-            "shoulder_width": (11, 12),
-            "shin": (27, 25),
-            "thigh": (25, 23),
-            "full_leg": (27, 23),
-            "pelvic_width": (23, 24),
-            "flank": (23, 11),
-            "upper_arm": (11, 13),
-            "fore_arm": (13, 15),
-            "full_arm": (11, 15),
-        }
-
-        bone_dict = {"foot_neck_height": captured_skeleton.get_height()}
-        for bone_edge_key in bone_edge_names.keys():
-            bone_dict[bone_edge_key] = np.linalg.norm(
-                captured_skeleton.landmark[bone_edge_names[bone_edge_key][0]]
-                - captured_skeleton.landmark[bone_edge_names[bone_edge_key][1]]
-            )
-
-        with open("data.json", "w") as fp:
-            # TODO: data.json のパスをインスタンス変数化
-            json.dump(bone_dict, fp)
-
     def _update_rep_count(self, pose: PoseLandmarksObject, upper_thre: float, lower_thre: float) -> None:
         if self.frame_index == 0:
             self.initial_body_height = pose.get_height()
@@ -293,13 +263,6 @@ class PoseProcessor(VideoProcessorBase):
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
-        # 画像の保存
-        # TODO: capture skeleton の rename or jsonの保存までするように関数書き換え
-        if self.capture_skeleton and self.skeleton_save_path:
-            print(self.skeleton_save_path)
-            cv.imwrite(self.skeleton_save_path, frame)
-            self.capture_skeleton = False
-
         # 動画の保存（初期化
         # if (self.save_state.is_saving_video) and (self.video_writer is None) and (self.video_save_path is not None):
         if self.save_state.is_saving_video:
@@ -357,12 +320,6 @@ class PoseProcessor(VideoProcessorBase):
             # NOTE: または infer_pose -> results to ndarray -> 重ね合わせパラメータ取得・指導の計算 -> ndarray to results -> 描画
             # TODO: realtime coaching の動作確認とデバッグ
             # print(self._realtime_coaching(results))
-
-            if self.capture_skeleton:
-                # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
-                self._save_bone_info(results)
-                # print(self.skeleton_save_path, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
-                self.capture_skeleton = False
 
             # Poseの描画 ################################################################
             if results.landmark is not None:
