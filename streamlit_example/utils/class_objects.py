@@ -4,7 +4,6 @@ from turtle import update
 from typing import List, NamedTuple, Union
 
 import numpy as np
-from this import d
 from frozendict import frozendict
 
 
@@ -35,6 +34,11 @@ class PoseLandmarksObject(NamedTuple):
         neck = (self.landmark[11] + self.landmark[12]) / 2
         foot_center = (self.landmark[27] + self.landmark[28]) / 2
         return np.linalg.norm(neck - foot_center)
+
+    def get_2d_height(self) -> np.double:
+        neck = (self.landmark[11] + self.landmark[12]) / 2
+        foot_center = (self.landmark[27] + self.landmark[28]) / 2
+        return abs((neck - foot_center)[1])
 
     def get_foot_position(self) -> np.ndarray:
         return (self.landmark[27] + self.landmark[28]) / 2
@@ -154,34 +158,46 @@ class RepState:
     initial_body_height = 0
     tmp_body_heights: List[np.double] = field(default_factory=list)
 
-    def init_rep(self, pose: PoseLandmarksObject):
-        self.initial_body_height = pose.get_height()
+    def init_rep(self, height: np.double):
+        self.initial_body_height = height
         self.tmp_body_heights = [self.initial_body_height] * 10
 
     def update_rep(self, pose: PoseLandmarksObject, lower_thre, upper_thre):
-        if self.tmp_body_heights is None:
-            self.init_rep(pose=pose)
-        self.update_counter(pose=pose, lower_thre=lower_thre, upper_thre=upper_thre)
-        self.update_lifting_state(pose=pose)
+        height = pose.get_2d_height()
+        if len(self.tmp_body_heights) < 10:
+            self.init_rep(height=height)
+        self.update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
+        self.update_lifting_state(height=height)
 
-    def update_counter(self, pose: PoseLandmarksObject, lower_thre, upper_thre):
-        height = pose.get_height()
-        if height < self.initial_body_height * lower_thre:
+    def update_counter(self, height: np.double, lower_thre, upper_thre):
+        if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
             self.did_touch_bottom = True
         elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
             self.rep_count += 1
             self.did_touch_bottom = False
 
-    def update_lifting_state(self, pose: PoseLandmarksObject):
-        self.tmp_body_heights.pop()
-        self.tmp_body_heights.append(pose.get_height())
+    def update_lifting_state(self, height: np.double):
+        self.tmp_body_heights.pop(0)
+        self.tmp_body_heights.append(height)
 
     def is_keyframe(self, pose: PoseLandmarksObject, threshold=0.95):
         if len(self.tmp_body_heights) == 10:
             is_delta_lifting_up = self.tmp_body_heights[9] > self.tmp_body_heights[0]
-            if self.is_lifting_up and is_delta_lifting_up and pose.get_height() > self.initial_body_height * threshold:
+            # print(is_delta_lifting_up, self.tmp_body_heights[9], self.tmp_body_heights[0])
+            if (
+                self.is_lifting_up
+                and is_delta_lifting_up
+                and pose.get_2d_height() > self.initial_body_height * threshold
+            ):
+                print("keyframe!!")
                 return True
             else:
                 return False
         else:
             return False
+
+    def reset_rep(self):
+        self.rep_count: int = 0
+        self.is_lifting_up = False
+        self.did_touch_bottom = False
+        self.did_touch_top = True

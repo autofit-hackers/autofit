@@ -44,5 +44,11 @@
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": ["--line-length", "119"],
   "python.languageServer": "Pylance",
-  "python.linting.enabled": true
+  "python.linting.enabled": true,
+  "cSpell.words": [
+    "picklable",
+    "SENDRECV",
+    "thre",
+    "webrtc"
+  ]
 }

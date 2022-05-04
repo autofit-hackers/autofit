@@ -5,6 +5,7 @@ import pickle
 import time
 from multiprocessing import Process, Queue
 from pathlib import Path
+from turtle import color
 from typing import List, Union
 
 import av
@@ -129,11 +130,7 @@ class PoseProcessor(VideoProcessorBase):
 
     def _show_loaded_pose(self, frame):
         self.showing_coach_pose = self.loaded_frames.pop(0)
-        frame = draw_landmarks_pose(
-            frame,
-            self.showing_coach_pose,
-            is_loaded=True,
-        )
+        frame = draw_landmarks_pose(frame, self.showing_coach_pose, pose_color=(0, 255, 0))
         return frame
 
     # TODO: adjust webcam input aspect when rotate
@@ -251,13 +248,14 @@ class PoseProcessor(VideoProcessorBase):
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
             if self.is_clicked_reset_button:
                 self._reset_training_set(result_pose)
+                self.rep_state.reset_rep()
                 self.is_clicked_reset_button = False
 
             if self.rep_count_settings.do_count_rep:
                 # レップカウントを更新
                 assert self.rep_count_settings.upper_thresh is not None
                 assert self.rep_count_settings.lower_thresh is not None
-                self.rep_state.update_counter(
+                self.rep_state.update_rep(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
@@ -266,16 +264,16 @@ class PoseProcessor(VideoProcessorBase):
             # キーフレームを検出してフレームをリロード
             if self.rep_state.is_keyframe(pose=result_pose):
                 self.loaded_frames = self.positioned_frames.copy()
+                color = (0, 0, 255)
+            else:
+                color = (128, 128, 0)
 
             # print(self._realtime_coaching(results))
 
             # Poseの描画 ################################################################
             if result_pose.landmark is not None:
                 # 描画
-                processed_frame = draw_landmarks_pose(
-                    processed_frame,
-                    result_pose,
-                )
+                processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color)
 
             # お手本Poseの描画
             if self.loaded_frames:
