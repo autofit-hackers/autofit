@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from turtle import update
 from typing import List, NamedTuple, Union
 
 import numpy as np
