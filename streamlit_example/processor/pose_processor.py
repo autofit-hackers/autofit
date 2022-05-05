@@ -94,13 +94,7 @@ class PoseProcessor(VideoProcessorBase):
         self.rep_state: RepState = RepState()
         self.coaching_contents: List[str] = []
 
-        # お手本ポーズを3DでLoad
-        self.uploaded_pose_file = uploaded_pose_file
-        self.loaded_frames: List[PoseLandmarksObject] = []
-        self.uploaded_frames: List[PoseLandmarksObject] = []
-        if uploaded_pose_file is not None:
-            self.uploaded_frames = pickle.load(uploaded_pose_file)
-            self.loaded_frames = self.uploaded_frames.copy()  # 消す
+        self._init_coach_poses(uploaded_pose_file=uploaded_pose_file)
 
         self._pose_process.start()
 
@@ -136,6 +130,16 @@ class PoseProcessor(VideoProcessorBase):
 
         self.rep_state.reset_rep(pose=realtime_pose)
         print(self.rep_state.initial_body_height)
+
+    def _init_coach_poses(self, uploaded_pose_file):
+        # お手本ポーズを3DでLoad
+        self.uploaded_pose_file = uploaded_pose_file
+        self.loaded_frames: List[PoseLandmarksObject] = []
+        self.uploaded_frames: List[PoseLandmarksObject] = []
+        self.positioned_frames: List[PoseLandmarksObject] = []
+        if uploaded_pose_file is not None:
+            self.uploaded_frames = pickle.load(uploaded_pose_file)
+            self.loaded_frames = self.uploaded_frames.copy()
 
     def _adjust_poses(
         self, realtime_pose: PoseLandmarksObject, loaded_frames: List[PoseLandmarksObject], start_frame_idx: int = 0
