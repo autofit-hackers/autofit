@@ -9,3 +9,4 @@ pydub
 black
 plotly
 frozendict
+scikit-learn
