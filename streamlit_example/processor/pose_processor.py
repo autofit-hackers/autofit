@@ -92,6 +92,7 @@ class PoseProcessor(VideoProcessorBase):
         self.pose_memory: List[PoseLandmarksObject] = []
 
         self.rep_state: RepState = RepState()
+        self.coaching_contents: List[str] = []
 
         # お手本ポーズを3DでLoad
         self.uploaded_pose_file = uploaded_pose_file
@@ -139,16 +140,6 @@ class PoseProcessor(VideoProcessorBase):
     def _adjust_poses(
         self, realtime_pose: PoseLandmarksObject, loaded_frames: List[PoseLandmarksObject], start_frame_idx: int = 0
     ) -> List[PoseLandmarksObject]:
-        """拡大縮小・平行移動により、ロードしたお手本フォームを現在のトレーニーのフォームに重ね合わせる
-
-        Args:
-            realtime_pose (PoseLandmarksObject): トレーニーのリアルタイムのポーズ1フレーム
-            loaded_frames (List[PoseLandmarksObject]): ロードしたお手本フォーム
-            start_frame_idx (int, optional): お手本フォームのキーフレーム. Defaults to 0.
-
-        Returns:
-            List[PoseLandmarksObject]: 重ね合わせ後のお手本フォーム
-        """
         realtime_height = realtime_pose.get_2d_height()
         loaded_height = loaded_frames[start_frame_idx].get_2d_height()
         scale = realtime_height / loaded_height  # スケーリング用の定数
@@ -170,8 +161,8 @@ class PoseProcessor(VideoProcessorBase):
 
         return adjusted_poses
 
-    def _realtime_coaching(self, pose: PoseLandmarksObject):
-        recommend = []
+    def _update_realtime_coaching(self, pose: PoseLandmarksObject) -> None:
+        recommend = ["squat"]
         if np.linalg.norm(pose.landmark[27] - pose.landmark[28]) < np.linalg.norm(
             self.showing_coach_pose.landmark[27] - self.showing_coach_pose.landmark[28]
         ):
@@ -180,7 +171,7 @@ class PoseProcessor(VideoProcessorBase):
             self.showing_coach_pose.landmark[15] - self.showing_coach_pose.landmark[16]
         ):
             recommend.append("手幅を広げましょう")
-        return recommend
+        self.coaching_contents = recommend
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -219,11 +210,9 @@ class PoseProcessor(VideoProcessorBase):
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
-        # 動画の保存（初期化
-        # if (self.save_state.is_saving_video) and (self.video_writer is None) and (self.video_save_path is not None):
+        # 動画の保存（初期化）
         if self.save_state.is_saving_video:
             # 動画の保存（フレームの追加）
-            # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
             self.video_writer.write(frame)
 
         # 動画の保存（writerの解放）
@@ -259,17 +248,14 @@ class PoseProcessor(VideoProcessorBase):
             else:
                 color = (255, 0, 0)
 
-            # print(self._realtime_coaching(results))
-
             # Poseの描画 ################################################################
             if result_pose.landmark is not None:
-                # 描画
                 processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color)
 
             # お手本Poseの描画
             if self.loaded_frames:
-                # お手本poseは先に変換しておいてここでは呼ぶだけとする
                 processed_frame = self._show_loaded_pose(processed_frame)
+                self._update_realtime_coaching(result_pose)
 
         # pose の保存 (pose_mem への追加) ########################################################
         if self.save_state.is_saving_pose and self.pose_save_path is not None:

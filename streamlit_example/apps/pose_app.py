@@ -1,7 +1,6 @@
 from curses import meta
 from pathlib import Path
-from typing import Dict, Any, Union
-from matplotlib.axis import XAxis, YAxis
+from typing import Dict, Any
 
 import streamlit as st
 from processor import PoseProcessor
@@ -13,11 +12,7 @@ from ui_components.setting_ui import (
     rep_count_setting_ui,
     save_state_ui,
 )
-import numpy as np
-from ui_components.pose import reload_button_ui
-import plotly.figure_factory as ff
 import plotly.express as px
-import plotly.graph_objects as go
 import time
 import pandas as pd
 
@@ -33,7 +28,7 @@ def app():
             base_save_dir = None
 
         st.markdown("""---""")
-        use_two_cam: bool = st.checkbox("Use two cam", value=False)
+        use_two_cam: bool = st.checkbox("Use two cam", value=True)
 
         settings_to_refresh.update(
             {
@@ -78,9 +73,11 @@ def app():
     else:
         webrtc = _gen_and_refresh_webrtc_ctx(key="front")
         placeholder = st.empty()
+        """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
         while webrtc.video_processor and should_draw_graph:
             df = pd.Series(webrtc.video_processor.rep_state.body_heights, name="height")
             with placeholder.container():
+                st.write(webrtc.video_processor.coaching_contents)
                 st.markdown("### Chart")
                 fig = px.line(data_frame=df, range_x=[len(df) - 600, len(df)])
                 st.write(fig)
