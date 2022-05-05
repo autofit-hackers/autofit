@@ -3,48 +3,18 @@ import json
 import os
 import pickle
 from multiprocessing import Process, Queue
-from turtle import st
 from typing import List, Union
 
 import av
 import cv2 as cv
-import mediapipe as mp
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
 
 from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
-from utils.class_objects import ModelSettings, DisplaySettings
+from utils.class_objects import ModelSettings, DisplaySettings, PoseDef
+from processor.pose_processor import pose_process
 
 _SENTINEL_ = "_SENTINEL_"
-
-
-def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSettings) -> None:
-    mp_pose = mp.solutions.pose  # type: ignore
-    # XXX: ぶっ壊れてる可能性
-    pose = mp_pose.Pose(
-        model_complexity=model_settings.model_complexity,
-        min_detection_confidence=model_settings.min_detection_confidence,
-        min_tracking_confidence=model_settings.min_tracking_confidence,
-    )
-
-    while True:
-        try:
-            input_item = in_queue.get(timeout=10)
-        except Exception as e:
-            print(e)
-            continue
-
-        if isinstance(input_item, type(_SENTINEL_)) and input_item == _SENTINEL_:
-            break
-
-        results = pose.process(input_item)
-        # NOTE: 検出失敗時の例外処理をシンプルにできないか
-        # NOTE: resultsっていう変数名分かりにくくね?
-        if results.pose_landmarks is None:
-            out_queue.put_nowait(None)
-            continue
-
-        out_queue.put_nowait(mp_res_to_pose_obj(results))
 
 
 class GetPhysicalInfoProcessor(VideoProcessorBase):
@@ -88,38 +58,10 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def _save_bone_info(self, captured_skeleton: PoseLandmarksObject):
-        print("save!!!")
-        # TODO: この辺はutilsに連れて行く
-        bone_edge_names = {
-            "shoulder_width": (11, 12),
-            "shin": (27, 25),
-            "thigh": (25, 23),
-            "full_leg": (27, 23),
-            "pelvic_width": (23, 24),
-            "flank": (23, 11),
-            "upper_arm": (11, 13),
-            "fore_arm": (13, 15),
-            "full_arm": (11, 15),
-        }
-
-        bone_dict = {"foot_neck_height": self._calculate_height(captured_skeleton)}
-        for bone_edge_key in bone_edge_names.keys():
-            bone_dict[bone_edge_key] = np.linalg.norm(
-                captured_skeleton.landmark[bone_edge_names[bone_edge_key][0]]
-                - captured_skeleton.landmark[bone_edge_names[bone_edge_key][1]]
-            )
-
+        bone_dict = captured_skeleton.get_bone_lengths()
         with open("data.json", "w") as fp:
             # TODO: data.json のパスをインスタンス変数化
             json.dump(bone_dict, fp)
-
-    def _calculate_height(self, pose: PoseLandmarksObject):
-        neck = (pose.landmark[11] + pose.landmark[12]) / 2
-        foot_center = (pose.landmark[27] + pose.landmark[28]) / 2
-        return np.linalg.norm(neck - foot_center)
-
-    def _calculate_foot_position(self, pose: PoseLandmarksObject):
-        return (pose.landmark[27] + pose.landmark[28]) / 2
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -155,10 +97,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             # Poseの描画 ################################################################
             if result_pose.landmark is not None:
                 # 描画
-                processed_frame = draw_landmarks_pose(
-                    processed_frame,
-                    result_pose,
-                )
+                processed_frame = draw_landmarks_pose(image=processed_frame, landmarks=result_pose)
 
         if self.display_settings.show_fps:
             cv.putText(

@@ -1,7 +1,11 @@
+import time
+from ast import Not
 from curses import meta
 from pathlib import Path
 from typing import Any, Dict, Union
 
+import pandas as pd
+import plotly.express as px
 import streamlit as st
 from processor import PoseProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
@@ -15,17 +19,22 @@ def app():
 
     with st.sidebar:
         use_two_cam: bool = st.checkbox("Use two cam", value=True)
+        should_draw_graph: bool = st.checkbox("Draw Graph", value=True)
+
+        st.markdown("---")
+        st.markdown("## Coach Pose")
 
         settings_to_refresh.update(
             {
                 "session_info": session_info_ui(),
                 "reset_button": st.button("Reset Pose and Start Training Set"),
                 "uploaded_pose_file": st.file_uploader("Load example pose file (.pkl)", type="pkl"),
+                "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
+                "is_saving": save_state_ui(),
                 "model_settings": model_setting_ui(),
                 "save_state": save_state_ui(),
                 "rep_count_settings": rep_count_setting_ui(),
                 "display_settings": display_setting_ui(),
-                "reload_pose": reload_button_ui,
             }
         )
 
@@ -45,14 +54,30 @@ def app():
         webrtc_ctx = gen_webrtc_ctx(key=key)
         if webrtc_ctx.video_processor:
             _update_video_processor(webrtc_ctx.video_processor, settings_to_refresh)
+        return webrtc_ctx
 
-    main_col, sub_col = st.columns(2)
-
-    with main_col:
-        _gen_and_refresh_webrtc_ctx(key="front")
     if use_two_cam:
+        main_col, sub_col = st.columns(2)
+        with main_col:
+            webrtc_main = _gen_and_refresh_webrtc_ctx(key="front")
         with sub_col:
             _gen_and_refresh_webrtc_ctx(key="side")
+    else:
+        webrtc_main = _gen_and_refresh_webrtc_ctx(key="front")
+
+    """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
+    placeholder = st.empty()
+    while webrtc_main.video_processor and should_draw_graph:
+        if webrtc_main.video_processor.rep_state.body_heights == []:
+            print("ERROR(by Endo): can't draw graph; body heights don't exist")
+            break
+        df = pd.Series(webrtc_main.video_processor.rep_state.body_heights, name="height")
+        with placeholder.container():
+            st.write(webrtc_main.video_processor.coaching_contents)
+            st.markdown("### Chart")
+            fig = px.line(data_frame=df, range_x=[len(df) - 600, len(df)])
+            st.write(fig)
+            time.sleep(0.05)
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:
