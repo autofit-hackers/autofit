@@ -1,6 +1,7 @@
 from curses import meta
 from pathlib import Path
 from typing import Dict, Any, Union
+from matplotlib.axis import XAxis, YAxis
 
 import streamlit as st
 from processor import PoseProcessor
@@ -12,7 +13,13 @@ from ui_components.setting_ui import (
     rep_count_setting_ui,
     save_state_ui,
 )
+import numpy as np
 from ui_components.pose import reload_button_ui
+import plotly.figure_factory as ff
+import plotly.express as px
+import plotly.graph_objects as go
+import time
+import pandas as pd
 
 
 def app():
@@ -26,7 +33,7 @@ def app():
             base_save_dir = None
 
         st.markdown("""---""")
-        use_two_cam: bool = st.checkbox("Use two cam", value=True)
+        use_two_cam: bool = st.checkbox("Use two cam", value=False)
 
         settings_to_refresh.update(
             {
@@ -39,6 +46,8 @@ def app():
                 "display_settings": display_setting_ui(),
             }
         )
+
+        should_draw_graph: bool = st.checkbox("Draw Graph", value=True)
 
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
@@ -58,14 +67,24 @@ def app():
             settings_to_refresh.update(_gen_save_paths(base_save_dir=base_save_dir, key=key))
         if webrtc_ctx.video_processor:
             _update_video_processor(webrtc_ctx.video_processor, settings_to_refresh)
+        return webrtc_ctx
 
-    main_col, sub_col = st.columns(2)
-
-    with main_col:
-        _gen_and_refresh_webrtc_ctx(key="front")
     if use_two_cam:
+        main_col, sub_col = st.columns(2)
+        with main_col:
+            _gen_and_refresh_webrtc_ctx(key="front")
         with sub_col:
             _gen_and_refresh_webrtc_ctx(key="side")
+    else:
+        webrtc = _gen_and_refresh_webrtc_ctx(key="front")
+        placeholder = st.empty()
+        while webrtc.video_processor and should_draw_graph:
+            df = pd.Series(webrtc.video_processor.rep_state.body_heights, name="height")
+            with placeholder.container():
+                st.markdown("### Chart")
+                fig = px.line(data_frame=df, range_x=[len(df) - 600, len(df)])
+                st.write(fig)
+                time.sleep(0.05)
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:

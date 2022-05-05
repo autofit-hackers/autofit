@@ -59,8 +59,8 @@ def _stateful_bool_button(key: str) -> bool:
 
 def save_state_ui() -> SaveStates:
     st.markdown("## Save")
-    do_save_video = st.checkbox("Video", key="do_save_video_button", value=True)
-    do_save_pose = st.checkbox("Pose", key="do_save_pose_button", value=True)
+    do_save_video = st.checkbox("Video", key="do_save_video_button", value=False)
+    do_save_pose = st.checkbox("Pose", key="do_save_pose_button", value=False)
 
     is_saving = _stateful_bool_button("is_saving_button")
 

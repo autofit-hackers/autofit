@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, NamedTuple, Union
+from matplotlib.pyplot import cla
 
 import numpy as np
 from frozendict import frozendict
@@ -15,19 +16,6 @@ class PoseLandmarksObject(NamedTuple):
     landmark: np.ndarray
     visibility: np.ndarray
     timestamp: Union[float, None]
-    bone_edge_names = frozendict(
-        {
-            "shoulder_width": (11, 12),
-            "shin": (27, 25),
-            "thigh": (25, 23),
-            "full_leg": (27, 23),
-            "pelvic_width": (23, 24),
-            "flank": (23, 11),
-            "upper_arm": (11, 13),
-            "fore_arm": (13, 15),
-            "full_arm": (11, 15),
-        }
-    )
 
     def get_height(self) -> np.double:
         neck = (self.landmark[11] + self.landmark[12]) / 2
@@ -49,11 +37,12 @@ class PoseLandmarksObject(NamedTuple):
             return (self.landmark[11] + self.landmark[12]) / 2
 
     def get_bone_lengths(self) -> dict:
+        # FIXME: foot_neck_heightだけPoseDefに存在しない
         bone_dict = {"foot_neck_height": self.get_height()}
-        for bone_edge_key in self.bone_edge_names.keys():
+        for bone_edge_key in PoseDef.bone_edge_names.keys():
             bone_dict[bone_edge_key] = np.linalg.norm(
-                self.landmark[self.bone_edge_names[bone_edge_key][0]]
-                - self.landmark[self.bone_edge_names[bone_edge_key][1]]
+                self.landmark[PoseDef.bone_edge_names[bone_edge_key][0]]
+                - self.landmark[PoseDef.bone_edge_names[bone_edge_key][1]]
             )
         return bone_dict
 
@@ -157,6 +146,9 @@ class RepState:
     initial_body_height = 0
     tmp_body_heights: List[np.double] = field(default_factory=list)
 
+    frame_count: int = 0
+    body_heights: List[np.double] = field(default_factory=list)
+
     def init_rep(self, height: np.double):
         self.initial_body_height = height
         self.tmp_body_heights = [self.initial_body_height] * 10
@@ -167,6 +159,9 @@ class RepState:
             self.init_rep(height=height)
         self.update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
         self.update_lifting_state(height=height)
+
+        self.frame_count += 1
+        self.body_heights.append(height)
 
     def update_counter(self, height: np.double, lower_thre, upper_thre):
         if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
@@ -181,15 +176,11 @@ class RepState:
 
     def is_keyframe(self, pose: PoseLandmarksObject, lower_thre=0.96, upper_thre=0.97):
         height = pose.get_2d_height()
-        print(self.did_touch_top)
         if self.did_touch_top and height < self.initial_body_height * lower_thre:
             self.did_touch_top = False
-            print("keyframe!!!!")
             return True
         elif not self.did_touch_top and height > self.initial_body_height * upper_thre:
             self.did_touch_top = True
-
-            print("flag")
             return False
         else:
             return False
@@ -200,3 +191,22 @@ class RepState:
         self.did_touch_bottom = False
         self.did_touch_top = True
         self.initial_body_height = pose.get_2d_height()
+        self.tmp_body_heights = [self.initial_body_height] * 10
+
+        self.frame_count = 0
+        self.body_heights = []
+
+
+@dataclass(frozen=True)
+class PoseDef:
+    bone_edge_names = {
+        "shoulder_width": (11, 12),
+        "shin": (27, 25),
+        "thigh": (25, 23),
+        "full_leg": (27, 23),
+        "pelvic_width": (23, 24),
+        "flank": (23, 11),
+        "upper_arm": (11, 13),
+        "fore_arm": (13, 15),
+        "full_arm": (11, 15),
+    }

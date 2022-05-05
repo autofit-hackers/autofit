@@ -5,7 +5,6 @@ import pickle
 import time
 from multiprocessing import Process, Queue
 from pathlib import Path
-from turtle import color
 from typing import List, Union
 
 import av
@@ -99,7 +98,7 @@ class PoseProcessor(VideoProcessorBase):
         self.loaded_frames: List[PoseLandmarksObject] = []
         self.uploaded_frames: List[PoseLandmarksObject] = []
         if uploaded_pose_file is not None:
-            self.uploaded_frames = self._load_pose(uploaded_pose_file)
+            self.uploaded_frames = pickle.load(uploaded_pose_file)
             self.loaded_frames = self.uploaded_frames.copy()  # 消す
 
         self._pose_process.start()
@@ -123,11 +122,6 @@ class PoseProcessor(VideoProcessorBase):
         if os.path.isfile(f"{pose_dir}/front.pkl") and os.path.isfile(f"{pose_dir}/side.pkl"):
             return
 
-    def _load_pose(self, uploaded_pose_file):
-        with open(f"recorded_poses/{uploaded_pose_file.name}", "rb") as handle:
-            loaded_frames = pickle.load(handle)
-        return loaded_frames
-
     def _show_loaded_pose(self, frame):
         self.showing_coach_pose = self.loaded_frames.pop(0)
         frame = draw_landmarks_pose(frame, self.showing_coach_pose, pose_color=(0, 255, 0))
@@ -138,11 +132,9 @@ class PoseProcessor(VideoProcessorBase):
         if self.uploaded_frames:
             self.positioned_frames = self._adjust_poses(realtime_pose, self.uploaded_frames)
             self.loaded_frames = self.positioned_frames.copy()
-        self.initial_body_height = realtime_pose.get_height()
-        print(self.initial_body_height)
-        self.frame_index = 0
-        self.rep_count = 0
-        self.is_lifting_up = False
+
+        self.rep_state.reset_rep(pose=realtime_pose)
+        print(self.rep_state.initial_body_height)
 
     def _adjust_poses(
         self, realtime_pose: PoseLandmarksObject, loaded_frames: List[PoseLandmarksObject], start_frame_idx: int = 0
@@ -157,8 +149,8 @@ class PoseProcessor(VideoProcessorBase):
         Returns:
             List[PoseLandmarksObject]: 重ね合わせ後のお手本フォーム
         """
-        realtime_height = realtime_pose.get_height()
-        loaded_height = loaded_frames[start_frame_idx].get_height()
+        realtime_height = realtime_pose.get_2d_height()
+        loaded_height = loaded_frames[start_frame_idx].get_2d_height()
         scale = realtime_height / loaded_height  # スケーリング用の定数
 
         realtime_foot_position = realtime_pose.get_foot_position()
@@ -247,8 +239,7 @@ class PoseProcessor(VideoProcessorBase):
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
             if self.is_clicked_reset_button:
-                self._reset_training_set(result_pose)
-                self.rep_state.reset_rep(pose=result_pose)
+                self._reset_training_set(realtime_pose=result_pose)
                 self.is_clicked_reset_button = False
 
             if self.rep_count_settings.do_count_rep:
@@ -266,7 +257,7 @@ class PoseProcessor(VideoProcessorBase):
                 # self.loaded_frames = self.positioned_frames.copy()
                 color = (0, 0, 255)
             else:
-                color = (128, 128, 0)
+                color = (255, 0, 0)
 
             # print(self._realtime_coaching(results))
 

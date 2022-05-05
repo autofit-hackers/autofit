@@ -11,7 +11,7 @@ import numpy as np
 from streamlit_webrtc import VideoProcessorBase
 
 from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
-from utils.class_objects import ModelSettings, DisplaySettings
+from utils.class_objects import ModelSettings, DisplaySettings, PoseDef
 from processor.pose_processor import pose_process
 
 _SENTINEL_ = "_SENTINEL_"
@@ -58,17 +58,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def _save_bone_info(self, captured_skeleton: PoseLandmarksObject):
-        print("save!!!")
-        # TODO: この辺はutilsに連れて行く
-        bone_edge_names = captured_skeleton.bone_edge_names
-
-        bone_dict = {"foot_neck_height": captured_skeleton.get_height()}
-        for bone_edge_key in bone_edge_names.keys():
-            bone_dict[bone_edge_key] = np.linalg.norm(
-                captured_skeleton.landmark[bone_edge_names[bone_edge_key][0]]
-                - captured_skeleton.landmark[bone_edge_names[bone_edge_key][1]]
-            )
-
+        bone_dict = captured_skeleton.get_bone_lengths()
         with open("data.json", "w") as fp:
             # TODO: data.json のパスをインスタンス変数化
             json.dump(bone_dict, fp)
@@ -107,10 +97,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             # Poseの描画 ################################################################
             if result_pose.landmark is not None:
                 # 描画
-                processed_frame = draw_landmarks_pose(
-                    processed_frame,
-                    result_pose,
-                )
+                processed_frame = draw_landmarks_pose(image=processed_frame, landmarks=result_pose)
 
         if self.display_settings.show_fps:
             cv.putText(

@@ -143,7 +143,7 @@ def draw_stick(
 def draw_landmarks_pose(
     image,
     landmarks: PoseLandmarksObject,
-    pose_color,
+    pose_color=(255, 0, 0),
     visibility_th: float = 0.5,
 ):
     image_width, image_height = image.shape[1], image.shape[0]
