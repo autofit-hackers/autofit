@@ -1,3 +1,4 @@
+from ast import Not
 from curses import meta
 from pathlib import Path
 from typing import Dict, Any
@@ -38,8 +39,7 @@ def app():
             {
                 "uploaded_pose_file": st.file_uploader("Load example pose file (.pkl)", type="pkl"),
                 "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
-                "save_state": save_state_ui(),
-                # TODO: save_settings = save_setting_ui(session_meta_exists=session_meta_exists)
+                "is_saving": save_state_ui(),
                 "model_settings": model_setting_ui(),
                 "rep_count_settings": rep_count_setting_ui(),
                 "display_settings": display_setting_ui(),
@@ -69,21 +69,25 @@ def app():
     if use_two_cam:
         main_col, sub_col = st.columns(2)
         with main_col:
-            _gen_and_refresh_webrtc_ctx(key="front")
+            webrtc_main = _gen_and_refresh_webrtc_ctx(key="front")
         with sub_col:
             _gen_and_refresh_webrtc_ctx(key="side")
     else:
-        webrtc = _gen_and_refresh_webrtc_ctx(key="front")
-        placeholder = st.empty()
-        """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
-        while webrtc.video_processor and should_draw_graph:
-            df = pd.Series(webrtc.video_processor.rep_state.body_heights, name="height")
-            with placeholder.container():
-                st.write(webrtc.video_processor.coaching_contents)
-                st.markdown("### Chart")
-                fig = px.line(data_frame=df, range_x=[len(df) - 600, len(df)])
-                st.write(fig)
-                time.sleep(0.05)
+        webrtc_main = _gen_and_refresh_webrtc_ctx(key="front")
+
+    """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
+    placeholder = st.empty()
+    while webrtc_main.video_processor and should_draw_graph:
+        if webrtc_main.video_processor.rep_state.body_heights == []:
+            print("ERROR(by Endo): can't draw graph; body heights don't exist")
+            break
+        df = pd.Series(webrtc_main.video_processor.rep_state.body_heights, name="height")
+        with placeholder.container():
+            st.write(webrtc_main.video_processor.coaching_contents)
+            st.markdown("### Chart")
+            fig = px.line(data_frame=df, range_x=[len(df) - 600, len(df)])
+            st.write(fig)
+            time.sleep(0.05)
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:

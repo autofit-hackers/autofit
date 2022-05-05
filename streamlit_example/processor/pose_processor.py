@@ -55,7 +55,7 @@ class PoseProcessor(VideoProcessorBase):
         # NOTE: ここはinitの瞬間に必要ないものは消していいらしい
         self,
         model_settings: ModelSettings,
-        save_state: SaveStates,
+        is_saving: bool,
         # save_settings: SaveSettings,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
@@ -79,7 +79,7 @@ class PoseProcessor(VideoProcessorBase):
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settings, training_menu_settings）
         self.model_settings = model_settings
         # TODO: self.save_settings = save_settings
-        self.save_state = save_state
+        self.is_saving = is_saving
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
@@ -196,7 +196,7 @@ class PoseProcessor(VideoProcessorBase):
         recv_timestamp: float = time.time()
         display_fps = self._FpsCalculator.get()
 
-        if self.save_state.is_saving_video and (self.video_writer is None):
+        if self.is_saving and (self.video_writer is None):
             # video_writer の初期化
             # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
             assert self.video_save_path is not None
@@ -211,12 +211,12 @@ class PoseProcessor(VideoProcessorBase):
         processed_frame = copy.deepcopy(frame)
 
         # 動画の保存（初期化）
-        if self.save_state.is_saving_video:
+        if self.is_saving:
             # 動画の保存（フレームの追加）
             self.video_writer.write(frame)
 
         # 動画の保存（writerの解放）
-        if (not self.save_state.is_saving_video) and (self.video_writer is not None):
+        if (not self.is_saving) and (self.video_writer is not None):
             self._release_video_writer()
 
         # 検出実施 #############################################################
@@ -243,7 +243,8 @@ class PoseProcessor(VideoProcessorBase):
 
             # キーフレームを検出してフレームをリロード
             if self.rep_state.is_keyframe(pose=result_pose):
-                # self.loaded_frames = self.positioned_frames.copy()
+                if self.positioned_frames:
+                    self.loaded_frames = self.positioned_frames.copy()
                 color = (0, 0, 255)
             else:
                 color = (255, 0, 0)
@@ -258,7 +259,7 @@ class PoseProcessor(VideoProcessorBase):
                 self._update_realtime_coaching(result_pose)
 
         # pose の保存 (pose_mem への追加) ########################################################
-        if self.save_state.is_saving_pose and self.pose_save_path is not None:
+        if self.is_saving and self.pose_save_path is not None:
             self.pose_memory.append(
                 result_pose
                 if result_pose
@@ -268,7 +269,7 @@ class PoseProcessor(VideoProcessorBase):
             )  # NOTE: ビデオのフレームインデックスとposeのフレームインデックスを一致させるために、2D Pose Estimation ができなかった場合は zero padding
 
         # pose の保存（書き出し）
-        if (len(self.pose_memory) > 0) and (not self.save_state.is_saving_pose):
+        if (len(self.pose_memory) > 0) and (not self.is_saving):
             self._save_pose()
             # self._reconstruct_pose_3d
             self.pose_memory = []
