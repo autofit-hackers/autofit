@@ -20,16 +20,16 @@ def app():
     with st.sidebar:
         st.markdown("---")
         st.subheader("Session Meta Data")
-        if "session_meta" in st.session_state:
-            session_meta = st.session_state["session_meta"]
-            st.write(session_meta)
+        if "session_info" in st.session_state:
+            session_info = st.session_state["session_info"]
+            st.write(session_info)
         else:
-            session_meta_json = st.file_uploader("", type="json")
-            session_meta = dict()
-            if session_meta_json:
-                session_meta = json.load(session_meta_json)
-                st.session_state["session_meta"] = session_meta
-                st.write(session_meta)
+            session_info_json = st.file_uploader("", type="json")
+            session_info = dict()
+            if session_info_json:
+                session_info = json.load(session_info_json)
+                st.session_state["session_info"] = session_info
+                st.write(session_info)
 
         st.markdown("""---""")
 
@@ -65,7 +65,7 @@ def app():
                 show_fps=show_fps,
             )
 
-    capture_skeleton = st.button("Save Screen Capture", disabled=(session_meta == {}))
+    capture_skeleton = st.button("Save Screen Capture", disabled=(session_info == {}))
 
     now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
 
@@ -99,7 +99,7 @@ def app():
             cam_type: str = "front"
             webrtc_ctx_main.video_processor.display_settings = display_settings
             webrtc_ctx_main.video_processor.img_save_path = str(
-                Path(session_meta["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
+                Path(session_info["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
             )
             webrtc_ctx_main.video_processor.capture_skeleton = capture_skeleton
 
@@ -109,7 +109,7 @@ def app():
             cam_type: str = "side"
             webrtc_ctx_sub.video_processor.display_settings = display_settings
             webrtc_ctx_sub.video_processor.img_save_path = str(
-                Path(session_meta["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
+                Path(session_info["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
             )
             webrtc_ctx_sub.video_processor.capture_skeleton = capture_skeleton
 
@@ -120,7 +120,7 @@ def app():
 
         # レイアウトの設定
         layout = go.Layout(
-            title=session_meta["user_name"] + "さんの骨格",
+            title=session_info["user_name"] + "さんの骨格",
             template="ggplot2",
             autosize=True,
             scene=dict(

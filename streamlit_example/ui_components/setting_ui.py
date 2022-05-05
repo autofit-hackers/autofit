@@ -1,8 +1,15 @@
+import json
 from email.policy import default
 from pathlib import Path
+from typing import Union
 
 import streamlit as st
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveSettings, SaveStates
+from utils.class_objects import (
+    DisplaySettings,
+    ModelSettings,
+    RepCountSettings,
+    SaveStates,
+)
 
 
 def model_setting_ui() -> ModelSettings:
@@ -65,23 +72,3 @@ def save_state_ui() -> SaveStates:
     is_saving = _stateful_bool_button("is_saving_button")
 
     return SaveStates(is_saving_video=(is_saving and do_save_video), is_saving_pose=(is_saving and do_save_pose))
-
-
-# TODO: use ui component in pose_app
-def save_setting_ui(session_meta_exists: bool) -> SaveSettings:
-    st.markdown("### Video saving")
-    is_saving_video = st.button("Start", key="is_saving_video")
-
-    st.markdown("### Pose saving")
-    is_saving_video = st.button("Start", key="is_saving_video")
-
-    if session_meta_exists:
-        base_save_dir = Path(st.session_state["session_meta"]["session_path"])
-        video_save_dir = base_save_dir / "video"
-        video_save_dir.mkdir(parents=True, exist_ok=True)
-        pose_save_dir = base_save_dir / "pose"
-        pose_save_dir.mkdir(parents=True, exist_ok=True)
-    else:
-        video_save_dir, pose_save_dir = None, None
-
-    return SaveSettings()

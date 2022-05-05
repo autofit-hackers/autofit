@@ -1,46 +1,43 @@
-import datetime
 import json
 import os
-from io import StringIO
+from dataclasses import asdict
+from datetime import datetime
 from pathlib import Path
-from typing import List, Type, Union
 
-import cv2 as cv
-from soupsieve import select
 import streamlit as st
+from soupsieve import select
+from ui_components import camera_info_ui, session_info_ui
+from utils import CameraInfo, SessionInfo
 
 
 def app():
     user_name = st.text_input("User Name")
-    camera_meta_json = st.file_uploader("Select Camera Info", type="json")
-    make_dir = st.button("Make Directory", disabled=((camera_meta_json is None) or (user_name == "")))
+    camera_info = camera_info_ui()
+    make_dir = st.button("Make Session", disabled=((camera_info is None) or (user_name == "")))
 
-    if make_dir and camera_meta_json:
-        session_date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
-        session_name = session_date + "_" + user_name
-        session_meta = dict()
-        session_meta["session_path"] = f"data/session/{session_name}"
-        session_meta["created_at"] = session_date
-        session_meta["user_name"] = user_name
-        camera_meta = json.load(camera_meta_json)
-        session_meta["camera_info_path"] = camera_meta["camera_info_path"]
-        st.session_state["session_meta"] = session_meta
+    if make_dir and camera_info is not None:
+        created_at = datetime.now().strftime("%Y-%m-%d-%H-%M")
+        session_dir_path = f"data/session/{created_at}_{user_name}"
+        session_info = SessionInfo(
+            session_dir_path=session_dir_path,
+            camera_dir_path=camera_info.camera_dir_path,
+            created_at=created_at,
+            user_name=user_name,
+        )
+        os.makedirs(session_dir_path, exist_ok=True)
+        with open(f"{session_dir_path}/session_info.json", "w") as f:
+            json.dump(asdict(session_info), f)
 
-        os.makedirs(f"data/session/{session_name}", exist_ok=True)
-        with open(f"data/session/{session_name}/session_meta.json", "w") as f:
-            json.dump(session_meta, f)
-
-        camera_meta["used_in"].append(session_meta["session_path"])
-        camera_path = camera_meta["camera_info_path"]
-        with open(f"{camera_path}/camera_meta.json", "w") as f:
-            json.dump(camera_meta, f)
+        # record this session path in camera info.json
+        camera_info.used_in.append(session_dir_path)
+        with open(f"{camera_info.camera_dir_path}/camera_info.json", "w") as f:
+            json.dump(asdict(camera_info), f)
 
         st.markdown("---")
-        st.title("session_meta")
-        st.json(session_meta)
-        st.title("camera_meta")
-        st.json(camera_meta)
-        make_dir = False
+        st.title("session_info")
+        st.json(asdict(session_info))
+        st.title("camera_info")
+        st.json(asdict(camera_info))
 
 
 if __name__ == "__main__":

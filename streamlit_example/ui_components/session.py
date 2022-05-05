@@ -1,21 +1,36 @@
 import json
-from typing import Any
+from dataclasses import asdict
+from typing import Any, Union
 
 import streamlit as st
+from utils.class_objects import CameraInfo, SessionInfo
 
 
-def load_session_meta_data() -> bool:
+def session_info_ui() -> Union[SessionInfo, None]:
     st.markdown("---")
-    st.subheader("Session Meta Data")
-    if "session_meta" in st.session_state:
-        session_meta = st.session_state["session_meta"]
-        st.write(session_meta)
-        return True
-    else:
-        session_meta_json = st.file_uploader("", type="json")
-        session_meta = dict()
-        if session_meta_json:
-            session_meta = json.load(session_meta_json)
-            st.session_state["session_meta"] = session_meta
-            st.write(session_meta)
-        return False
+    session_info_json = st.file_uploader("Select Session Meta File (.json)", type="json")
+    if session_info_json:
+        session_info = SessionInfo(**json.load(session_info_json))
+        st.session_state["session_info"] = session_info
+        st.json(asdict(session_info))
+        return SessionInfo(
+            session_dir_path=session_info.session_dir_path,
+            camera_dir_path=session_info.camera_dir_path,
+            created_at=session_info.created_at,
+            user_name=session_info.user_name,
+        )
+
+
+def camera_info_ui() -> Union[CameraInfo, None]:
+    st.markdown("---")
+    camera_info_json = st.file_uploader("Select Camera Info Meta File (.json)", type="json")
+    if camera_info_json:
+        camera_info = CameraInfo(**json.load(camera_info_json))
+        st.session_state["session_info"] = camera_info
+        st.json(asdict(camera_info))
+        return CameraInfo(
+            camera_dir_path=camera_info.camera_dir_path,
+            camera_names=camera_info.camera_names,
+            created_at=camera_info.created_at,
+            used_in=camera_info.used_in,
+        )

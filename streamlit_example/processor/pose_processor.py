@@ -5,7 +5,7 @@ import pickle
 import time
 from multiprocessing import Process, Queue
 from pathlib import Path
-from typing import List, Union
+from typing import Dict, List, Union
 
 import av
 import cv2 as cv
@@ -14,7 +14,7 @@ import numpy as np
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
+from utils.class_objects import CameraInfo, DisplaySettings, ModelSettings, RepCountSettings, SaveStates, SessionInfo
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -41,7 +41,6 @@ def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSetting
 
         results = pose.process(input_item)
         # NOTE: 検出失敗時の例外処理をシンプルにできないか
-        # NOTE: resultsっていう変数名分かりにくくね?
         if results.pose_landmarks is None:
             out_queue.put_nowait(None)
             continue
@@ -54,16 +53,15 @@ class PoseProcessor(VideoProcessorBase):
     def __init__(
         # NOTE: ここはinitの瞬間に必要ないものは消していいらしい
         self,
+        key: str,
+        session_info: SessionInfo,
         model_settings: ModelSettings,
         save_state: SaveStates,
-        # save_settings: SaveSettings,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
         reload_pose: bool,
         uploaded_pose_file=None,
         reset_button: bool = False,
-        video_save_path: Union[str, None] = None,
-        pose_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -78,8 +76,8 @@ class PoseProcessor(VideoProcessorBase):
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settings, training_menu_settings）
+        self.session_info = session_info
         self.model_settings = model_settings
-        # TODO: self.save_settings = save_settings
         self.save_state = save_state
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
@@ -92,10 +90,11 @@ class PoseProcessor(VideoProcessorBase):
         self.reload_pose = reload_pose
         self.reset_button = reset_button
 
-        self.video_save_path = video_save_path
+        self.key: str = key
+        self.video_save_path = Path(f"{self.session_info.session_dir_path}/video/{key}.mp4")
         self.video_writer: Union[cv.VideoWriter, None] = None
 
-        self.pose_save_path: Union[str, None] = pose_save_path
+        self.pose_save_path = Path(f"{self.session_info.session_dir_path}/pose/{key}.pkl")
         self.pose_memory: List[PoseLandmarksObject] = []
 
         self.key_frame_draw_count = 0
@@ -130,8 +129,7 @@ class PoseProcessor(VideoProcessorBase):
             return
 
     def _load_pose(self, uploaded_pose_file):
-        with open(f"recorded_poses/{uploaded_pose_file.name}", "rb") as handle:
-            loaded_frames = pickle.load(handle)
+        loaded_frames = pickle.load(uploaded_pose_file)
         return loaded_frames
 
     def _show_loaded_pose(self, frame):
@@ -235,7 +233,8 @@ class PoseProcessor(VideoProcessorBase):
         assert self.video_save_path is not None
         assert isinstance(frame, av.VideoFrame)
         os.makedirs(os.path.dirname(self.video_save_path), exist_ok=True)
-        video = cv.VideoWriter(self.video_save_path, fps=fps, frame_size=(frame.width, frame.height))
+        fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
+        video = cv.VideoWriter(self.video_save_path, fourcc=fourcc, fps=fps, frame_size=(frame.width, frame.height))
         print(f"Start saving video to {self.video_save_path} ...")
         return video
 
@@ -249,13 +248,6 @@ class PoseProcessor(VideoProcessorBase):
         recv_timestamp: float = time.time()
         display_fps = self._FpsCalculator.get()
 
-        if self.save_state.is_saving_video and (self.video_writer is None):
-            # video_writer の初期化
-            # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
-            assert self.video_save_path is not None
-            self.video_writer = self._create_video_writer(fps=30, frame=frame)
-            print(f"initialized video writer to save {self.video_save_path}")
-
         frame = frame.to_ndarray(format="bgr24")
         frame = cv.flip(frame, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
@@ -266,6 +258,12 @@ class PoseProcessor(VideoProcessorBase):
         # 動画の保存（初期化
         # if (self.save_state.is_saving_video) and (self.video_writer is None) and (self.video_save_path is not None):
         if self.save_state.is_saving_video:
+            if self.video_writer is None:
+                # video_writer の初期化
+                # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
+                frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
+                assert self.video_save_path is not None
+                self.video_writer = self._create_video_writer(fps=30, frame=frame_to_save)
             # 動画の保存（フレームの追加）
             # NOTE: video_writer は cv2 の実装を用いているため、BGRの色順で良い
             self.video_writer.write(frame)

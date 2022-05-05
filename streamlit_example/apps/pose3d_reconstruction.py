@@ -54,14 +54,14 @@ def reconstruct_pose_3d(session_path, camera_info_path):
 def app():
     # User input
     with st.sidebar:
-        session_meta_file = st.file_uploader("Select Session meta.json")
-        start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_meta_file)
+        session_info_file = st.file_uploader("Select Session meta.json")
+        start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_info_file)
 
     # Load uploaded poses and reconstruct 3D pose from them
-    if start_reconstruction and session_meta_file:
-        session_meta = json.load(session_meta_file)
-        session_path = session_meta["session_path"]
-        camera_info_path = Path(session_meta["camera_info_path"])
+    if start_reconstruction and session_info_file:
+        session_info = json.load(session_info_file)
+        session_path = session_info["session_path"]
+        camera_info_path = Path(session_info["camera_info_path"])
 
         reconstructed_landmarks = reconstruct_pose_3d(session_path=session_path, camera_info_path=camera_info_path)
         reconstructed_pose = [

@@ -17,7 +17,7 @@ $ streamlit run streamlit_app.py
 
 ## データベース構造
 ```
-session_meta = {
+session_info = {
     "session_path": "data/date_name",
     "camera_info_path": "/cameras/date",
     "created_at": "YYMMDD",
@@ -33,12 +33,12 @@ session_meta = {
 ├── pose
 │   ├── front.pkl
 │   └── side.pkl
-└── session_meta.json
+└── session_info.json
 ```
 
 
 ```
-camera_meta = {
+camera_info = {
     "camera_info_path": "/cameras/date",
     "camera-names": {"front": "name-1", "side": "name-2"}
     "created_at": "YY-MM~"
@@ -56,7 +56,7 @@ camera_meta = {
 |   |---imgs/
 │   ├── mtx.dat
 │   └── dist.dat
-└── camera_meta.json
+└── camera_info.json
 ```
 
 

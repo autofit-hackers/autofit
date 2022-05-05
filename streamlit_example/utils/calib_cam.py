@@ -9,48 +9,11 @@ import cv2 as cv
 import numpy as np
 from scipy import linalg
 
-
-@dataclass
-class CalibConfig:
-    board_shape: Tuple[int, int] = (5, 7)
-    square_size: float = 7.0
-    # criteria used by checkerboard pattern detector.
-    # Change this if the code can't find the checkerboard
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+from utils.class_objects import CalibrationSettings, CameraStates
 
 
-@dataclass
-class CameraState:
-    name: str
-    rmse: float = 0
-    matrix: np.ndarray = np.zeros((3, 3))
-    distortion_coeffs: np.ndarray = np.zeros((1, 5))
-    rotation: np.ndarray = np.zeros((3, 3))
-    trans: np.ndarray = np.zeros((3, 1))
-
-
-def load_video_frames(video_path: str) -> Union[List[cv.Mat], None]:
-    cap = cv.VideoCapture(video_path)
-    if not cap.isOpened():
-        print(f"Failed to open video_path: {video_path}, exiting...")
-        return
-
-    frames: List[cv.Mat] = []
-    while True:
-        ret, frame = cap.read()
-        # digit = len(str(int(cap.get(cv.CAP_PROP_FRAME_COUNT))))
-        if ret:
-            frames.append(frame)
-        else:
-            num_frames: int = len(frames)
-            print(f"Finished reading {video_path}, the number of total frames is {num_frames}.")
-            break
-
-    return frames
-
-
-def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_dir: str) -> float:
-    imgs_dir = f"{base_dir}/{camera_state.name}/imgs"
+def single_calibrate(calib_config: CalibrationSettings, camera_state: CameraStates, base_dir: Path) -> float:
+    imgs_dir = Path(f"{base_dir}/{camera_state.position}/imgs")
     print(imgs_dir)
     rows = calib_config.board_shape[0]
     columns = calib_config.board_shape[1]
@@ -109,17 +72,20 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     camera_state.matrix = mtx
     camera_state.distortion_coeffs = dist
 
-    np.savetxt(f"{base_dir}/{camera_state.name}/mtx.dat", mtx)
-    np.savetxt(f"{base_dir}/{camera_state.name}/dist.dat", dist)
+    np.savetxt(Path(f"{base_dir}/{camera_state.position}/mtx.dat"), mtx)
+    np.savetxt(Path(f"{base_dir}/{camera_state.position}/dist.dat"), dist)
 
     return ret
 
 
 def stereo_calibrate(
-    calib_config: CalibConfig, front_camera_state: CameraState, side_camera_state: CameraState, base_dir: str
+    calib_config: CalibrationSettings,
+    front_camera_state: CameraStates,
+    side_camera_state: CameraStates,
+    base_dir: Path,
 ) -> float:
-    images_dir_front = Path(f"{base_dir}/{front_camera_state.name}/imgs")
-    images_dir_side = Path(f"{base_dir}/{side_camera_state.name}/imgs")
+    images_dir_front = Path(f"{base_dir}/{front_camera_state.position}/imgs")
+    images_dir_side = Path(f"{base_dir}/{side_camera_state.position}/imgs")
 
     rows = calib_config.board_shape[0]
     columns = calib_config.board_shape[1]
@@ -199,10 +165,10 @@ def stereo_calibrate(
 
     print("rmse:", ret)
 
-    np.savetxt(f"{base_dir}/{front_camera_state.name}/rot.dat", np.eye(3))
-    np.savetxt(f"{base_dir}/{front_camera_state.name}/trans.dat", np.array([[0], [0], [0]]))
-    np.savetxt(f"{base_dir}/{side_camera_state.name}/rot.dat", R)
-    np.savetxt(f"{base_dir}/{side_camera_state.name}/trans.dat", T)
+    np.savetxt(Path(f"{base_dir}/{front_camera_state.position}/rot.dat"), np.eye(3))
+    np.savetxt(Path(f"{base_dir}/{front_camera_state.position}/trans.dat"), np.array([[0], [0], [0]]))
+    np.savetxt(Path(f"{base_dir}/{side_camera_state.position}/rot.dat"), R)
+    np.savetxt(Path(f"{base_dir}/{side_camera_state.position}/trans.dat"), T)
 
     return ret
 
@@ -230,13 +196,13 @@ def DLT(P1, P2, point1, point2):
     return Vh[3, 0:3] / Vh[3, 3]
 
 
-# def _convert_to_homogeneous(pts):
-#     pts = np.array(pts)
-#     if len(pts.shape) > 1:
-#         w = np.ones((pts.shape[0], 1))
-#         return np.concatenate([pts, w], axis=1)
-#     else:
-#         return np.concatenate([pts, [1]], axis=0)
+def _convert_to_homogeneous(pts):
+    pts = np.array(pts)
+    if len(pts.shape) > 1:
+        w = np.ones((pts.shape[0], 1))
+        return np.concatenate([pts, w], axis=1)
+    else:
+        return np.concatenate([pts, [1]], axis=0)
 
 
 def get_projection_matrix(camera_info_path: Path, camera_type: str):
@@ -248,17 +214,3 @@ def get_projection_matrix(camera_info_path: Path, camera_type: str):
     # calculate projection matrix
     P = cmtx @ _make_homogeneous_rep_matrix(rot, trans)[:3, :]
     return P
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--video",
-        type=str,
-        default=r"/Users/kondounagi/Library/Mobile Documents/com~apple~CloudDocs/work/posefit/streamlit_example/videos/2022-04-23-15-16-35_main_cam.mp4",
-    )
-    args = parser.parse_args()
-    assert os.path.exists(args.video) and os.path.isfile(args.video)
-    frames = load_video_frames(args.video)
-    assert frames is not None
-    # single_calibrate(frames[:20], CalibConfig())

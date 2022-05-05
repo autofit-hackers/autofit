@@ -6,7 +6,7 @@ import av
 import cv2 as cv
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
-from utils import CameraState
+from utils import CameraStates
 
 _SENTINEL_ = "_SENTINEL_"
 
