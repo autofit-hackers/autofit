@@ -1,8 +1,9 @@
 """
 # ref. https://plotly.com/python/pca-visualization/
 """
-from multiprocessing import dummy
+import json
 from typing import Dict, List
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -16,8 +17,11 @@ class PosePCA:
     def __init__(self):
         pass
 
-    def load_data(self):
-        pass
+    def load_session(self, json_path: Path) -> None:
+        assert json_path.exists() and json_path.is_file()
+        with open(json_path, mode="r") as f:
+            self.session_meta = json.load(f)
+        return
 
     def load_dummy_data(self, n: int = 100):
         num_landmarks = 33
