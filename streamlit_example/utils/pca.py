@@ -30,7 +30,7 @@ class PosePCA:
         return pd.DataFrame(dummy_skeletons)
 
     def show_2d_pca(self, df: pd.DataFrame) -> None:
-        pca = PCA(n_components=2)
+        pca = PCA(n_components=2, random_state=0)
         components = pca.fit_transform(df)
 
         loadings = pca.components_.T * np.sqrt(pca.explained_variance_)  # type: ignore
