@@ -214,13 +214,6 @@ class PoseProcessor(VideoProcessorBase):
         recv_timestamp: float = time.time()
         display_fps = self._FpsCalculator.get()
 
-        if self.is_saving and (self.video_writer is None):
-            # video_writer の初期化
-            # TODO: fps は 30 で決め打ちしているが、実際には処理環境に応じて変化する
-            assert self.video_save_path is not None
-            self.video_writer = self._create_video_writer(fps=30, frame=frame)
-            print(f"initialized video writer to save {self.video_save_path}")
-
         frame = frame.to_ndarray(format="bgr24")
         frame = cv.flip(frame, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
@@ -228,8 +221,14 @@ class PoseProcessor(VideoProcessorBase):
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
-        # 動画の保存（初期化）
+        # 動画の保存
         if self.is_saving:
+            # 初期化
+            if self.video_writer is None:
+                assert self.video_save_path is not None
+                frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
+                self.video_writer = self._create_video_writer(fps=30, frame=frame_to_save)
+                print(f"initialized video writer to save {self.video_save_path}")
             # 動画の保存（フレームの追加）
             self.video_writer.write(frame)
 

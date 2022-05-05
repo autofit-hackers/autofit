@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -5,6 +6,7 @@ from typing import Dict, List, NamedTuple, Tuple, Union
 
 import cv2 as cv
 import numpy as np
+import pandas as pd
 from matplotlib.pyplot import cla
 
 
@@ -136,8 +138,7 @@ class RepState:
     initial_body_height = 0
     tmp_body_heights: List[np.double] = field(default_factory=list)
 
-    frame_count: int = 0
-    body_heights: List[np.double] = field(default_factory=list)
+    body_heights_df: pd.DataFrame = pd.DataFrame(columns=["time", "height", "velocity"])
 
     def init_rep(self, height: np.double):
         self.initial_body_height = height
@@ -150,8 +151,11 @@ class RepState:
         self.update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
         self.update_lifting_state(height=height)
 
-        self.frame_count += 1
-        self.body_heights.append(height)
+        velocity = self.tmp_body_heights[9] - self.tmp_body_heights[0]
+        self.body_heights_df = pd.concat(
+            [self.body_heights_df, pd.DataFrame({"time": [time.time()], "height": [height], "velocity": [velocity]})],
+            ignore_index=True,
+        )
 
     def update_counter(self, height: np.double, lower_thre, upper_thre):
         if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
@@ -183,8 +187,7 @@ class RepState:
         self.initial_body_height = pose.get_2d_height()
         self.tmp_body_heights = [self.initial_body_height] * 10
 
-        self.frame_count = 0
-        self.body_heights = []
+        self.body_heights_df = pd.DataFrame(index=[], columns=["time", "height", "velocity"])
 
 
 @dataclass(frozen=True)
