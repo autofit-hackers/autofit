@@ -9,8 +9,8 @@ from frozendict import frozendict
 
 class PoseLandmarksObject(NamedTuple):
     """
-    landmark.shape == (関節数, 3)
-    visibility.shape == (関節数, 1)
+    landmark.shape == (33, 3)  #（関節数, xyz）
+    visibility.shape == (33, 1)
     """
 
     landmark: np.ndarray
