@@ -78,16 +78,21 @@ def app():
     """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
     placeholder = st.empty()
     while webrtc_main.video_processor and should_draw_graph:
-        if webrtc_main.video_processor.rep_state.body_heights == []:
+        df = webrtc_main.video_processor.rep_state.body_heights_df
+        if len(df) == 0:
             print("ERROR(by Endo): can't draw graph; body heights don't exist")
             break
-        df = pd.Series(webrtc_main.video_processor.rep_state.body_heights, name="height")
         with placeholder.container():
             st.write(webrtc_main.video_processor.coaching_contents)
             st.markdown("### Chart")
-            fig = px.line(data_frame=df, range_x=[len(df) - 600, len(df)])
+            fig = px.line(
+                data_frame=df,
+                y=["height", "velocity"],
+                range_x=[len(df) - 600, len(df)],
+            )
             st.write(fig)
-            time.sleep(0.05)
+            st.write(df)
+            time.sleep(0.1)
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:

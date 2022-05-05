@@ -61,6 +61,7 @@ def save_state_ui() -> bool:
     with right_col:
         if st.button("Stop"):
             is_saving = False
+    st.write(is_saving)
 
     return is_saving
 

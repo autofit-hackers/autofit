@@ -1,6 +1,7 @@
 import os
 import pickle
 from pathlib import Path
+from time import time
 from unicodedata import name
 
 import mediapipe as mp
@@ -191,13 +192,13 @@ def app():
     # Load uploaded pose and vizualize it
     if st.session_state["start_visualize"] and pose_file:
         uploaded_pose = pickle.load(pose_file)
-        landmarks = [pose.landmark for pose in uploaded_pose]
+        landmarks: list[np.ndarray] = [pose.landmark for pose in uploaded_pose]
         visibilities = [pose.visibility for pose in uploaded_pose]
 
         # Trim uploaded pose based on selected frame numbers
         if save_trimmed_pose:
             trimmed_pose = [
-                PoseLandmarksObject(landmark=landmark, visibility=visibility)
+                PoseLandmarksObject(landmark=landmark, visibility=visibility, timestamp=None)
                 for landmark, visibility in zip(
                     landmarks[trimmed_frame_start : trimmed_frame_end + 1],
                     visibilities[trimmed_frame_start : trimmed_frame_end + 1],
@@ -208,7 +209,7 @@ def app():
                 pickle.dump(trimmed_pose, f)
             st.write("Trimmed Pose Successfully Saved!")
 
-        fig = visualize_pose(landmarks)
+        visualize_pose(landmarks)
 
 
 if __name__ == "__main__":
