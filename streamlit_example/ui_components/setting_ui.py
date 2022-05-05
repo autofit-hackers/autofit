@@ -6,6 +6,8 @@ from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings
 
 
 def model_setting_ui() -> ModelSettings:
+    st.markdown("---")
+    st.markdown("## Other Settings")
     with st.expander("Model parameters (there parameters are effective only at initialization)"):
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
         min_detection_confidence = st.slider(
@@ -49,7 +51,7 @@ def rep_count_setting_ui() -> RepCountSettings:
 
 def _stateful_bool_button(key: str) -> bool:
     _state: bool
-    left_col, right_col = st.columns([1, 1])
+    left_col, right_col = st.columns(2)
     with left_col:
         _state = st.button("Start", key=key)
     with right_col:
@@ -58,6 +60,7 @@ def _stateful_bool_button(key: str) -> bool:
 
 
 def save_state_ui() -> SaveStates:
+    st.markdown("---")
     st.markdown("## Save")
     do_save_video = st.checkbox("Video", key="do_save_video_button", value=True)
     do_save_pose = st.checkbox("Pose", key="do_save_pose_button", value=True)

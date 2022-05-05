@@ -12,7 +12,7 @@ def load_session_meta_data() -> bool:
         st.write(session_meta)
         return True
     else:
-        session_meta_json = st.file_uploader("", type="json")
+        session_meta_json = st.file_uploader("Choose Session meta file (.json)", type="json")
         session_meta = dict()
         if session_meta_json:
             session_meta = json.load(session_meta_json)

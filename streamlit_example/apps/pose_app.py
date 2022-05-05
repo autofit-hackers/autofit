@@ -29,20 +29,22 @@ def app():
 
         st.markdown("""---""")
         use_two_cam: bool = st.checkbox("Use two cam", value=True)
+        should_draw_graph: bool = st.checkbox("Draw Graph", value=True)
+
+        st.markdown("---")
+        st.markdown("## Coach Pose")
 
         settings_to_refresh.update(
             {
-                "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
                 "uploaded_pose_file": st.file_uploader("Load example pose file (.pkl)", type="pkl"),
-                "model_settings": model_setting_ui(),
+                "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
                 "save_state": save_state_ui(),
                 # TODO: save_settings = save_setting_ui(session_meta_exists=session_meta_exists)
+                "model_settings": model_setting_ui(),
                 "rep_count_settings": rep_count_setting_ui(),
                 "display_settings": display_setting_ui(),
             }
         )
-
-        should_draw_graph: bool = st.checkbox("Draw Graph", value=True)
 
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
