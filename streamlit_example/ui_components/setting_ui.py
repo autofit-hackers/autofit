@@ -4,12 +4,7 @@ from pathlib import Path
 from typing import Union
 
 import streamlit as st
-from utils.class_objects import (
-    DisplaySettings,
-    ModelSettings,
-    RepCountSettings,
-    SaveStates,
-)
+from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
 
 
 def model_setting_ui() -> ModelSettings:
@@ -70,4 +65,4 @@ def save_state_ui() -> bool:
             is_saving = False
     st.write(is_saving)
 
-    return True
+    return is_saving

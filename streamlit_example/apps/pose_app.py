@@ -27,12 +27,10 @@ def app():
         settings_to_refresh.update(
             {
                 "session_info": session_info_ui(),
-                "reset_button": st.button("Reset Pose and Start Training Set"),
                 "uploaded_pose_file": st.file_uploader("Load example pose file (.pkl)", type="pkl"),
                 "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
                 "is_saving": save_state_ui(),
                 "model_settings": model_setting_ui(),
-                "save_state": save_state_ui(),
                 "rep_count_settings": rep_count_setting_ui(),
                 "display_settings": display_setting_ui(),
             }
@@ -43,6 +41,7 @@ def app():
             key=key,
             # desired_playing_state=False,
             mode=WebRtcMode.SENDRECV,
+            # FIXME: deprecated
             client_settings=ClientSettings(
                 rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
                 media_stream_constraints={"video": True, "audio": False},

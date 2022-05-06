@@ -65,7 +65,6 @@ class PoseProcessor(VideoProcessorBase):
         session_info: SessionInfo,
         model_settings: ModelSettings,
         is_saving: bool,
-        # save_settings: SaveSettings,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
         uploaded_pose_file=None,
@@ -225,6 +224,9 @@ class PoseProcessor(VideoProcessorBase):
         if self.is_saving:
             # 初期化
             if self.video_writer is None:
+                print(
+                    "================================================write================================================"
+                )
                 assert self.video_save_path is not None
                 frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
                 self.video_writer = self._create_video_writer(fps=30, frame=frame_to_save)
