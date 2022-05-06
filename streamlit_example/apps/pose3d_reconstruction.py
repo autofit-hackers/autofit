@@ -4,16 +4,31 @@ from pathlib import Path
 
 import numpy as np
 import streamlit as st
+from ui_components.session import session_info_ui
 from utils import DLT, PoseLandmarksObject, get_projection_matrix
+from utils.class_objects import SessionInfo
 
 from apps.pose_visualization import visualize_pose
 
 
-def reconstruct_pose_3d(session_path, camera_info_path):
-    with open(Path(f"{session_path}/pose/front.pkl"), "rb") as f:
+def save_reconstructed_pose(pose_dir_path: Path, landmarks_3d):
+    reconstructed_pose = [
+        PoseLandmarksObject(landmark=landmark, visibility=visibility, timestamp=None)
+        for landmark, visibility in zip(
+            landmarks_3d,
+            np.ones(shape=(len(landmarks_3d), 33, 1)),
+        )
+    ]
+    with open(Path(f"{pose_dir_path}/reconstructed3d.pkl"), "wb") as f:
+        pickle.dump(reconstructed_pose, f)
+    st.write("Reconstructed 3D Pose has been saved!")
+
+
+def reconstruct_pose_3d(pose_dir_path: Path, camera_info_path: Path):
+    with open(Path(f"{pose_dir_path}/front.pkl"), "rb") as f:
         poses_front = pickle.load(f)
         landmarks_front = [pose.landmark for pose in poses_front]
-    with open(Path(f"{session_path}/pose/side.pkl"), "rb") as f:
+    with open(Path(f"{pose_dir_path}/side.pkl"), "rb") as f:
         poses_side = pickle.load(f)
         landmarks_side = [pose.landmark for pose in poses_side]
     projection_matrix_front = get_projection_matrix(camera_info_path, "front")
@@ -36,34 +51,23 @@ def reconstruct_pose_3d(session_path, camera_info_path):
         landmarks_3d.append(landmark_3d)
 
     assert len(landmarks_3d) == len(landmarks_front), "len of landmarks3d differs from 2d"
+    save_reconstructed_pose(pose_dir_path, landmarks_3d)
     return landmarks_3d
 
 
 def app():
     # User input
     with st.sidebar:
-        session_info_file = st.file_uploader("Select Session meta.json")
-        start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_info_file)
+        session_info = session_info_ui()
+        start_reconstruction = st.button("Reconstruct and Vizualize 3D Pose", disabled=not session_info)
 
     # Load uploaded poses and reconstruct 3D pose from them
-    if start_reconstruction and session_info_file:
-        session_info = json.load(session_info_file)
-        session_path = session_info["session_path"]
-        camera_info_path = Path(session_info["camera_info_path"])
+    if start_reconstruction and session_info:
+        pose_dir_path = Path(f"{session_info.session_dir_path}/pose")
+        camera_info_path = Path(session_info.camera_dir_path)
 
-        reconstructed_landmarks = reconstruct_pose_3d(session_path=session_path, camera_info_path=camera_info_path)
-        reconstructed_pose = [
-            PoseLandmarksObject(landmark=landmark, visibility=visibility)
-            for landmark, visibility in zip(
-                reconstructed_landmarks,
-                np.ones(shape=(len(reconstructed_landmarks), 33, 1)),
-            )
-        ]
-        with open(Path(f"{session_path}/pose/reconstructed3d.pkl"), "wb") as f:
-            pickle.dump(reconstructed_pose, f)
-        st.write("Reconstructed 3D Pose has been saved!")
-
-        visualize_pose(reconstructed_landmarks)
+        landmarks_3d = reconstruct_pose_3d(pose_dir_path=pose_dir_path, camera_info_path=camera_info_path)
+        visualize_pose(landmarks_3d)
 
 
 if __name__ == "__main__":
