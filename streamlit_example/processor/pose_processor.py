@@ -13,16 +13,11 @@ import mediapipe as mp
 import numpy as np
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
-from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils.class_objects import (
-    CameraInfo,
-    DisplaySettings,
-    ModelSettings,
-    RepCountSettings,
-    RepState,
-    SaveStates,
-    SessionInfo,
-)
+from utils import (FpsCalculator, PoseLandmarksObject, draw_landmarks_pose,
+                   mp_res_to_pose_obj)
+from utils.class_objects import (CameraInfo, DisplaySettings, ModelSettings,
+                                 RepCountSettings, RepState, SaveStates,
+                                 SessionInfo)
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -196,10 +191,11 @@ class PoseProcessor(VideoProcessorBase):
     def _create_video_writer(self, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
         """Save video as mp4."""
         assert self.video_save_path is not None
+        print(frame.width)
         assert isinstance(frame, av.VideoFrame)
         os.makedirs(os.path.dirname(self.video_save_path), exist_ok=True)
-        fourcc = cv.VideoWriter_fourcc("m", "p", "4", "v")
-        video = cv.VideoWriter(self.video_save_path, fourcc=fourcc, fps=fps, frame_size=(frame.width, frame.height))
+        fourcc = cv.VideoWriter_fourcc(*"mp4v")
+        video = cv.VideoWriter(str(self.video_save_path), fourcc, fps, (frame.width, frame.height))
         print(f"Start saving video to {self.video_save_path} ...")
         return video
 
@@ -227,7 +223,6 @@ class PoseProcessor(VideoProcessorBase):
                 print(
                     "================================================write================================================"
                 )
-                assert self.video_save_path is not None
                 frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
                 self.video_writer = self._create_video_writer(fps=30, frame=frame_to_save)
                 print(f"initialized video writer to save {self.video_save_path}")
