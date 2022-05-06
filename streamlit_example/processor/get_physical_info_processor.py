@@ -87,7 +87,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         if self.is_clicked_capture_skeleton and self.image_save_path:
             os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
             cv.imwrite(self.image_save_path, frame)
-            self.is_clicked_capture_skeleton = False
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -100,6 +99,10 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             if result_pose.landmark is not None:
                 # 描画
                 processed_frame = draw_landmarks_pose(image=processed_frame, landmarks=result_pose)
+
+                if self.is_clicked_capture_skeleton and self.image_save_path:
+                    self._save_bone_info(result_pose)
+                    self.is_clicked_capture_skeleton = False
 
         if self.display_settings.show_fps:
             cv.putText(

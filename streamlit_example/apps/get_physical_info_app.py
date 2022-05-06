@@ -34,9 +34,14 @@ def app():
             {
                 "model_settings": model_setting_ui(),
                 "display_settings": display_setting_ui(),
-                "is_clicked_capture_skeleton": st.button("Save Screen Capture", disabled=(not session_meta_exists)),
             }
         )
+
+    settings_to_refresh.update(
+        {
+            "is_clicked_capture_skeleton": st.button("Save Screen Capture", disabled=(not session_meta_exists)),
+        }
+    )
 
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
