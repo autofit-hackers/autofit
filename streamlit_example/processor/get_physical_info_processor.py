@@ -63,8 +63,13 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         bone_dict = captured_skeleton.get_bone_lengths()
         assert self.skeleton_save_path
         with open(self.skeleton_save_path, "w") as fp:
-            # TODO: data.json のパスをインスタンス変数化
             json.dump(bone_dict, fp)
+
+    def _save_image(self, frame):
+        assert self.image_save_path
+        os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
+        frame_rgb = frame[:, :, ::-1]
+        cv.imwrite(self.image_save_path, frame_rgb)
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -82,13 +87,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
-        # 画像の保存
-        # TODO: capture skeleton の rename or jsonの保存までするように関数書き換え
-        if self.is_clicked_capture_skeleton and self.image_save_path:
-            os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
-            cv.imwrite(self.image_save_path, frame)
-            self.is_clicked_capture_skeleton = False
-
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         result_pose: PoseLandmarksObject = self._infer_pose(frame)
@@ -100,6 +98,12 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             if result_pose.landmark is not None:
                 # 描画
                 processed_frame = draw_landmarks_pose(image=processed_frame, landmarks=result_pose)
+
+            # Skeletonの保存 ################################################################
+            if self.is_clicked_capture_skeleton and self.skeleton_save_path:
+                self._save_bone_info(captured_skeleton=result_pose)
+                self._save_image(frame=frame)
+                self.is_clicked_capture_skeleton = False
 
         if self.display_settings.show_fps:
             cv.putText(
