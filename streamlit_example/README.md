@@ -22,18 +22,20 @@ session_info = {
     "camera_info_path": "/cameras/date",
     "created_at": "YYMMDD",
     "user_name": "TaroYamada",
+    "user_info_path": "data/user_info/<uid>",
 }
 ```
 
 ```
-./data/<session_name>
+./data/<session_name>/
 ├── video
 │   ├── front.mp4
 │   └── side.mp4
 ├── pose
 │   ├── front.pkl
 │   └── side.pkl
-└── session_info.json
+├── skeleton.json
+└── session_meta.json
 ```
 
 
@@ -61,9 +63,9 @@ camera_info = {
 
 
 ```
-./user_info
+./user_info/<uid>/
 ├── body_info
-│   ├── skeleton
+│   ├── skeleton.json
 │   ├── flexibility
 │   └── muscle
 └── purpose

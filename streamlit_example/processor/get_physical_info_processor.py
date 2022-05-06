@@ -24,8 +24,9 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         self,
         model_settings: ModelSettings,
         display_settings: DisplaySettings,
-        capture_skeleton: bool,
+        is_clicked_capture_skeleton: bool,
         skeleton_save_path: Union[str, None] = None,
+        image_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -43,8 +44,9 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         self.model_settings = model_settings
         self.display_settings = display_settings
 
-        self.capture_skeleton = capture_skeleton
-        self.img_save_path: Union[str, None] = skeleton_save_path
+        self.is_clicked_capture_skeleton = is_clicked_capture_skeleton
+        self.skeleton_save_path: Union[str, None] = skeleton_save_path
+        self.image_save_path: Union[str, None] = image_save_path
 
         self._pose_process.start()
 
@@ -59,7 +61,8 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
 
     def _save_bone_info(self, captured_skeleton: PoseLandmarksObject):
         bone_dict = captured_skeleton.get_bone_lengths()
-        with open("data.json", "w") as fp:
+        assert self.skeleton_save_path
+        with open(self.skeleton_save_path, "w") as fp:
             # TODO: data.json のパスをインスタンス変数化
             json.dump(bone_dict, fp)
 
@@ -81,11 +84,10 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
 
         # 画像の保存
         # TODO: capture skeleton の rename or jsonの保存までするように関数書き換え
-        if self.capture_skeleton and self.img_save_path:
-            print(self.img_save_path)
-            os.makedirs(os.path.dirname(self.img_save_path), exist_ok=True)
-            cv.imwrite(self.img_save_path, frame)
-            self.capture_skeleton = False
+        if self.is_clicked_capture_skeleton and self.image_save_path:
+            os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
+            cv.imwrite(self.image_save_path, frame)
+            self.is_clicked_capture_skeleton = False
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)

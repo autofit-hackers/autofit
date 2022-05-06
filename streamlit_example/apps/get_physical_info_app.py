@@ -1,7 +1,7 @@
 import json
 import time
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Dict, Any
 
 import numpy as np
 import plotly.figure_factory as ff
@@ -13,114 +13,79 @@ from processor.get_physical_info_processor import GetPhysicalInfoProcessor
 from pylibsrtp import Session
 from requests import session
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
+from ui_components.session import load_session_meta_data
+from ui_components.setting_ui import display_setting_ui, model_setting_ui
 from utils.class_objects import DisplaySettings, ModelSettings
 
 
 def app():
+    settings_to_refresh: Dict[str, Any] = {}
+
     with st.sidebar:
-        st.markdown("---")
-        st.subheader("Session Meta Data")
-        if "session_info" in st.session_state:
-            session_info = st.session_state["session_info"]
-            st.write(session_info)
+        session_meta_exists = load_session_meta_data()
+        if session_meta_exists:
+            base_save_dir = Path(st.session_state["session_meta"]["session_path"])
         else:
-            session_info_json = st.file_uploader("", type="json")
-            session_info = dict()
-            if session_info_json:
-                session_info = json.load(session_info_json)
-                st.session_state["session_info"] = session_info
-                st.write(session_info)
+            base_save_dir = None
 
         st.markdown("""---""")
 
-        with st.expander("Model parameters (there parameters are effective only at initialization)"):
-            model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
-            min_detection_confidence = st.slider(
-                "Min detection confidence",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.5,
-                step=0.01,
-            )
-            min_tracking_confidence = st.slider(
-                "Min tracking confidence",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.5,
-                step=0.01,
-            )
-            model_settings = ModelSettings(
-                model_complexity=model_complexity,
-                min_detection_confidence=min_detection_confidence,
-                min_tracking_confidence=min_tracking_confidence,
-            )
-
-        with st.expander("Display settings"):
-            rotate_webcam_input = st.checkbox("Rotate webcam input", value=False)
-            show_fps = st.checkbox("Show FPS", value=True)
-            show_2d = st.checkbox("Show 2D", value=True)
-            display_settings = DisplaySettings(
-                rotate_webcam_input=rotate_webcam_input,
-                show_2d=show_2d,
-                show_fps=show_fps,
-            )
-
-    capture_skeleton = st.button("Save Screen Capture", disabled=(session_info == {}))
-
-    now_str: str = time.strftime("%Y-%m-%d-%H-%M-%S")
-
-    def processor_factory():
-        return GetPhysicalInfoProcessor(
-            model_settings=model_settings,
-            display_settings=display_settings,
-            capture_skeleton=capture_skeleton,
+        settings_to_refresh.update(
+            {
+                "model_settings": model_setting_ui(),
+                "display_settings": display_setting_ui(),
+                "is_clicked_capture_skeleton": st.button("Save Screen Capture", disabled=(not session_meta_exists)),
+            }
         )
 
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
             key=key,
+            # desired_playing_state=False,
             mode=WebRtcMode.SENDRECV,
             client_settings=ClientSettings(
                 rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
                 media_stream_constraints={"video": True, "audio": False},
             ),
-            video_processor_factory=processor_factory,
+            video_processor_factory=lambda: GetPhysicalInfoProcessor(**settings_to_refresh),
         )
 
-    # NOTE: 動的に監視したい変数以外は以下に含める必要なし?
-    # NOTE: mainとsubをカメラ構造体or辞書にまとめる?
+    def _gen_and_refresh_webrtc_ctx(key: str):
+        webrtc_ctx = gen_webrtc_ctx(key=key)
+        if base_save_dir is not None:
+            settings_to_refresh.update(_gen_save_paths(base_save_dir=base_save_dir, key=key))
+        if webrtc_ctx.video_processor:
+            _update_video_processor(webrtc_ctx.video_processor, settings_to_refresh)
+        return webrtc_ctx
+
+    def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:
+        for key, val in to_refresh.items():
+            assert hasattr(vp, key), f"{key}"
+            vp.__dict__[key] = val
+        return
+
+    def _gen_save_paths(base_save_dir: Path, key: str) -> Dict[str, str]:
+        st.write(str(base_save_dir))
+        return {
+            "skeleton_save_path": str(base_save_dir / "skeleton" / f"{key}.json"),
+            "image_save_path": str(base_save_dir / "skeleton" / f"{key}.jpg"),
+        }
 
     main_col, sub_col = st.columns(2)
 
     with main_col:
-        webrtc_ctx_main = gen_webrtc_ctx(key="posefit_main_cam")
-        st.session_state["started"] = webrtc_ctx_main.state.playing
-        if webrtc_ctx_main.video_processor:
-            cam_type: str = "front"
-            webrtc_ctx_main.video_processor.display_settings = display_settings
-            webrtc_ctx_main.video_processor.img_save_path = str(
-                Path(session_info["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
-            )
-            webrtc_ctx_main.video_processor.capture_skeleton = capture_skeleton
-
+        webrtc_ctx_main = _gen_and_refresh_webrtc_ctx(key="front")
     with sub_col:
-        webrtc_ctx_sub = gen_webrtc_ctx(key="posefit_sub_cam")
-        if webrtc_ctx_sub.video_processor:
-            cam_type: str = "side"
-            webrtc_ctx_sub.video_processor.display_settings = display_settings
-            webrtc_ctx_sub.video_processor.img_save_path = str(
-                Path(session_info["session_path"] + "/physical_info") / f"{cam_type}_cam.jpg"
-            )
-            webrtc_ctx_sub.video_processor.capture_skeleton = capture_skeleton
+        webrtc_ctx_sub = _gen_and_refresh_webrtc_ctx(key="side")
 
-    if capture_skeleton and webrtc_ctx_main.video_processor is not None:
+    if settings_to_refresh["is_clicked_capture_skeleton"] and webrtc_ctx_main.video_processor is not None:
         X = webrtc_ctx_main.video_processor.result_pose.landmark[:, 0]
         Y = 1 - webrtc_ctx_main.video_processor.result_pose.landmark[:, 1]
         Z = webrtc_ctx_main.video_processor.result_pose.landmark[:, 2]
 
         # レイアウトの設定
         layout = go.Layout(
-            title=session_info["user_name"] + "さんの骨格",
+            title=st.session_state["session_meta"]["user_name"] + " さんの骨格",
             template="ggplot2",
             autosize=True,
             scene=dict(
