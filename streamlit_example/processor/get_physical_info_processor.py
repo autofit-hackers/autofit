@@ -25,7 +25,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         model_settings: ModelSettings,
         display_settings: DisplaySettings,
         is_clicked_capture_skeleton: bool,
-        skeleton_save_path: Union[str, None] = None,
         image_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
@@ -45,7 +44,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         self.display_settings = display_settings
 
         self.is_clicked_capture_skeleton = is_clicked_capture_skeleton
-        self.skeleton_save_path: Union[str, None] = skeleton_save_path
         self.image_save_path: Union[str, None] = image_save_path
 
         self._pose_process.start()
@@ -58,12 +56,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
     def _save_estimated_pose(self, obj, save_path) -> None:
         with open(save_path, "wb") as handle:
             pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    def _save_bone_info(self, captured_skeleton: PoseLandmarksObject):
-        bone_dict = captured_skeleton.get_bone_lengths()
-        assert self.skeleton_save_path
-        with open(self.skeleton_save_path, "w") as fp:
-            json.dump(bone_dict, fp)
 
     def _save_image(self, frame):
         assert self.image_save_path
@@ -87,6 +79,11 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
+        # frameの保存 ################################################################
+        if self.is_clicked_capture_skeleton and self.image_save_path:
+            self._save_image(frame=frame)
+            self.is_clicked_capture_skeleton = False
+
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         result_pose: PoseLandmarksObject = self._infer_pose(frame)
@@ -98,12 +95,6 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             if result_pose.landmark is not None:
                 # 描画
                 processed_frame = draw_landmarks_pose(image=processed_frame, landmarks=result_pose)
-
-            # Skeletonの保存 ################################################################
-            if self.is_clicked_capture_skeleton and self.skeleton_save_path:
-                self._save_bone_info(captured_skeleton=result_pose)
-                self._save_image(frame=frame)
-                self.is_clicked_capture_skeleton = False
 
         if self.display_settings.show_fps:
             cv.putText(

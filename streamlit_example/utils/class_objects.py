@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
 import time
 from typing import List, NamedTuple, Union
-from matplotlib.pyplot import cla
-
+import streamlit as st
 import numpy as np
 import pandas as pd
 
@@ -45,6 +45,15 @@ class PoseLandmarksObject(NamedTuple):
                 self.landmark[PoseDef.bone_edge_names[bone_edge_key][0]]
                 - self.landmark[PoseDef.bone_edge_names[bone_edge_key][1]]
             )
+        return bone_dict
+
+    def save_bone_lengths(self, save_path: Path) -> dict:
+        print(save_path)
+        bone_dict = self.get_bone_lengths()
+        assert save_path
+        with open(save_path, "w") as f:
+            json.dump(bone_dict, f)
+            st.write("Successfuly Saved")
         return bone_dict
 
 

@@ -1,21 +1,19 @@
 import json
 import time
 from pathlib import Path
-from typing import List, Union, Dict, Any
+from typing import Dict, Any, List
+from cv2 import add
+from matplotlib.colors import ListedColormap
 
 import numpy as np
-import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import streamlit as st
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from processor.get_physical_info_processor import GetPhysicalInfoProcessor
-from pylibsrtp import Session
-from requests import session
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 from ui_components.session import load_session_meta_data
 from ui_components.setting_ui import display_setting_ui, model_setting_ui
-from utils.class_objects import DisplaySettings, ModelSettings
+from utils.calib_cam import DLT, get_projection_matrix
+from utils.class_objects import PoseLandmarksObject
 
 
 def app():
@@ -27,8 +25,6 @@ def app():
             base_save_dir = Path(st.session_state["session_meta"]["session_path"])
         else:
             base_save_dir = None
-
-        st.markdown("""---""")
 
         settings_to_refresh.update(
             {
@@ -72,49 +68,100 @@ def app():
     def _gen_save_paths(base_save_dir: Path, key: str) -> Dict[str, str]:
         st.write(str(base_save_dir))
         return {
-            "skeleton_save_path": str(base_save_dir / "skeleton" / f"{key}.json"),
             "image_save_path": str(base_save_dir / "skeleton" / f"{key}.jpg"),
         }
 
     main_col, sub_col = st.columns(2)
 
     with main_col:
-        webrtc_ctx_main = _gen_and_refresh_webrtc_ctx(key="front")
+        webrtc_front = _gen_and_refresh_webrtc_ctx(key="front")
     with sub_col:
-        webrtc_ctx_sub = _gen_and_refresh_webrtc_ctx(key="side")
+        webrtc_side = _gen_and_refresh_webrtc_ctx(key="side")
 
-    if settings_to_refresh["is_clicked_capture_skeleton"] and webrtc_ctx_main.video_processor is not None:
-        X = webrtc_ctx_main.video_processor.result_pose.landmark[:, 0]
-        Y = 1 - webrtc_ctx_main.video_processor.result_pose.landmark[:, 1]
-        Z = webrtc_ctx_main.video_processor.result_pose.landmark[:, 2]
-
-        # レイアウトの設定
-        layout = go.Layout(
-            title=st.session_state["session_meta"]["user_name"] + " さんの骨格",
-            template="ggplot2",
-            autosize=True,
-            scene=dict(
-                aspectmode="manual",
-                aspectratio=dict(x=1, y=1, z=1),
-                xaxis=dict(range=[-3, 3], title="x"),
-                yaxis=dict(range=[-3, 3], title="y"),
-                zaxis=dict(range=[-3, 3], title="z"),
-                camera=dict(eye=dict(x=1.5, y=0.9, z=0.7)),  # カメラの角度
-            ),
-        )
-
-        data = go.Scatter3d(
-            x=X,
-            y=Y,
-            z=Z,
-            mode="lines+markers",
-            marker=dict(size=2.5, color="red"),
-            line=dict(color="red", width=2),
-        )
-
-        fig = dict(data=data, layout=layout)
-        st.plotly_chart(fig)
+    if (
+        settings_to_refresh["is_clicked_capture_skeleton"]
+        and webrtc_front.video_processor
+        and webrtc_side.video_processor
+    ):
+        camera_info_path = Path(st.session_state["session_meta"]["camera_info_path"])
+        pose = reconstruct_one_shot(
+            webrtc_front.video_processor.result_pose, webrtc_side.video_processor.result_pose, camera_info_path
+        )[0]
+        pose.save_bone_lengths(Path(st.session_state["session_meta"]["session_path"]) / "skeleton" / "3d.json")
+        X = pose.landmark[:, 0]
+        Y = 1 - pose.landmark[:, 1]
+        Z = pose.landmark[:, 2]
+        draw_3d_plot(X, Y, Z, st.session_state["session_meta"]["user_name"] + " さんの骨格")
 
 
 if __name__ == "__main__":
     app()
+
+
+def reconstruct_one_shot(
+    landmarks_front: PoseLandmarksObject, landmarks_side: PoseLandmarksObject, camera_info_path
+) -> List[PoseLandmarksObject]:
+    projection_matrix_front = get_projection_matrix(camera_info_path, "front")
+    projection_matrix_side = get_projection_matrix(camera_info_path, "side")
+    return reconstruct_pose_3d_array(
+        [landmarks_front], [landmarks_side], projection_matrix_front, projection_matrix_side
+    )
+
+
+def reconstruct_pose_3d_array(
+    poses_front: List[PoseLandmarksObject],
+    landmarks_side: List[PoseLandmarksObject],
+    projection_matrix_front: np.ndarray,
+    projection_matrix_side: np.ndarray,
+) -> List[PoseLandmarksObject]:
+    pose_3d = []
+    for pose_front, pose_side in zip(poses_front, landmarks_side):
+        landmark_3d = []
+        for uv1, uv2 in zip(pose_front.landmark, pose_side.landmark):
+            if uv1[0] == -1 or uv2[0] == -1:
+                _p3d = [-1, -1, -1]
+            else:
+                _p3d = DLT(projection_matrix_front, projection_matrix_side, uv1, uv2)
+            landmark_3d.append(_p3d)
+
+        landmark_3d = np.array(landmark_3d)
+        landmark_3d = (
+            landmark_3d - (landmark_3d[10, :] + landmark_3d[11, :]) / 2 + [0, 0, 0]
+        )  # set the center of feet to [0, 0, 50]
+        pose_3d.append(
+            PoseLandmarksObject(
+                landmark_3d, np.add(pose_front.visibility, pose_side.visibility) / 2, pose_front.timestamp
+            )
+        )
+
+    assert len(pose_3d) == len(poses_front), "len of landmarks3d differs from 2d"
+    return pose_3d
+
+
+def draw_3d_plot(X, Y, Z, title=""):
+    # レイアウトの設定
+    layout = go.Layout(
+        title=title,
+        template="ggplot2",
+        autosize=True,
+        scene=dict(
+            aspectmode="manual",
+            aspectratio=dict(x=1, y=1, z=1),
+            xaxis=dict(range=[-3, 3], title="x"),
+            yaxis=dict(range=[-3, 3], title="y"),
+            zaxis=dict(range=[-3, 3], title="z"),
+            camera=dict(eye=dict(x=1.5, y=0.9, z=0.7)),  # カメラの角度
+        ),
+    )
+
+    data = go.Scatter3d(
+        x=X,
+        y=Y,
+        z=Z,
+        mode="lines+markers",
+        marker=dict(size=2.5, color="red"),
+        line=dict(color="red", width=2),
+    )
+
+    fig = dict(data=data, layout=layout)
+    st.plotly_chart(fig)

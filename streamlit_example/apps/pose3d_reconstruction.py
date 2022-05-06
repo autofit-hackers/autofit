@@ -53,7 +53,7 @@ def app():
 
         reconstructed_landmarks = reconstruct_pose_3d(session_path=session_path, camera_info_path=camera_info_path)
         reconstructed_pose = [
-            PoseLandmarksObject(landmark=landmark, visibility=visibility)
+            PoseLandmarksObject(landmark=landmark, visibility=visibility, timestamp=None)
             for landmark, visibility in zip(
                 reconstructed_landmarks,
                 np.ones(shape=(len(reconstructed_landmarks), 33, 1)),
