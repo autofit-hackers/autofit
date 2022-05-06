@@ -64,7 +64,7 @@ def app():
     else:
         webrtc_main = _gen_and_refresh_webrtc_ctx(key="front")
 
-    """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
+    # reference: https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/
     placeholder = st.empty()
     while webrtc_main.video_processor and should_draw_graph:
         df = webrtc_main.video_processor.rep_state.body_heights_df
