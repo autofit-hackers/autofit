@@ -19,7 +19,7 @@ $ streamlit run streamlit_app.py
 ```
 session_info = {
     "session_path": "data/date_name",
-    "camera_info_path": "/cameras/date",
+    "camera_dir_path": "/cameras/date",
     "created_at": "YYMMDD",
     "user_name": "TaroYamada",
     "user_info_path": "data/user_info/<uid>",
@@ -41,7 +41,7 @@ session_info = {
 
 ```
 camera_info = {
-    "camera_info_path": "/cameras/date",
+    "camera_dir_path": "/cameras/date",
     "camera-names": {"front": "name-1", "side": "name-2"}
     "created_at": "YY-MM~"
     "used_in": ["session_path"]

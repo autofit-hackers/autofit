@@ -24,15 +24,15 @@ def save_reconstructed_pose(pose_dir_path: Path, landmarks_3d):
     st.write("Reconstructed 3D Pose has been saved!")
 
 
-def reconstruct_pose_3d(pose_dir_path: Path, camera_info_path: Path):
+def reconstruct_pose_3d(pose_dir_path: Path, camera_dir_path: Path):
     with open(Path(f"{pose_dir_path}/front.pkl"), "rb") as f:
         poses_front = pickle.load(f)
         landmarks_front = [pose.landmark for pose in poses_front]
     with open(Path(f"{pose_dir_path}/side.pkl"), "rb") as f:
         poses_side = pickle.load(f)
         landmarks_side = [pose.landmark for pose in poses_side]
-    projection_matrix_front = get_projection_matrix(camera_info_path, "front")
-    projection_matrix_side = get_projection_matrix(camera_info_path, "side")
+    projection_matrix_front = get_projection_matrix(camera_dir_path, "front")
+    projection_matrix_side = get_projection_matrix(camera_dir_path, "side")
 
     landmarks_3d = []
     for landmark_front, landmark_side in zip(landmarks_front, landmarks_side):
@@ -64,9 +64,9 @@ def app():
     # Load uploaded poses and reconstruct 3D pose from them
     if start_reconstruction and session_info:
         pose_dir_path = Path(f"{session_info.session_dir_path}/pose")
-        camera_info_path = Path(session_info.camera_dir_path)
+        camera_dir_path = Path(session_info.camera_dir_path)
 
-        landmarks_3d = reconstruct_pose_3d(pose_dir_path=pose_dir_path, camera_info_path=camera_info_path)
+        landmarks_3d = reconstruct_pose_3d(pose_dir_path=pose_dir_path, camera_dir_path=camera_dir_path)
         visualize_pose(landmarks_3d)
 
 

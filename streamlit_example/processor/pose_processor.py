@@ -13,11 +13,16 @@ import mediapipe as mp
 import numpy as np
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
-from utils import (FpsCalculator, PoseLandmarksObject, draw_landmarks_pose,
-                   mp_res_to_pose_obj)
-from utils.class_objects import (CameraInfo, DisplaySettings, ModelSettings,
-                                 RepCountSettings, RepState, SaveStates,
-                                 SessionInfo)
+from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
+from utils.class_objects import (
+    CameraInfo,
+    DisplaySettings,
+    ModelSettings,
+    RepCountSettings,
+    RepState,
+    SaveStates,
+    SessionInfo,
+)
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -78,6 +83,7 @@ class PoseProcessor(VideoProcessorBase):
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
         # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settings, training_menu_settings）
+        self.key: str = key
         self.session_info = session_info
         self.model_settings = model_settings
         # TODO: self.save_settings = save_settings
@@ -87,7 +93,8 @@ class PoseProcessor(VideoProcessorBase):
 
         self.is_clicked_reset_button = is_clicked_reset_button
 
-        self.key: str = key
+        self.camera_dir_path = Path(session_info.camera_dir_path)
+
         self.video_save_path = Path(f"{self.session_info.session_dir_path}/video/{key}.mp4")
         self.video_writer: Union[cv.VideoWriter, None] = None
 
@@ -113,11 +120,15 @@ class PoseProcessor(VideoProcessorBase):
         with open(self.pose_save_path, "wb") as f:
             pickle.dump(self.pose_memory, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    # TODO: auto-reconstruction when save pose
     def _reconstruct_pose_3d(self):
         assert self.pose_save_path is not None
-        pose_dir = os.path.dirname(self.pose_save_path)
-        if os.path.isfile(f"{pose_dir}/front.pkl") and os.path.isfile(f"{pose_dir}/side.pkl"):
+        pose_dir_path = Path(os.path.dirname(self.pose_save_path))
+        if (
+            os.path.isfile(f"{pose_dir_path}/front.pkl")
+            and os.path.isfile(f"{pose_dir_path}/side.pkl")
+            and not os.path.isfile(f"{pose_dir_path}/reconstructed")
+        ):
+            reconstruct_pose_3d(pose_dir_path=pose_dir_path, camera_dir_path=self.camera_dir_path)
             return
 
     def _load_pose(self, uploaded_pose_file):

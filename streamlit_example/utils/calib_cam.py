@@ -205,12 +205,12 @@ def _convert_to_homogeneous(pts):
         return np.concatenate([pts, [1]], axis=0)
 
 
-def get_projection_matrix(camera_info_path: Path, camera_type: str):
+def get_projection_matrix(camera_dir_path: Path, camera_type: str):
     # read camera parameters
-    cmtx = np.loadtxt(Path(f"{camera_info_path}/{camera_type}/mtx.dat"))
-    dist = np.loadtxt(Path(f"{camera_info_path}/{camera_type}/dist.dat"))
-    rot = np.loadtxt(Path(f"{camera_info_path}/{camera_type}/rot.dat"))
-    trans = np.loadtxt(Path(f"{camera_info_path}/{camera_type}/trans.dat"))
+    cmtx = np.loadtxt(Path(f"{camera_dir_path}/{camera_type}/mtx.dat"))
+    dist = np.loadtxt(Path(f"{camera_dir_path}/{camera_type}/dist.dat"))
+    rot = np.loadtxt(Path(f"{camera_dir_path}/{camera_type}/rot.dat"))
+    trans = np.loadtxt(Path(f"{camera_dir_path}/{camera_type}/trans.dat"))
     # calculate projection matrix
     P = cmtx @ _make_homogeneous_rep_matrix(rot, trans)[:3, :]
     return P

@@ -14,6 +14,7 @@ from utils import PoseLandmarksObject
 
 
 # TODO: 自動再生中もグリグリできるようにする
+# TODO: 引数をlandmarksからLisit[PoseLandmarksObject]へ変更
 def visualize_pose(landmarks):
     landmarks = np.array(landmarks)
     connections = mp.solutions.pose.POSE_CONNECTIONS  # type: ignore
