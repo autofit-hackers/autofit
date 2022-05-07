@@ -8,6 +8,7 @@ from matplotlib.colors import ListedColormap
 import numpy as np
 import plotly.graph_objs as go
 import streamlit as st
+from apps.pose_visualization import visualize_pose
 from processor.get_physical_info_processor import GetPhysicalInfoProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 from ui_components.session import load_session_meta_data
@@ -92,6 +93,8 @@ def app():
         Y = 1 - pose.landmark[:, 1]
         Z = pose.landmark[:, 2]
         draw_3d_plot(X, Y, Z, st.session_state["session_meta"]["user_name"] + " さんの骨格")
+
+        visualize_pose([pose.landmark])
 
 
 if __name__ == "__main__":
