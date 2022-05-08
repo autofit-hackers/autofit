@@ -89,12 +89,13 @@ def app():
             webrtc_front.video_processor.result_pose, webrtc_side.video_processor.result_pose, camera_info_path
         )[0]
         pose.save_bone_lengths(Path(st.session_state["session_meta"]["session_path"]) / "skeleton" / "3d.json")
-        X = pose.landmark[:, 0]
-        Y = 1 - pose.landmark[:, 1]
-        Z = pose.landmark[:, 2]
-        draw_3d_plot(X, Y, Z, st.session_state["session_meta"]["user_name"] + " さんの骨格")
-
         visualize_pose([pose.landmark])
+
+        col_f, col_s = st.columns(2)
+        with col_f:
+            visualize_pose([webrtc_front.video_processor.result_pose.landmark])
+        with col_s:
+            visualize_pose([webrtc_side.video_processor.result_pose.landmark])
 
 
 if __name__ == "__main__":
