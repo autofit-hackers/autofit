@@ -79,16 +79,20 @@ def visualize_pose(landmarks):
     ]
 
     # レイアウトの設定
+    range_min = min(landmarks[:, :, 0].min(), landmarks[:, :, 1].min(), landmarks[:, :, 2].min())
+    range_max = max(landmarks[:, :, 0].max(), landmarks[:, :, 1].max(), landmarks[:, :, 2].max())
+    _range = [range_min, range_max]
+
     layout = go.Layout(
         title="Pose",
         template="ggplot2",
         autosize=True,
         scene=dict(
             aspectmode="manual",
-            aspectratio=dict(x=1, y=aspect_ratio, z=1),
-            xaxis=dict(range=[landmarks[:, :, 0].max(), landmarks[:, :, 0].min()], title="x"),  # reverse range
-            yaxis=dict(range=[landmarks[:, :, 1].min(), landmarks[:, :, 1].max()], title="y"),
-            zaxis=dict(range=[landmarks[:, :, 2].min(), landmarks[:, :, 2].max()], title="z"),
+            aspectratio=dict(x=1, y=1, z=1),
+            xaxis=dict(range=_range, title="x"),  # reverse range
+            yaxis=dict(range=_range, title="y"),
+            zaxis=dict(range=_range, title="z"),
             camera=dict(eye=dict(x=0, y=0, z=-2)),  # カメラの角度
         ),
         # font = dict(color="#fff"),
