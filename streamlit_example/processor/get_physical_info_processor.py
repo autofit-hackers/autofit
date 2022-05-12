@@ -39,7 +39,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         )
         self._FpsCalculator = FpsCalculator(buffer_len=10)  # XXX: buffer_len は 10 が最適なのか？
 
-        # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settimgs, training_menu_settings）
+        # NOTE: 変数をまとめたいよう（realtime_settings, realtime_states, uploaded_settings, training_menu_settings）
         self.model_settings = model_settings
         self.display_settings = display_settings
 
@@ -60,8 +60,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
     def _save_image(self, frame):
         assert self.image_save_path
         os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
-        frame_rgb = frame[:, :, ::-1]
-        cv.imwrite(self.image_save_path, frame_rgb)
+        cv.imwrite(self.image_save_path, frame)
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)

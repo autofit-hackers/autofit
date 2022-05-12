@@ -48,12 +48,11 @@ class PoseLandmarksObject(NamedTuple):
         return bone_dict
 
     def save_bone_lengths(self, save_path: Path) -> dict:
-        print(save_path)
         bone_dict = self.get_bone_lengths()
-        assert save_path
+        save_path.parent.mkdir(parents=True, exist_ok=True)
         with open(save_path, "w") as f:
             json.dump(bone_dict, f)
-            st.write("Successfuly Saved")
+            st.write("Successfuly Saved bone_lengths")
         return bone_dict
 
 
