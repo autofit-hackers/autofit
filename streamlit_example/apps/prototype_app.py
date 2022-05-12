@@ -70,7 +70,7 @@ def app():
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:
     for key, val in to_refresh.items():
-        assert hasattr(vp, key), f"{key}"
+        # assert hasattr(vp, key), f"{key}"
         vp.__dict__[key] = val
     return
 

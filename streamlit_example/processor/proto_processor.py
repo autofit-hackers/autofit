@@ -1,4 +1,5 @@
 import copy
+from http import server
 import json
 import os
 import pickle
@@ -14,7 +15,8 @@ import numpy as np
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils.class_objects import CoachPose, DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
+from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
+from utils.display_objects import CoachPose, Instruction
 from utils.video_recorder import create_video_writer, release_video_writer
 
 _SENTINEL_ = "_SENTINEL_"
@@ -91,7 +93,9 @@ class PrototypeProcessor(VideoProcessorBase):
         self.coaching_contents: List[str] = []
 
         self.coach_pose = CoachPose()
-        self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
+        if uploaded_pose_file:
+            self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
+        self.instruction = Instruction()
 
         self._pose_process.start()
 
@@ -154,9 +158,12 @@ class PrototypeProcessor(VideoProcessorBase):
 
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
-            if self.is_clicked_reset_button:
-                self.coach_pose._reset_training_set(realtime_pose=result_pose, rep_state=self.rep_state)
+            if self.is_clicked_reset_button or result_pose.crapped_hands():
+                self.rep_state = self.coach_pose._reset_training_set(
+                    realtime_pose=result_pose, rep_state=self.rep_state
+                )
                 self.is_clicked_reset_button = False
+                self.instruction.update_knee_y(pose=result_pose, frame_height=processed_frame.shape[0])
 
             if self.rep_count_settings.do_count_rep:
                 # レップカウントを更新
@@ -182,7 +189,14 @@ class PrototypeProcessor(VideoProcessorBase):
             # お手本Poseの描画
             if self.coach_pose.loaded_frames:
                 processed_frame = self.coach_pose._show_loaded_pose(processed_frame)
-                # self._update_realtime_coaching(result_pose)
+
+            # 指導
+            if self.rep_state.rep_count >= 1:
+                line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
+                frame = self.instruction._draw_for_prototype(frame=processed_frame, line_color=line_color)
+                # self.instruction._proceed_frame()
+
+            # self._update_realtime_coaching(result_pose)
 
         # pose の保存 (pose_mem への追加) ########################################################
         if self.is_saving and self.pose_save_path is not None:
@@ -201,28 +215,28 @@ class PrototypeProcessor(VideoProcessorBase):
             self.pose_memory = []
 
         # Show fps
-        if self.display_settings.show_fps:
+        if self.rep_count_settings.do_count_rep:
             cv.putText(
                 processed_frame,
-                "FPS:" + str(display_fps),
+                f"Rep:{self.rep_state.rep_count}",
                 (10, 30),
                 cv.FONT_HERSHEY_SIMPLEX,
                 1.0,
-                (0, 255, 0),
+                (0, 0, 255),
                 2,
                 cv.LINE_AA,
             )
 
         # Show rep count
-        if self.rep_count_settings.do_count_rep:
+        if self.display_settings.show_fps:
             cv.putText(
                 processed_frame,
-                f"Rep:{self.rep_state.rep_count}",
+                "FPS:" + format(display_fps, ".0f"),
                 (10, 60),
                 cv.FONT_HERSHEY_SIMPLEX,
                 0.6,
-                (0, 0, 255),
-                1,
+                (0, max(min(display_fps - 20, 10) * 25.5, 0), 255 - max(min(display_fps - 20, 10) * 25.5, 0)),
+                2,
                 cv.LINE_AA,
             )
 
