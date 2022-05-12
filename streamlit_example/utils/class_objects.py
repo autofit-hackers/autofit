@@ -1,11 +1,15 @@
+import pickle
 from dataclasses import dataclass, field
+from distutils.command.upload import upload
 import json
 from pathlib import Path
 import time
-from typing import List, NamedTuple, Union
+from typing import Any, List, NamedTuple, Union
 import streamlit as st
 import numpy as np
 import pandas as pd
+
+from utils.draw_pose import draw_landmarks_pose
 
 
 class PoseLandmarksObject(NamedTuple):
@@ -48,11 +52,12 @@ class PoseLandmarksObject(NamedTuple):
         return bone_dict
 
     def save_bone_lengths(self, save_path: Path) -> dict:
+        print(save_path)
         bone_dict = self.get_bone_lengths()
-        save_path.parent.mkdir(parents=True, exist_ok=True)
+        assert save_path
         with open(save_path, "w") as f:
             json.dump(bone_dict, f)
-            st.write("Successfuly Saved bone_lengths")
+            st.write("Successfuly Saved")
         return bone_dict
 
 
@@ -220,3 +225,72 @@ class PoseDef:
         "fore_arm": (13, 15),
         "full_arm": (11, 15),
     }
+
+
+@dataclass
+class Instruction:
+    display_frames: int
+    instruction_words: str = "太ももが水平になるまで腰を落としましょう"
+    mistake_reason: str = "お尻の筋肉が比較的弱く、深いスクワットができない可能性があります。"
+    is_displaying: bool = True
+
+    def proceed_frame(self):
+        if self.display_frames > 0:
+            self.display_frames -= 1
+        else:
+            self.is_displaying = False
+
+    def display_start(self):
+        self.display_frames = 60
+        self.is_displaying = True
+
+
+class CoachPose:
+    loaded_frames: List[PoseLandmarksObject] = []
+    uploaded_frames: List[PoseLandmarksObject] = []
+    positioned_frames: List[PoseLandmarksObject] = []
+
+    def _set_coach_pose(self, uploaded_pose_file):
+        if uploaded_pose_file is not None:
+            self.uploaded_frames = pickle.load(uploaded_pose_file)
+            self.loaded_frames = self.uploaded_frames.copy()
+
+    def _adjust_poses(
+        self, realtime_pose: PoseLandmarksObject, loaded_frames: List[PoseLandmarksObject], start_frame_idx: int = 0
+    ) -> List[PoseLandmarksObject]:
+        realtime_height = realtime_pose.get_2d_height()
+        loaded_height = loaded_frames[start_frame_idx].get_2d_height()
+        scale = realtime_height / loaded_height  # スケーリング用の定数
+
+        realtime_foot_position = realtime_pose.get_foot_position()
+        loaded_foot_position = loaded_frames[start_frame_idx].get_foot_position() * scale
+
+        # 位置合わせ用の[x,y,0]のベクター
+        slide: np.ndarray = realtime_foot_position - loaded_foot_position
+        slide[2] = 0
+        print(scale, slide)
+
+        adjusted_poses = [
+            PoseLandmarksObject(
+                landmark=frame.landmark * scale + slide, visibility=frame.visibility, timestamp=frame.timestamp
+            )
+            for frame in loaded_frames
+        ]
+        return adjusted_poses
+
+    def _reset_training_set(self, realtime_pose: PoseLandmarksObject, rep_state: RepState):
+        if self.uploaded_frames:
+            self.positioned_frames = self._adjust_poses(realtime_pose, self.uploaded_frames)
+            self.loaded_frames = self.positioned_frames.copy()
+
+        rep_state.reset_rep(pose=realtime_pose)
+        print(rep_state.initial_body_height)
+
+    def _show_loaded_pose(self, frame):
+        coach_pose_now = self.loaded_frames.pop(0)
+        frame = draw_landmarks_pose(frame, coach_pose_now, pose_color=(0, 255, 0))
+        return frame
+
+    def _reload_pose(self):
+        if self.positioned_frames:
+            self.loaded_frames = self.positioned_frames.copy()
