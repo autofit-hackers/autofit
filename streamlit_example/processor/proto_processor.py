@@ -133,23 +133,6 @@ class PrototypeProcessor(VideoProcessorBase):
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
-        # 動画の保存
-        if self.is_saving:
-            # 初期化
-            if self.video_writer is None:
-                assert self.video_save_path is not None
-                frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
-                self.video_writer = create_video_writer(
-                    fps=30, frame=frame_to_save, video_save_path=self.video_save_path
-                )
-                print(f"initialized video writer to save {self.video_save_path}")
-            # 動画の保存（フレームの追加）
-            self.video_writer.write(frame)
-
-        # 動画の保存（writerの解放）
-        if (not self.is_saving) and (self.video_writer is not None):
-            release_video_writer(video_writer=self.video_writer, video_save_path=self.video_save_path)
-
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         result_pose: PoseLandmarksObject = self._infer_pose(frame)
@@ -214,7 +197,7 @@ class PrototypeProcessor(VideoProcessorBase):
             # self._reconstruct_pose_3d
             self.pose_memory = []
 
-        # Show fps
+        # Show rep count
         if self.rep_count_settings.do_count_rep:
             cv.putText(
                 processed_frame,
@@ -227,7 +210,7 @@ class PrototypeProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        # Show rep count
+        # Show fps
         if self.display_settings.show_fps:
             cv.putText(
                 processed_frame,
@@ -239,6 +222,23 @@ class PrototypeProcessor(VideoProcessorBase):
                 2,
                 cv.LINE_AA,
             )
+
+        # 動画の保存
+        if self.is_saving:
+            # 初期化
+            if self.video_writer is None:
+                assert self.video_save_path is not None
+                frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
+                self.video_writer = create_video_writer(
+                    fps=30, frame=frame_to_save, video_save_path=self.video_save_path
+                )
+                print(f"initialized video writer to save {self.video_save_path}")
+            # 動画の保存（フレームの追加）
+            self.video_writer.write(processed_frame)
+
+        # 動画の保存（writerの解放）
+        if (not self.is_saving) and (self.video_writer is not None):
+            release_video_writer(video_writer=self.video_writer, video_save_path=self.video_save_path)
 
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
