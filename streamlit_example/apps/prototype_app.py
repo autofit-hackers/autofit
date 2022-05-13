@@ -23,6 +23,11 @@ def app():
     settings_to_refresh: Dict[str, Any] = {}
 
     with st.sidebar:
+        settings_to_refresh.update(
+            {
+                "training_mode": st.radio("Training Mode", ("Penguin", "JointAngle", "Training")),
+            }
+        )
         session_meta_exists = load_session_meta_data()
         if session_meta_exists:
             base_save_dir = Path(st.session_state["session_meta"]["session_path"])
