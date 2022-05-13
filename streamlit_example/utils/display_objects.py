@@ -127,7 +127,7 @@ class Instruction:
         return frame
 
     def update_knee_y(self, pose: PoseLandmarksObject, frame_height: int):
-        self.knee_y = int(pose.get_knee_position()[1] * frame_height) - 10
+        self.knee_y = int(pose.get_knee_position()[1] * frame_height)
 
     def check_pose(self, pose: PoseLandmarksObject, frame_height: int):
         if self.knee_y > int(pose.get_hip_position()[1] * frame_height):

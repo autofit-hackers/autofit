@@ -18,7 +18,6 @@ class ResetButton:
             print(self.count)
             if self.count >= self.duration:
                 self._reset_count()
-                print("sssssssss")
                 return True
             else:
                 self._add_count()
