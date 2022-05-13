@@ -3,6 +3,7 @@ from http import server
 import json
 import os
 import pickle
+import re
 import time
 from multiprocessing import Process, Queue
 from pathlib import Path
@@ -15,6 +16,7 @@ import numpy as np
 from PIL import Image
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
+from ui_components.video_widget import ResetButton
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
 from utils.display_objects import CoachPose, Instruction
@@ -103,6 +105,8 @@ class PrototypeProcessor(VideoProcessorBase):
         self.instruction_file = np.array(img)
         print("=========================", (self.instruction_file.shape))
 
+        self.reset_button = ResetButton()
+
         self._pose_process.start()
 
     # NOTE: infer or estimate で用語統一する?
@@ -147,7 +151,11 @@ class PrototypeProcessor(VideoProcessorBase):
 
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
-            if self.is_clicked_reset_button or result_pose.crapped_hands():
+            if (
+                self.is_clicked_reset_button
+                or result_pose.crapped_hands()
+                or self.reset_button.forward(processed_frame, result_pose)
+            ):
                 self.rep_state = self.coach_pose._reset_training_set(
                     realtime_pose=result_pose, rep_state=self.rep_state
                 )
