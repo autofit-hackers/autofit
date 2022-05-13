@@ -8,7 +8,7 @@ import cv2 as cv
 import streamlit as st
 from processor import CalibrationProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
-from utils import CalibConfig, CameraState, gen_in_recorder_factory, single_calibrate, stereo_calibrate
+from utils import CalibConfig, CameraState, single_calibrate, stereo_calibrate
 from utils.class_objects import DisplaySettings, ModelSettings
 
 
