@@ -1,8 +1,11 @@
+from dis import dis
+import pickle
 from dataclasses import dataclass, field
+from distutils.command.upload import upload
 import json
 from pathlib import Path
 import time
-from typing import List, NamedTuple, Union
+from typing import Any, List, NamedTuple, Union
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -31,6 +34,12 @@ class PoseLandmarksObject(NamedTuple):
     def get_foot_position(self) -> np.ndarray:
         return (self.landmark[27] + self.landmark[28]) / 2
 
+    def get_knee_position(self) -> np.ndarray:
+        return (self.landmark[25] + self.landmark[26]) / 2
+
+    def get_hip_position(self) -> np.ndarray:
+        return (self.landmark[23] + self.landmark[24]) / 2
+
     def get_keypoint(self, training_name: str) -> np.ndarray:
         if training_name == "squat":
             return (self.landmark[11] + self.landmark[12]) / 2
@@ -48,12 +57,18 @@ class PoseLandmarksObject(NamedTuple):
         return bone_dict
 
     def save_bone_lengths(self, save_path: Path) -> dict:
+        print(save_path)
         bone_dict = self.get_bone_lengths()
-        save_path.parent.mkdir(parents=True, exist_ok=True)
+        assert save_path
         with open(save_path, "w") as f:
             json.dump(bone_dict, f)
-            st.write("Successfuly Saved bone_lengths")
+            st.write("Successfuly Saved")
         return bone_dict
+
+    def crapped_hands(self) -> bool:
+        hands = abs(self.landmark[15] - self.landmark[16])
+        distance = hands[0] * hands[0] + hands[1] * hands[1]
+        return distance < 0.01
 
 
 @dataclass
