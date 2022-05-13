@@ -12,6 +12,7 @@ import av
 import cv2 as cv
 import mediapipe as mp
 import numpy as np
+from PIL import Image
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
@@ -60,6 +61,7 @@ class PrototypeProcessor(VideoProcessorBase):
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
         uploaded_pose_file=None,
+        uploaded_instruction_file=None,
         is_clicked_reset_button: bool = False,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
@@ -96,6 +98,10 @@ class PrototypeProcessor(VideoProcessorBase):
         if uploaded_pose_file:
             self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
         self.instruction = Instruction()
+
+        img = Image.open(uploaded_instruction_file)
+        self.instruction_file = np.array(img)
+        print("=========================", (self.instruction_file.shape))
 
         self._pose_process.start()
 
@@ -176,7 +182,9 @@ class PrototypeProcessor(VideoProcessorBase):
             # 指導
             if self.rep_state.rep_count >= 1:
                 line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
-                frame = self.instruction._draw_for_prototype(frame=processed_frame, line_color=line_color)
+                frame = self.instruction._draw_with_image(
+                    frame=processed_frame, line_color=line_color, instruction_image=self.instruction_file
+                )
                 # self.instruction._proceed_frame()
 
             # self._update_realtime_coaching(result_pose)
