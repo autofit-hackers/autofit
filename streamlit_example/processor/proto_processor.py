@@ -180,14 +180,15 @@ class PrototypeProcessor(VideoProcessorBase):
 
             # Poseの描画 ################################################################
             if result_pose.landmark is not None:
+                processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color, show_z=False)
                 if self.training_mode == "Penguin" and self.penguin_count > 0:
                     self.penguin_count -= 1
                     print(self.penguin_count)
                 elif self.training_mode == "Penguin" and self.penguin_count == 0:
                     color = (0, 0, 255)
+                    processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color, show_z=False)
                 elif self.training_mode == "JointAngle":
                     processed_frame = draw_joint_angle_2d(processed_frame, result_pose)
-                processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color, show_z=False)
 
             # お手本Poseの描画
             if self.coach_pose.loaded_frames:
