@@ -153,6 +153,7 @@ class PrototypeProcessor(VideoProcessorBase):
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         result_pose: PoseLandmarksObject = self._infer_pose(frame)
+        self.reset_button.visualize(frame=processed_frame)
 
         if self.display_settings.show_2d and result_pose:
 
