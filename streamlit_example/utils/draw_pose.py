@@ -146,7 +146,7 @@ def draw_landmarks_pose(
     landmarks: PoseLandmarksObject,
     pose_color=(255, 0, 0),
     visibility_th: float = 0.5,
-    show_z: bool = True,
+    show_z: bool = False,
     circle_size=1,
 ):
     image_width, image_height = image.shape[1], image.shape[0]

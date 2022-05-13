@@ -6,7 +6,6 @@ from pathlib import Path
 import time
 from turtle import width
 from typing import Any, Dict, List, NamedTuple, Tuple, Union
-from black import mask_cell
 import streamlit as st
 
 import cv2 as cv
@@ -18,7 +17,7 @@ from utils.draw_pose import draw_landmarks_pose
 
 
 class CoachPose:
-    loaded_frames: List[PoseLandmarksObject] = []
+    loaded_frames: List[PoseLandmarksObject]
     uploaded_frames: List[PoseLandmarksObject] = []
     positioned_frames: List[PoseLandmarksObject] = []
 
@@ -60,7 +59,8 @@ class CoachPose:
         return rep_state
 
     def _show_loaded_pose(self, frame):
-        self.coach_pose_now = self.loaded_frames.pop(0)
+        if len(self.loaded_frames) > 0:
+            self.coach_pose_now = self.loaded_frames.pop(0)
         frame = draw_landmarks_pose(frame, self.coach_pose_now, pose_color=(0, 255, 0))
         return frame
 

@@ -106,7 +106,7 @@ class PrototypeProcessor(VideoProcessorBase):
             img = Image.open(uploaded_instruction_file)
             self.instruction_file = np.array(img)
         else:
-            self.instruction_file = np.array([])
+            self.instruction_file = np.array([[[1, 1, 1, 1]]])
 
         self.training_mode = training_mode
         self.penguin_count = 300
@@ -158,11 +158,7 @@ class PrototypeProcessor(VideoProcessorBase):
 
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
-            if (
-                self.is_clicked_reset_button
-                or result_pose.crapped_hands()
-                or self.reset_button.is_pressed(processed_frame, result_pose)
-            ):
+            if self.is_clicked_reset_button or self.reset_button.is_pressed(processed_frame, result_pose):
                 self.rep_state = self.coach_pose._reset_training_set(
                     realtime_pose=result_pose, rep_state=self.rep_state
                 )
@@ -198,7 +194,7 @@ class PrototypeProcessor(VideoProcessorBase):
                     processed_frame = draw_joint_angle_2d(processed_frame, result_pose)
 
             # お手本Poseの描画
-            if self.coach_pose.loaded_frames:
+            if self.coach_pose.uploaded_frames and self.coach_pose.loaded_frames is not None:
                 processed_frame = self.coach_pose._show_loaded_pose(processed_frame)
 
             # 指導

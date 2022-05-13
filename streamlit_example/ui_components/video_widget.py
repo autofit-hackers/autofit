@@ -4,19 +4,21 @@ import numpy as np
 
 
 class ResetButton:
-    def __init__(self, center=[50, 140], size=50, duration=30):
+    def __init__(self, center=[50, 120], size=40, duration=30):
         self.center = center
         self.size = size
         self.duration = duration
         self.count = 0
         self.should_reset = False
+        self.wait_count = 0
 
     def is_pressed(self, frame, result_pose: PoseLandmarksObject):
-        landmark_xy = result_pose.landmark[:, :2] * frame.shape[:2]
+        landmark_xy = result_pose.landmark[:, :2] * np.array([frame.shape[1], frame.shape[0]])
         distance = np.linalg.norm(landmark_xy[20] - self.center)
-        if distance <= self.size:
-            if self.count >= self.duration:
+        if distance < self.size:
+            if self.count == self.duration:
                 self._reset_count()
+                self._wait_start()
                 return True
             else:
                 self._add_count()
@@ -34,17 +36,52 @@ class ResetButton:
         self.count = 0
 
     # called every frame
-    def visualize(self, frame, color=(255, 255, 0)):
-        cv.circle(frame, self.center, self.size, color, thickness=1, lineType=cv.LINE_8, shift=0)
-        cv.ellipse(
-            img=frame,
-            center=self.center,
-            axes=(self.size, self.size),
-            angle=270,
-            startAngle=0,
-            endAngle=360 * (self.count / self.duration),
-            color=color,
-            lineType=cv.LINE_8,
-            shift=0,
-            thickness=-1,
-        )
+    def visualize(self, frame, color_ing=(255, 255, 0), color_ed=(0, 255, 255), text="Reset"):
+        if self.is_waiting():
+            cv.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv.LINE_8, shift=0)
+            cv.putText(
+                frame,
+                text,
+                [self.center[0] - 25, self.center[1] + 5],
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                color_ed,
+                1,
+                cv.LINE_AA,
+            )
+        else:
+            cv.circle(frame, self.center, self.size, color_ing, thickness=3, lineType=cv.LINE_8, shift=0)
+            if self.count > 0:
+                cv.ellipse(
+                    img=frame,
+                    center=self.center,
+                    axes=(self.size, self.size),
+                    angle=270,
+                    startAngle=0,
+                    endAngle=360 * (self.count / self.duration),
+                    color=color_ed,
+                    lineType=cv.LINE_8,
+                    shift=0,
+                    thickness=3,
+                )
+            cv.putText(
+                frame,
+                text,
+                [self.center[0] - 25, self.center[1] + 5],
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                color_ing,
+                1,
+                cv.LINE_AA,
+            )
+
+    def _wait_start(self):
+        self.wait_count = 60
+
+    def is_waiting(self) -> bool:
+        if self.wait_count > 0:
+            self.wait_count -= 1
+            self.count = 0
+            return True
+        else:
+            return False

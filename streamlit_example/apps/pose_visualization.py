@@ -208,8 +208,8 @@ def app():
                     visibilities[trimmed_frame_start : trimmed_frame_end + 1],
                 )
             ]
-            os.makedirs(Path(f"{trimmed_pose}/"))
-            with open(Path(f"{trimmed_pose}/trimmed_{pose_file.name}.pkl"), "wb") as f:
+            os.makedirs(Path("trimmed_pose/"))
+            with open(Path("trimmed_pose/trimmed_coach.pkl"), "wb") as f:
                 pickle.dump(trimmed_pose, f)
             st.write("Trimmed Pose Successfully Saved!")
 

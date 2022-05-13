@@ -43,12 +43,12 @@ def app():
         settings_to_refresh.update(
             {
                 "uploaded_pose_file": st.file_uploader("Load example pose file (.pkl)", type="pkl"),
-                "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
                 "is_saving": save_state_ui(),
+                "uploaded_instruction_file": st.file_uploader("futomomo", type="png"),
+                "is_clicked_reset_button": st.button("Reset Pose and Start Training Set"),
                 "model_settings": model_setting_ui(),
                 "rep_count_settings": rep_count_setting_ui(),
                 "display_settings": display_setting_ui(),
-                "uploaded_instruction_file": st.file_uploader("futomomo", type="png"),
             }
         )
 
@@ -87,6 +87,25 @@ def app():
             range_x=[0, len(df)],
         )
         st.write(fig)
+
+    """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
+    placeholder = st.empty()
+    while webrtc_front.video_processor and should_draw_graph:
+        df = webrtc_front.video_processor.rep_state.body_heights_df
+        if len(df) == 0:
+            print("ERROR(by Endo): can't draw graph; body heights don't exist")
+            break
+        with placeholder.container():
+            st.write(webrtc_front.video_processor.coaching_contents)
+            st.markdown("### Chart")
+            fig = px.line(
+                data_frame=df,
+                y=["height", "velocity"],
+                range_x=[len(df) - 600, len(df)],
+            )
+            st.write(fig)
+            st.write(df)
+            time.sleep(0.1)
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:
