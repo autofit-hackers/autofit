@@ -23,8 +23,6 @@ def main():
     app.add_app("Reconstruct 3D Pose", pose3d_reconstruction.app)
     app.add_app("Visualize pose", pose_visualization.app)
     app.add_app("trial", traial_app.app)
-    app.add_app("Flexibility", flexibility_app.app)
-    # TODO: pkl編集画面を立てる
 
     # The main app
     app.run()
