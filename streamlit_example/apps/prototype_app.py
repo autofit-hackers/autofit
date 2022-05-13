@@ -43,6 +43,7 @@ def app():
                 "model_settings": model_setting_ui(),
                 "rep_count_settings": rep_count_setting_ui(),
                 "display_settings": display_setting_ui(),
+                "uploaded_instruction_file": st.file_uploader("futomomo", type="png"),
             }
         )
 
