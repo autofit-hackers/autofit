@@ -1,5 +1,6 @@
 from ast import Not
 from curses import meta
+from genericpath import exists
 from pathlib import Path
 from typing import Dict, Any
 
@@ -65,7 +66,21 @@ def app():
             _update_video_processor(webrtc_ctx.video_processor, settings_to_refresh)
         return webrtc_ctx
 
-    _gen_and_refresh_webrtc_ctx(key="front")
+    webrtc_front = _gen_and_refresh_webrtc_ctx(key="front")
+    if st.button("Finish"):
+        st.markdown("## お疲れ様でした！")
+        st.markdown("### スクワット 40kg 8回")
+        assert webrtc_front.video_processor
+        st.markdown(webrtc_front.video_processor.instruction.mistake_reason)
+        st.markdown("### 改善のために以下のメニューがおすすめです。")
+        st.markdown("#### ブルガリアンスクワット、ヒップスラスト")
+        df = webrtc_front.video_processor.rep_state.body_heights_df
+        fig = px.line(
+            data_frame=df,
+            y=["height", "velocity"],
+            range_x=[0, len(df)],
+        )
+        st.write(fig)
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:

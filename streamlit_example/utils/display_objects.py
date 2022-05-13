@@ -83,7 +83,7 @@ class CoachPose:
 class Instruction:
     display_frames: int = 60
     instruction_words = ["Drop your hips until your", "thighs are level."]  # "太ももが水平になるまで腰を落としましょう"
-    mistake_reason: str = "お尻の筋肉が比較的弱く、深いスクワットができない可能性があります。"
+    mistake_reason: str = "#### 太ももが水平になるまで腰を落とせるともっと良くなります。お尻の筋肉が比較的弱く、深いスクワットができない可能性があります。"
     is_displaying: bool = True
     knee_y = 0
 
