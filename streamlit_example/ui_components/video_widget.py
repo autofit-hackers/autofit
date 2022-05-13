@@ -38,6 +38,7 @@ class ResetButton:
         cv.circle(
             img=frame, center=self.position, radius=self.size, color=color, thickness=3, lineType=cv.LINE_8, shift=0
         )
+
         # cv.ellipse(
         #     img=frame,
         #     center=self.position,
