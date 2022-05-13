@@ -46,6 +46,12 @@ def app():
             }
         )
 
+    settings_to_refresh.update(
+        {
+            "is_clicked_capture_skeleton": st.button("Save Screen Capture", disabled=(not session_meta_exists)),
+        }
+    )
+
     def gen_webrtc_ctx(key: str):
         return webrtc_streamer(
             key=key,
@@ -106,7 +112,8 @@ def _gen_save_paths(base_save_dir: Path, key: str) -> Dict[str, str]:
     st.write(str(base_save_dir))
     return {
         "pose_save_path": str(base_save_dir / "pose" / f"{key}.pkl"),
-        "video_save_path": str(base_save_dir / "video" / f"{key}.mp4"),
+        "video_save_path": str(base_save_dir / "demo_video" / f"flexibility.mp4"),
+        "image_save_path": str(base_save_dir / "demo_image" / f"flexibility.jpg"),
     }
 
 

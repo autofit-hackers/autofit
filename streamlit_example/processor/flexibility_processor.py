@@ -57,8 +57,10 @@ class FlexibilityProcessor(VideoProcessorBase):
         rep_count_settings: RepCountSettings,
         uploaded_pose_file=None,
         is_clicked_reset_button: bool = False,
+        is_clicked_capture_skeleton: bool = False,
         video_save_path: Union[str, None] = None,
         pose_save_path: Union[str, None] = None,
+        image_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -78,9 +80,12 @@ class FlexibilityProcessor(VideoProcessorBase):
         self.rep_count_settings = rep_count_settings
 
         self.is_clicked_reset_button = is_clicked_reset_button
+        self.is_clicked_capture_skeleton = is_clicked_capture_skeleton
 
         self.video_save_path = video_save_path
         self.video_writer: Union[cv.VideoWriter, None] = None
+
+        self.image_save_path: Union[str, None] = image_save_path
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_memory: List[PoseLandmarksObject] = []
@@ -103,11 +108,11 @@ class FlexibilityProcessor(VideoProcessorBase):
         with open(self.pose_save_path, "wb") as f:
             pickle.dump(self.pose_memory, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def _reconstruct_pose_3d(self):
-        assert self.pose_save_path is not None
-        pose_dir = os.path.dirname(self.pose_save_path)
-        if os.path.isfile(f"{pose_dir}/front.pkl") and os.path.isfile(f"{pose_dir}/side.pkl"):
-            return
+    def _save_image(self, frame):
+        assert self.image_save_path
+        os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
+        cv.imwrite(self.image_save_path, frame)
+
 
     def _show_loaded_pose(self, frame):
         self.showing_coach_pose = self.loaded_frames.pop(0)
@@ -198,20 +203,6 @@ class FlexibilityProcessor(VideoProcessorBase):
             frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
-        # 動画の保存
-        if self.is_saving:
-            # 初期化
-            if self.video_writer is None:
-                assert self.video_save_path is not None
-                frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
-                self.video_writer = self._create_video_writer(fps=30, frame=frame_to_save)
-                print(f"initialized video writer to save {self.video_save_path}")
-            # 動画の保存（フレームの追加）
-            self.video_writer.write(frame)
-
-        # 動画の保存（writerの解放）
-        if (not self.is_saving) and (self.video_writer is not None):
-            self._release_video_writer()
 
         # 検出実施 #############################################################
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -267,6 +258,24 @@ class FlexibilityProcessor(VideoProcessorBase):
             self._save_pose()
             # self._reconstruct_pose_3d
             self.pose_memory = []
+
+        # 動画の保存
+        if self.is_saving:
+            # 初期化
+            if self.video_writer is None:
+                assert self.video_save_path is not None
+                frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
+                self.video_writer = self._create_video_writer(fps=30, frame=frame_to_save)
+            # 動画の保存（フレームの追加）
+            self.video_writer.write(processed_frame)
+        # 動画の保存（writerの解放）
+        if (not self.is_saving) and (self.video_writer is not None):
+            self._release_video_writer()
+
+        # frameの保存 ################################################################
+        if self.is_clicked_capture_skeleton and self.image_save_path:
+            self._save_image(frame=processed_frame)
+            self.is_clicked_capture_skeleton = False
 
         # Show fps
         if self.display_settings.show_fps:
