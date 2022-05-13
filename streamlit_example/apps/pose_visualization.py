@@ -180,7 +180,7 @@ def app():
     # User inputs
     with st.sidebar:
         pose_file = st.file_uploader("Select Pose File")
-        start_visualize = st.button("Vizualize Pose", disabled=not pose_file)
+        start_visualize = st.button("Visualize Pose", disabled=not pose_file)
         trimmed_frame_start = st.number_input("Trim pose from frame:", min_value=0)
         trimmed_frame_end = st.number_input(
             "to frame:",
@@ -193,7 +193,7 @@ def app():
     if start_visualize:
         st.session_state["start_visualize"] = True
 
-    # Load uploaded pose and vizualize it
+    # Load uploaded pose and visualize it
     if st.session_state["start_visualize"] and pose_file:
         uploaded_pose = pickle.load(pose_file)
         landmarks: list[np.ndarray] = [pose.landmark for pose in uploaded_pose]
@@ -208,8 +208,8 @@ def app():
                     visibilities[trimmed_frame_start : trimmed_frame_end + 1],
                 )
             ]
-            os.makedirs("test_data")
-            with open(Path(f"test_data/trimmed_pose.pkl"), "wb") as f:
+            os.makedirs(Path(f"{trimmed_pose}/"))
+            with open(Path(f"{trimmed_pose}/trimmed_{pose_file.name}.pkl"), "wb") as f:
                 pickle.dump(trimmed_pose, f)
             st.write("Trimmed Pose Successfully Saved!")
 

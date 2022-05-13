@@ -4,17 +4,17 @@ import numpy as np
 
 
 class ResetButton:
-    def __init__(self, position=[50, 140], size=50, duration=100):
-        self.position = position
+    def __init__(self, center=[50, 140], size=50, duration=100):
+        self.center = center
         self.size = size
         self.duration = duration
         self.count = 0
         self.should_reset = False
 
-    def is_pressed(self, frame, result_pose: PoseLandmarksObject, distance_thre=50):
+    def is_pressed(self, frame, result_pose: PoseLandmarksObject):
         landmark_xy = result_pose.landmark[:, :2] * frame.shape[:2]
-        distance = np.linalg.norm(landmark_xy[20] - self.position)
-        if distance <= distance_thre:
+        distance = np.linalg.norm(landmark_xy[20] - self.center)
+        if distance <= self.size:
             print(self.count)
             if self.count >= self.duration:
                 self._reset_count()
@@ -36,10 +36,10 @@ class ResetButton:
 
     # called every frame
     def visualize(self, frame, color=(255, 255, 0)):
-        cv.circle(frame, self.position, self.size, color, thickness=1, lineType=cv.LINE_8, shift=0)
+        cv.circle(frame, self.center, self.size, color, thickness=1, lineType=cv.LINE_8, shift=0)
         cv.ellipse(
             img=frame,
-            center=self.position,
+            center=self.center,
             axes=(self.size, self.size),
             angle=270,
             startAngle=0,
