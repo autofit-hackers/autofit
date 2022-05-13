@@ -1,7 +1,14 @@
 import streamlit as st
+from . import pose_from_video
 
 from apps import calibration_app, traial_app  # import your app modules here
-from apps import get_physical_info_app, make_session_app, pose3d_reconstruction, pose_app, pose_visualization
+from apps import (
+    get_physical_info_app,
+    make_session_app,
+    pose3d_reconstruction,
+    pose_app,
+    pose_visualization,
+)
 from utils import MultiApp
 
 
@@ -16,6 +23,7 @@ def main():
     app.add_app("Reconstruct 3D Pose", pose3d_reconstruction.app)
     app.add_app("Vizualize pose", pose_visualization.app)
     app.add_app("trial", traial_app.app)
+    app.add_app("Pose from videos", pose_from_video.app)
     # TODO: pkl編集画面を立てる
 
     # The main app
