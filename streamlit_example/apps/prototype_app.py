@@ -73,10 +73,13 @@ def app():
         return webrtc_ctx
 
     webrtc_front = _gen_and_refresh_webrtc_ctx(key="front")
-    if st.button("Finish"):
+
+    if st.button("Finish Workout!"):
+        with st.spinner("Creating a training report..."):
+            time.sleep(2)
         st.markdown("## お疲れ様でした！")
-        st.markdown("### スクワット 40kg 8回")
         assert webrtc_front.video_processor
+        st.markdown(f"### スクワット 40kg {webrtc_front.video_processor.rep_state.rep_count}回")
         st.markdown(webrtc_front.video_processor.instruction.mistake_reason)
         st.markdown("### 改善のために以下のメニューがおすすめです。")
         st.markdown("#### ブルガリアンスクワット、ヒップスラスト")
@@ -87,25 +90,37 @@ def app():
             range_x=[0, len(df)],
         )
         st.write(fig)
+    else:
+        placeholder = st.empty()
+        while webrtc_front.video_processor and should_draw_graph:
+            df = webrtc_front.video_processor.rep_state.body_heights_df
+            if len(df) == 0:
+                print("ERROR(by Endo): can't draw graph; body heights don't exist")
+                break
+            with placeholder.container():
+                st.write(webrtc_front.video_processor.coaching_contents)
+                st.markdown("### Chart")
+                fig = px.line(
+                    data_frame=df,
+                    y=["height", "velocity"],
+                    range_x=[len(df) - 600, len(df)],
+                )
+                st.write(fig)
+                st.write(df)
+                time.sleep(0.1)
 
-    """https://blog.streamlit.io/how-to-build-a-real-time-live-dashboard-with-streamlit/"""
-    placeholder = st.empty()
-    while webrtc_front.video_processor and should_draw_graph:
-        df = webrtc_front.video_processor.rep_state.body_heights_df
-        if len(df) == 0:
-            print("ERROR(by Endo): can't draw graph; body heights don't exist")
-            break
-        with placeholder.container():
-            st.write(webrtc_front.video_processor.coaching_contents)
-            st.markdown("### Chart")
-            fig = px.line(
-                data_frame=df,
-                y=["height", "velocity"],
-                range_x=[len(df) - 600, len(df)],
-            )
-            st.write(fig)
-            st.write(df)
-            time.sleep(0.1)
+    # button_css = f"""
+    # <style>
+    # div.stButton > button:first-child  {{
+    #     font-weight  : bold                ;/* 文字：太字                   */
+    #     border       :  5px solid #f36     ;/* 枠線：ピンク色で5ピクセルの実線 */
+    #     border-radius: 10px 10px 10px 10px ;/* 枠線：半径10ピクセルの角丸     */
+    #     background   : #ddd                ;/* 背景色：薄いグレー            */
+    # }}
+    # </style>
+    # """
+    # st.markdown(button_css, unsafe_allow_html=True)
+    # action = st.button("このボタンを押してください")
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:

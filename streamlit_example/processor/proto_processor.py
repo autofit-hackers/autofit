@@ -158,12 +158,13 @@ class PrototypeProcessor(VideoProcessorBase):
 
             # セットの最初にリセットする
             # TODO: 今はボタンがトリガーだが、ゆくゆくは声などになる
-            if self.is_clicked_reset_button or self.reset_button.is_pressed(processed_frame, result_pose):
+            if self.reset_button.is_pressed(processed_frame, result_pose):
                 self.rep_state = self.coach_pose._reset_training_set(
                     realtime_pose=result_pose, rep_state=self.rep_state
                 )
                 self.is_clicked_reset_button = False
                 self.instruction.update_knee_y(pose=result_pose, frame_height=processed_frame.shape[0])
+                self.penguin_count = 90
 
             if self.rep_count_settings.do_count_rep:
                 # レップカウントを更新

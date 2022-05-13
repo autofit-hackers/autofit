@@ -85,3 +85,13 @@ class ResetButton:
             return True
         else:
             return False
+
+    def calcurate_text_center(self, text, center, font=cv.FONT_HERSHEY_SIMPLEX, font_scale=1.0, thickness=1):
+        # get boundary of this text
+        textsize = cv.getTextSize(text, font, font_scale, thickness)[0]
+
+        # get coords based on boundary
+        textX = (center[1] - textsize[0]) / 2
+        textY = (center[0] + textsize[1]) / 2
+
+        return [textX, textY]
