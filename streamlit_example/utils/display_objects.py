@@ -56,7 +56,7 @@ class CoachPose:
             self.loaded_frames = self.positioned_frames.copy()
 
         rep_state.reset_rep(pose=realtime_pose)
-        print(rep_state.initial_body_height)
+        # print(rep_state.initial_body_height)
         return rep_state
 
     def _show_loaded_pose(self, frame):

@@ -40,7 +40,6 @@ def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSetting
             input_item = in_queue.get(timeout=10)
             outqueue_timestamp: float = time.time()
         except Exception as e:
-            print(e)
             continue
 
         if isinstance(input_item, type(_SENTINEL_)) and input_item == _SENTINEL_:
@@ -161,7 +160,7 @@ class PrototypeProcessor(VideoProcessorBase):
             if (
                 self.is_clicked_reset_button
                 or result_pose.crapped_hands()
-                or self.reset_button.forward(processed_frame, result_pose)
+                or self.reset_button.is_pressed(processed_frame, result_pose)
             ):
                 self.rep_state = self.coach_pose._reset_training_set(
                     realtime_pose=result_pose, rep_state=self.rep_state
@@ -191,7 +190,6 @@ class PrototypeProcessor(VideoProcessorBase):
                 processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color, show_z=False)
                 if self.training_mode == "Penguin" and self.penguin_count > 0:
                     self.penguin_count -= 1
-                    print(self.penguin_count)
                 elif self.training_mode == "Penguin" and self.penguin_count == 0:
                     color = (0, 0, 255)
                     processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color, show_z=False)
@@ -254,18 +252,8 @@ class PrototypeProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-        # # Show fps
-        # if self.display_settings.show_fps:
-        #     cv.putText(
-        #         processed_frame,
-        #         f"{processed_frame.shape}",
-        #         (10, 90),
-        #         cv.FONT_HERSHEY_SIMPLEX,
-        #         0.6,
-        #         (0, max(min(display_fps - 20, 10) * 25.5, 0), 255 - max(min(display_fps - 20, 10) * 25.5, 0)),
-        #         2,
-        #         cv.LINE_AA,
-        #     )
+        # Visualize reset button
+        self.reset_button.visualize(processed_frame)
 
         # 動画の保存
         if self.is_saving:
