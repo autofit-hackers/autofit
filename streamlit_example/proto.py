@@ -11,7 +11,6 @@ def main():
     app.add_app("Prototype", prototype_app.app)
     app.add_app("Pose Main", pose_app.app)
     app.add_app("Make Session", make_session_app.app)
-    app.add_app("Flexibility", flexibility_app.app)
 
     # The main app
     app.run()

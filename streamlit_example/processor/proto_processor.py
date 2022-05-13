@@ -18,6 +18,7 @@ from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
 from utils.display_objects import CoachPose, Instruction
+from utils.draw_pose import draw_joint_angle_2d
 from utils.video_recorder import create_video_writer, release_video_writer
 
 _SENTINEL_ = "_SENTINEL_"
@@ -60,6 +61,7 @@ class PrototypeProcessor(VideoProcessorBase):
         is_saving: bool,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
+        training_mode: str,
         uploaded_pose_file=None,
         uploaded_instruction_file=None,
         is_clicked_reset_button: bool = False,
@@ -99,9 +101,14 @@ class PrototypeProcessor(VideoProcessorBase):
             self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
         self.instruction = Instruction()
 
-        img = Image.open(uploaded_instruction_file)
-        self.instruction_file = np.array(img)
-        print("=========================", (self.instruction_file.shape))
+        if uploaded_instruction_file:
+            img = Image.open(uploaded_instruction_file)
+            self.instruction_file = np.array(img)
+        else:
+            self.instruction_file = np.array([])
+
+        self.training_mode = training_mode
+        self.penguin_count = 300
 
         self._pose_process.start()
 
@@ -173,14 +180,21 @@ class PrototypeProcessor(VideoProcessorBase):
 
             # Poseの描画 ################################################################
             if result_pose.landmark is not None:
-                processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color)
+                if self.training_mode == "Penguin" and self.penguin_count > 0:
+                    self.penguin_count -= 1
+                    print(self.penguin_count)
+                elif self.training_mode == "Penguin" and self.penguin_count == 0:
+                    color = (0, 0, 255)
+                elif self.training_mode == "JointAngle":
+                    processed_frame = draw_joint_angle_2d(processed_frame, result_pose)
+                processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=color, show_z=False)
 
             # お手本Poseの描画
             if self.coach_pose.loaded_frames:
                 processed_frame = self.coach_pose._show_loaded_pose(processed_frame)
 
             # 指導
-            if self.rep_state.rep_count >= 1:
+            if self.rep_state.rep_count >= 1 and self.training_mode == "Training":
                 line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
                 frame = self.instruction._draw_with_image(
                     frame=processed_frame, line_color=line_color, instruction_image=self.instruction_file
@@ -230,6 +244,19 @@ class PrototypeProcessor(VideoProcessorBase):
                 2,
                 cv.LINE_AA,
             )
+
+        # # Show fps
+        # if self.display_settings.show_fps:
+        #     cv.putText(
+        #         processed_frame,
+        #         f"{processed_frame.shape}",
+        #         (10, 90),
+        #         cv.FONT_HERSHEY_SIMPLEX,
+        #         0.6,
+        #         (0, max(min(display_fps - 20, 10) * 25.5, 0), 255 - max(min(display_fps - 20, 10) * 25.5, 0)),
+        #         2,
+        #         cv.LINE_AA,
+        #     )
 
         # 動画の保存
         if self.is_saving:

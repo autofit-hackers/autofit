@@ -332,7 +332,7 @@ def draw_landmarks_pose(
 def draw_joint_angle_2d(
     image,
     pose_result: PoseLandmarksObject,
-    three_joints: List[int] = [25, 27, 31],
+    three_joints: List[int] = [11, 23, 25],
     joint_color=(0, 0, 255),
     line_width=2,
 ):
