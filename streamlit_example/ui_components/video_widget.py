@@ -4,7 +4,7 @@ import numpy as np
 
 
 class ResetButton:
-    def __init__(self, position=[50, 140], size=50, duration=100):
+    def __init__(self, position=[50, 140], size=50, duration=30):
         self.position = position
         self.size = size
         self.duration = duration
@@ -15,7 +15,6 @@ class ResetButton:
         landmark_xy = result_pose.landmark[:, :2] * frame.shape[:2]
         distance = np.linalg.norm(landmark_xy[20] - self.position)
         if distance <= distance_thre:
-            print(self.count)
             if self.count >= self.duration:
                 self._reset_count()
                 return True
