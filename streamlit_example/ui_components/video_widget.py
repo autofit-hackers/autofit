@@ -36,7 +36,7 @@ class ResetButton:
         self.count = 0
 
     # called every frame
-    def visualize(self, frame, color_ing=(255, 255, 0), color_ed=(0, 255, 255), text="Reset"):
+    def visualize(self, frame, color_ing=(255, 255, 0), color_ed=(0, 255, 255), text="Start"):
         if self.is_waiting():
             cv.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv.LINE_8, shift=0)
             cv.putText(
