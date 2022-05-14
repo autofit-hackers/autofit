@@ -8,145 +8,13 @@ from .class_objects import PoseLandmarksObject
 from typing import List
 
 
-def draw_stick_figure(
-    image,
-    landmarks,
-    color=(100, 33, 3),
-    bg_color=(255, 255, 255),
-    visibility_th=0.5,
-):
-    image_width, image_height = image.shape[1], image.shape[0]
-
-    # 各ランドマーク算出
-    landmark_point = []
-    for index, landmark in enumerate(landmarks.landmark):
-        landmark_x = min(int(landmark.x * image_width), image_width - 1)
-        landmark_y = min(int(landmark.y * image_height), image_height - 1)
-        landmark_z = landmark.z
-        landmark_point.append([index, landmark.visibility, (landmark_x, landmark_y), landmark_z])
-
-    # 脚の付け根の位置を腰の中点に修正
-    right_leg = landmark_point[23]
-    left_leg = landmark_point[24]
-    leg_x = int((right_leg[2][0] + left_leg[2][0]) / 2)
-    leg_y = int((right_leg[2][1] + left_leg[2][1]) / 2)
-
-    landmark_point[23][2] = (leg_x, leg_y)
-    landmark_point[24][2] = (leg_x, leg_y)
-
-    # 距離順にソート
-    sorted_landmark_point = sorted(landmark_point, reverse=True, key=lambda x: x[3])
-
-    # 各サイズ算出
-    (face_x, face_y), face_radius = min_enclosing_face_circle(landmark_point)
-
-    face_x = int(face_x)
-    face_y = int(face_y)
-    face_radius = int(face_radius * 1.5)
-
-    stick_radius01 = int(face_radius * (4 / 5))
-    stick_radius02 = int(stick_radius01 * (3 / 4))
-    stick_radius03 = int(stick_radius02 * (3 / 4))
-
-    # 描画対象リスト
-    draw_list = [
-        11,  # 右腕
-        12,  # 左腕
-        23,  # 右脚
-        24,  # 左脚
-    ]
-
-    # 背景色
-    cv.rectangle(image, (0, 0), (image_width, image_height), bg_color, thickness=-1)
-
-    # 顔 描画
-    cv.circle(image, (face_x, face_y), face_radius, color, -1)
-
-    # 腕/脚 描画
-    for landmark_info in sorted_landmark_point:
-        index = landmark_info[0]
-
-        if index in draw_list:
-            point01 = [p for p in landmark_point if p[0] == index][0]
-            point02 = [p for p in landmark_point if p[0] == (index + 2)][0]
-            point03 = [p for p in landmark_point if p[0] == (index + 4)][0]
-
-            if point01[1] > visibility_th and point02[1] > visibility_th:
-                image = draw_stick(
-                    image,
-                    point01[2],
-                    stick_radius01,
-                    point02[2],
-                    stick_radius02,
-                    color=color,
-                    bg_color=bg_color,
-                )
-            if point02[1] > visibility_th and point03[1] > visibility_th:
-                image = draw_stick(
-                    image,
-                    point02[2],
-                    stick_radius02,
-                    point03[2],
-                    stick_radius03,
-                    color=color,
-                    bg_color=bg_color,
-                )
-
-    return image
-
-
-def min_enclosing_face_circle(landmark_point):
-    landmark_array = np.empty((0, 2), int)
-
-    index_list = [1, 4, 7, 8, 9, 10]
-    for index in index_list:
-        np_landmark_point = [np.array((landmark_point[index][2][0], landmark_point[index][2][1]))]
-        landmark_array = np.append(landmark_array, np_landmark_point, axis=0)
-
-    center, radius = cv.minEnclosingCircle(points=landmark_array)
-
-    return center, radius
-
-
-def draw_stick(
-    image,
-    point01,
-    point01_radius,
-    point02,
-    point02_radius,
-    color=(100, 33, 3),
-    bg_color=(255, 255, 255),
-):
-    cv.circle(image, point01, point01_radius, color, -1)
-    cv.circle(image, point02, point02_radius, color, -1)
-
-    draw_list = []
-    for index in range(2):
-        rad = math.atan2(point02[1] - point01[1], point02[0] - point01[0])
-
-        rad = rad + (math.pi / 2) + (math.pi * index)
-        point_x = int(point01_radius * math.cos(rad)) + point01[0]
-        point_y = int(point01_radius * math.sin(rad)) + point01[1]
-
-        draw_list.append([point_x, point_y])
-
-        point_x = int(point02_radius * math.cos(rad)) + point02[0]
-        point_y = int(point02_radius * math.sin(rad)) + point02[1]
-
-        draw_list.append([point_x, point_y])
-
-    points = np.array((draw_list[0], draw_list[1], draw_list[3], draw_list[2]))
-    cv.fillConvexPoly(image, points=points, color=color)
-
-    return image
-
-
 def draw_landmarks_pose(
     image,
     landmarks: PoseLandmarksObject,
     pose_color=(255, 0, 0),
     visibility_th: float = 0.5,
     show_z: bool = False,
+    show_face_landmark: bool = False,
     circle_size=1,
 ):
     image_width, image_height = image.shape[1], image.shape[0]
@@ -163,29 +31,29 @@ def draw_landmarks_pose(
 
         if landmarks.visibility[index] < visibility_th:
             continue
-
-        if index == 0:  # 鼻
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 1:  # 右目：目頭
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 2:  # 右目：瞳
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 3:  # 右目：目尻
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 4:  # 左目：目頭
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 5:  # 左目：瞳
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 6:  # 左目：目尻
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 7:  # 右耳
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 8:  # 左耳
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 9:  # 口：左端
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
-        if index == 10:  # 口：左端
-            cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+        if show_face_landmark:
+            if index == 0:  # 鼻
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 1:  # 右目：目頭
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 2:  # 右目：瞳
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 3:  # 右目：目尻
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 4:  # 左目：目頭
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 5:  # 左目：瞳
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 6:  # 左目：目尻
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 7:  # 右耳
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 8:  # 左耳
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 9:  # 口：左端
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
+            if index == 10:  # 口：左端
+                cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
         if index == 11:  # 右肩
             cv.circle(image, (landmark_x, landmark_y), 5, pose_color, circle_size)
         if index == 12:  # 左肩
@@ -244,21 +112,22 @@ def draw_landmarks_pose(
             )
 
     """Keypointを結ぶLineの描画"""
-    # 右目
-    if landmark_point[1][0] > visibility_th and landmark_point[2][0] > visibility_th:
-        cv.line(image, landmark_point[1][1], landmark_point[2][1], pose_color, 2)
-    if landmark_point[2][0] > visibility_th and landmark_point[3][0] > visibility_th:
-        cv.line(image, landmark_point[2][1], landmark_point[3][1], pose_color, 2)
+    if show_face_landmark:
+        # 右目
+        if landmark_point[1][0] > visibility_th and landmark_point[2][0] > visibility_th:
+            cv.line(image, landmark_point[1][1], landmark_point[2][1], pose_color, 2)
+        if landmark_point[2][0] > visibility_th and landmark_point[3][0] > visibility_th:
+            cv.line(image, landmark_point[2][1], landmark_point[3][1], pose_color, 2)
 
-    # 左目
-    if landmark_point[4][0] > visibility_th and landmark_point[5][0] > visibility_th:
-        cv.line(image, landmark_point[4][1], landmark_point[5][1], pose_color, 2)
-    if landmark_point[5][0] > visibility_th and landmark_point[6][0] > visibility_th:
-        cv.line(image, landmark_point[5][1], landmark_point[6][1], pose_color, 2)
+        # 左目
+        if landmark_point[4][0] > visibility_th and landmark_point[5][0] > visibility_th:
+            cv.line(image, landmark_point[4][1], landmark_point[5][1], pose_color, 2)
+        if landmark_point[5][0] > visibility_th and landmark_point[6][0] > visibility_th:
+            cv.line(image, landmark_point[5][1], landmark_point[6][1], pose_color, 2)
 
-    # 口
-    if landmark_point[9][0] > visibility_th and landmark_point[10][0] > visibility_th:
-        cv.line(image, landmark_point[9][1], landmark_point[10][1], pose_color, 2)
+        # 口
+        if landmark_point[9][0] > visibility_th and landmark_point[10][0] > visibility_th:
+            cv.line(image, landmark_point[9][1], landmark_point[10][1], pose_color, 2)
 
     # 肩
     if landmark_point[11][0] > visibility_th and landmark_point[12][0] > visibility_th:
