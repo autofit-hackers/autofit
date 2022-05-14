@@ -82,6 +82,7 @@ def visualize_pose(landmarks):
     range_min = min(landmarks[:, :, 0].min(), landmarks[:, :, 1].min(), landmarks[:, :, 2].min())
     range_max = max(landmarks[:, :, 0].max(), landmarks[:, :, 1].max(), landmarks[:, :, 2].max())
     _range = [range_min, range_max]
+    st.write(_range)
 
     layout = go.Layout(
         title="Pose",

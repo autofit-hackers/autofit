@@ -90,7 +90,7 @@ class ResetButton:
         # get boundary of this text
         textsize = cv.getTextSize(text, font, font_scale, thickness)[0]
 
-        # get coords based on boundary
+        # get coordinates based on boundary
         textX = (center[1] - textsize[0]) / 2
         textY = (center[0] + textsize[1]) / 2
 
