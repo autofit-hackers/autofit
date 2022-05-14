@@ -123,7 +123,9 @@ class Instruction:
             # width, height = instruction_image.shape[:2]
             # frame_w, frame_h = frame.shape[:2]
             # frame[10 : width + 10, frame_h - 10 - height : frame_h - 10] = instruction_image[:, :, :3]
-            cv.line(frame, (100, self.knee_y), (380, self.knee_y), line_color, thickness=2, lineType=cv.LINE_AA)
+            cv.line(
+                frame, (100, self.knee_y + 20), (380, self.knee_y + 20), line_color, thickness=2, lineType=cv.LINE_AA
+            )
         return frame
 
     def update_knee_y(self, pose: PoseLandmarksObject, frame_height: int):
