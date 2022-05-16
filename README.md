@@ -30,3 +30,12 @@ GitHub で管理することが難しい容量が大きいファイル（wav, mp
 * コミットメッセージ
   * `<type>: <commit-message> #<issue_id>`
     * 例: `refactor: hogehoge #27`
+
+## [dvc](https://dvc.org/doc/start)
+* [cheatsheet](https://www.globalsqa.com/dvc-cheat-sheet/)
+### Examples
+```
+$ dvc pull
+$ dvc add streamlit_example/data
+$ dvc push
+```
