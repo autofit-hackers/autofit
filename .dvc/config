@@ -1,4 +1,5 @@
 [core]
     autostage = true
+    remote = posefit-dvc-gdrive
 ['remote "posefit-dvc-gdrive"']
     url = gdrive://0AIiqDSoTRvNcUk9PVA
