@@ -94,7 +94,6 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
             # opencv can attempt to improve the checkerboard coordinates
             corners = cv.cornerSubPix(gray, corners, conv_size, (-1, -1), criteria)
             cv.drawChessboardCorners(frame, (rows, columns), corners, ret)
-            k = cv.waitKey(500)
 
             objpoints.append(objp)
             imgpoints.append(corners)
@@ -138,6 +137,8 @@ def stereo_calibrate(
         _im = cv.imread(str(im2), 1)
         c2_images.append(_im)
 
+        print(im1, im2)
+
     # coordinates of squares in the checkerboard world space
     objp = np.zeros((rows * columns, 3), np.float32)
     objp[:, :2] = np.mgrid[0:rows, 0:columns].T.reshape(-1, 2)
@@ -169,7 +170,6 @@ def stereo_calibrate(
             cv.drawChessboardCorners(frame1, (rows, columns), corners1, c_ret1)
 
             cv.drawChessboardCorners(frame2, (rows, columns), corners2, c_ret2)
-            k = cv.waitKey(500)
 
             objpoints.append(objp)
             imgpoints_left.append(corners1)

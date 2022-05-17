@@ -2,6 +2,7 @@
 
 ## Prerequisite
 * python 3.8.13
+* [dvc](https://dvc.org/doc/install)
 ```
 $ pip install -r requirements.txt
 ```
