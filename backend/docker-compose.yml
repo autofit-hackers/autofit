@@ -17,11 +17,21 @@ services:
     container_name: postgres
     build: ./postgres
     volumes:
-      - postgres_sample_data:/var/lib/postgresql/data
+      # - postgres_sample_data:/var/lib/postgresql/data
       - ./postgres/sql:/docker-entrypoint-initdb.d
     env_file: ./postgres/.env_db
     ports:
       - 5433:5432
+
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    volumes:
+      - ./django/static:/usr/src/app/static
+    ports:
+      - 80:80
+    depends_on:
+      - django
 
 volumes:
   postgres_sample_data:
