@@ -41,4 +41,6 @@ $ dvc push
 ```
 
 ### 音声認識のためのPyaudioインストール方法
-https://qiita.com/m_ina/items/a2c37cf9457bd21c76b6
+1. brew install portaudio
+2. conda install -c anaconda portaudio
+3. python3 -m pip install pyaudio --global-option="build_ext" --global-option="-I/opt/homebrew/include" --global-option="-L/opt/homebrew/lib"
