@@ -82,7 +82,7 @@ class PoseLandmarksObject(NamedTuple):
         assert save_path
         with open(save_path, "w") as f:
             json.dump(bone_dict, f)
-            st.write("Successfuly Saved")
+            st.write("Successfully Saved")
         return bone_dict
 
     def crapped_hands(self) -> bool:
