@@ -4,7 +4,7 @@
 * Unity: 2020.3.23f1
 
 ## 環境構築
-GitHub で管理することが難しい容量が大きいファイル（wav, mp4 など）は Google Drive にて管理されている。  
+GitHub で管理することが難しい容量が大きいファイル（wav, mp4 など）は Google Drive にて管理されている。
 スクリプト実行前に追加すること。
 * https://drive.google.com/drive/folders/1OMLF-E_3EfgNiBIXiqC2FCJagt32RkFf?usp=sharing
 ただし、 `*.meta` ファイルは Git に追加して管理する必要があるため、注意すること。
@@ -16,7 +16,7 @@ GitHub で管理することが難しい容量が大きいファイル（wav, mp
 ## Commit Message Rules
 * feat: A new feature
 * fix: A bug fix
-* docs: Documentation only changes 
+* docs: Documentation only changes
 * style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 * refactor: A code change that neither fixes a bug nor adds a feature
 * perf: A code change that improves performance
@@ -39,3 +39,6 @@ $ dvc pull
 $ dvc add streamlit_example/data
 $ dvc push
 ```
+
+### 音声認識のためのPyaudioインストール方法
+https://qiita.com/m_ina/items/a2c37cf9457bd21c76b6
