@@ -39,6 +39,20 @@ class MultiApp:
         self.apps.append({"title": title, "function": func})
 
     def run(self):
-        app = st.sidebar.radio("Go To", self.apps, format_func=lambda app: app["title"])
+        # app = st.sidebar.radio("Go To", self.apps, format_func=lambda app: app["title"])
+
+        if "page_index" in st.session_state:
+            index = st.session_state["page_index"]
+        else:
+            index = 0
+            st.session_state["page_index"] = 0
+        if st.sidebar.button("next"):
+            if index < len(self.apps) - 1:
+                index += 1
+            else:
+                index = 0
+            print(index)
+            st.session_state["page_index"] = index
+        app = st.sidebar.radio("Go To", self.apps, format_func=lambda app: app["title"], index=index)
 
         app["function"]()
