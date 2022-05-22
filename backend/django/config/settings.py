@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "user_auth",
+    "user_auth",
     "social_django",
 ]
 
@@ -148,4 +148,4 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIAL_AUTH_TWITTER_KEY = env.get_value("TWITTER_API_KEY")
 SOCIAL_AUTH_TWITTER_SECRET = env.get_value("TWITTER_API_KEY_SECRET")
-# SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/"
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/user/top"
