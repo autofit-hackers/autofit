@@ -35,15 +35,8 @@ class AutoProcessor(VideoProcessorBase):
     def __init__(
         self,
         model_settings: ModelSettings,
-        is_saving: bool,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
-        training_mode: str,
-        uploaded_pose_file=None,
-        uploaded_instruction_file=None,
-        is_clicked_reset_button: bool = False,
-        video_save_path: Union[str, None] = None,
-        pose_save_path: Union[str, None] = None,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -64,9 +57,6 @@ class AutoProcessor(VideoProcessorBase):
         self.instruction = Instruction()
         self.rep_state: RepState = RepState()
         self.coaching_contents: List[str] = []
-        self.coach_pose = CoachPose()
-        if uploaded_pose_file:
-            self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
         self.hold_button = CircleHoldButton()
 
         self._pose_process.start()
@@ -99,7 +89,7 @@ class AutoProcessor(VideoProcessorBase):
             # （回数入力）
             # 必要情報が入力されたら次へ
             self.phase += 1
-        # Ph2: レップの開始直前まで
+        # Ph2: セットの開始直前まで
         elif self.phase == 2:
             # セットの開始入力(声)
             # お手本ポーズのロード
@@ -111,15 +101,18 @@ class AutoProcessor(VideoProcessorBase):
                 if self.hold_button.is_pressed(processed_frame, result_pose):
                     self.phase += 1
                     # お手本の表示開始
-        # Ph3: レップ中 ################################################################
+        # Ph3: セット中 ################################################################
         elif self.phase == 3:
-            # 回数の更新
-            self.rep_state.update_rep(
-                pose=result_pose,
-                upper_thre=self.rep_count_settings.upper_thresh,
-                lower_thre=self.rep_count_settings.lower_thresh,
-            )
-            # 指導
+            if result_exists:
+                # 回数の更新
+                if self.rep_state.update_rep(
+                    pose=result_pose,
+                    upper_thre=self.rep_count_settings.upper_thresh,
+                    lower_thre=self.rep_count_settings.lower_thresh,
+                ):
+                    # Repの更新
+                    pass
+                # 指導内容の表示
 
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
