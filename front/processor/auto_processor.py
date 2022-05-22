@@ -119,7 +119,7 @@ class AutoProcessor(VideoProcessorBase):
                 upper_thre=self.rep_count_settings.upper_thresh,
                 lower_thre=self.rep_count_settings.lower_thresh,
             )
-            # 指導a
+            # 指導
 
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)

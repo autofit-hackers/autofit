@@ -90,6 +90,10 @@ class PoseLandmarksObject(NamedTuple):
         distance = hands[0] * hands[0] + hands[1] * hands[1]
         return distance < 0.01
 
+class RepObject:
+    poses: List[PoseLandmarksObject]
+    keyframes: dict
+    rep_number: int
 
 @dataclass
 class ModelSettings:
