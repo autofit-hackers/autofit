@@ -1,4 +1,5 @@
 import copy
+from genericpath import exists
 from http import server
 import json
 import os
@@ -9,6 +10,7 @@ from multiprocessing import Process, Queue
 from pathlib import Path
 from turtle import color
 from typing import List, Union
+from unittest import result
 
 import av
 import cv2 as cv
@@ -17,13 +19,13 @@ import numpy as np
 from PIL import Image
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
-from ui_components.video_widget import ResetButton
+from ui_components.video_widget import CircleHoldButton, ResetButton
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
 from utils import display_objects
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
 from utils.display_objects import CoachPose, DisplayObjects, Instruction
 from utils.draw_pose import draw_joint_angle_2d
-from utils.video_recorder import create_video_writer, release_video_writer
+from utils.video_recorder import TrainingSaver, create_video_writer, release_video_writer
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 
 _SENTINEL_ = "_SENTINEL_"
@@ -53,37 +55,19 @@ class AutoProcessor(VideoProcessorBase):
                 "model_settings": model_settings,
             },
         )
-        self._FpsCalculator = FpsCalculator(buffer_len=10)
-
-        self.is_saving = is_saving
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
-        self.is_clicked_reset_button = is_clicked_reset_button
-
-        self.video_save_path = video_save_path
-        self.video_writer: Union[cv.VideoWriter, None] = None
-
-        self.pose_save_path: Union[str, None] = pose_save_path
-        self.pose_memory: List[PoseLandmarksObject] = []
-
+        self.phase = 0
+        self.training_saver = TrainingSaver()
+        self.display_objects = DisplayObjects()
+        self.instruction = Instruction()
         self.rep_state: RepState = RepState()
         self.coaching_contents: List[str] = []
-
         self.coach_pose = CoachPose()
         if uploaded_pose_file:
             self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
-        self.instruction = Instruction()
-
-        if uploaded_instruction_file:
-            img = Image.open(uploaded_instruction_file)
-            self.instruction_file = np.array(img)
-        else:
-            self.instruction_file = np.array([[[1, 1, 1, 1]]])
-
-        self.reset_button = ResetButton()
-
-        self.display_objects = DisplayObjects()
+        self.hold_button = CircleHoldButton()
 
         self._pose_process.start()
 
@@ -95,109 +79,63 @@ class AutoProcessor(VideoProcessorBase):
         result_pose: PoseLandmarksObject = infer_pose(
             image=processed_frame, in_queue=self._in_queue, out_queue=self._out_queue
         )
-        self.reset_button.visualize(frame=processed_frame)  # TODO: display objects全体のリフレッシュに書き換え
+        # self.reset_button.visualize(frame=processed_frame)  # TODO: display objects全体のリフレッシュに書き換え
 
-        if result_pose:
-            # Ph0: QRコードログイン
-            #   QRコード検知
-            #   認証
-            #   認証したら次へ
-            # Ph1: メニュー・重量の決定（何をどれだけやるかの決定）
-            #   メニュー入力
-            #   重量入力
-            #   （回数入力）
-            #   必要情報が入力されたら次へ
-            # Ph2: レップの開始直前まで
-            #   セットの開始入力(声)
-            #   重ね合わせやセットのパラメータをリセット
-            #   お手本の表示開始
-            #   スタート検知(キーフレーム検知)されたら次へ
-            # Ph3: レップ中
-            #   回数
-            #   指導
-            #   終了が入力されたら次へ
-            # Ph4: レップ後
-            #   レポート表示
-            #   次のセットorメニューorログアウト
-
-            if self.reset_button.is_pressed(processed_frame, result_pose):
-                self.rep_state = self.coach_pose._reset_training_set(
-                    realtime_pose=result_pose, rep_state=self.rep_state
-                )
-                self.is_clicked_reset_button = False
-                self.instruction.update_knee_y(pose=result_pose, frame_height=processed_frame.shape[0])
-                # self.penguin_count = 90
-
-            if self.rep_count_settings.do_count_rep:
-                # レップカウントを更新
-                assert self.rep_count_settings.upper_thresh is not None
-                assert self.rep_count_settings.lower_thresh is not None
-                self.rep_state.update_rep(
-                    pose=result_pose,
-                    upper_thre=self.rep_count_settings.upper_thresh,
-                    lower_thre=self.rep_count_settings.lower_thresh,
-                )
-
-            # キーフレームを検出してフレームをリロード
-            if self.rep_state.is_keyframe(pose=result_pose):
-                self.coach_pose._reload_pose()
-                color = (0, 0, 255)
-            else:
-                color = (255, 0, 0)
-
-            # Poseの描画 ################################################################
+        result_exists = result_pose is not None
+        # Poseの描画 ################################################################
+        if result_exists:
             processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=(0, 255, 255), show_z=False)
 
-            # お手本Poseの描画
-            # if self.coach_pose.uploaded_frames and self.coach_pose.loaded_frames is not None:
-            #     processed_frame = self.coach_pose._show_loaded_pose(processed_frame)
-
+        # Ph0: QRコードログイン ################################################################
+        if self.phase == 0:
+            # QRコード検知
+            # 認証
+            # 認証したら次へ
+            self.phase += 1
+        # Ph1: メニュー・重量の入力 ################################################################
+        elif self.phase == 1:
+            # メニュー入力【音声入力！】
+            # 重量入力【音声入力！】
+            # （回数入力）
+            # 必要情報が入力されたら次へ
+            self.phase += 1
+        # Ph2: レップの開始直前まで
+        elif self.phase == 2:
+            # セットの開始入力(声)
+            # お手本ポーズのロード
+            # 重ね合わせパラメータのリセット
+            # セットのパラメータをリセット
+            if result_exists:
+                self.hold_button.update(frame=processed_frame)
+                # スタート検知(キーフレーム検知)されたら次へ
+                if self.hold_button.is_pressed(processed_frame, result_pose):
+                    self.phase += 1
+                    # お手本の表示開始
+        # Ph3: レップ中 ################################################################
+        elif self.phase == 3:
+            # 回数の更新
+            self.rep_state.update_rep(
+                pose=result_pose,
+                upper_thre=self.rep_count_settings.upper_thresh,
+                lower_thre=self.rep_count_settings.lower_thresh,
+            )
             # 指導
-            # if self.rep_state.rep_count >= 1:
-            #     line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
-            #     frame = self.instruction.show_instruction_image(
-            #         frame=processed_frame, line_color=line_color, instruction_image=self.instruction_file
-            #     )
-            # self.instruction._proceed_frame()
 
-        # pose の保存 (pose_mem への追加) ########################################################
-        if self.is_saving and self.pose_save_path is not None:
-            self.pose_memory.append(
-                result_pose
-                if result_pose
-                else PoseLandmarksObject(
-                    landmark=np.zeros(shape=(33, 3)), visibility=np.zeros(shape=(33, 1)), timestamp=recv_timestamp
-                )
-            )  # NOTE: ビデオのフレームインデックスとposeのフレームインデックスを一致させるために、2D Pose Estimation ができなかった場合は zero padding
+            # 保存用配列の更新
+            self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
 
-        # pose の保存（書き出し）
-        if (len(self.pose_memory) > 0) and (not self.is_saving):
-            save_pose(pose_save_path=self.pose_save_path, pose_memory=self.pose_memory)
-            # self._reconstruct_pose_3d
-            self.pose_memory = []
+            # 終了が入力されたら次へ
+            if self.rep_state.rep_count == 8:
+                self.training_saver.save()
+                self.phase += 1
+
+        # Ph4: レップ後 ################################################################
+        elif self.phase == 4:
+            # レポート表示
+            # 次のセットorメニューorログアウト
+            self.phase += 1
 
         self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
-
-        # Visualize reset button
-        self.reset_button.visualize(processed_frame)
-
-        # 動画の保存
-        if self.is_saving:
-            # 初期化
-            if self.video_writer is None:
-                assert self.video_save_path is not None
-                frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
-                self.video_writer = create_video_writer(
-                    fps=30, frame=frame_to_save, video_save_path=self.video_save_path
-                )
-                print(f"initialized video writer to save {self.video_save_path}")
-            # 動画の保存（フレームの追加）
-            self.video_writer.write(processed_frame)
-
-        # 動画の保存（writerの解放）
-        if (not self.is_saving) and (self.video_writer is not None):
-            release_video_writer(video_writer=self.video_writer, video_save_path=self.video_save_path)
-
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):
