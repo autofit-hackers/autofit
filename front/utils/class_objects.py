@@ -1,14 +1,16 @@
-from dis import dis
-import pickle
-from dataclasses import dataclass, field
-from distutils.command.upload import upload
 import json
-from pathlib import Path
+import pickle
 import time
+from dataclasses import dataclass, field
+from dis import dis
+from distutils.command.upload import upload
+from pathlib import Path
 from typing import Any, List, NamedTuple, Union
-import streamlit as st
+
 import numpy as np
 import pandas as pd
+import streamlit as st
+from playsound import playsound
 
 
 class PoseLandmarksObject(NamedTuple):
@@ -225,16 +227,16 @@ class RepState:
 
     body_heights_df: pd.DataFrame = pd.DataFrame(columns=["time", "height", "velocity"])
 
-    def init_rep(self, height: np.double):
+    def _init_rep(self, height: np.double):
         self.initial_body_height = height
         self.tmp_body_heights = [self.initial_body_height] * 10
 
     def update_rep(self, pose: PoseLandmarksObject, lower_thre, upper_thre)->bool:
         height = pose.get_2d_height()
         if len(self.tmp_body_heights) < 10:
-            self.init_rep(height=height)
-        did_count_up = self.update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
-        self.update_lifting_state(height=height)
+            self._init_rep(height=height)
+        did_count_up = self._update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
+        self._update_lifting_state(height=height)
 
         velocity = self.tmp_body_heights[9] - self.tmp_body_heights[0]
         self.body_heights_df = pd.concat(
@@ -243,18 +245,23 @@ class RepState:
         )
         return did_count_up
 
-    def update_counter(self, height: np.double, lower_thre, upper_thre) -> bool:
+    def _update_counter(self, height: np.double, lower_thre, upper_thre):
         if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
             self.did_touch_bottom = True
         elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
             self.rep_count += 1
+            self._playsound_rep()
             self.did_touch_bottom = False
             return True
         return False
 
-    def update_lifting_state(self, height: np.double):
+    def _update_lifting_state(self, height: np.double):
         self.tmp_body_heights.pop(0)
         self.tmp_body_heights.append(height)
+
+    def _playsound_rep(self):
+        sound_file = f"./data/audio_src/rep_count/{self.rep_count}.mp3"
+        playsound(sound_file, block=False)
 
     def is_keyframe(self, pose: PoseLandmarksObject, lower_thre=0.96, upper_thre=0.97):
         height = pose.get_2d_height()

@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "user_auth",
+    "social_django",
 ]
 
 MIDDLEWARE = [
@@ -66,6 +68,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -135,3 +139,13 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_RDIRECT_URL = "/"
+
+
+AUTHENTICATION_BACKENDS = [
+    "social_core.backends.twitter.TwitterOAuth",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+SOCIAL_AUTH_TWITTER_KEY = env.get_value("TWITTER_API_KEY")
+SOCIAL_AUTH_TWITTER_SECRET = env.get_value("TWITTER_API_KEY_SECRET")
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/user/top"
