@@ -10,3 +10,5 @@ black
 plotly
 frozendict
 scikit-learn
+playsound
+PyObjC
