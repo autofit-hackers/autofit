@@ -6,11 +6,14 @@ from pathlib import Path
 import time
 from turtle import width
 from typing import Any, Dict, List, NamedTuple, Tuple, Union
+
+from matplotlib.pyplot import cla
 import streamlit as st
 
 import cv2 as cv
 import numpy as np
 import pandas as pd
+from utils.calculate_fps import FpsCalculator
 
 from utils.class_objects import PoseLandmarksObject, RepState
 from utils.draw_pose import draw_landmarks_pose
@@ -117,7 +120,7 @@ class Instruction:
                 )
         return frame
 
-    def _draw_with_image(self, frame, line_color, instruction_image):
+    def show_instruction_image(self, frame, line_color, instruction_image):
         if self.is_displaying:
             self.two_images(src=instruction_image, dst=frame)
             # width, height = instruction_image.shape[:2]
@@ -156,3 +159,43 @@ class Instruction:
         dst[w0:w1:, h0:h1] = dst[w0:w1:, h0:h1] * (1.0 - mask)  # 透過率に応じて元の画像を暗くする。
         dst[w0:w1:, h0:h1] = dst[w0:w1:, h0:h1] + src * mask  # 貼り付ける方の画像に透過率をかけて加算。
         return dst
+
+
+class DisplayObjects:
+    reps = 0
+    fps = 0
+    fpsCalculator = FpsCalculator(buffer_len=10)
+
+    def update_and_show(self, frame, reps):
+        self.update(reps=reps)
+        self.show(frame)
+
+    def update(self, reps):
+        self.reps = reps
+        self.fps = self.fpsCalculator.get()
+
+    def show(self, frame):
+        cv.putText(
+            frame,
+            f"Rep:{self.reps}",
+            (10, 30),
+            cv.FONT_HERSHEY_SIMPLEX,
+            1.0,
+            (0, 0, 255),
+            2,
+            cv.LINE_AA,
+        )
+
+        cv.putText(
+            frame,
+            "FPS:" + format(self.fps, ".0f"),
+            (10, 60),
+            cv.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, max(min(self.fps - 20, 10) * 25.5, 0), 255 - max(min(self.fps - 20, 10) * 25.5, 0)),
+            2,
+            cv.LINE_AA,
+        )
+
+    def reset(self):
+        self.reps = 0

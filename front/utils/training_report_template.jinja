@@ -1,0 +1,32 @@
+{#辞書を受け取った際に使用（不完全）
+<html>
+<head>
+<meta charset="utf-8"/>
+  <body>
+{% for coaching_content in coaching_contents %}
+    <h1>{{ coaching_content.menu_name }}</h1>
+    <p> {{ coaching_content.one_point }} </p>
+{% if "squat_knees_ahead" in coaching_contents %}
+    <p>もっと膝を前に。</p>
+{% if "squat_depth" in coaching_contents %}
+    <p>もっと腰を下げるメニューを実行。</p>
+{% else %}
+    <p>なしなしなし</p>
+{% endif %}
+  </body>
+{% endfor %}
+</html>
+#}
+{#以下，リストで受け取った際に使用#}
+<html>
+<head>
+<meta charset="utf-8"/>
+  <body>
+    <h1>{{ coaching_contents }}</h1>
+{% if "squat_depth" in coaching_contents %}
+    <p>もっと腰を下げるメニューを実行。</p>
+{% else %}
+    <p>なしなしなし</p>
+{% endif %}
+  </body>
+</html>

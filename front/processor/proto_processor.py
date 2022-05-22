@@ -201,7 +201,7 @@ class PrototypeProcessor(VideoProcessorBase):
             # 指導
             if self.rep_state.rep_count >= 1 and self.training_mode == "Training":
                 line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
-                frame = self.instruction._draw_with_image(
+                frame = self.instruction.show_instruction_image(
                     frame=processed_frame, line_color=line_color, instruction_image=self.instruction_file
                 )
                 # self.instruction._proceed_frame()
