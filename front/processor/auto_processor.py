@@ -11,11 +11,10 @@ import numpy as np
 import sounddevice as sd
 import vosk
 from apps.pose3d_reconstruction import reconstruct_pose_3d
-from genericpath import exists
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
-from utils import PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
+from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
 from utils.display_objects import CoachPose, DisplayObjects
 from utils.sound_input import get_recognized_voice, voice_recognition_process
@@ -101,12 +100,20 @@ class AutoProcessor(VideoProcessorBase):
             # お手本ポーズのロード
             # 重ね合わせパラメータのリセット
             # セットのパラメータをリセット
-            if result_exists:
-                self.hold_button.update(frame=processed_frame)
-                # スタート検知(キーフレーム検知)されたら次へ
-                if self.hold_button.is_pressed(processed_frame, result_pose):
-                    # お手本の表示開始
+            # if result_exists:
+            #     self.hold_button.update(frame=processed_frame)
+            #     # スタート検知(キーフレーム検知)されたら次へ
+            #     if self.hold_button.is_pressed(processed_frame, result_pose):
+            #         # お手本の表示開始
+            #         self.phase += 1
+            try:
+                recognized_voice = get_recognized_voice(self._recognized_voice_queue)
+                if "スタート" in recognized_voice:
+                    print(recognized_voice)
                     self.phase += 1
+                    print(self.phase)
+            except:
+                pass
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
@@ -133,8 +140,8 @@ class AutoProcessor(VideoProcessorBase):
             # self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
 
             # 終了が入力されたら次へ
-            if self.rep_state.rep_count == 80:
-                self.training_saver.save()
+            if self.rep_state.rep_count == 8:
+                # self.training_saver.save()
                 # resultsを生成
                 self.phase += 1
                 print(self.phase)
@@ -143,17 +150,15 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 4:
             # レポート表示
             # 次のセットorメニューorログアウト
-            self.phase += 1
-            print(self.phase)
-
-        # Voice recognition
-        try:
-            recognized_voice = get_recognized_voice(self._recognized_voice_queue)
-            print(recognized_voice)
-            if "スタート" in recognized_voice:
-                self.rep_state.reset_rep(result_pose)
-        except:
-            pass
+            # Voice recognition
+            try:
+                recognized_voice = get_recognized_voice(self._recognized_voice_queue)
+                if "終わり" in recognized_voice:
+                    print(recognized_voice)
+                    self.phase += 1
+                    print(self.phase)
+            except:
+                pass
 
         self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
