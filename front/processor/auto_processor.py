@@ -18,7 +18,7 @@ from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
 from utils.display_objects import CoachPose, DisplayObjects
-from utils.sound_input import get_recognized_voice, voice_recognition_process
+from utils.voice_recognition import get_recognized_voice, voice_recognition_process
 from utils.instruction import Instruction_Object
 from utils.video_recorder import TrainingSaver
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
