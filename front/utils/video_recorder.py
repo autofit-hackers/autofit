@@ -38,6 +38,13 @@ class TrainingSaver:
         self.video_writer: Union[cv.VideoWriter, None] = None
 
     def update(self, pose: Union[PoseLandmarksObject, None], frame, timestamp):
+        """保存用配列やビデオライターにposeおよびframeを追加していく
+
+        Args:
+            pose (Union[PoseLandmarksObject, None]): _description_
+            frame (_type_): _description_
+            timestamp (_type_): _description_
+        """
         # video_writerが存在しない場合、初期化
         if self.video_writer is None:
             self._initialize_video_writer(frame=frame)

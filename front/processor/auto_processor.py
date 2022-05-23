@@ -1,16 +1,7 @@
-import copy
-from genericpath import exists
-from http import server
-import json
-import os
-import pickle
-import re
 import time
 from multiprocessing import Process, Queue
 from pathlib import Path
-from turtle import color
 from typing import List, Union
-from unittest import result
 
 import av
 import cv2 as cv
@@ -21,8 +12,7 @@ from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton, ResetButton
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils import display_objects
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
+from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SaveStates, SetObject
 from utils.display_objects import CoachPose, DisplayObjects, Instruction
 from utils.draw_pose import draw_joint_angle_2d
 from utils.video_recorder import TrainingSaver, create_video_writer, release_video_writer
@@ -55,9 +45,10 @@ class AutoProcessor(VideoProcessorBase):
         self.training_saver = TrainingSaver()
         self.display_objects = DisplayObjects()
         self.instruction = Instruction()
-        self.rep_state: RepState = RepState()
+        self.rep_state = RepState()
         self.coaching_contents: List[str] = []
         self.hold_button = CircleHoldButton()
+        self.set_obj = SetObject()
 
         self._pose_process.start()
 
@@ -89,7 +80,7 @@ class AutoProcessor(VideoProcessorBase):
             # （回数入力）
             # 必要情報が入力されたら次へ
             self.phase += 1
-        # Ph2: セットの開始直前まで
+        # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットの開始入力(声)
             # お手本ポーズのロード
@@ -111,6 +102,7 @@ class AutoProcessor(VideoProcessorBase):
                     lower_thre=self.rep_count_settings.lower_thresh,
                 ):
                     # Repの更新
+                    self.set_obj
                     pass
                 # 指導内容の表示
 
