@@ -5,6 +5,7 @@ import os
 from PIL import Image
 
 from training_report_render_html import training_report_render_html
+from utils import instruction
 from utils.instruction import InstructionData, squat_depth, squat_knees_in
 
 
@@ -41,7 +42,12 @@ if __name__ == "__main__":
         "reps": 3,
         "good_point": "腰が十分に下がっている",
         "one_point": "もう少し軽くしましょう",
-        "recommended_menus": [{"bad_point": "手の幅がおかしい", "proposed_menu": "ブランコストレッチ",}],
+        "recommended_menus": [
+            {
+                "bad_point": "手の幅がおかしい",
+                "proposed_menu": "ブランコストレッチ",
+            }
+        ],
     }  # 仮に辞書で指定
 
     training_result = {
@@ -67,6 +73,8 @@ if __name__ == "__main__":
             ),
         ],
     }
+
+    reason_0 = training_result["instructions"][0].reason
 
     os.makedirs("traning_reports", exist_ok=True)
     generate_html_report(coaching_contents_temp, "training_report.html")
