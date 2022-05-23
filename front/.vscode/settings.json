@@ -46,7 +46,9 @@
   "python.languageServer": "Pylance",
   "python.linting.enabled": true,
   "cSpell.words": [
+    "keypoint",
     "picklable",
+    "playsound",
     "SENDRECV",
     "thre",
     "webrtc"

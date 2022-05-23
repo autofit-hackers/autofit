@@ -62,7 +62,7 @@ def app():
                 rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
                 media_stream_constraints={"video": True, "audio": False},
             ),
-            video_processor_factory=lambda: AutoProcessor(**settings_to_refresh),
+            video_processor_factory=lambda: PrototypeProcessor(**settings_to_refresh),
         )
 
     def _gen_and_refresh_webrtc_ctx(key: str):

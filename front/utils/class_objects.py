@@ -91,10 +91,39 @@ class PoseLandmarksObject(NamedTuple):
         distance = hands[0] * hands[0] + hands[1] * hands[1]
         return distance < 0.01
 
+
 class RepObject:
-    poses: List[PoseLandmarksObject]
-    keyframes: dict
+    poses: List[PoseLandmarksObject] = []
+    keyframes: dict = {}
     rep_number: int
+
+    def __init__(self, rep_number) -> None:
+        self.rep_number = rep_number
+
+    def update(self, pose: PoseLandmarksObject, keyframe: Union[str, None] = None):
+        self.poses.append(pose)
+        if keyframe is not None:
+            self.keyframes[keyframe] = len(self.poses) - 1
+
+    def reset(self, rep_number):
+        self.poses: List[PoseLandmarksObject] = []
+        self.keyframes: dict = {}
+        self.rep_number: int = rep_number
+
+    def recalculate_keyframes(self) -> dict:
+        heights = []
+        for pose in self.poses:
+            heights.append(pose.get_2d_height())
+        idx = heights.index(min(heights))
+        self.keyframes["bottom"] = idx
+        return self.keyframes
+
+
+class SetObject:
+    reps: List[RepObject]
+    menu: str
+    weight: int
+
 
 @dataclass
 class ModelSettings:
@@ -201,11 +230,11 @@ class RepState:
         self.initial_body_height = height
         self.tmp_body_heights = [self.initial_body_height] * 10
 
-    def update_rep(self, pose: PoseLandmarksObject, lower_thre, upper_thre):
+    def update_rep(self, pose: PoseLandmarksObject, lower_thre, upper_thre)->bool:
         height = pose.get_2d_height()
         if len(self.tmp_body_heights) < 10:
             self._init_rep(height=height)
-        self._update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
+        did_count_up = self._update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
         self._update_lifting_state(height=height)
 
         velocity = self.tmp_body_heights[9] - self.tmp_body_heights[0]
@@ -213,6 +242,7 @@ class RepState:
             [self.body_heights_df, pd.DataFrame({"time": [time.time()], "height": [height], "velocity": [velocity]})],
             ignore_index=True,
         )
+        return did_count_up
 
     def _update_counter(self, height: np.double, lower_thre, upper_thre):
         if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
@@ -221,6 +251,8 @@ class RepState:
             self.rep_count += 1
             self._playsound_rep()
             self.did_touch_bottom = False
+            return True
+        return False
 
     def _update_lifting_state(self, height: np.double):
         self.tmp_body_heights.pop(0)
