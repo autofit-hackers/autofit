@@ -36,6 +36,7 @@ GitHub で管理することが難しい容量が大きいファイル（wav, mp
 ### Examples
 ```
 $ dvc pull
+$ git commit -m ''
 $ dvc add streamlit_example/data
 $ dvc push
 ```
