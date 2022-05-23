@@ -73,7 +73,6 @@ class AutoProcessor(VideoProcessorBase):
         result_pose: PoseLandmarksObject = infer_pose(
             image=processed_frame, in_queue=self._in_queue, out_queue=self._out_queue
         )
-        # self.reset_button.visualize(frame=processed_frame)  # TODO: display objects全体のリフレッシュに書き換え
 
         result_exists = result_pose is not None
         # Poseの描画 ################################################################
@@ -86,6 +85,8 @@ class AutoProcessor(VideoProcessorBase):
             # 認証
             # 認証したら次へ
             self.phase += 1
+            print(self.phase)
+
         # Ph1: メニュー・重量の入力 ################################################################
         elif self.phase == 1:
             # メニュー入力【音声入力！】
@@ -93,6 +94,7 @@ class AutoProcessor(VideoProcessorBase):
             # （回数入力）
             # 必要情報が入力されたら次へ
             self.phase += 1
+            print(self.phase)
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットの開始入力(声)
@@ -103,8 +105,8 @@ class AutoProcessor(VideoProcessorBase):
                 self.hold_button.update(frame=processed_frame)
                 # スタート検知(キーフレーム検知)されたら次へ
                 if self.hold_button.is_pressed(processed_frame, result_pose):
-                    self.phase += 1
                     # お手本の表示開始
+                    self.phase += 1
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
@@ -120,25 +122,29 @@ class AutoProcessor(VideoProcessorBase):
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
                     # 指導の実施
-                    self.instruction_obj.execute(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 1])
+                    self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
+                    self.instruction_obj.execute(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
                     self.set_obj.make_new_rep()
 
-                # 指導内容の表示
-                self.instruction_obj.show(frame=processed_frame)
+                    # 指導内容の表示
+                    self.instruction_obj.show(frame=processed_frame)
 
             # 保存用配列の更新
             # self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
 
             # 終了が入力されたら次へ
-            if self.rep_state.rep_count == 8:
+            if self.rep_state.rep_count == 80:
                 self.training_saver.save()
+                # resultsを生成
                 self.phase += 1
+                print(self.phase)
 
         # Ph4: レップ後 ################################################################
         elif self.phase == 4:
             # レポート表示
             # 次のセットorメニューorログアウト
             self.phase += 1
+            print(self.phase)
 
         # Voice recognition
         try:

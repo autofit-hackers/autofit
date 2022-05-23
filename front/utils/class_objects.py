@@ -19,6 +19,7 @@ class PoseLandmarksObject(NamedTuple):
     landmark.shape == (33, 3)  #（関節数, xyz）
     visibility.shape == (33, 1)
     """
+
     landmark: np.ndarray
     visibility: np.ndarray
     timestamp: Union[float, None]
@@ -101,16 +102,19 @@ class RepObject:
     """
 
     poses: List[PoseLandmarksObject] = []
-    body_heights: List[np.double] = []
+    body_heights: List[float] = []
     keyframes: dict = {}
     rep_number: int
 
     def __init__(self, rep_number) -> None:
+        self.poses = []
+        self.body_heights: List[float] = []
+        self.keyframes: dict = {}
         self.rep_number = rep_number
 
     def update(self, pose: PoseLandmarksObject):
         self.poses.append(pose)
-        self.body_heights.append(pose.get_2d_height())
+        # self.body_heights.append(pose.get_2d_height())
 
     def reset(self, rep_number):
         self.poses: List[PoseLandmarksObject] = []
@@ -118,10 +122,8 @@ class RepObject:
         self.rep_number: int = rep_number
 
     def recalculate_keyframes(self) -> dict:
-        heights = []
-        for pose in self.poses:
-            heights.append(pose.get_2d_height())
-        idx = heights.index(min(heights))
+        self.body_heights = [float(pose.get_2d_height()) for pose in self.poses]
+        idx = self.body_heights.index(min(self.body_heights))
         self.keyframes["bottom"] = idx
         return self.keyframes
 
@@ -140,7 +142,7 @@ class RepObject:
 
 
 class SetObject:
-    reps: List[RepObject]
+    reps: List[RepObject] = [RepObject(1)]
     menu: str
     weight: int
 
@@ -150,7 +152,7 @@ class SetObject:
         Returns:
             _type_: _description_
         """
-        idx = len(self.reps) - 1
+        idx = len(self.reps) + 1
         self.reps.append(RepObject(idx))
 
 
@@ -287,7 +289,7 @@ class RepState:
             self.did_touch_bottom = True
         elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
             self.rep_count += 1
-            self._playsound_rep()
+            # self._playsound_rep()
             self.did_touch_bottom = False
             return True
         return False
@@ -297,7 +299,7 @@ class RepState:
         self.tmp_body_heights.append(height)
 
     def _playsound_rep(self):
-        sound_file = f"./data/audio_src/rep_count/{self.rep_count}.mp3"
+        sound_file = f"data/audio_src/rep_count/{self.rep_count}.mp3"
         playsound(sound_file, block=False)
 
     def is_keyframe(self, pose: PoseLandmarksObject, lower_thre=0.96, upper_thre=0.97):
