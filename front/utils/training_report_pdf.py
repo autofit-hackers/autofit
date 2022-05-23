@@ -5,7 +5,6 @@ import os
 from PIL import Image
 
 from training_report_render_html import training_report_render_html
-from utils import instruction
 from utils.instruction import InstructionData, squat_depth, squat_knees_in
 
 
@@ -57,7 +56,7 @@ if __name__ == "__main__":
         "instructions": [
             InstructionData(
                 name="squat_knees_ahead",
-                should_display=False,
+                is_ok=False,
                 instruction_text="膝出てんで",
                 judge_function=squat_knees_in,
                 reason="ケツ引かんからや",
@@ -65,7 +64,7 @@ if __name__ == "__main__":
             ),
             InstructionData(
                 name="squat_depth",
-                should_display=False,
+                is_ok=False,
                 instruction_text="しゃがめてへんで",
                 judge_function=squat_depth,
                 reason="足首固いんちゃうか",

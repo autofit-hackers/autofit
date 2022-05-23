@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from dis import dis
 from distutils.command.upload import upload
 from pathlib import Path
+from turtle import pos
 from typing import Any, List, NamedTuple, Union
 
 import numpy as np
@@ -94,17 +95,23 @@ class PoseLandmarksObject(NamedTuple):
 
 
 class RepObject:
+    """Key Frame はtop, bottom...
+
+    Returns:
+        _type_: _description_
+    """
+
     poses: List[PoseLandmarksObject] = []
+    body_heights: List[np.double] = []
     keyframes: dict = {}
     rep_number: int
 
     def __init__(self, rep_number) -> None:
         self.rep_number = rep_number
 
-    def update(self, pose: PoseLandmarksObject, keyframe: Union[str, None] = None):
+    def update(self, pose: PoseLandmarksObject):
         self.poses.append(pose)
-        if keyframe is not None:
-            self.keyframes[keyframe] = len(self.poses) - 1
+        self.body_heights.append(pose.get_2d_height())
 
     def reset(self, rep_number):
         self.poses: List[PoseLandmarksObject] = []
@@ -119,11 +126,33 @@ class RepObject:
         self.keyframes["bottom"] = idx
         return self.keyframes
 
+    def calculate_velocity(self) -> pd.DataFrame:
+        """
+        velocity = self.tmp_body_heights[9] - self.tmp_body_heights[0]
+        self.body_heights_df = pd.concat(
+            [self.body_heights_df, pd.DataFrame({"time": [time.time()], "height": [height], "velocity": [velocity]})],
+            ignore_index=True,
+        )
+
+        Returns:
+            pd.DataFrame: time, height, velocityの入ったdataframeを返す
+        """
+        return pd.DataFrame([])
+
 
 class SetObject:
     reps: List[RepObject]
     menu: str
     weight: int
+
+    def make_new_rep(self) -> None:
+        """新しいRepObjectを作成し、配列に追加する
+
+        Returns:
+            _type_: _description_
+        """
+        idx = len(self.reps) - 1
+        self.reps.append(RepObject(idx))
 
 
 @dataclass
@@ -218,6 +247,10 @@ def mp_res_to_pose_obj(mp_res, timestamp: Union[float, None]) -> PoseLandmarksOb
 
 @dataclass
 class RepState:
+    """
+    刹那的にrepの状態を見守るクラス
+    """
+
     rep_count: int = 0
     is_lifting_up = False
     did_touch_bottom = False
@@ -231,18 +264,23 @@ class RepState:
         self.initial_body_height = height
         self.tmp_body_heights = [self.initial_body_height] * 10
 
-    def update_rep(self, pose: PoseLandmarksObject, lower_thre, upper_thre)->bool:
+    def update_rep(self, pose: PoseLandmarksObject, lower_thre, upper_thre) -> bool:
+        """repが+1された時、Trueを返す
+
+        Args:
+            pose (PoseLandmarksObject): その瞬間のpose
+            lower_thre (_type_): _description_
+            upper_thre (_type_): _description_
+
+        Returns:
+            bool: repの+1タイミングでTrue
+        """
         height = pose.get_2d_height()
         if len(self.tmp_body_heights) < 10:
             self._init_rep(height=height)
         did_count_up = self._update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
         self._update_lifting_state(height=height)
 
-        velocity = self.tmp_body_heights[9] - self.tmp_body_heights[0]
-        self.body_heights_df = pd.concat(
-            [self.body_heights_df, pd.DataFrame({"time": [time.time()], "height": [height], "velocity": [velocity]})],
-            ignore_index=True,
-        )
         return did_count_up
 
     def _update_counter(self, height: np.double, lower_thre, upper_thre):

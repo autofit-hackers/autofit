@@ -85,7 +85,7 @@ class CoachPose:
 
 
 @dataclass
-class Instruction:
+class Instruction_Old_ForMitouAD:
     display_frames: int = 60
     instruction_words = ["Drop your hips until your", "thighs are level."]  # "太ももが水平になるまで腰を落としましょう"
     mistake_reason: str = "#### 太ももが水平になるまで腰を落とせるともっと良くなります。お尻の筋肉が比較的弱く、深いスクワットができない可能性があります。"
