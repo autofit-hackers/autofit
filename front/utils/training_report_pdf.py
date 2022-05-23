@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # squat_back_shin_parallel:背中と脛が平行に
     # squat_heavier:バーを重く
     # squat_knees_in:膝が中に入ってしまっている
-    coaching_contents_temp = [
+    coaching_contents_temp_list = [
         "squat_knees_ahead",
         "squat_depth",
         "squat_feet_width",
@@ -35,15 +35,13 @@ if __name__ == "__main__":
         "squat_knees_in",
     ]  # 仮にリストで指定
 
-    coaching_contents_temp_dic = {
+    coaching_contents_temp = {
         "menu_name": "スクワット",
         "reps": 3,
         "good_point": "腰が十分に下がっている",
         "one_point": "もう少し軽くしましょう",
         "recommended_menus": [{"bad_point": "手の幅がおかしい", "proposed_menu": "ブランコストレッチ",}],
     }  # 仮に辞書で指定
-
-    # {"menu_name": "スクワット", "one_point": "けつがだいじ"}
 
     os.makedirs("traning_reports", exist_ok=True)
     generate_html_report(coaching_contents_temp, "training_report.html")
