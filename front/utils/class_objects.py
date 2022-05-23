@@ -18,7 +18,6 @@ class PoseLandmarksObject(NamedTuple):
     landmark.shape == (33, 3)  #（関節数, xyz）
     visibility.shape == (33, 1)
     """
-
     landmark: np.ndarray
     visibility: np.ndarray
     timestamp: Union[float, None]

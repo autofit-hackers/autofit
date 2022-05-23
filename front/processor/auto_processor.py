@@ -1,11 +1,10 @@
 import copy
-from genericpath import exists
-from http import server
 import json
 import os
 import pickle
 import re
 import time
+from http import server
 from multiprocessing import Process, Queue
 from pathlib import Path
 from turtle import color
@@ -16,15 +15,18 @@ import av
 import cv2 as cv
 import mediapipe as mp
 import numpy as np
-from PIL import Image
+import sounddevice as sd
+import vosk
 from apps.pose3d_reconstruction import reconstruct_pose_3d
+from genericpath import exists
+from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton, ResetButton
-from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils import display_objects
+from utils import FpsCalculator, PoseLandmarksObject, display_objects, draw_landmarks_pose, mp_res_to_pose_obj
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
 from utils.display_objects import CoachPose, DisplayObjects, Instruction
 from utils.draw_pose import draw_joint_angle_2d
+from utils.sound_input import get_recognized_voice, voice_recognition_process
 from utils.video_recorder import TrainingSaver, create_video_writer, release_video_writer
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 
@@ -47,12 +49,19 @@ class AutoProcessor(VideoProcessorBase):
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
+        self._recognized_voice_queue = Queue()
         self._pose_process = Process(
             target=pose_process,
             kwargs={
                 "in_queue": self._in_queue,
                 "out_queue": self._out_queue,
                 "model_settings": model_settings,
+            },
+        )
+        self._voice_recognition_process = Process(
+            target=voice_recognition_process,
+            kwargs={
+                "recognized_voice_queue": self._recognized_voice_queue,
             },
         )
         self.display_settings = display_settings
@@ -69,7 +78,9 @@ class AutoProcessor(VideoProcessorBase):
             self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
         self.hold_button = CircleHoldButton()
 
+        # Start other processes
         self._pose_process.start()
+        self._voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         recv_timestamp: float = time.time()
@@ -135,9 +146,20 @@ class AutoProcessor(VideoProcessorBase):
             # 次のセットorメニューorログアウト
             self.phase += 1
 
+        # Voice recognition
+        try:
+            recognized_voice = get_recognized_voice(self._recognized_voice_queue)
+            print(recognized_voice)
+            if "スタート" in recognized_voice:
+                self.rep_state.reset_rep(result_pose)
+        except:
+            pass
+
         self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):
         print("Stop the inference process...")
+        # Stop other processes
         stop_pose_process(in_queue=self._in_queue, pose_process=self._pose_process)
+        self._voice_recognition_process.terminate()
