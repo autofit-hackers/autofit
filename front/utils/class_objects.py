@@ -122,6 +122,11 @@ class RepObject:
         self.rep_number: int = rep_number
 
     def recalculate_keyframes(self) -> dict:
+        """それまでに溜まっているフレーム情報から、min, max を計算し、KeyFrameを算出
+
+        Returns:
+            dict: keys = ["top", "1st_middle", "bottom", "2nd_middle"]
+        """
         self.body_heights = [float(pose.get_2d_height()) for pose in self.poses]
         idx = self.body_heights.index(min(self.body_heights))
         self.keyframes["bottom"] = idx

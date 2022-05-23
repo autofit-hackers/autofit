@@ -58,6 +58,11 @@ class Instruction_Object:
     ]
 
     def execute(self, rep_obj: RepObject):
+        """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
+
+        Args:
+            rep_obj (RepObject): _description_
+        """
         for instruction in self.instructions:
             instruction.is_ok = instruction.judge_function(rep_obj)
 

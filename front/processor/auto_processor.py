@@ -117,15 +117,14 @@ class AutoProcessor(VideoProcessorBase):
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
+                # RepObjectの更新
+                self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
                 # 回数の更新（updateで回数が増えたらTrue）
                 did_count_up = self.rep_state.update_rep(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
-                # RepObjectの更新
-                self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
-
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
                     # 指導の実施
@@ -146,7 +145,7 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print(self.phase)
 
-        # Ph4: レップ後 ################################################################
+        # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             # レポート表示
             # 次のセットorメニューorログアウト
@@ -159,6 +158,9 @@ class AutoProcessor(VideoProcessorBase):
                     print(self.phase)
             except:
                 pass
+        else:
+            # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
+            self.phase = 0
 
         self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
