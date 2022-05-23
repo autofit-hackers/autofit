@@ -57,7 +57,6 @@ class AutoProcessor(VideoProcessorBase):
         self.display_objects = DisplayObjects()
         self.instruction_obj = Instruction_Object()
         self.rep_state = RepState()
-        self.coaching_contents: List[str] = []
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
 
@@ -94,6 +93,7 @@ class AutoProcessor(VideoProcessorBase):
             # 必要情報が入力されたら次へ
             self.phase += 1
             print(self.phase)
+
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットの開始入力(声)
@@ -114,6 +114,7 @@ class AutoProcessor(VideoProcessorBase):
                     print(self.phase)
             except:
                 pass
+
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
@@ -158,6 +159,8 @@ class AutoProcessor(VideoProcessorBase):
                     print(self.phase)
             except:
                 pass
+
+        # Ph5: 次へ進む ################################################################
         else:
             # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
             self.phase = 0
