@@ -19,7 +19,7 @@ from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import ResetButton
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
-from utils.display_objects import CoachPose, Instruction
+from utils.display_objects import CoachPose, Instruction_Old_ForMitouAD
 from utils.draw_pose import draw_joint_angle_2d
 from utils.video_recorder import create_video_writer, release_video_writer
 
@@ -100,7 +100,7 @@ class PrototypeProcessor(VideoProcessorBase):
         self.coach_pose = CoachPose()
         if uploaded_pose_file:
             self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
-        self.instruction = Instruction()
+        self.instruction = Instruction_Old_ForMitouAD()
 
         if uploaded_instruction_file:
             img = Image.open(uploaded_instruction_file)

@@ -14,13 +14,13 @@ from apps.pose3d_reconstruction import reconstruct_pose_3d
 from genericpath import exists
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
-from ui_components.video_widget import CircleHoldButton, ResetButton
-from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SaveStates, SetObject
-from utils.display_objects import CoachPose, DisplayObjects, Instruction
-from utils.draw_pose import draw_joint_angle_2d
+from ui_components.video_widget import CircleHoldButton
+from utils import PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
+from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
+from utils.display_objects import CoachPose, DisplayObjects
 from utils.sound_input import get_recognized_voice, voice_recognition_process
-from utils.video_recorder import TrainingSaver, create_video_writer, release_video_writer
+from utils.instruction import Instruction_Object
+from utils.video_recorder import TrainingSaver
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 
 _SENTINEL_ = "_SENTINEL_"
@@ -56,7 +56,7 @@ class AutoProcessor(VideoProcessorBase):
         self.phase = 0
         self.training_saver = TrainingSaver()
         self.display_objects = DisplayObjects()
-        self.instruction = Instruction()
+        self.instruction_obj = Instruction_Object()
         self.rep_state = RepState()
         self.coaching_contents: List[str] = []
         self.hold_button = CircleHoldButton()
@@ -67,7 +67,6 @@ class AutoProcessor(VideoProcessorBase):
         self._voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-        recv_timestamp: float = time.time()
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
 
         # 検出実施 #############################################################
@@ -109,19 +108,26 @@ class AutoProcessor(VideoProcessorBase):
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
-                # 回数の更新
-                if self.rep_state.update_rep(
+                # 回数の更新（updateで回数が増えたらTrue）
+                did_count_up = self.rep_state.update_rep(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
-                ):
-                    # Repの更新
-                    self.set_obj
-                    pass
+                )
+                # RepObjectの更新
+                self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
+
+                # 回数が増えた時、指導を実施する
+                if did_count_up:
+                    # 指導の実施
+                    self.instruction_obj.execute(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 1])
+                    self.set_obj.make_new_rep()
+
                 # 指導内容の表示
+                self.instruction_obj.show(frame=processed_frame)
 
             # 保存用配列の更新
-            self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
+            # self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
 
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
