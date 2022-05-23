@@ -289,7 +289,7 @@ class RepState:
             self.did_touch_bottom = True
         elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
             self.rep_count += 1
-            # self._playsound_rep()
+            self._playsound_rep()
             self.did_touch_bottom = False
             return True
         return False
