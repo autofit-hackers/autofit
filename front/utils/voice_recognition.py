@@ -56,5 +56,5 @@ def voice_recognition_process(recognized_voice_queue: Queue, stt_api: str="Vosk"
             except:
                 pass
 
-def get_recognized_voice(recognized_voice_queue: Queue) -> Queue:
+def get_recognized_voice(recognized_voice_queue: Queue):
     return recognized_voice_queue.get(block=False)
