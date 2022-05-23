@@ -3,7 +3,9 @@ version: '3.8'
 services:
   django:
     container_name: django
-    build: ../django
+    build:
+      context: ../django
+      dockerfile: ../django/Dockerfile.debug
     command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
       - ../django:/usr/src/app/
