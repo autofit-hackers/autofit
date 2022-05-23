@@ -6,3 +6,4 @@ from utils.webcam_input import *
 from utils.multiapp import *
 from utils.video_recorder import *
 from utils.pca import *
+from utils.sound_input import *

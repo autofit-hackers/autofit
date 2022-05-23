@@ -12,3 +12,5 @@ frozendict
 scikit-learn
 playsound
 PyObjC
+sounddevice
+vosk
