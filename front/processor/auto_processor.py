@@ -121,6 +121,9 @@ class AutoProcessor(VideoProcessorBase):
                 )
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
+                    # カウントの実施
+                    self.rep_state.playsound_rep()
+                    
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
                     self.instruction_obj.execute(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])

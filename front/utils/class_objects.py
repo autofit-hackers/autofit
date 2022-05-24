@@ -294,7 +294,6 @@ class RepState:
             self.did_touch_bottom = True
         elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
             self.rep_count += 1
-            self._playsound_rep()
             self.did_touch_bottom = False
             return True
         return False
@@ -303,7 +302,7 @@ class RepState:
         self.tmp_body_heights.pop(0)
         self.tmp_body_heights.append(height)
 
-    def _playsound_rep(self):
+    def playsound_rep(self):
         sound_file = f"data/audio_src/rep_count/{self.rep_count}.mp3"
         playsound(sound_file, block=False)
 
