@@ -87,6 +87,7 @@ class AutoProcessor(VideoProcessorBase):
             # 必要情報が入力されたら次へ(save path の入力を検知)
             self.phase += 1
             print(self.phase)
+            self.coach_pose = CoachPose()
 
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
