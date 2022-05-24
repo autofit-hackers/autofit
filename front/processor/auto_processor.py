@@ -34,7 +34,6 @@ class AutoProcessor(VideoProcessorBase):
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
-        self._voice_queue = Queue()
         self._pose_process = Process(
             target=pose_process,
             kwargs={
@@ -87,7 +86,7 @@ class AutoProcessor(VideoProcessorBase):
                 2,
                 cv.LINE_AA,
             )
-            if self.voice_recognition_process.is_recognized_as(keyword="スタート", out_queue=self._voice_queue):
+            if self.voice_recognition_process.is_recognized_as(keyword="スタート"):
                 self.phase += 1
                 print(self.phase)
 
@@ -112,7 +111,7 @@ class AutoProcessor(VideoProcessorBase):
             #     if self.hold_button.is_pressed(processed_frame, result_pose):
             #         # お手本の表示開始
             #         self.phase += 1
-            if self.voice_recognition_process.is_recognized_as(keyword="スタート", out_queue=self._voice_queue):
+            if self.voice_recognition_process.is_recognized_as(keyword="スタート"):
                 pass
             self.phase += 1
 
@@ -167,7 +166,7 @@ class AutoProcessor(VideoProcessorBase):
 
             # 次のセットorメニューorログアウト
             # Voice recognition
-            if self.voice_recognition_process.is_recognized_as(keyword="終わり", out_queue=self._voice_queue):
+            if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
                 self.phase += 1
                 print(self.phase)
 
