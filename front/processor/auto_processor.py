@@ -42,7 +42,7 @@ class AutoProcessor(VideoProcessorBase):
                 "model_settings": model_settings,
             },
         )
-        self.voice_recognition_process = VoiceRecognitionProcess(stt_api="Vosk")
+        self.voice_recognition_process = VoiceRecognitionProcess(stt_api="vosk")
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
