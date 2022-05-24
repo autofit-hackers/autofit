@@ -78,4 +78,5 @@ class VoiceRecognitionProcess(Process):
         return False
 
     def _get_recognized_voice(self):
-        return self._recognized_voice_queue.get_nowait()
+        recognized_voice = self._recognized_voice_queue.get_nowait()
+        return recognized_voice

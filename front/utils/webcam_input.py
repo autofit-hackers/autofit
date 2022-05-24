@@ -26,6 +26,48 @@ def build_webcam_streams(processor, key: str):
         video_processor_factory=processor,
     )
 
+class PoseEstimationProcess(Process):
+    def __init__(self, model_settings: ModelSettings):
+        super(PoseEstimationProcess, self).__init__()
+        mp_pose = mp.solutions.pose  # type: ignore
+        self.pose = mp_pose.Pose(
+            model_complexity=model_settings.model_complexity,
+            min_detection_confidence=model_settings.min_detection_confidence,
+            min_tracking_confidence=model_settings.min_tracking_confidence,
+        )
+        self._frame_queue = Queue()
+        self._pose_queue = Queue()
+
+    def run(self):
+        """
+        automatically executed when the process starts
+        """
+        self._run_estimator()
+
+    def _run_estimator(self):
+        while True:
+            try:
+                input_frame = self._frame_queue.get(timeout=10)
+                timestamp: float = time.time()
+            except Exception as e:
+                print(e)
+                continue
+
+            if isinstance(input_frame, type(_SENTINEL_)) and input_frame == _SENTINEL_:
+                break
+
+            estimation_result = self.pose.process(input_frame)
+            if estimation_result.pose_landmarks is None:
+                self._pose_queue.put_nowait(None)
+                continue
+
+            self._pose_queue.put_nowait(mp_res_to_pose_obj(estimation_result, timestamp=timestamp))
+
+    def get_pose(self, frame) -> PoseLandmarksObject:
+        self._frame_queue.put_nowait(frame)
+        pose = self._pose_queue.get(timeout=10)
+        return pose
+
 
 def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSettings) -> None:
     mp_pose = mp.solutions.pose  # type: ignore
