@@ -1,4 +1,17 @@
-{#辞書を受け取った際に使用（不完全）#}
+{#クラスを受け取った際に使用#}
+<html>
+<head>
+</head>
+<meta charset="utf-8"/>
+  <body>
+    <h1>{{ coaching_contents["instructions"][0].reason }}</h1>
+{% for i in coaching_contents["instructions"] %}
+    <p>{{ coaching_contents.menu }} : {{ coaching_contents.menu }}は{{ coaching_contents.menu }}円です。</p>
+{% endfor %}
+<p style=" font-size: 60px; font-weight: bold;">{{ coaching_contents["instructions"][0].reason }} : {{ coaching_contents.menu }}は{{ coaching_contents.menu }}円です。</p>
+  </body>
+</html>
+{#
 <html>
 <head>
 <meta charset="utf-8"/>
@@ -16,13 +29,14 @@
   </body>
 {% endfor %}
 </html>
+#}
 {#リストで受け取った際に使用#}
 {#
 <html>
 <head>
 <meta charset="utf-8"/>
   <body>
-    <h1>{{ coaching_contents }}</h1>
+    <h1>{{ coaching_contents[0] }}</h1>
 {% if "squat_depth" in coaching_contents %}
     <p>もっと腰を下げるメニューを実行。</p>
 {% else %}
