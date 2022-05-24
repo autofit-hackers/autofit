@@ -87,7 +87,7 @@ class AutoProcessor(VideoProcessorBase):
                 2,
                 cv.LINE_AA,
             )
-            if did_recognize_word(target_word="スタート", voice_queue=self._recognized_voice_queue):
+            if self.voice_recognition_process.is_recognized_as(keyword="スタート", out_queue=self._voice_queue):
                 self.phase += 1
                 print(self.phase)
 

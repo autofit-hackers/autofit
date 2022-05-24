@@ -21,6 +21,12 @@ class VoiceRecognitionProcess(Process):
         self.stt_api = stt_api
 
     def run(self, out_queue :Queue):
+        """
+        automatically executed when the process starts
+
+        Args:
+            out_queue (Queue): _description_
+        """
         if self.stt_api == "Vosk":
             model = vosk.Model("./data/ml_model/vosk-model-small-ja-0.22")
             device_id = 0
