@@ -17,7 +17,7 @@ from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
 from utils.display_objects import CoachPose, DisplayObjects
-from utils.voice_recognition import get_recognized_voice, voice_recognition_process
+from utils.voice_recognition import VoiceRecognitionProcess
 from utils.instruction import Instruction_Object
 from utils.video_recorder import TrainingSaver
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
@@ -34,7 +34,7 @@ class AutoProcessor(VideoProcessorBase):
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
-        self._recognized_voice_queue = Queue()
+        self._voice_queue = Queue()
         self._pose_process = Process(
             target=pose_process,
             kwargs={
@@ -43,12 +43,7 @@ class AutoProcessor(VideoProcessorBase):
                 "model_settings": model_settings,
             },
         )
-        self._voice_recognition_process = Process(
-            target=voice_recognition_process,
-            kwargs={
-                "recognized_voice_queue": self._recognized_voice_queue,
-            },
-        )
+        self.voice_recognition_process = VoiceRecognitionProcess(stt_api="Vosk")
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
@@ -63,7 +58,7 @@ class AutoProcessor(VideoProcessorBase):
 
         # Start other processes
         self._pose_process.start()
-        self._voice_recognition_process.start()
+        self.voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
@@ -106,14 +101,9 @@ class AutoProcessor(VideoProcessorBase):
             #     if self.hold_button.is_pressed(processed_frame, result_pose):
             #         # お手本の表示開始
             #         self.phase += 1
-            try:
-                recognized_voice = get_recognized_voice(self._recognized_voice_queue)
-                if "スタート" in recognized_voice:
-                    print(recognized_voice)
-                    self.phase += 1
-                    print(self.phase)
-            except:
+            if self.voice_recognition_process.is_recognized_as(keyword="スタート", out_queue=self._voice_queue):
                 pass
+
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
@@ -151,13 +141,7 @@ class AutoProcessor(VideoProcessorBase):
             # レポート表示
             # 次のセットorメニューorログアウト
             # Voice recognition
-            try:
-                recognized_voice = get_recognized_voice(self._recognized_voice_queue)
-                if "終わり" in recognized_voice:
-                    print(recognized_voice)
-                    self.phase += 1
-                    print(self.phase)
-            except:
+            if self.voice_recognition_process.is_recognized_as(keyword="終わり", out_queue=self._voice_queue):
                 pass
 
         self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
@@ -167,4 +151,4 @@ class AutoProcessor(VideoProcessorBase):
         print("Stop the inference process...")
         # Stop other processes
         stop_pose_process(in_queue=self._in_queue, pose_process=self._pose_process)
-        self._voice_recognition_process.terminate()
+        self.voice_recognition_process.terminate()
