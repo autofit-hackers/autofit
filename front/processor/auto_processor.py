@@ -76,19 +76,8 @@ class AutoProcessor(VideoProcessorBase):
             # QRコード検知
             # 認証
             # 認証したら次へ
-            cv.putText(
-                processed_frame,
-                f"Say Start!",
-                (10, 100),
-                cv.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 0, 255),
-                2,
-                cv.LINE_AA,
-            )
-            if self.voice_recognition_process.is_recognized_as(keyword="スタート"):
-                self.phase += 1
-                print(self.phase)
+            self.phase += 1
+            print(self.phase)
 
         # Ph1: メニュー・重量の入力 ################################################################
         elif self.phase == 1:
@@ -105,14 +94,19 @@ class AutoProcessor(VideoProcessorBase):
             # お手本ポーズのロード
             # 重ね合わせパラメータのリセット
             # セットのパラメータをリセット
-            # if result_exists:
-            #     self.hold_button.update(frame=processed_frame)
-            #     # スタート検知(キーフレーム検知)されたら次へ
-            #     if self.hold_button.is_pressed(processed_frame, result_pose):
-            #         # お手本の表示開始
-            #         self.phase += 1
+            cv.putText(
+                processed_frame,
+                f"Say Start!",
+                (10, 100),
+                cv.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv.LINE_AA,
+            )
             if self.voice_recognition_process.is_recognized_as(keyword="スタート"):
-                pass
+                self.phase += 1
+                print(self.phase)
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
@@ -127,7 +121,7 @@ class AutoProcessor(VideoProcessorBase):
                 )
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
-                    # カウントの実施
+                    # 音声によるカウントの実施
                     self.rep_state.playsound_rep()
 
                     # 指導の実施
@@ -174,7 +168,12 @@ class AutoProcessor(VideoProcessorBase):
         # Ph5: 次へ進む ################################################################
         else:
             # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
-            self.phase = 0
+            if result_exists:
+                self.hold_button.update(frame=processed_frame)
+                # スタート検知(キーフレーム検知)されたら次へ
+                if self.hold_button.is_pressed(processed_frame, result_pose):
+                    # お手本の表示開始
+                    self.phase = 1
 
         self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
