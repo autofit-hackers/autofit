@@ -52,7 +52,6 @@ class AutoProcessor(VideoProcessorBase):
         self.display_objects = DisplayObjects()
         self.instruction_obj = Instruction_Object()
         self.rep_state = RepState()
-        self.coaching_contents: List[str] = []
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
 
@@ -78,17 +77,29 @@ class AutoProcessor(VideoProcessorBase):
             # QRコード検知
             # 認証
             # 認証したら次へ
-            self.phase += 1
-            print(self.phase)
+            cv.putText(
+                processed_frame,
+                f"Say Start!",
+                (10, 100),
+                cv.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv.LINE_AA,
+            )
+            if did_recognize_word(target_word="スタート", voice_queue=self._recognized_voice_queue):
+                self.phase += 1
+                print(self.phase)
 
         # Ph1: メニュー・重量の入力 ################################################################
         elif self.phase == 1:
             # メニュー入力【音声入力！】
             # 重量入力【音声入力！】
             # （回数入力）
-            # 必要情報が入力されたら次へ
+            # 必要情報が入力されたら次へ(save path の入力を検知)
             self.phase += 1
             print(self.phase)
+
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットの開始入力(声)
@@ -107,17 +118,19 @@ class AutoProcessor(VideoProcessorBase):
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
+                # RepObjectの更新
+                self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
                 # 回数の更新（updateで回数が増えたらTrue）
                 did_count_up = self.rep_state.update_rep(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
-                # RepObjectの更新
-                self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
-
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
+                    # カウントの実施
+                    self.rep_state.playsound_rep()
+
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
                     self.instruction_obj.execute(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
@@ -136,13 +149,33 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print(self.phase)
 
-        # Ph4: レップ後 ################################################################
+        # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             # レポート表示
+            report_frame = processed_frame * 0
+            cv.putText(
+                report_frame,
+                f"GJ!!Say owari!",
+                (10, 30),
+                cv.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv.LINE_AA,
+            )
+
             # 次のセットorメニューorログアウト
             # Voice recognition
             if self.voice_recognition_process.is_recognized_as(keyword="終わり", out_queue=self._voice_queue):
-                pass
+                self.phase += 1
+                print(self.phase)
+
+            return av.VideoFrame.from_ndarray(report_frame, format="bgr24")
+
+        # Ph5: 次へ進む ################################################################
+        else:
+            # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
+            self.phase = 0
 
         self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
