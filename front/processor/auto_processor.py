@@ -34,7 +34,6 @@ class AutoProcessor(VideoProcessorBase):
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
-        self._recognized_voice_queue = Queue()
         self._pose_process = Process(
             target=pose_process,
             kwargs={
@@ -43,6 +42,7 @@ class AutoProcessor(VideoProcessorBase):
                 "model_settings": model_settings,
             },
         )
+        self._recognized_voice_queue = Queue()
         self._voice_recognition_process = Process(
             target=voice_recognition_process,
             kwargs={
@@ -82,6 +82,16 @@ class AutoProcessor(VideoProcessorBase):
             # QRコード検知
             # 認証
             # 認証したら次へ
+            cv.putText(
+                processed_frame,
+                f"Say Start!",
+                (10, 100),
+                cv.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv.LINE_AA,
+            )
             if did_recognize_word(target_word="スタート", voice_queue=self._recognized_voice_queue):
                 self.phase += 1
                 print(self.phase)
@@ -91,7 +101,7 @@ class AutoProcessor(VideoProcessorBase):
             # メニュー入力【音声入力！】
             # 重量入力【音声入力！】
             # （回数入力）
-            # 必要情報が入力されたら次へ
+            # 必要情報が入力されたら次へ(save path の入力を検知)
             self.phase += 1
             print(self.phase)
 
@@ -123,7 +133,7 @@ class AutoProcessor(VideoProcessorBase):
                 if did_count_up:
                     # カウントの実施
                     self.rep_state.playsound_rep()
-                    
+
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
                     self.instruction_obj.execute(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
@@ -145,12 +155,6 @@ class AutoProcessor(VideoProcessorBase):
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             # レポート表示
-            # 次のセットorメニューorログアウト
-            # Voice recognition
-            if did_recognize_word(target_word="終わり", voice_queue=self._recognized_voice_queue):
-                self.phase += 1
-                print(self.phase)
-
             report_frame = processed_frame * 0
             cv.putText(
                 report_frame,
@@ -162,6 +166,12 @@ class AutoProcessor(VideoProcessorBase):
                 2,
                 cv.LINE_AA,
             )
+
+            # 次のセットorメニューorログアウト
+            if did_recognize_word(target_word="終わり", voice_queue=self._recognized_voice_queue):
+                self.phase += 1
+                print(self.phase)
+
             return av.VideoFrame.from_ndarray(report_frame, format="bgr24")
 
         # Ph5: 次へ進む ################################################################
