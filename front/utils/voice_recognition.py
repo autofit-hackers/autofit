@@ -58,3 +58,13 @@ def voice_recognition_process(recognized_voice_queue: Queue, stt_api: str="Vosk"
 
 def get_recognized_voice(recognized_voice_queue: Queue):
     return recognized_voice_queue.get(block=False)
+
+def did_recognize_word(target_word: str, voice_queue: Queue) -> bool:
+    try:
+        recognized_voice = get_recognized_voice(voice_queue)
+        if target_word in recognized_voice:
+            print(recognized_voice)
+            return True
+    except:
+        pass
+    return False

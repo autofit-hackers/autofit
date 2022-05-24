@@ -17,7 +17,7 @@ from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
 from utils.display_objects import CoachPose, DisplayObjects
-from utils.voice_recognition import get_recognized_voice, voice_recognition_process
+from utils.voice_recognition import did_recognize_word, get_recognized_voice, voice_recognition_process
 from utils.instruction import Instruction_Object
 from utils.video_recorder import TrainingSaver
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
@@ -82,8 +82,9 @@ class AutoProcessor(VideoProcessorBase):
             # QRコード検知
             # 認証
             # 認証したら次へ
-            self.phase += 1
-            print(self.phase)
+            if did_recognize_word(target_word="スタート", voice_queue=self._recognized_voice_queue):
+                self.phase += 1
+                print(self.phase)
 
         # Ph1: メニュー・重量の入力 ################################################################
         elif self.phase == 1:
@@ -100,20 +101,12 @@ class AutoProcessor(VideoProcessorBase):
             # お手本ポーズのロード
             # 重ね合わせパラメータのリセット
             # セットのパラメータをリセット
-            # if result_exists:
-            #     self.hold_button.update(frame=processed_frame)
-            #     # スタート検知(キーフレーム検知)されたら次へ
-            #     if self.hold_button.is_pressed(processed_frame, result_pose):
-            #         # お手本の表示開始
-            #         self.phase += 1
-            try:
-                recognized_voice = get_recognized_voice(self._recognized_voice_queue)
-                if "スタート" in recognized_voice:
-                    print(recognized_voice)
+            self.hold_button.update(frame=processed_frame)
+            if result_exists:
+                # スタート検知(キーフレーム検知)されたら次へ
+                if self.hold_button.is_pressed(processed_frame, result_pose):
+                    # お手本の表示開始
                     self.phase += 1
-                    print(self.phase)
-            except:
-                pass
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
@@ -151,14 +144,22 @@ class AutoProcessor(VideoProcessorBase):
             # レポート表示
             # 次のセットorメニューorログアウト
             # Voice recognition
-            try:
-                recognized_voice = get_recognized_voice(self._recognized_voice_queue)
-                if "終わり" in recognized_voice:
-                    print(recognized_voice)
-                    self.phase += 1
-                    print(self.phase)
-            except:
-                pass
+            if did_recognize_word(target_word="終わり", voice_queue=self._recognized_voice_queue):
+                self.phase += 1
+                print(self.phase)
+
+            report_frame = processed_frame * 0
+            cv.putText(
+                report_frame,
+                f"GJ!!Say owari!",
+                (10, 30),
+                cv.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv.LINE_AA,
+            )
+            return av.VideoFrame.from_ndarray(report_frame, format="bgr24")
 
         # Ph5: 次へ進む ################################################################
         else:
