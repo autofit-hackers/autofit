@@ -114,6 +114,7 @@ class AutoProcessor(VideoProcessorBase):
             #         self.phase += 1
             if self.voice_recognition_process.is_recognized_as(keyword="スタート", out_queue=self._voice_queue):
                 pass
+            self.phase += 1
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
