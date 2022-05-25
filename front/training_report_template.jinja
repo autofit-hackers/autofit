@@ -9,30 +9,30 @@
 
 
     <p style=" font-size: 60px;">&ensp;</p>
-    <p style=" font-size: 20px;">{{ coaching_contents.menu }}を{{ coaching_contents.reps }}回お疲れ様でした．</p>
+    <p style=" font-size: 20px;">{{ coaching_contents["menu"] }}を{{ coaching_contents["reps"] }}回お疲れ様でした．</p>
     <p style=" font-size: 20px;">Good pointやBad pointなどについてお伝えします．</p>
-
+    
     <div style="background-color: #87ceeb; border-radius: 10px; solid 10px; border: #87ceeb solid 1px; font-size: 100%; padding: 0px 20px;">
     <p style=" font-size: 30px;">Good Point</p>
-    <p style=" font-size: 20px;">{{coaching_contents["instructions"][0].instruction_text}}</p>
+    <p style=" font-size: 20px;">{{coaching_contents["instructions"].data["squat_knees_ahead"].info.text}}</p>
     </div>
 
     <p style=" font-size: 10px;">&ensp;</p>
 
     <div style="background-color: #ffc0cb; border-radius: 10px; solid 10px; border: #ffc0cb solid 1px; font-size: 100%; padding: 0px 20px;">
     <p style=" font-size: 30px;">Bad Point</p>
-    <p style=" font-size: 20px;">{{coaching_contents["instructions"][1].instruction_text}}</p>
-    <p style=" font-size: 20px;">{{coaching_contents["instructions"][1].reason}}ためと考えられます．</p>
+    <p style=" font-size: 20px;">{{coaching_contents["instructions"].data["squat_knees_ahead"].info.text}}</p>
+    <p style=" font-size: 20px;">{{coaching_contents["instructions"].data["squat_knees_ahead"].info.reason}}ためと考えられます．</p>
     </div>
 
     <p style=" font-size: 10px;">&ensp;</p>
 
 
-    {% if coaching_contents["instructions"][1].menu_to_recommend != []%}
+    {% if coaching_contents["instructions"].data["squat_knees_ahead"].info.menu_to_recommend != []%}
         <div style="background-color: #98fb98; border-radius: 10px; solid 10px; border: #98fb98 solid 1px; font-size: 100%; padding: 0px 20px;">
         <p style=" font-size: 20px;">おすすめのメニュー</p>
         <ul>
-        {% for i in coaching_contents["instructions"][1].menu_to_recommend %}
+        {% for i in coaching_contents["instructions"].data["squat_knees_ahead"].info.menu_to_recommend %}
         <li style=" font-size: 20px;">{{i}}</li>
         {% endfor %}
         </ul>
@@ -41,6 +41,7 @@
         <p style=" font-size: 10px;">&ensp;</p>
 
     {% endif %}
+
   </body>
 </html>
 {#リストで受け取った際に使用#}

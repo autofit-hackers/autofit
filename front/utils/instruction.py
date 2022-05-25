@@ -1,5 +1,5 @@
 import string
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Tuple
 
 from numpy import ndarray
@@ -27,8 +27,8 @@ def squat_depth(rep_obj: RepObject) -> bool:
     return False
 
 
-@dataclass
-class InstructionInfo(frozen=True):
+@dataclass(frozen=True)
+class InstructionInfo:
     text: str
     judge_function: Callable
     reason: str
@@ -49,8 +49,7 @@ class Instruction:
     """
     Add instance variable if you want to define a new instruction.
     """
-
-    data: Dict[str, InstructionItem] = {
+    data: Dict[str, InstructionItem] = field(default_factory=lambda: {
         "squat_knees_ahead": InstructionItem(
             info=InstructionInfo(
                 text="内股やな", judge_function=squat_knees_in, reason="外転筋が弱いんちゃうか", menu_to_recommend=["ヒップアブダクション"]
@@ -65,7 +64,7 @@ class Instruction:
             is_cleared_in_each_rep=[],
             set_score=0,
         ),
-    }
+    })
 
     def evaluate_rep(self, rep_obj: RepObject):
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入

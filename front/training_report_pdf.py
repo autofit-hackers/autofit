@@ -7,7 +7,7 @@ from PIL import Image
 from training_report_render_html import training_report_render_html
 
 # from utils import instruction
-from utils.instruction import InstructionData, squat_depth, squat_knees_in
+from utils.instruction import Instruction, InstructionInfo, InstructionItem, squat_depth, squat_knees_in
 
 
 def generate_html_report(coaching_contents, html_path):
@@ -38,33 +38,63 @@ if __name__ == "__main__":
     #     "squat_knees_in",
     # ]  # 仮にリストで指定
 
-    # 仮に辞書で指定
-    training_result = {
-        "menu": "squat",
-        "weight": 80,
-        "reps": 8,
-        "instructions": [
-            InstructionData(
-                name="squat_knees_ahead",
-                is_ok=True,
-                instruction_text="膝出てんで",
-                judge_function=squat_knees_in,
-                reason="ケツ引かんからや",
-                menu_to_recommend=[],
-            ),
-            InstructionData(
-                name="squat_depth",
-                is_ok=False,
-                instruction_text="しゃがめてへんで",
-                judge_function=squat_depth,
-                reason="足首固いんちゃうか",
-                menu_to_recommend=["足首ストレッチ", "手首ストレッチ"],
-                # menu_to_recommend=[],
-            ),
-        ],
-    }
+    # 仮にクラスで指定
+    # training_result = {
+    #     "menu": "squat",
+    #     "weight": 80,
+    #     "reps": 8,
+    #     "instructions": [
+    #         InstructionData(
+    #             name="squat_knees_ahead",
+    #             is_ok=True,
+    #             instruction_text="膝出てんで",
+    #             judge_function=squat_knees_in,
+    #             reason="ケツ引かんからや",
+    #             menu_to_recommend=[],
+    #         ),
+    #         InstructionData(
+    #             name="squat_depth",
+    #             is_ok=False,
+    #             instruction_text="しゃがめてへんで",
+    #             judge_function=squat_depth,
+    #             reason="足首固いんちゃうか",
+    #             menu_to_recommend=["足首ストレッチ", "手首ストレッチ"],
+    #             # menu_to_recommend=[],
+    #         ),
+    #     ],
+    # }
 
-    # reason_0 = training_result["instructions"][0].reason
+    # training_result = {
+    #     "menu": "squat",
+    #     "weight": 80,
+    #     "reps": 8,
+    #     "instructions": [{
+    #         name="squat_knees_ahead",
+    #         is_ok=True,
+    #         instruction_text="膝出てんで",
+    #         judge_function=squat_knees_in,
+    #         reason="ケツ引かんからや",
+    #         menu_to_recommend=[],
+    #         },
+    #         {
+    #         name="squat_depth",
+    #         is_ok=False,
+    #         instruction_text="しゃがめてへんで",
+    #         judge_function=squat_depth,
+    #         reason="足首固いんちゃうか",
+    #         menu_to_recommend=["足首ストレッチ", "手首ストレッチ"],
+    #         # menu_to_recommend=[],
+    #         }]
+    # }
+
+    instruction = Instruction()
+
+    training_result = {"menu": "squat", "weight": 80, "reps": 8, "instructions": instruction}
+
+    # set_score = training_result["instructions"].data["squat_knees_ahead"].set_score
+    # text = training_result["instructions"].data["squat_knees_ahead"].info.text
+    # set_score = training_result["aaa"]
+    # set_score = training_result.aaa
 
     os.makedirs("training_reports", exist_ok=True)
     generate_html_report(training_result, "training_report.html")
