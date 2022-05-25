@@ -14,3 +14,6 @@ playsound
 PyObjC
 sounddevice
 vosk
+jinja2
+dvc
+wkhtmltopdf

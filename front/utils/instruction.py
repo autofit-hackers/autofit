@@ -4,10 +4,10 @@ from typing import Any, Callable, Dict, List, Tuple
 
 from numpy import ndarray
 
-from utils.class_objects import PoseLandmarksObject, RepInfo
+from utils.class_objects import PoseLandmarksObject, RepObject
 
 
-def squat_knees_in(self, rep_obj: RepInfo) -> bool:
+def squat_knees_in(self, rep_obj: RepObject) -> bool:
     if "bottom" in rep_obj.keyframes.keys():
         bottom_frame_num = rep_obj.keyframes["bottom"]
         bottom_pose = rep_obj.poses[bottom_frame_num]
@@ -17,7 +17,7 @@ def squat_knees_in(self, rep_obj: RepInfo) -> bool:
     return False
 
 
-def squat_depth(rep_obj: RepInfo) -> bool:
+def squat_depth(rep_obj: RepObject) -> bool:
     if "bottom" in rep_obj.keyframes.keys():
         bottom_frame_num = rep_obj.keyframes["bottom"]
         bottom_pose = rep_obj.poses[bottom_frame_num]
@@ -33,6 +33,8 @@ class InstructionInfo(frozen=True):
     judge_function: Callable
     reason: str
     menu_to_recommend: List[str]
+    # ここ、APIリクエストを受け取って格納するイメージがまだ湧いてない（遠藤）
+    # こんちゃん相談案件
 
 
 @dataclass
@@ -65,7 +67,7 @@ class Instruction:
         ),
     }
 
-    def evaluate_rep(self, rep_obj: RepInfo):
+    def evaluate_rep(self, rep_obj: RepObject):
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
 
         Args:
