@@ -99,7 +99,7 @@ class PrototypeProcessor(VideoProcessorBase):
 
         self.coach_pose = CoachPose()
         if uploaded_pose_file:
-            self.coach_pose._set_coach_pose(uploaded_pose_file=uploaded_pose_file)
+            self.coach_pose.set_coach_pose(uploaded_pose_file=uploaded_pose_file)
         self.instruction = Instruction_Old_ForMitouAD()
 
         if uploaded_instruction_file:

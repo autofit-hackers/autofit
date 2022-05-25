@@ -24,7 +24,9 @@ class CoachPose:
     uploaded_frames: List[PoseLandmarksObject] = []
     positioned_frames: List[PoseLandmarksObject] = []
 
-    def _set_coach_pose(self, uploaded_pose_file):
+    def set_coach_pose(self, uploaded_pose_file: Any = None, uploaded_pose_path: Union[Path, None] = None):
+        if uploaded_pose_path is not None and uploaded_pose_file is None:
+            uploaded_pose_file = uploaded_pose_path.read_bytes()
         if uploaded_pose_file is not None:
             self.uploaded_frames = pickle.load(uploaded_pose_file)
             self.loaded_frames = self.uploaded_frames.copy()

@@ -42,7 +42,7 @@ class AutoProcessor(VideoProcessorBase):
                 "model_settings": model_settings,
             },
         )
-        self.voice_recognition_process = VoiceRecognitionProcess(stt_api="Vosk")
+        self.voice_recognition_process = VoiceRecognitionProcess(stt_api="vosk")
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
 
@@ -87,6 +87,7 @@ class AutoProcessor(VideoProcessorBase):
             # 必要情報が入力されたら次へ(save path の入力を検知)
             self.phase += 1
             print(self.phase)
+            self.coach_pose = CoachPose()
 
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
