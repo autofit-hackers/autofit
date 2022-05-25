@@ -57,7 +57,6 @@ class Instruction:
         },
     }
 
-
     def evaluate_rep(self, rep_obj: RepObject):
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
 
@@ -65,7 +64,8 @@ class Instruction:
             rep_obj (RepObject): _description_
         """
         for name, value in self.data.items():
-            value.is_ok = value.(rep_obj)
+            pass
+            # value.is_ok = value.(rep_obj)
 
     def show_instruction(self, frame: ndarray) -> None:
         """frameに指導画像を描画する関数
@@ -74,12 +74,13 @@ class Instruction:
             frame (ndarray): フレームだよ
         """
         # TODO: 上野！たすけて！！
-        for instruction in self.instructions:
-            if instruction.is_ok == False:
-                # 描画する
-                print(instruction.instruction_text)
+        # for instruction in self.instructions:
+        #     if instruction.is_ok == False:
+        #         # 描画する
+        #         print(instruction.instruction_text)
+        pass
 
 
 #######################################################################
 
-結果 = {"menu": "squat", "weight": 80, "reps": 8, "instructions": 指導}
+結果 = {"menu": "squat", "weight": 80, "reps": 8, "instructions": "指導"}

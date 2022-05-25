@@ -16,9 +16,8 @@ from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
-from utils.display_objects import CoachPose, DisplayObjects
+from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from utils.voice_recognition import VoiceRecognitionProcess
-from utils.instruction import Instruction_Object
 from utils.video_recorder import TrainingSaver
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 
@@ -49,7 +48,7 @@ class AutoProcessor(VideoProcessorBase):
         self.phase = 0
         self.training_saver = TrainingSaver()
         self.display_objects = DisplayObjects()
-        self.instruction_obj = Instruction_Object()
+        # self.instruction_manager = Instruction()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
@@ -85,14 +84,15 @@ class AutoProcessor(VideoProcessorBase):
             # 重量入力【音声入力！】
             # （回数入力）
             # 必要情報が入力されたら次へ(save path の入力を検知)
-            self.phase += 1
-            print(self.phase)
-            self.coach_pose = CoachPose()
+            if True:
+                # お手本ポーズのロード
+                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/trimmed_coach.pkl"))
+                self.phase += 1
+                print(self.phase)
 
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットの開始入力(声)
-            # お手本ポーズのロード
             # 重ね合わせパラメータのリセット
             # セットのパラメータをリセット
             cv.putText(
@@ -105,13 +105,22 @@ class AutoProcessor(VideoProcessorBase):
                 2,
                 cv.LINE_AA,
             )
-            if self.voice_recognition_process.is_recognized_as(keyword="スタート"):
+            # 開始が入力されたらセットを開始
+            if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
+                # お手本ポーズのリセット
+                self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
                 print(self.phase)
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if result_exists:
+                # お手本ポーズの更新
+                self.coach_pose_mgr.show_coach_pose(frame=processed_frame)
+                # keyframeが検知（レップが開始）された時、お手本ポーズをReload
+                if self.rep_state.is_keyframe(pose=result_pose):
+                    self.coach_pose_mgr.reload_coach_pose()
+
                 # RepObjectの更新
                 self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
                 # 回数の更新（updateで回数が増えたらTrue）
@@ -120,6 +129,7 @@ class AutoProcessor(VideoProcessorBase):
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
+
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
                     # 音声によるカウントの実施
@@ -127,11 +137,11 @@ class AutoProcessor(VideoProcessorBase):
 
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    self.instruction_obj.execute(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    # self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
                     self.set_obj.make_new_rep()
 
                     # 指導内容の表示
-                    self.instruction_obj.show(frame=processed_frame)
+                    # self.instruction_manager.show_instruction(frame=processed_frame)
 
             # 保存用配列の更新
             # self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)

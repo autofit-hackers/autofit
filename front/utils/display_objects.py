@@ -1,14 +1,9 @@
 import pickle
 from dataclasses import dataclass, field
-from distutils.command.upload import upload
 import json
 from pathlib import Path
-import time
 from turtle import width
-from typing import Any, Dict, List, NamedTuple, Tuple, Union
-
-from matplotlib.pyplot import cla
-import streamlit as st
+from typing import Any, List, Union
 
 import cv2 as cv
 import numpy as np
@@ -17,6 +12,100 @@ from utils.calculate_fps import FpsCalculator
 
 from utils.class_objects import PoseLandmarksObject, RepState
 from utils.draw_pose import draw_landmarks_pose
+
+
+class CoachPoseManager:
+    def __init__(self, coach_pose_path: Path) -> None:
+        with open(coach_pose_path, "rb") as f:
+            self.base_coach_pose: List[PoseLandmarksObject] = pickle.load(f)
+
+    def setup_coach_pose(self, current_pose):
+        """セットの開始時に呼ばれる
+
+        Args:
+            current_pose (_type_): _description_
+        """
+        self.adjusted_coach_pose = self._adjust_poses(current_pose=current_pose)
+        self.reload_coach_pose()
+
+    def reload_coach_pose(self):
+        """レップの開始時に呼ばれる"""
+        self.coach_pose_to_load = self.adjusted_coach_pose.copy()
+
+    def show_coach_pose(self, frame):
+        """毎フレーム呼ばれる
+
+        Args:
+            frame (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        self._load_coach_pose()
+        frame = draw_landmarks_pose(frame, self.coach_pose_to_show, pose_color=(0, 255, 0))
+        return frame
+
+    def _adjust_poses(self, current_pose: PoseLandmarksObject) -> List[PoseLandmarksObject]:
+        current_height = current_pose.get_2d_height()
+        coach_height = self.base_coach_pose[0].get_2d_height()
+        scale = current_height / coach_height
+
+        current_foot_position = current_pose.get_foot_position()
+        coach_foot_position = self.base_coach_pose[0].get_foot_position() * scale
+        slide: np.ndarray = current_foot_position - coach_foot_position
+        slide[2] = 0
+
+        adjusted_poses = [
+            PoseLandmarksObject(
+                landmark=pose.landmark * scale + slide, visibility=pose.visibility, timestamp=pose.timestamp
+            )
+            for pose in self.base_coach_pose
+        ]
+        return adjusted_poses
+
+    def _load_coach_pose(self):
+        if len(self.coach_pose_to_load) > 0:
+            self.coach_pose_to_show = self.coach_pose_to_load.pop(0)
+
+
+class DisplayObjects:
+    reps = 0
+    fps = 0
+    fpsCalculator = FpsCalculator(buffer_len=10)
+
+    def update_and_show(self, frame, reps):
+        self.update(reps=reps)
+        self.show(frame)
+
+    def update(self, reps):
+        self.reps = reps
+        self.fps = self.fpsCalculator.get()
+
+    def show(self, frame):
+        cv.putText(
+            frame,
+            f"Rep:{self.reps}",
+            (10, 30),
+            cv.FONT_HERSHEY_SIMPLEX,
+            1.0,
+            (0, 0, 255),
+            2,
+            cv.LINE_AA,
+        )
+
+        cv.putText(
+            frame,
+            "FPS:" + format(self.fps, ".0f"),
+            (10, 60),
+            cv.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, max(min(self.fps - 20, 10) * 25.5, 0), 255 - max(min(self.fps - 20, 10) * 25.5, 0)),
+            2,
+            cv.LINE_AA,
+        )
+
+    def reset(self):
+        self.reps = 0
 
 
 class CoachPose:
@@ -86,6 +175,7 @@ class CoachPose:
         self.coaching_contents = recommend
 
 
+######################################### old ##############################################
 @dataclass
 class Instruction_Old_ForMitouAD:
     display_frames: int = 60
@@ -161,43 +251,3 @@ class Instruction_Old_ForMitouAD:
         dst[w0:w1:, h0:h1] = dst[w0:w1:, h0:h1] * (1.0 - mask)  # 透過率に応じて元の画像を暗くする。
         dst[w0:w1:, h0:h1] = dst[w0:w1:, h0:h1] + src * mask  # 貼り付ける方の画像に透過率をかけて加算。
         return dst
-
-
-class DisplayObjects:
-    reps = 0
-    fps = 0
-    fpsCalculator = FpsCalculator(buffer_len=10)
-
-    def update_and_show(self, frame, reps):
-        self.update(reps=reps)
-        self.show(frame)
-
-    def update(self, reps):
-        self.reps = reps
-        self.fps = self.fpsCalculator.get()
-
-    def show(self, frame):
-        cv.putText(
-            frame,
-            f"Rep:{self.reps}",
-            (10, 30),
-            cv.FONT_HERSHEY_SIMPLEX,
-            1.0,
-            (0, 0, 255),
-            2,
-            cv.LINE_AA,
-        )
-
-        cv.putText(
-            frame,
-            "FPS:" + format(self.fps, ".0f"),
-            (10, 60),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (0, max(min(self.fps - 20, 10) * 25.5, 0), 255 - max(min(self.fps - 20, 10) * 25.5, 0)),
-            2,
-            cv.LINE_AA,
-        )
-
-    def reset(self):
-        self.reps = 0
