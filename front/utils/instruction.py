@@ -33,6 +33,8 @@ class InstructionItem(frozen=True):
     judge_function: Callable
     reason: str
     menu_to_recommend: List[str]
+    # ここ、APIリクエストを受け取って格納するイメージがまだ湧いてない（遠藤）
+    # こんちゃん相談案件
 
 
 @dataclass
@@ -64,8 +66,8 @@ class Instruction:
             rep_obj (RepObject): _description_
         """
         for name, value in self.data.items():
-            pass
             # value.is_ok = value.(rep_obj)
+            pass
 
     def show_instruction(self, frame: ndarray) -> None:
         """frameに指導画像を描画する関数
@@ -74,10 +76,10 @@ class Instruction:
             frame (ndarray): フレームだよ
         """
         # TODO: 上野！たすけて！！
-        # for instruction in self.instructions:
-        #     if instruction.is_ok == False:
-        #         # 描画する
-        #         print(instruction.instruction_text)
+        for key in self.data.keys():
+            if self.data[key]["is_ok"] == False:
+                # 描画する
+                print(self.data[key]["instruction"].instruction_text)
         pass
 
 

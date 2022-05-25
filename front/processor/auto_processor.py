@@ -9,6 +9,7 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import sounddevice as sd
+from utils.instruction import Instruction
 import vosk
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from PIL import Image
@@ -48,7 +49,7 @@ class AutoProcessor(VideoProcessorBase):
         self.phase = 0
         self.training_saver = TrainingSaver()
         self.display_objects = DisplayObjects()
-        # self.instruction_manager = Instruction()
+        self.instruction_manager = Instruction()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
@@ -72,18 +73,22 @@ class AutoProcessor(VideoProcessorBase):
 
         # Ph0: QRコードログイン ################################################################
         if self.phase == 0:
+            # TODO: こんちゃんよろしく！！！
             # QRコード検知
             # 認証
+
             # 認証したら次へ
-            self.phase += 1
-            print(self.phase)
+            if True:
+                self.phase += 1
+                print(self.phase)
 
         # Ph1: メニュー・重量の入力 ################################################################
         elif self.phase == 1:
             # メニュー入力【音声入力！】
             # 重量入力【音声入力！】
             # （回数入力）
-            # 必要情報が入力されたら次へ(save path の入力を検知)
+
+            # 必要情報が入力されたら次へ(save path の入力を検知?)
             if True:
                 # お手本ポーズのロード
                 self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/trimmed_coach.pkl"))
@@ -92,8 +97,6 @@ class AutoProcessor(VideoProcessorBase):
 
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
-            # セットの開始入力(声)
-            # 重ね合わせパラメータのリセット
             # セットのパラメータをリセット
             cv.putText(
                 processed_frame,
@@ -105,7 +108,7 @@ class AutoProcessor(VideoProcessorBase):
                 2,
                 cv.LINE_AA,
             )
-            # 開始が入力されたらセットを開始
+            # 開始が入力されたら(声)セットを開始
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
@@ -137,11 +140,11 @@ class AutoProcessor(VideoProcessorBase):
 
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    # self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
                     self.set_obj.make_new_rep()
 
                     # 指導内容の表示
-                    # self.instruction_manager.show_instruction(frame=processed_frame)
+                    self.instruction_manager.show_instruction(frame=processed_frame)
 
             # 保存用配列の更新
             # self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
@@ -168,8 +171,7 @@ class AutoProcessor(VideoProcessorBase):
                 cv.LINE_AA,
             )
 
-            # 次のセットorメニューorログアウト
-            # Voice recognition
+            # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
             if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
                 self.phase += 1
                 print(self.phase)
