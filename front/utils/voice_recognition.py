@@ -15,7 +15,6 @@ class VoiceRecognitionProcess(Process):
         Args:
             stt_api (str, optional): used Speech to Text API. Should be "vosk"(default) or "sr".
         """
-        assert stt_api == "vosk" or "sr", f"stt_api must be Vosk or speech_recognition"
         super(VoiceRecognitionProcess, self).__init__()
         self._stt_api = stt_api
         self._recognized_voice_queue = Queue()
@@ -24,6 +23,8 @@ class VoiceRecognitionProcess(Process):
         """
         automatically executed when the process starts
         """
+        assert self._stt_api == "vosk" or "sr", "stt_api must be vosk or speech_recognition"
+        
         if self._stt_api == "vosk":
             self._run_recognizer_with_vosk()
 

@@ -35,8 +35,8 @@ class PoseEstimationProcess(Process):
             min_detection_confidence=model_settings.min_detection_confidence,
             min_tracking_confidence=model_settings.min_tracking_confidence,
         )
-        self._frame_queue = Queue()
-        self._pose_queue = Queue()
+        self._in_queue = Queue()
+        self._out_queue = Queue()
 
     def run(self):
         """
@@ -47,7 +47,7 @@ class PoseEstimationProcess(Process):
     def _run_estimator(self):
         while True:
             try:
-                input_frame = self._frame_queue.get(timeout=10)
+                input_frame = self._in_queue.get(timeout=10)
                 timestamp: float = time.time()
             except Exception as e:
                 print(e)
@@ -58,14 +58,14 @@ class PoseEstimationProcess(Process):
 
             estimation_result = self.pose.process(input_frame)
             if estimation_result.pose_landmarks is None:
-                self._pose_queue.put_nowait(None)
+                self._out_queue.put_nowait(None)
                 continue
 
-            self._pose_queue.put_nowait(mp_res_to_pose_obj(estimation_result, timestamp=timestamp))
+            self._out_queue.put_nowait(mp_res_to_pose_obj(estimation_result, timestamp=timestamp))
 
     def get_pose(self, frame) -> PoseLandmarksObject:
-        self._frame_queue.put_nowait(frame)
-        pose = self._pose_queue.get(timeout=10)
+        self._in_queue.put_nowait(frame)
+        pose = self._out_queue.get(timeout=10)
         return pose
 
 

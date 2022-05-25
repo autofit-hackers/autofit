@@ -1,23 +1,13 @@
-from dataclasses import dataclass
 import string
-from typing import Callable, List
-from numpy import ndarray
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Tuple
 
+from numpy import ndarray
 
 from utils.class_objects import PoseLandmarksObject, RepObject
 
 
-@dataclass
-class InstructionData:
-    name: str
-    is_ok: bool
-    instruction_text: str
-    judge_function: Callable
-    reason: str
-    menu_to_recommend: List[str]
-
-
-def squat_knees_in(rep_obj: RepObject) -> bool:
+def squat_knees_in(self, rep_obj: RepObject) -> bool:
     if "bottom" in rep_obj.keyframes.keys():
         bottom_frame_num = rep_obj.keyframes["bottom"]
         bottom_pose = rep_obj.poses[bottom_frame_num]
@@ -37,36 +27,47 @@ def squat_depth(rep_obj: RepObject) -> bool:
     return False
 
 
-class Instruction_Object:
-    instructions: List[InstructionData] = [
-        InstructionData(
-            name="squat_knees_in",
-            is_ok=True,
-            instruction_text="内股やな",
-            judge_function=squat_knees_in,
-            reason="外転筋が弱いんちゃうか",
-            menu_to_recommend=["ヒップアブダクション"],
-        ),
-        InstructionData(
-            name="squat_depth",
-            is_ok=True,
-            instruction_text="しゃがめてへんで",
-            judge_function=squat_depth,
-            reason="足首固いんちゃうか",
-            menu_to_recommend=["足首ストレッチ"],
-        ),
-    ]
+@dataclass
+class InstructionItem(frozen=True):
+    text: str
+    judge_function: Callable
+    reason: str
+    menu_to_recommend: List[str]
 
-    def execute(self, rep_obj: RepObject):
+
+@dataclass
+class Instruction:
+    data: Dict[str, Dict[str, Any]] = {
+        "squat_knees_ahead": {
+            "instruction": InstructionItem(
+                text="内股やな", judge_function=squat_knees_in, reason="外転筋が弱いんちゃうか", menu_to_recommend=["ヒップアブダクション"]
+            ),
+            "is_ok": bool,
+            "score": float,
+        },
+        "squat_depth": {
+            "instruction": InstructionItem(
+                text="しゃがめてへんで",
+                judge_function=squat_depth,
+                reason="足首固いんちゃうか",
+                menu_to_recommend=["足首ストレッチ"],
+            ),
+            "is_ok": bool,
+            "score": float,
+        },
+    }
+
+
+    def evaluate_rep(self, rep_obj: RepObject):
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
 
         Args:
             rep_obj (RepObject): _description_
         """
-        for instruction in self.instructions:
-            instruction.is_ok = instruction.judge_function(rep_obj)
+        for name, value in self.data.items():
+            value.is_ok = value.(rep_obj)
 
-    def show(self, frame: ndarray) -> None:
+    def show_instruction(self, frame: ndarray) -> None:
         """frameに指導画像を描画する関数
 
         Args:
@@ -80,23 +81,5 @@ class Instruction_Object:
 
 
 #######################################################################
-指導 = [
-    InstructionData(
-        name="squat_knees_ahead",
-        is_ok=False,
-        instruction_text="膝出てんで",
-        judge_function=squat_knees_in,
-        reason="ケツ引かんからや",
-        menu_to_recommend=[],
-    ),
-    InstructionData(
-        name="squat_depth",
-        is_ok=False,
-        instruction_text="しゃがめてへんで",
-        judge_function=squat_depth,
-        reason="足首固いんちゃうか",
-        menu_to_recommend=["足首ストレッチ"],
-    ),
-]
 
 結果 = {"menu": "squat", "weight": 80, "reps": 8, "instructions": 指導}
