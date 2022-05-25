@@ -9,7 +9,7 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import sounddevice as sd
-from utils.instruction import Instruction
+# from utils.instruction import Instruction
 import vosk
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from PIL import Image
@@ -49,7 +49,7 @@ class AutoProcessor(VideoProcessorBase):
         self.phase = 0
         self.training_saver = TrainingSaver()
         self.display_objects = DisplayObjects()
-        self.instruction_manager = Instruction()
+        # self.instruction_manager = Instruction()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
@@ -140,11 +140,11 @@ class AutoProcessor(VideoProcessorBase):
 
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    # self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
                     self.set_obj.make_new_rep()
 
                     # 指導内容の表示
-                    self.instruction_manager.show_instruction(frame=processed_frame)
+                    # self.instruction_manager.show_instruction(frame=processed_frame)
 
             # 保存用配列の更新
             # self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
