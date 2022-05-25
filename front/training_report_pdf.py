@@ -58,16 +58,15 @@ if __name__ == "__main__":
                 instruction_text="しゃがめてへんで",
                 judge_function=squat_depth,
                 reason="足首固いんちゃうか",
-                menu_to_recommend=["足首ストレッチ"],
+                menu_to_recommend=["足首ストレッチ", "手首ストレッチ"],
+                # menu_to_recommend=[],
             ),
         ],
     }
 
     # reason_0 = training_result["instructions"][0].reason
 
-    options = {"enable-local-file-access": True}
-
     os.makedirs("training_reports", exist_ok=True)
     generate_html_report(training_result, "training_report.html")
-    os.system(f"wkhtmltopdf training_report.html training_report.pdf")
+    os.system(f"wkhtmltopdf --enable-local-file-access training_report.html training_report.pdf")
     os.remove("training_report.html")

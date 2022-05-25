@@ -4,32 +4,45 @@
 </head>
 <meta charset="utf-8"/>
   <body>
-    <h1>{{ coaching_contents["instructions"][0].reason }}</h1>
-{% for i in coaching_contents["instructions"] %}
-    <p>{{ coaching_contents.menu }} : {{ coaching_contents.menu }}は{{ coaching_contents.menu }}円です。</p>
-{% endfor %}
-<p style=" font-size: 60px; font-weight: bold;">{{ coaching_contents["instructions"][0].reason }} : {{ coaching_contents.menu }}は{{ coaching_contents.menu }}円です。</p>
+    <img src="data/posefit_icon.png" width="200px" alt="posefit" align="right">
+
+
+
+    <p style=" font-size: 60px;">&ensp;</p>
+    <p style=" font-size: 20px;">{{ coaching_contents.menu }}を{{ coaching_contents.reps }}回お疲れ様でした．</p>
+    <p style=" font-size: 20px;">Good pointやBad pointなどについてお伝えします．</p>
+
+    <div style="background-color: #87ceeb; border-radius: 10px; solid 10px; border: #87ceeb solid 1px; font-size: 100%; padding: 0px 20px;">
+    <p style=" font-size: 30px;">Good Point</p>
+    <p style=" font-size: 20px;text-indent: 1rem;">{{coaching_contents["instructions"][0].instruction_text}}</p>
+    </div>
+
+    <p style=" font-size: 10px;">&ensp;</p>
+
+    <div style="background-color: #ffc0cb; border-radius: 10px; solid 10px; border: #ffc0cb solid 1px; font-size: 100%; padding: 0px 20px;">
+    <p style=" font-size: 30px;">Bad Point</p>
+    <p style=" font-size: 20px;">{{coaching_contents["instructions"][1].instruction_text}}</p>
+    <p style=" font-size: 20px;">{{coaching_contents["instructions"][1].reason}}ためと考えられます．</p>
+    </div>
+
+    <p style=" font-size: 10px;">&ensp;</p>
+
+
+    {% if coaching_contents["instructions"][1].menu_to_recommend != []%}
+        <div style="background-color: #98fb98; border-radius: 10px; solid 10px; border: #98fb98 solid 1px; font-size: 100%; padding: 0px 20px;">
+        <p style=" font-size: 20px;">おすすめのメニュー</p>
+        <ul>
+        {% for i in coaching_contents["instructions"][1].menu_to_recommend %}
+        <li style=" font-size: 20px;">{{i}}</li>
+        {% endfor %}
+        </ul>
+        </div>
+
+        <p style=" font-size: 10px;">&ensp;</p>
+
+    {% endif %}
   </body>
 </html>
-{#
-<html>
-<head>
-<meta charset="utf-8"/>
-  <body>
-{% for coaching_content in coaching_contents %}
-    <h1>{{ coaching_content.menu_name }}</h1>
-    <p> {{ coaching_content.one_point }} </p>
-{% if "squat_knees_ahead" in coaching_contents %}
-    <p>もっと膝を前に。</p>
-{% if "squat_depth" in coaching_contents %}
-    <p>もっと腰を下げるメニューを実行。</p>
-{% else %}
-    <p>なしなしなし</p>
-{% endif %}
-  </body>
-{% endfor %}
-</html>
-#}
 {#リストで受け取った際に使用#}
 {#
 <html>
