@@ -44,8 +44,8 @@ jobs:
       - name: Push Local Changes
         uses:  stefanzweifel/git-auto-commit-action@v4.1.2
         with:
-          commit_user_name: "hogino"
-          commit_user_email: "hogino1003@gmail.com"
-          commit_author: "hogino<hogino1003@gmail.com>"
+          commit_user_name: "kondounagi"
+          commit_user_email: "kondounagi@gmail.com"
+          commit_author: "kondounagi<kondounagi@gmail.com>"
           commit_message: "Generate SVG and PNG images for PlantUML diagrams"
           branch: ${{ github.head_ref }}
