@@ -1,3 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-sh -c "plantuml $*"
+ARGS=( "$@" )
+
+plantuml $ARGS
