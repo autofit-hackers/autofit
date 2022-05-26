@@ -3,7 +3,7 @@ on:
     paths:
       - 'docs/**/*.puml'
     branches:
-      - master
+      - main
 jobs:
   ci:
     runs-on: ubuntu-latest
