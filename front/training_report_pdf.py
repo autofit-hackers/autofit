@@ -61,6 +61,7 @@ def generate_data_report():
     #         ),
     #     ],
     # }
+
     instruction = Instruction()
     training_result = {"menu": "squat", "weight": 80, "reps": 8, "instructions": instruction}
     # set_score = training_result["instructions"].data["squat_knees_ahead"].set_score
