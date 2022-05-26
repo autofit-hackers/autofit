@@ -9,6 +9,7 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import sounddevice as sd
+
 # from utils.instruction import Instruction
 import vosk
 from apps.pose3d_reconstruction import reconstruct_pose_3d
@@ -18,8 +19,8 @@ from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
 from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
-from utils.voice_recognition import VoiceRecognitionProcess
 from utils.video_recorder import TrainingSaver
+from utils.voice_recognition import VoiceRecognitionProcess
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 
 _SENTINEL_ = "_SENTINEL_"
