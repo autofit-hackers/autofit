@@ -65,8 +65,8 @@ class AutoProcessor(VideoProcessorBase):
         result_pose: PoseLandmarksObject = infer_pose(
             image=processed_frame, in_queue=self._in_queue, out_queue=self._out_queue
         )
-
         result_exists = result_pose is not None
+
         # Poseの描画 ################################################################
         if result_exists:
             processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=(0, 255, 255), show_z=False)
@@ -74,7 +74,7 @@ class AutoProcessor(VideoProcessorBase):
         # Ph0: QRコードログイン ################################################################
         if self.phase == 0:
             # TODO: こんちゃんよろしく！！！
-            # QRコード検知
+            # QRコード表示
             # 認証
 
             # 認証したら次へ
@@ -193,7 +193,9 @@ class AutoProcessor(VideoProcessorBase):
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):
+        # TODO: 桂くんへ（@katsura）ここに以下の感じでレポート生成を呼び出し
+        # image = get_training_report(self.training_results)
+
         print("Stop the inference process...")
-        # Stop other processes
         stop_pose_process(in_queue=self._in_queue, pose_process=self._pose_process)
         self.voice_recognition_process.terminate()

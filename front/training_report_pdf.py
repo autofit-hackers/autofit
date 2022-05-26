@@ -7,7 +7,7 @@ from PIL import Image
 from training_report_render_html import training_report_render_html
 
 # from utils import instruction
-from utils.instruction import Instruction, InstructionInfo, InstructionItem, squat_depth, squat_knees_in
+from utils.instruction import Instruction
 
 
 def generate_html_report(coaching_contents, html_path):
