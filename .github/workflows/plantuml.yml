@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-      - 'docs/**.puml'
+      - 'docs/**/*.puml'
     branches:
       - master
 jobs:
