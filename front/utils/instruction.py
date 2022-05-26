@@ -1,6 +1,9 @@
+from pathlib import Path
 import string
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Tuple
+
+import cv2 as cv
 
 from numpy import ndarray
 
@@ -49,22 +52,25 @@ class Instruction:
     """
     Add instance variable if you want to define a new instruction.
     """
-    data: Dict[str, InstructionItem] = field(default_factory=lambda: {
-        "squat_knees_ahead": InstructionItem(
-            info=InstructionInfo(
-                text="内股やな", judge_function=squat_knees_in, reason="外転筋が弱いんちゃうか", menu_to_recommend=["ヒップアブダクション"]
+
+    data: Dict[str, InstructionItem] = field(
+        default_factory=lambda: {
+            "squat_knees_in": InstructionItem(
+                info=InstructionInfo(
+                    text="内股やな", judge_function=squat_knees_in, reason="外転筋が弱いんちゃうか", menu_to_recommend=["ヒップアブダクション"]
+                ),
+                is_cleared_in_each_rep=[],
+                set_score=0,
             ),
-            is_cleared_in_each_rep=[],
-            set_score=0,
-        ),
-        "squat_depth": InstructionItem(
-            info=InstructionInfo(
-                text="しゃがめてへんで", judge_function=squat_depth, reason="足首固いんちゃうか", menu_to_recommend=["足首ストレッチ"]
+            "squat_depth": InstructionItem(
+                info=InstructionInfo(
+                    text="しゃがめてへんで", judge_function=squat_depth, reason="足首固いんちゃうか", menu_to_recommend=["足首ストレッチ"]
+                ),
+                is_cleared_in_each_rep=[],
+                set_score=0,
             ),
-            is_cleared_in_each_rep=[],
-            set_score=0,
-        ),
-    })
+        }
+    )
 
     def evaluate_rep(self, rep_obj: RepObject):
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
@@ -82,6 +88,9 @@ class Instruction:
             frame (ndarray): フレームだよ
         """
         for name, instruction_item in self.data.items():
+            instruction_image_path = Path(f"data/instruction/{name}.png")
+            instruction_image = cv.imread(str(instruction_image_path))
+            print(instruction_image_path)
             pass
 
 

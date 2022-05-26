@@ -9,6 +9,8 @@ import cv2 as cv
 import mediapipe as mp
 import numpy as np
 import sounddevice as sd
+from utils.instruction import Instruction
+
 # from utils.instruction import Instruction
 import vosk
 from apps.pose3d_reconstruction import reconstruct_pose_3d
@@ -49,7 +51,7 @@ class AutoProcessor(VideoProcessorBase):
         self.phase = 0
         self.training_saver = TrainingSaver()
         self.display_objects = DisplayObjects()
-        # self.instruction_manager = Instruction()
+        self.instruction_manager = Instruction()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
@@ -81,6 +83,7 @@ class AutoProcessor(VideoProcessorBase):
             if True:
                 self.phase += 1
                 print(self.phase)
+                self.instruction_manager.show(frame=processed_frame)
 
         # Ph1: メニュー・重量の入力 ################################################################
         elif self.phase == 1:
