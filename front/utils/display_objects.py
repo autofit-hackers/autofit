@@ -5,7 +5,7 @@ from pathlib import Path
 from turtle import width
 from typing import Any, List, Union
 
-import cv2 as cv2
+import cv2
 import numpy as np
 import pandas as pd
 from utils.calculate_fps import FpsCalculator

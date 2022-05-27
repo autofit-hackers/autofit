@@ -1,7 +1,7 @@
 import math
 from turtle import color
 
-import cv2 as cv2
+import cv2
 import numpy as np
 
 from .class_objects import PoseLandmarksObject

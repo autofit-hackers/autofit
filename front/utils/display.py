@@ -5,7 +5,7 @@ from pathlib import Path
 from turtle import width
 from typing import Any, List, Tuple, Union
 
-import cv2 as cv2
+import cv2
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -17,7 +17,6 @@ from utils.draw_pose import draw_landmarks_pose
 
 
 class Display:
-
     def __init__(self, frame: np.ndarray):
         self.frame = frame
 

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Union
 
 import av
-import cv2 as cv2
+import cv2
 import mediapipe as mp
 import numpy as np
 from apps.pose3d_reconstruction import reconstruct_pose_3d

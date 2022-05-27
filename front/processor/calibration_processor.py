@@ -3,7 +3,7 @@ import os
 import time
 
 import av
-import cv2 as cv2
+import cv2
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
 from utils import CameraState

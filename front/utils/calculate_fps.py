@@ -1,5 +1,5 @@
 from collections import deque
-import cv2 as cv2
+import cv2
 
 
 class FpsCalculator(object):

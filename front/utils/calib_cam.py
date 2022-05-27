@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, NamedTuple, Tuple, Union
 
-import cv2 as cv2
+import cv2
 import numpy as np
 from scipy import linalg
 

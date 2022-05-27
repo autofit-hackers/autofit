@@ -1,4 +1,4 @@
-import cv2 as cv2
+import cv2
 from utils import PoseLandmarksObject
 import numpy as np
 

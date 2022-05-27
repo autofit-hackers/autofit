@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Union
 
 import av
-import cv2 as cv2
+import cv2
 import mediapipe as mp
 import numpy as np
 import sounddevice as sd

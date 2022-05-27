@@ -7,7 +7,7 @@ import av
 from numpy import ndarray
 import streamlit as st
 import mediapipe as mp
-import cv2 as cv2
+import cv2
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 from multiprocessing import Process, Queue
 from utils.class_objects import ModelSettings, PoseLandmarksObject, mp_res_to_pose_obj

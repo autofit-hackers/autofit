@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Callable
 
 from aiortc.contrib.media import MediaRecorder
-import cv2 as cv2
+import cv2
 import av
 from cv2 import VideoWriter
 import numpy as np

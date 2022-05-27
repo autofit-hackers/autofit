@@ -3,7 +3,7 @@ import string
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Tuple
 
-import cv2 as cv2
+import cv2
 
 from numpy import ndarray
 

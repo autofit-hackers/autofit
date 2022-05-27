@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import List, Union
 
-import cv2 as cv2
+import cv2
 import streamlit as st
 from processor import CalibrationProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
