@@ -1,19 +1,10 @@
-import json
-import pickle
-from dataclasses import dataclass, field
 from pathlib import Path
-from turtle import width
 from typing import Any, List, Tuple, Union
 
 import cv2
 import numpy as np
-import pandas as pd
 from PIL import Image
 from ui_components.video_widget import CircleHoldButton
-
-from utils.calculate_fps import FpsCalculator
-from utils.class_objects import PoseLandmarksObject, RepState
-from utils.draw_pose import draw_landmarks_pose
 
 
 class Display:
@@ -23,17 +14,36 @@ class Display:
     def text(
         self,
         text: str,
-        position: Tuple,
+        position: Tuple[float, float],
         font_size: float,
-        color: Tuple,
-        thickness: int,
+        color: Tuple[int, int, int] = (255, 255, 255),
+        thickness: int = 1,
     ):
+        """
+        put text on the frame
+
+        Args:
+            text (str): _description_
+            position (Tuple[float]): bottom-left position relative to the frame. Must be (0,0) ~ (1.0, 1.0)
+            font_size (float): relative to the frame width. Must be in [0.0, 1.0]
+            color (Tuple): _description_
+            thickness (int): _description_
+        """
+
+        assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
+
+        # Adjust parameters
+        frame_width = self.frame[0]
+        frame_height = self.frame[1]
+        org = map(int, (frame_width * position[0], frame_height * position[1]))
+        fontScale = font_size * frame_width
+
         cv2.putText(
             self.frame,
             text=text,
-            org=position,
+            org=org,
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=font_size,
+            fontScale=fontScale,
             color=color,
             thickness=thickness,
             lineType=cv2.LINE_4,
@@ -42,25 +52,46 @@ class Display:
     def image(
         self,
         img_path: Union[Path, str],
-        position: Tuple,
-        size: Tuple,
-        alpha: float,
-    ):
-        assert 0.0 <= alpha <= 1.0, "Value of alpha has to be in [0.0, 0.1]"
+        position: Tuple[float, float],
+        size: Tuple[float, float],
+        alpha: float = 1,
+    ) -> np.ndarray:
+        """
+        put transparent image on the frame
 
-        img_path = Path(img_path)
-        image = Image.open(img_path)
+        Args:
+            img_path (Union[Path, str]): _description_
+            position (Tuple[float]): top-left position relative to the frame. Must be (0.0, 0.0) ~ (1.0, 1.0).
+            size (Tuple): image size relative to the frame. Must be (0, 0) ~ (1.0, 1.0).
+            alpha (float): transparent alpha. Must be in [0.0, 1.0]
+
+        Returns:
+            frame (np.ndarray): _description_
+        """
+
+        assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
+        assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
+
+        # Adjust parameters
+        frame_width = self.frame[0]
+        frame_height = self.frame[1]
+        box = (frame_width * position[0], frame_height * position[1])
+        size = (frame_width * size[0], frame_height * size[1])
+        alpha = int(255 * alpha)
+
+        # Add alpha channel to image
+        image = Image.open(Path(img_path))
         image = image.resize(size)
-        image.putalpha(int(255 * alpha))
+        image.putalpha(alpha)
 
         # Convert ndarray to pillow.Image
         frame_copy = self.frame.copy()
         frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2RGB)
         frame_copy = Image.fromarray(frame_copy)
 
-        # Add alpha channel to frame
+        # Put transparent image on the frame
         frame_copy.putalpha(255)
-        frame_copy.paste(image, box=position)
+        frame_copy.paste(image, box=box)
 
         # Convert pillow.Image to ndarray
         frame_copy = np.array(frame_copy)
