@@ -53,6 +53,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -141,11 +142,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_RDIRECT_URL = "/"
 
 
+# ref. https://python-social-auth.readthedocs.io/en/latest/configuration/django.html
 AUTHENTICATION_BACKENDS = [
     "social_core.backends.twitter.TwitterOAuth",
     "django.contrib.auth.backends.ModelBackend",
+    "social_core.backends.google.GoogleOpenId",
 ]
-
 SOCIAL_AUTH_TWITTER_KEY = env.get_value("TWITTER_API_KEY")
 SOCIAL_AUTH_TWITTER_SECRET = env.get_value("TWITTER_API_KEY_SECRET")
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/user/top"
