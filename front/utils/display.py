@@ -51,11 +51,11 @@ class Display:
 
     def image(
         self,
-        img_path: Union[Path, str],
+        image: Image.Image,
         position: Tuple[float, float],
         size: Tuple[float, float],
         alpha: float = 1,
-    ) -> np.ndarray:
+    ):
         """
         put transparent image on the frame
 
@@ -64,9 +64,6 @@ class Display:
             position (Tuple[float]): top-left position relative to the frame. Must be (0.0, 0.0) ~ (1.0, 1.0).
             size (Tuple): image size relative to the frame. Must be (0, 0) ~ (1.0, 1.0).
             alpha (float): transparent alpha. Must be in [0.0, 1.0]
-
-        Returns:
-            frame (np.ndarray): _description_
         """
 
         assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
@@ -80,7 +77,6 @@ class Display:
         alpha = int(255 * alpha)
 
         # Add alpha channel to image
-        image = Image.open(Path(img_path))
         image = image.resize(size)
         image.putalpha(alpha)
 
@@ -97,7 +93,16 @@ class Display:
         frame_copy = np.array(frame_copy)
         frame = cv2.cvtColor(frame_copy, cv2.COLOR_RGBA2BGR)
 
-        return frame
+        self.frame = frame
 
-    def button(self, button: CircleHoldButton, color_ing: Tuple, color_ed: Tuple, text: str):
+    def button(
+        self,
+        button: CircleHoldButton,
+        text: str,
+        position: Tuple[float, float],
+        size: Tuple[float, float],
+        color_ing: Tuple[int, int, int] = (255, 255, 0),
+        color_ed: Tuple[int, int, int] = (0, 255, 255),
+    ):
+
         button.update(self.frame, color_ing=color_ing, color_ed=color_ed, text=text)

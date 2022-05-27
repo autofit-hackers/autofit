@@ -129,7 +129,7 @@ class CircleHoldButton:
     def _reset_count(self):
         self.count = 0
 
-    def update(self, frame, color_ing=(255, 255, 0), color_ed=(0, 255, 255), text="Start"):
+    def update(self, frame, text="Start", color_ing=(255, 255, 0), color_ed=(0, 255, 255)):
         if self._is_waiting():
             cv2.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv2.LINE_8, shift=0)
             cv2.putText(
