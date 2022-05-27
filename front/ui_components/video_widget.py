@@ -129,9 +129,8 @@ class CircleHoldButton:
     def _reset_count(self):
         self.count = 0
 
-    # called every frame
     def update(self, frame, color_ing=(255, 255, 0), color_ed=(0, 255, 255), text="Start"):
-        if self.is_waiting():
+        if self._is_waiting():
             cv.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv.LINE_8, shift=0)
             cv.putText(
                 frame,
@@ -172,7 +171,7 @@ class CircleHoldButton:
     def _wait_start(self):
         self.wait_count = 60
 
-    def is_waiting(self) -> bool:
+    def _is_waiting(self) -> bool:
         if self.wait_count > 0:
             self.wait_count -= 1
             self.count = 0
@@ -180,7 +179,7 @@ class CircleHoldButton:
         else:
             return False
 
-    def calcurate_text_center(self, text, center, font=cv.FONT_HERSHEY_SIMPLEX, font_scale=1.0, thickness=1):
+    def _calcurate_text_center(self, text, center, font=cv.FONT_HERSHEY_SIMPLEX, font_scale=1.0, thickness=1):
         # get boundary of this text
         textsize = cv.getTextSize(text, font, font_scale, thickness)[0]
 
