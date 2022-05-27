@@ -6,7 +6,7 @@ from multiprocessing import Process, Queue
 from typing import List, Union
 
 import av
-import cv2 as cv
+import cv2 as cv2
 import numpy as np
 from streamlit_webrtc import VideoProcessorBase
 
@@ -60,7 +60,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
     def _save_image(self, frame):
         assert self.image_save_path
         os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
-        cv.imwrite(self.image_save_path, frame)
+        cv2.imwrite(self.image_save_path, frame)
 
     def _stop_pose_process(self):
         self._in_queue.put_nowait(_SENTINEL_)
@@ -72,10 +72,10 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
         # カメラキャプチャ #####################################################
         frame = frame.to_ndarray(format="bgr24")
 
-        frame = cv.flip(frame, 1)  # ミラー表示
+        frame = cv2.flip(frame, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
         if self.display_settings.rotate_webcam_input:
-            frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
         # frameの保存 ################################################################
@@ -84,7 +84,7 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
             self.is_clicked_capture_skeleton = False
 
         # 検出実施 #############################################################
-        frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result_pose: PoseLandmarksObject = self._infer_pose(frame)
 
         if result_pose:
@@ -96,15 +96,15 @@ class GetPhysicalInfoProcessor(VideoProcessorBase):
                 processed_frame = draw_landmarks_pose(image=processed_frame, landmarks=result_pose)
 
         if self.display_settings.show_fps:
-            cv.putText(
+            cv2.putText(
                 processed_frame,
                 "FPS:" + str(display_fps),
                 (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 255, 0),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")

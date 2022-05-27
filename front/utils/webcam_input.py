@@ -7,7 +7,7 @@ import av
 from numpy import ndarray
 import streamlit as st
 import mediapipe as mp
-import cv2 as cv
+import cv2 as cv2
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 from multiprocessing import Process, Queue
 from utils.class_objects import ModelSettings, PoseLandmarksObject, mp_res_to_pose_obj
@@ -25,6 +25,7 @@ def build_webcam_streams(processor, key: str):
         ),
         video_processor_factory=processor,
     )
+
 
 class PoseEstimationProcess(Process):
     def __init__(self, model_settings: ModelSettings):
@@ -115,9 +116,9 @@ def save_pose(pose_save_path, pose_memory: List[PoseLandmarksObject]):
 
 def process_frame_initially(frame: av.VideoFrame, should_rotate: bool) -> ndarray:
     frame_arr = frame.to_ndarray(format="bgr24")
-    frame_arr = cv.flip(frame_arr, 1)  # ミラー表示
+    frame_arr = cv2.flip(frame_arr, 1)  # ミラー表示
     # TODO: ここで image に対して single camera calibration
     if should_rotate:
-        frame_arr = cv.rotate(frame_arr, cv.ROTATE_90_CLOCKWISE)
-    # frame_arr = cv.cvtColor(frame_arr, cv.COLOR_BGR2RGB)  # 色の修正
+        frame_arr = cv2.rotate(frame_arr, cv2.ROTATE_90_CLOCKWISE)
+    # frame_arr = cv2.cvtColor(frame_arr, cv2.COLOR_BGR2RGB)  # 色の修正
     return frame_arr

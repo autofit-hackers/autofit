@@ -5,15 +5,15 @@ from pathlib import Path
 from turtle import width
 from typing import Any, List, Tuple, Union
 
-import cv2 as cv
+import cv2 as cv2
 import numpy as np
 import pandas as pd
 from PIL import Image
+from ui_components.video_widget import CircleHoldButton
 
 from utils.calculate_fps import FpsCalculator
 from utils.class_objects import PoseLandmarksObject, RepState
 from utils.draw_pose import draw_landmarks_pose
-from ui_components.video_widget import CircleHoldButton
 
 
 class Display:
@@ -29,15 +29,15 @@ class Display:
         color: Tuple,
         thickness: int,
     ):
-        cv.putText(
+        cv2.putText(
             self.frame,
             text=text,
             org=position,
-            fontFace=cv.FONT_HERSHEY_SIMPLEX,
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
             fontScale=font_size,
             color=color,
             thickness=thickness,
-            lineType=cv.LINE_4,
+            lineType=cv2.LINE_4,
         )
 
     def image(
@@ -56,7 +56,7 @@ class Display:
 
         # Convert ndarray to pillow.Image
         frame_copy = self.frame.copy()
-        frame_copy = cv.cvtColor(frame_copy, cv.COLOR_BGR2RGB)
+        frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2RGB)
         frame_copy = Image.fromarray(frame_copy)
 
         # Add alpha channel to frame
@@ -65,7 +65,7 @@ class Display:
 
         # Convert pillow.Image to ndarray
         frame_copy = np.array(frame_copy)
-        frame = cv.cvtColor(frame_copy, cv.COLOR_RGBA2BGR)
+        frame = cv2.cvtColor(frame_copy, cv2.COLOR_RGBA2BGR)
 
         return frame
 

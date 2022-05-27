@@ -3,7 +3,7 @@ import string
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Tuple
 
-import cv2 as cv
+import cv2 as cv2
 
 from numpy import ndarray
 
@@ -89,7 +89,7 @@ class Instruction:
         """
         for name, instruction_item in self.data.items():
             instruction_image_path = Path(f"data/instruction/{name}.png")
-            instruction_image = cv.imread(str(instruction_image_path))
+            instruction_image = cv2.imread(str(instruction_image_path))
             print(instruction_image_path)
             pass
 

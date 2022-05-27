@@ -1,4 +1,4 @@
-import cv2 as cv
+import cv2 as cv2
 from utils import PoseLandmarksObject
 import numpy as np
 
@@ -38,21 +38,21 @@ class ResetButton:
     # called every frame
     def visualize(self, frame, color_ing=(255, 255, 0), color_ed=(0, 255, 255), text="Start"):
         if self.is_waiting():
-            cv.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv.LINE_8, shift=0)
-            cv.putText(
+            cv2.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv2.LINE_8, shift=0)
+            cv2.putText(
                 frame,
                 text,
                 [self.center[0] - 25, self.center[1] + 5],
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 color_ed,
                 1,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
         else:
-            cv.circle(frame, self.center, self.size, color_ing, thickness=3, lineType=cv.LINE_8, shift=0)
+            cv2.circle(frame, self.center, self.size, color_ing, thickness=3, lineType=cv2.LINE_8, shift=0)
             if self.count > 0:
-                cv.ellipse(
+                cv2.ellipse(
                     img=frame,
                     center=self.center,
                     axes=(self.size, self.size),
@@ -60,19 +60,19 @@ class ResetButton:
                     startAngle=0,
                     endAngle=360 * (self.count / self.duration),
                     color=color_ed,
-                    lineType=cv.LINE_8,
+                    lineType=cv2.LINE_8,
                     shift=0,
                     thickness=3,
                 )
-            cv.putText(
+            cv2.putText(
                 frame,
                 text,
                 [self.center[0] - 25, self.center[1] + 5],
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 color_ing,
                 1,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
     def _wait_start(self):
@@ -86,9 +86,9 @@ class ResetButton:
         else:
             return False
 
-    def calcurate_text_center(self, text, center, font=cv.FONT_HERSHEY_SIMPLEX, font_scale=1.0, thickness=1):
+    def calcurate_text_center(self, text, center, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1.0, thickness=1):
         # get boundary of this text
-        textsize = cv.getTextSize(text, font, font_scale, thickness)[0]
+        textsize = cv2.getTextSize(text, font, font_scale, thickness)[0]
 
         # get coordinates based on boundary
         textX = (center[1] - textsize[0]) / 2
@@ -131,21 +131,21 @@ class CircleHoldButton:
 
     def update(self, frame, color_ing=(255, 255, 0), color_ed=(0, 255, 255), text="Start"):
         if self._is_waiting():
-            cv.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv.LINE_8, shift=0)
-            cv.putText(
+            cv2.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv2.LINE_8, shift=0)
+            cv2.putText(
                 frame,
                 text,
                 [self.center[0] - 25, self.center[1] + 5],
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 color_ed,
                 1,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
         else:
-            cv.circle(frame, self.center, self.size, color_ing, thickness=3, lineType=cv.LINE_8, shift=0)
+            cv2.circle(frame, self.center, self.size, color_ing, thickness=3, lineType=cv2.LINE_8, shift=0)
             if self.count > 0:
-                cv.ellipse(
+                cv2.ellipse(
                     img=frame,
                     center=self.center,
                     axes=(self.size, self.size),
@@ -153,19 +153,19 @@ class CircleHoldButton:
                     startAngle=0,
                     endAngle=360 * (self.count / self.duration),
                     color=color_ed,
-                    lineType=cv.LINE_8,
+                    lineType=cv2.LINE_8,
                     shift=0,
                     thickness=3,
                 )
-            cv.putText(
+            cv2.putText(
                 frame,
                 text,
                 [self.center[0] - 25, self.center[1] + 5],
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 color_ing,
                 1,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
     def _wait_start(self):
@@ -179,9 +179,9 @@ class CircleHoldButton:
         else:
             return False
 
-    def _calcurate_text_center(self, text, center, font=cv.FONT_HERSHEY_SIMPLEX, font_scale=1.0, thickness=1):
+    def _calcurate_text_center(self, text, center, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1.0, thickness=1):
         # get boundary of this text
-        textsize = cv.getTextSize(text, font, font_scale, thickness)[0]
+        textsize = cv2.getTextSize(text, font, font_scale, thickness)[0]
 
         # get coordinates based on boundary
         textX = (center[1] - textsize[0]) / 2

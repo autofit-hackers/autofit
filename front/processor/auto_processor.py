@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Union
 
 import av
-import cv2 as cv
+import cv2 as cv2
 import mediapipe as mp
 import numpy as np
 import sounddevice as sd
@@ -99,15 +99,15 @@ class AutoProcessor(VideoProcessorBase):
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットのパラメータをリセット
-            cv.putText(
+            cv2.putText(
                 processed_frame,
                 f"Say Start!",
                 (10, 100),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 0, 255),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
             # 開始が入力されたら(声)セットを開始
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
@@ -161,15 +161,15 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 4:
             # レポート表示
             report_frame = processed_frame * 0
-            cv.putText(
+            cv2.putText(
                 report_frame,
                 f"GJ!!Say owari!",
                 (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 0, 255),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）

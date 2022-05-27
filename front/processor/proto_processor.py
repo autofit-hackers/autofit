@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Union
 
 import av
-import cv2 as cv
+import cv2 as cv2
 import mediapipe as mp
 import numpy as np
 from PIL import Image
@@ -89,7 +89,7 @@ class PrototypeProcessor(VideoProcessorBase):
         self.is_clicked_reset_button = is_clicked_reset_button
 
         self.video_save_path = video_save_path
-        self.video_writer: Union[cv.VideoWriter, None] = None
+        self.video_writer: Union[cv2.VideoWriter, None] = None
 
         self.pose_save_path: Union[str, None] = pose_save_path
         self.pose_memory: List[PoseLandmarksObject] = []
@@ -143,14 +143,14 @@ class PrototypeProcessor(VideoProcessorBase):
         display_fps = self._FpsCalculator.get()
 
         frame = frame.to_ndarray(format="bgr24")
-        frame = cv.flip(frame, 1)  # ミラー表示
+        frame = cv2.flip(frame, 1)  # ミラー表示
         # TODO: ここで image に対して single camera calibration
         if self.display_settings.rotate_webcam_input:
-            frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
         # 検出実施 #############################################################
-        frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result_pose: PoseLandmarksObject = self._infer_pose(frame)
         self.reset_button.visualize(frame=processed_frame)
 
@@ -226,28 +226,28 @@ class PrototypeProcessor(VideoProcessorBase):
 
         # Show rep count
         if self.rep_count_settings.do_count_rep:
-            cv.putText(
+            cv2.putText(
                 processed_frame,
                 f"Rep:{self.rep_state.rep_count}",
                 (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 0, 255),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
         # Show fps
         if self.display_settings.show_fps:
-            cv.putText(
+            cv2.putText(
                 processed_frame,
                 "FPS:" + format(display_fps, ".0f"),
                 (10, 60),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 (0, max(min(display_fps - 20, 10) * 25.5, 0), 255 - max(min(display_fps - 20, 10) * 25.5, 0)),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
         # Visualize reset button

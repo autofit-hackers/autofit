@@ -5,7 +5,7 @@ from pathlib import Path
 from turtle import width
 from typing import Any, List, Union
 
-import cv2 as cv
+import cv2 as cv2
 import numpy as np
 import pandas as pd
 from utils.calculate_fps import FpsCalculator
@@ -82,26 +82,26 @@ class DisplayObjects:
         self.fps = self.fpsCalculator.get()
 
     def show(self, frame):
-        cv.putText(
+        cv2.putText(
             frame,
             f"Rep:{self.reps}",
             (10, 30),
-            cv.FONT_HERSHEY_SIMPLEX,
+            cv2.FONT_HERSHEY_SIMPLEX,
             1.0,
             (0, 0, 255),
             2,
-            cv.LINE_AA,
+            cv2.LINE_AA,
         )
 
-        cv.putText(
+        cv2.putText(
             frame,
             "FPS:" + format(self.fps, ".0f"),
             (10, 60),
-            cv.FONT_HERSHEY_SIMPLEX,
+            cv2.FONT_HERSHEY_SIMPLEX,
             0.6,
             (0, max(min(self.fps - 20, 10) * 25.5, 0), 255 - max(min(self.fps - 20, 10) * 25.5, 0)),
             2,
-            cv.LINE_AA,
+            cv2.LINE_AA,
         )
 
     def reset(self):
@@ -197,18 +197,18 @@ class Instruction_Old_ForMitouAD:
 
     def _draw_for_prototype(self, frame, line_color):
         if self.is_displaying:
-            cv.rectangle(frame, (200, 10), (470, 110), (255, 255, 255), thickness=-1)
-            cv.line(frame, (100, self.knee_y), (380, self.knee_y), line_color, thickness=2, lineType=cv.LINE_AA)
+            cv2.rectangle(frame, (200, 10), (470, 110), (255, 255, 255), thickness=-1)
+            cv2.line(frame, (100, self.knee_y), (380, self.knee_y), line_color, thickness=2, lineType=cv2.LINE_AA)
             for count, words in enumerate(self.instruction_words):
-                cv.putText(
+                cv2.putText(
                     frame,
                     words,
                     (210, 40 * (count + 1)),
-                    cv.FONT_HERSHEY_SIMPLEX,
+                    cv2.FONT_HERSHEY_SIMPLEX,
                     0.6,
                     (255, 0, 255),
                     2,
-                    cv.LINE_AA,
+                    cv2.LINE_AA,
                 )
         return frame
 
@@ -218,8 +218,8 @@ class Instruction_Old_ForMitouAD:
             # width, height = instruction_image.shape[:2]
             # frame_w, frame_h = frame.shape[:2]
             # frame[10 : width + 10, frame_h - 10 - height : frame_h - 10] = instruction_image[:, :, :3]
-            cv.line(
-                frame, (100, self.knee_y + 20), (380, self.knee_y + 20), line_color, thickness=2, lineType=cv.LINE_AA
+            cv2.line(
+                frame, (100, self.knee_y + 20), (380, self.knee_y + 20), line_color, thickness=2, lineType=cv2.LINE_AA
             )
         return frame
 
