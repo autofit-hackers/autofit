@@ -2,14 +2,16 @@ import copy
 import os
 import pickle
 import time
-from typing import List
-import av
-from numpy import ndarray
-import streamlit as st
-import mediapipe as mp
-import cv2
-from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 from multiprocessing import Process, Queue
+from typing import List
+
+import av
+import cv2
+import mediapipe as mp
+import streamlit as st
+from numpy import ndarray
+from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
+
 from utils.class_objects import ModelSettings, PoseLandmarksObject, mp_res_to_pose_obj
 
 _SENTINEL_ = "_SENTINEL_"
@@ -65,6 +67,7 @@ class PoseEstimationProcess(Process):
             self._out_queue.put_nowait(mp_res_to_pose_obj(estimation_result, timestamp=timestamp))
 
     def get_pose(self, frame) -> PoseLandmarksObject:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         self._in_queue.put_nowait(frame)
         pose = self._out_queue.get(timeout=10)
         return pose
@@ -103,6 +106,7 @@ def stop_pose_process(in_queue: Queue, pose_process: Process):
 
 
 def infer_pose(image, in_queue: Queue, out_queue: Queue) -> PoseLandmarksObject:
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     in_queue.put_nowait(image)
     return out_queue.get(timeout=10)
 
