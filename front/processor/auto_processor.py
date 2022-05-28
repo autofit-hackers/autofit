@@ -1,6 +1,7 @@
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
+from datetime import datetime
 
 import av
 import cv2
@@ -82,6 +83,9 @@ class AutoProcessor(VideoProcessorBase):
             # TODO: こんちゃんよろしく！！！
             # QRコード表示
             # 認証
+            user_name: str = "tmp"
+            session_created_at = datetime.now().strftime("%Y-%m-%d-%H-%M")
+            Path("data/session") / user_name / session_created_at
 
             # 認証したら次へ
             if True:

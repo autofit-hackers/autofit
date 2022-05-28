@@ -10,14 +10,14 @@
     <p style=" font-size: 20px;">{{ coaching_contents["menu"] }}を{{ coaching_contents["reps"] }}回お疲れ様でした．</p>
     <p style=" font-size: 20px;">Good pointやBad pointなどについてお伝えします．</p>
 
-    <div style="background-color: #6BBCDE; border-radius: 10px; solid 10px; border: #6BBCDE solid 1px; font-size: 100%; padding: 0px 20px;">
+    <div style="background-color: #B5DEEF; border-radius: 10px; solid 10px; border: #6BBCDE solid 5px; font-size: 100%; padding: 0px 20px;">
     <p style=" font-size: 30px;">Good Point</p>
     <p style=" font-size: 20px;">{{coaching_contents["instructions"].data["squat_knees_in"].info.text}}</p>
     </div>
 
     <p style=" font-size: 10px;">&ensp;</p>
 
-    <div style="background-color: #D43653; border-radius: 10px; solid 10px; border: #D43653 solid 1px; font-size: 100%; padding: 0px 20px;">
+    <div style="background-color: #EA9BA9; border-radius: 10px; solid 10px; border: #D43653 solid 5px; font-size: 100%; padding: 0px 20px;">
     <p style=" font-size: 30px;">Bad Point</p>
     <p style=" font-size: 20px;">{{coaching_contents["instructions"].data["squat_knees_in"].info.text}}</p>
     <p style=" font-size: 20px;">{{coaching_contents["instructions"].data["squat_knees_in"].info.reason}}ためと考えられます．</p>
@@ -27,7 +27,7 @@
 
 
     {% if coaching_contents["instructions"].data["squat_knees_in"].info.menu_to_recommend != []%}
-        <div style="background-color: #A6C849; border-radius: 10px; solid 10px; border: #A6C849 solid 1px; font-size: 100%; padding: 0px 20px;">
+        <div style="background-color: #D3E4A4; border-radius: 10px; solid 10px; border: #A6C849 solid 5px; font-size: 100%; padding: 0px 20px;">
         <p style=" font-size: 20px;">おすすめのメニュー</p>
         <ul>
         {% for i in coaching_contents["instructions"].data["squat_knees_in"].info.menu_to_recommend %}

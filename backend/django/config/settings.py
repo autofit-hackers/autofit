@@ -95,6 +95,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = "user_auth.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -146,7 +147,7 @@ LOGIN_RDIRECT_URL = "/"
 AUTHENTICATION_BACKENDS = [
     "social_core.backends.twitter.TwitterOAuth",
     "django.contrib.auth.backends.ModelBackend",
-    "social_core.backends.google.GoogleOpenId",
+    # "social_core.backends.google.GoogleOpenId",
 ]
 SOCIAL_AUTH_TWITTER_KEY = env.get_value("TWITTER_API_KEY")
 SOCIAL_AUTH_TWITTER_SECRET = env.get_value("TWITTER_API_KEY_SECRET")
