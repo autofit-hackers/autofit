@@ -1,3 +1,4 @@
+import datetime
 import os
 import pickle
 from pathlib import Path
@@ -209,8 +210,9 @@ def app():
                     visibilities[trimmed_frame_start : trimmed_frame_end + 1],
                 )
             ]
-            os.makedirs(Path("trimmed_pose/"))
-            with open(Path("trimmed_pose/trimmed_coach.pkl"), "wb") as f:
+            os.makedirs(Path("data/coach_pose/"))
+            now = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+            with open(Path(f"data/coach_pose/{now}.pkl"), "wb") as f:
                 pickle.dump(trimmed_pose, f)
             st.write("Trimmed Pose Successfully Saved!")
 
