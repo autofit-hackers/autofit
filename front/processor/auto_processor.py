@@ -2,6 +2,7 @@ from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
 from datetime import datetime
+import time
 
 import av
 import cv2
@@ -43,7 +44,6 @@ class AutoProcessor(VideoProcessorBase):
         self.rep_count_settings = rep_count_settings
 
         self.phase = 0
-        self.training_saver = TrainingSaver()
         self.display_objects = DisplayObjects()
         self.instruction_manager = Instruction()
         self.rep_state = RepState()
@@ -61,6 +61,8 @@ class AutoProcessor(VideoProcessorBase):
         self.voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        recv_timestamp: float =  time.time()
+
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
         # h, w = processed_frame.shape[:2]
         # newcameramtx, roi = cv.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
@@ -80,11 +82,15 @@ class AutoProcessor(VideoProcessorBase):
         # Ph0: QRコードログイン ################################################################
         if self.phase == 0:
             # TODO: こんちゃんよろしく！！！
-            # QRコード表示
-            # 認証
+            # TODO: QRコード表示
+            # TODO: 認証
+            # TODO: user_name を認証情報から取得
+
+            # initialize training_saver
             user_name: str = "tmp"
             session_created_at = datetime.now().strftime("%Y-%m-%d-%H-%M")
-            Path("data/session") / user_name / session_created_at
+            save_path = Path("data") / "session" / user_name / session_created_at
+            self.training_saver = TrainingSaver(save_path=save_path)
 
             # 認証したら次へ
             if True:
@@ -165,11 +171,11 @@ class AutoProcessor(VideoProcessorBase):
                     # self.instruction_manager.show_instruction(frame=processed_frame)
 
             # 保存用配列の更新
-            # self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
+            self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
 
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
-                # self.training_saver.save()
+                self.training_saver.save()
                 # resultsを生成
                 self.phase += 1
                 print(self.phase)
