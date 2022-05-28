@@ -85,7 +85,7 @@ def convert_png_report_from_pdf():
 
 
 if __name__ == "__main__":
-    # training_result = generate_data_report()
-    # generate_pdf_report(training_result)
+    training_result = generate_data_report()
+    generate_pdf_report(training_result)
 
     convert_png_report_from_pdf()
