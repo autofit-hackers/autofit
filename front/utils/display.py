@@ -71,7 +71,7 @@ class Display:
         """
 
         assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
-        assert (0.0, 0.0) <= position <= (1.0, 1.0), "pzosition must be (0,0) ~ (1.0, 1.0)"
+        assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
 
         # Adjust parameters
         frame_width = self.frame.shape[1]

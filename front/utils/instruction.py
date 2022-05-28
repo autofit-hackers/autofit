@@ -8,26 +8,7 @@ import cv2
 from numpy import ndarray
 
 from utils.class_objects import PoseLandmarksObject, RepObject
-
-
-def squat_knees_in(self, rep_obj: RepObject) -> bool:
-    if "bottom" in rep_obj.keyframes.keys():
-        bottom_frame_num = rep_obj.keyframes["bottom"]
-        bottom_pose = rep_obj.poses[bottom_frame_num]
-        top_pose = rep_obj.poses[0]
-        if bottom_pose.get_hip_position()[1] > top_pose.get_knee_position()[1]:
-            return True
-    return False
-
-
-def squat_depth(rep_obj: RepObject) -> bool:
-    if "bottom" in rep_obj.keyframes.keys():
-        bottom_frame_num = rep_obj.keyframes["bottom"]
-        bottom_pose = rep_obj.poses[bottom_frame_num]
-        top_pose = rep_obj.poses[0]
-        if bottom_pose.get_hip_position()[1] < top_pose.get_knee_position()[1]:
-            return True
-    return False
+import utils.form_evaluation as eval
 
 
 @dataclass(frozen=True)
@@ -57,14 +38,14 @@ class Instruction:
         default_factory=lambda: {
             "squat_knees_in": InstructionItem(
                 info=InstructionInfo(
-                    text="内股やな", judge_function=squat_knees_in, reason="外転筋が弱いんちゃうか", menu_to_recommend=["ヒップアブダクション"]
+                    text="内股やな", judge_function=eval.squat_knees_in, reason="外転筋が弱いんちゃうか", menu_to_recommend=["ヒップアブダクション"]
                 ),
                 is_cleared_in_each_rep=[],
                 set_score=0,
             ),
             "squat_depth": InstructionItem(
                 info=InstructionInfo(
-                    text="しゃがめてへんで", judge_function=squat_depth, reason="足首固いんちゃうか", menu_to_recommend=["足首ストレッチ"]
+                    text="しゃがめてへんで", judge_function=eval.squat_depth, reason="足首固いんちゃうか", menu_to_recommend=["足首ストレッチ"]
                 ),
                 is_cleared_in_each_rep=[],
                 set_score=0,
