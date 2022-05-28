@@ -11,7 +11,7 @@ from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
-from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
+from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects, Instruction_Old_ForMitouAD
 from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
@@ -47,6 +47,9 @@ class AutoProcessor(VideoProcessorBase):
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
+        self.instruction = Instruction_Old_ForMitouAD()
+        self.instruction_file = cv2.imread("./data/instruction/squat_depth.png")
+        print("====================================", type(self.instruction_file))
 
         # self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
         # self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
@@ -78,7 +81,6 @@ class AutoProcessor(VideoProcessorBase):
             # QRコード表示
             # 認証
 
-
             # 認証したら次へ
             if True:
                 self.phase += 1
@@ -94,7 +96,7 @@ class AutoProcessor(VideoProcessorBase):
             # 必要情報が入力されたら次へ(save path の入力を検知?)
             if True:
                 # お手本ポーズのロード
-                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/trimmed_coach.pkl"))
+                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/endo_squat.pkl"))
                 self.phase += 1
                 print(self.phase)
 
@@ -115,6 +117,7 @@ class AutoProcessor(VideoProcessorBase):
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
+                self.instruction.update_knee_y(pose=result_pose, frame_height=processed_frame.shape[0])
                 self.phase += 1
                 print(self.phase)
 
@@ -135,6 +138,13 @@ class AutoProcessor(VideoProcessorBase):
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
+
+                # 手動の指導
+                if self.rep_state.rep_count >= 2:
+                    line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
+                    frame = self.instruction.show_instruction_image(
+                        frame=processed_frame, line_color=line_color, instruction_image=self.instruction_file
+                    )
 
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
