@@ -1,18 +1,11 @@
-import time
-from http import server
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
 
 import av
 import cv2
-import mediapipe as mp
-import numpy as np
-import sounddevice as sd
 from utils.instruction import Instruction
 import vosk
-from apps.pose3d_reconstruction import reconstruct_pose_3d
-from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
@@ -76,6 +69,7 @@ class AutoProcessor(VideoProcessorBase):
             # TODO: こんちゃんよろしく！！！
             # QRコード検知
             # 認証
+
 
             # 認証したら次へ
             if True:
