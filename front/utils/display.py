@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from ui_components.video_widget import CircleHoldButton
+import cmapy
 
 
 class Display:
