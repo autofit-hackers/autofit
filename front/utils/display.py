@@ -35,8 +35,8 @@ class Display:
         assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
 
         # Adjust parameters
-        frame_width = self.frame[0]
-        frame_height = self.frame[1]
+        frame_width = self.frame.shape[0]
+        frame_height = self.frame.shape[1]
         org = map(int, (frame_width * position[0], frame_height * position[1]))
         fontScale = font_size * frame_width
         color = set_color(color_name)
@@ -58,7 +58,7 @@ class Display:
         position: Tuple[float, float],
         size: Tuple[float, float],
         alpha: float = 1,
-        fit_aspect_ratio: bool = False
+        hold_aspect_ratio: bool = False,
     ):
         """
         put transparent image on the frame
@@ -71,17 +71,17 @@ class Display:
         """
 
         assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
-        assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
+        assert (0.0, 0.0) <= position <= (1.0, 1.0), "pzosition must be (0,0) ~ (1.0, 1.0)"
 
         # Adjust parameters
-        frame_width = self.frame[0]
-        frame_height = self.frame[1]
-        box = (frame_width * position[0], frame_height * position[1])
+        frame_width = self.frame.shape[1]
+        frame_height = self.frame.shape[0]
+        box = (int(frame_width * position[0]), int(frame_height * position[1]))
         org_aspect_ratio = image.height / image.width
-        if fit_aspect_ratio:
-            size = (frame_width * size[0], frame_width * size[0] * org_aspect_ratio)
+        if hold_aspect_ratio:
+            size = (int(frame_width * size[0]), int(frame_width * size[0] * org_aspect_ratio))
         else:
-            size = (frame_width * size[0], frame_height * size[1])
+            size = (int(frame_width * size[0]), int(frame_height * size[1]))
         alpha = int(255 * alpha)
 
         # Add alpha channel to image
@@ -101,7 +101,7 @@ class Display:
         frame_copy = np.array(frame_copy)
         frame = cv2.cvtColor(frame_copy, cv2.COLOR_RGBA2BGR)
 
-        self.frame = frame
+        return frame
 
     def button(
         self,

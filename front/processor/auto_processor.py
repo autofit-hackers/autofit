@@ -5,13 +5,15 @@ from typing import List, Union
 import av
 import cv2
 import numpy as np
-from utils.instruction import Instruction
 import vosk
+from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
+from utils.display import Display
 from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects, Instruction_Old_ForMitouAD
+from utils.instruction import Instruction
 from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
@@ -48,8 +50,7 @@ class AutoProcessor(VideoProcessorBase):
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
         self.instruction = Instruction_Old_ForMitouAD()
-        self.instruction_file = cv2.imread("./data/instruction/squat_depth.png")
-        print("====================================", type(self.instruction_file))
+        self.instruction_img = Image.open("./data/instruction/squat_depth.png")
 
         # self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
         # self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
@@ -64,6 +65,7 @@ class AutoProcessor(VideoProcessorBase):
         # h, w = processed_frame.shape[:2]
         # newcameramtx, roi = cv.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
         # processed_frame = cv.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
+        display = Display(frame=processed_frame)
 
         # 検出実施 #############################################################
         result_pose: PoseLandmarksObject = infer_pose(
@@ -142,8 +144,8 @@ class AutoProcessor(VideoProcessorBase):
                 # 手動の指導
                 if self.rep_state.rep_count >= 2:
                     line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
-                    frame = self.instruction.show_instruction_image(
-                        frame=processed_frame, line_color=line_color, instruction_image=self.instruction_file
+                    processed_frame = display.image(
+                        image=self.instruction_img, position=(0.45, 0.05), size=(0.52, 0), hold_aspect_ratio=True
                     )
 
                 # 回数が増えた時、指導を実施する
