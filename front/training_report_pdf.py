@@ -1,5 +1,3 @@
-import base64
-import io
 import os
 
 from PIL import Image
@@ -7,8 +5,6 @@ from pathlib import Path
 from pdf2image import convert_from_path
 
 from training_report_render_html import training_report_render_html
-
-# from utils import instruction
 from utils.instruction import Instruction
 
 
