@@ -4,6 +4,7 @@ from typing import List, Union
 
 import av
 import cv2
+import numpy as np
 from utils.instruction import Instruction
 import vosk
 from streamlit_webrtc import VideoProcessorBase
@@ -47,9 +48,9 @@ class AutoProcessor(VideoProcessorBase):
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
 
-        self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
-        self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
-        print(self.cmtx, self.dist)
+        # self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
+        # self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
+        # print(self.cmtx, self.dist)
 
         # Start other processes
         self._pose_process.start()
