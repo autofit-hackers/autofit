@@ -71,21 +71,13 @@ def generate_data_report():
     return training_result
 
 
-# import subprocess
-
-
 def convert_png_report_from_pdf():
     input_pdf_path = Path("./training_report.pdf")
-    # subprocess.Popen([input_pdf_path, "training_report.pdf"])
-
     training_report_image = convert_from_path(pdf_path=input_pdf_path, dpi=200, fmt="png")
-    print(type(training_report_image))
-    print(len(training_report_image))
-    training_report_image.save("training_report.png")
+    training_report_image[0].save("training_report.png")
 
 
 if __name__ == "__main__":
-    # training_result = generate_data_report()
-    # generate_pdf_report(training_result)
-
+    training_result = generate_data_report()
+    generate_pdf_report(training_result)
     convert_png_report_from_pdf()

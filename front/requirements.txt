@@ -17,3 +17,5 @@ vosk
 jinja2
 dvc
 wkhtmltopdf
+poppler
+pdf2image
