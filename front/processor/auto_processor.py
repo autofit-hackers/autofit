@@ -147,6 +147,7 @@ class AutoProcessor(VideoProcessorBase):
                     processed_frame = display.image(
                         image=self.instruction_img, position=(0.45, 0.05), size=(0.52, 0), hold_aspect_ratio=True
                     )
+                    
 
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
