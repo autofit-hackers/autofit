@@ -26,55 +26,16 @@ def generate_pdf_report(training_result):
 
 
 def generate_data_report():
-    # 仮にリストで指定
-    # coaching_contents_temp_list = [
-    #     "squat_knees_ahead",
-    #     "squat_depth",
-    #     "squat_feet_width",
-    #     "squat_hands_width",
-    #     "squat_bar_depth",
-    #     "squat_back_shin_parallel",
-    #     "squat_heavier",
-    #     "squat_knees_in",
-    # ]
-
-    # 仮にクラスで指定
-    # training_result = {
-    #     "menu": "squat",
-    #     "weight": 80,
-    #     "reps": 8,
-    #     "instructions": [
-    #         InstructionData(
-    #             name="squat_knees_ahead",
-    #             is_ok=True,
-    #             instruction_text="膝出てんで",
-    #             judge_function=squat_knees_in,
-    #             reason="ケツ引かんからや",
-    #             menu_to_recommend=[],
-    #         ),
-    #         InstructionData(
-    #             name="squat_depth",
-    #             is_ok=False,
-    #             instruction_text="しゃがめてへんで",
-    #             judge_function=squat_depth,
-    #             reason="足首固いんちゃうか",
-    #             menu_to_recommend=["足首ストレッチ", "手首ストレッチ"],
-    #             # menu_to_recommend=[],
-    #         ),
-    #     ],
-    # }
-
     instruction = Instruction()
     training_result = {"menu": "squat", "weight": 80, "reps": 8, "instructions": instruction}
-    # set_score = training_result["instructions"].data["squat_knees_ahead"].set_score
-    # text = training_result["instructions"].data["squat_knees_ahead"].info.text
     return training_result
 
 
 def convert_png_report_from_pdf():
     input_pdf_path = Path("./training_report.pdf")
     training_report_image = convert_from_path(pdf_path=input_pdf_path, dpi=200, fmt="png")
-    training_report_image[0].save("training_report.png")
+    for repo in training_report_image:
+        repo.save("training_report.png")
 
 
 if __name__ == "__main__":
