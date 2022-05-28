@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Union
 
 import av
-import cv2 as cv
+import cv2
 import mediapipe as mp
 import numpy as np
 from pyparsing import ParseSyntaxException
@@ -83,7 +83,7 @@ class FlexibilityProcessor(VideoProcessorBase):
         self.is_clicked_capture_skeleton = is_clicked_capture_skeleton
 
         self.video_save_path = video_save_path
-        self.video_writer: Union[cv.VideoWriter, None] = None
+        self.video_writer: Union[cv2.VideoWriter, None] = None
 
         self.image_save_path: Union[str, None] = image_save_path
 
@@ -111,8 +111,7 @@ class FlexibilityProcessor(VideoProcessorBase):
     def _save_image(self, frame):
         assert self.image_save_path
         os.makedirs(os.path.dirname(self.image_save_path), exist_ok=True)
-        cv.imwrite(self.image_save_path, frame)
-
+        cv2.imwrite(self.image_save_path, frame)
 
     def _show_loaded_pose(self, frame):
         self.showing_coach_pose = self.loaded_frames.pop(0)
@@ -177,13 +176,13 @@ class FlexibilityProcessor(VideoProcessorBase):
         self._in_queue.put_nowait(_SENTINEL_)
         self._pose_process.join(timeout=10)
 
-    def _create_video_writer(self, fps: int, frame: av.VideoFrame) -> cv.VideoWriter:
+    def _create_video_writer(self, fps: int, frame: av.VideoFrame) -> cv2.VideoWriter:
         """Save video as mp4."""
         assert self.video_save_path is not None
         assert isinstance(frame, av.VideoFrame)
         os.makedirs(os.path.dirname(self.video_save_path), exist_ok=True)
-        fourcc = cv.VideoWriter_fourcc(*"mp4v")
-        video = cv.VideoWriter(self.video_save_path, fourcc, fps, (frame.width, frame.height))
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        video = cv2.VideoWriter(self.video_save_path, fourcc, fps, (frame.width, frame.height))
         print(f"Start saving video to {self.video_save_path} ...")
         return video
 
@@ -198,14 +197,13 @@ class FlexibilityProcessor(VideoProcessorBase):
         display_fps = self._FpsCalculator.get()
 
         frame = frame.to_ndarray(format="bgr24")
-        frame = cv.flip(frame, 1)  # ミラー表示
+        frame = cv2.flip(frame, 1)  # ミラー表示
         if self.display_settings.rotate_webcam_input:
-            frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         processed_frame = copy.deepcopy(frame)
 
-
         # 検出実施 #############################################################
-        frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result_pose: PoseLandmarksObject = self._infer_pose(frame)
 
         if self.display_settings.show_2d and result_pose:
@@ -279,28 +277,28 @@ class FlexibilityProcessor(VideoProcessorBase):
 
         # Show fps
         if self.display_settings.show_fps:
-            cv.putText(
+            cv2.putText(
                 processed_frame,
                 "FPS:" + str(display_fps),
                 (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 255, 0),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
         # Show rep count
         if self.rep_count_settings.do_count_rep:
-            cv.putText(
+            cv2.putText(
                 processed_frame,
                 f"Rep:{self.rep_state.rep_count}",
                 (10, 60),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 (0, 0, 255),
                 1,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")

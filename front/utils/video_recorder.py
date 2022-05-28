@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Callable
 
 from aiortc.contrib.media import MediaRecorder
-import cv2 as cv
+import cv2
 import av
 from cv2 import VideoWriter
 import numpy as np
@@ -12,13 +12,13 @@ from utils.class_objects import PoseLandmarksObject
 from utils.webcam_input import save_pose
 
 
-def create_video_writer(fps: int, frame: av.VideoFrame, video_save_path: str) -> cv.VideoWriter:
+def create_video_writer(fps: int, frame: av.VideoFrame, video_save_path: str) -> cv2.VideoWriter:
     """Save video as mp4."""
     assert video_save_path is not None
     assert isinstance(frame, av.VideoFrame)
     os.makedirs(os.path.dirname(video_save_path), exist_ok=True)
-    fourcc = cv.VideoWriter_fourcc(*"mp4v")
-    video = cv.VideoWriter(video_save_path, fourcc, fps, (frame.width, frame.height))
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    video = cv2.VideoWriter(video_save_path, fourcc, fps, (frame.width, frame.height))
     print(f"Start saving video to {video_save_path} ...")
     return video
 
@@ -35,7 +35,7 @@ class TrainingSaver:
         self.pose_save_path: Union[str, None] = None
         self.pose_memory: List[PoseLandmarksObject] = []
         self.video_save_path: Union[str, None] = None
-        self.video_writer: Union[cv.VideoWriter, None] = None
+        self.video_writer: Union[cv2.VideoWriter, None] = None
 
     def update(self, pose: Union[PoseLandmarksObject, None], frame, timestamp):
         """保存用配列やビデオライターにposeおよびframeを追加していく

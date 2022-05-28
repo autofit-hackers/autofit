@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, NamedTuple, Tuple, Union
 
-import cv2 as cv
+import cv2
 import numpy as np
 from scipy import linalg
 
@@ -16,7 +16,7 @@ class CalibConfig:
     square_size: float = 7.0
     # criteria used by checkerboard pattern detector.
     # Change this if the code can't find the checkerboard
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 
 @dataclass
@@ -29,16 +29,16 @@ class CameraState:
     trans: np.ndarray = np.zeros((3, 1))
 
 
-def load_video_frames(video_path: str) -> Union[List[cv.Mat], None]:
-    cap = cv.VideoCapture(video_path)
+def load_video_frames(video_path: str) -> Union[List[cv2.Mat], None]:
+    cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Failed to open video_path: {video_path}, exiting...")
         return
 
-    frames: List[cv.Mat] = []
+    frames: List[cv2.Mat] = []
     while True:
         ret, frame = cap.read()
-        # digit = len(str(int(cap.get(cv.CAP_PROP_FRAME_COUNT))))
+        # digit = len(str(int(cap.get(cv2.CAP_PROP_FRAME_COUNT))))
         if ret:
             frames.append(frame)
         else:
@@ -61,7 +61,7 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     print(images_names)
     images = []
     for imname in images_names:
-        im = cv.imread(imname, 1)
+        im = cv2.imread(imname, 1)
         images.append(im)
     print(len(images))
 
@@ -81,10 +81,10 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     objpoints = []  # 3d point in real world space
 
     for frame in images:
-        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         # find the checkerboard
-        ret, corners = cv.findChessboardCorners(gray, (rows, columns), None)
+        ret, corners = cv2.findChessboardCorners(gray, (rows, columns), None)
 
         if ret == True:
 
@@ -92,8 +92,8 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
             conv_size = (11, 11)
 
             # opencv can attempt to improve the checkerboard coordinates
-            corners = cv.cornerSubPix(gray, corners, conv_size, (-1, -1), criteria)
-            cv.drawChessboardCorners(frame, (rows, columns), corners, ret)
+            corners = cv2.cornerSubPix(gray, corners, conv_size, (-1, -1), criteria)
+            cv2.drawChessboardCorners(frame, (rows, columns), corners, ret)
 
             objpoints.append(objp)
             imgpoints.append(corners)
@@ -101,7 +101,7 @@ def single_calibrate(calib_config: CalibConfig, camera_state: CameraState, base_
     assert len(objpoints) > 0
     assert len(imgpoints) > 0
 
-    ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, (width, height), None, None)
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, (width, height), None, None)
     print("rmse:", ret)
 
     camera_state.rmse = ret
@@ -131,10 +131,10 @@ def stereo_calibrate(
     c1_images = []
     c2_images = []
     for im1, im2 in zip(c1_images_names, c2_images_names):
-        _im = cv.imread(str(im1), 1)
+        _im = cv2.imread(str(im1), 1)
         c1_images.append(_im)
 
-        _im = cv.imread(str(im2), 1)
+        _im = cv2.imread(str(im2), 1)
         c2_images.append(_im)
 
         print(im1, im2)
@@ -156,20 +156,20 @@ def stereo_calibrate(
     objpoints = []  # 3d point in real world space
 
     for frame1, frame2 in zip(c1_images, c2_images):
-        gray1 = cv.cvtColor(frame1, cv.COLOR_BGR2GRAY)
-        gray2 = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
-        c_ret1, corners1 = cv.findChessboardCorners(gray1, (rows, columns), None)
-        c_ret2, corners2 = cv.findChessboardCorners(gray2, (rows, columns), None)
+        gray1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+        c_ret1, corners1 = cv2.findChessboardCorners(gray1, (rows, columns), None)
+        c_ret2, corners2 = cv2.findChessboardCorners(gray2, (rows, columns), None)
         print("c_ret1", c_ret1)
         print("c_ret2", c_ret2)
 
         if c_ret1 == True and c_ret2 == True:
-            corners1 = cv.cornerSubPix(gray1, corners1, (11, 11), (-1, -1), criteria)
-            corners2 = cv.cornerSubPix(gray2, corners2, (11, 11), (-1, -1), criteria)
+            corners1 = cv2.cornerSubPix(gray1, corners1, (11, 11), (-1, -1), criteria)
+            corners2 = cv2.cornerSubPix(gray2, corners2, (11, 11), (-1, -1), criteria)
 
-            cv.drawChessboardCorners(frame1, (rows, columns), corners1, c_ret1)
+            cv2.drawChessboardCorners(frame1, (rows, columns), corners1, c_ret1)
 
-            cv.drawChessboardCorners(frame2, (rows, columns), corners2, c_ret2)
+            cv2.drawChessboardCorners(frame2, (rows, columns), corners2, c_ret2)
 
             objpoints.append(objp)
             imgpoints_left.append(corners1)
@@ -178,13 +178,13 @@ def stereo_calibrate(
     assert len(imgpoints_left) > 0
     assert len(imgpoints_right) > 0
 
-    stereocalibration_flags = cv.CALIB_FIX_INTRINSIC
+    stereocalibration_flags = cv2.CALIB_FIX_INTRINSIC
     mtx_front = front_camera_state.matrix
     dist_front = front_camera_state.distortion_coeffs
     mtx_side = side_camera_state.matrix
     dist_side = side_camera_state.distortion_coeffs
 
-    ret, CM1, dist_front, CM2, dist_side, R, T, E, F = cv.stereoCalibrate(
+    ret, CM1, dist_front, CM2, dist_side, R, T, E, F = cv2.stereoCalibrate(
         objpoints,
         imgpoints_left,
         imgpoints_right,

@@ -65,5 +65,5 @@ class PhysicalInfo:
         if self.capture_skeleton and self.img_save_path:
             print(self.img_save_path)
             os.makedirs(os.path.dirname(self.img_save_path), exist_ok=True)
-            cv.imwrite(self.img_save_path, frame)
+            cv2.imwrite(self.img_save_path, frame)
             self.capture_skeleton = False

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import List, Union
 
-import cv2 as cv
+import cv2
 import streamlit as st
 from processor import CalibrationProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
@@ -101,11 +101,11 @@ def app():
         st.write(str(webrtc_ctx_main.video_processor.capture_index + 1) + " Frames captured")
         os.makedirs(f"{webrtc_ctx_main.video_processor.imgs_dir}", exist_ok=True)
         os.makedirs(f"{webrtc_ctx_sub.video_processor.imgs_dir}", exist_ok=True)
-        cv.imwrite(
+        cv2.imwrite(
             f"{webrtc_ctx_main.video_processor.imgs_dir}/img{webrtc_ctx_main.video_processor.capture_index}.png",
             webrtc_ctx_main.video_processor.frame,
         )
-        cv.imwrite(
+        cv2.imwrite(
             f"{webrtc_ctx_sub.video_processor.imgs_dir}/img{webrtc_ctx_main.video_processor.capture_index}.png",
             webrtc_ctx_sub.video_processor.frame,
         )

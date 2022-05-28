@@ -5,7 +5,7 @@ from io import StringIO
 from pathlib import Path
 from typing import List, Type, Union
 
-import cv2 as cv
+import cv2
 from soupsieve import select
 import streamlit as st
 

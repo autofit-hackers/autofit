@@ -1,18 +1,11 @@
-import time
-from http import server
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
 
 import av
-import cv2 as cv
-import mediapipe as mp
-import numpy as np
-import sounddevice as sd
+import cv2
 from utils.instruction import Instruction
 import vosk
-from apps.pose3d_reconstruction import reconstruct_pose_3d
-from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
@@ -84,6 +77,7 @@ class AutoProcessor(VideoProcessorBase):
             # QRコード表示
             # 認証
 
+
             # 認証したら次へ
             if True:
                 self.phase += 1
@@ -106,15 +100,15 @@ class AutoProcessor(VideoProcessorBase):
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットのパラメータをリセット
-            cv.putText(
+            cv2.putText(
                 processed_frame,
                 f"Say Start!",
                 (10, 100),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 0, 255),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
             # 開始が入力されたら(声)セットを開始
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
@@ -168,15 +162,15 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 4:
             # レポート表示
             report_frame = processed_frame * 0
-            cv.putText(
+            cv2.putText(
                 report_frame,
                 f"GJ!!Say owari!",
                 (10, 30),
-                cv.FONT_HERSHEY_SIMPLEX,
+                cv2.FONT_HERSHEY_SIMPLEX,
                 1.0,
                 (0, 0, 255),
                 2,
-                cv.LINE_AA,
+                cv2.LINE_AA,
             )
 
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
@@ -190,7 +184,7 @@ class AutoProcessor(VideoProcessorBase):
         else:
             # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
             if result_exists:
-                self.hold_button.update(frame=processed_frame)
+                self.hold_button.update(frame=processed_frame, text="Start")
                 # スタート検知(キーフレーム検知)されたら次へ
                 if self.hold_button.is_pressed(processed_frame, result_pose):
                     # お手本の表示開始

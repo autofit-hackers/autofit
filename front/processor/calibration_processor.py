@@ -3,7 +3,7 @@ import os
 import time
 
 import av
-import cv2 as cv
+import cv2
 import streamlit as st
 from streamlit_webrtc import VideoProcessorBase
 from utils import CameraState
@@ -21,8 +21,8 @@ class CalibrationProcessor(VideoProcessorBase):
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         frame = frame.to_ndarray(format="bgr24")
-        frame = cv.flip(frame, 1)  # ミラー表示
-        frame = cv.rotate(frame, cv.ROTATE_90_CLOCKWISE)
+        frame = cv2.flip(frame, 1)  # ミラー表示
+        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         self.frame = frame
 
         return av.VideoFrame.from_ndarray(frame, format="bgr24")
