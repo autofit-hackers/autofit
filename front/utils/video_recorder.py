@@ -31,13 +31,15 @@ def release_video_writer(video_writer: Union[VideoWriter, None], video_save_path
 
 
 class TrainingSaver:
-    def __init__(self) -> None:
-        self.pose_save_path: Union[str, None] = None
+    def __init__(self, save_path: Path) -> None:
+        save_path.mkdir(parents=True, exist_ok=True)
+        assert save_path.is_dir()
+        self.pose_save_path: Path = save_path / "pose.pkl"
         self.pose_memory: List[PoseLandmarksObject] = []
-        self.video_save_path: Union[str, None] = None
+        self.video_save_path: Path = save_path / "video.mp4"
         self.video_writer: Union[cv2.VideoWriter, None] = None
 
-    def update(self, pose: Union[PoseLandmarksObject, None], frame, timestamp):
+    def update(self, pose: Union[PoseLandmarksObject, None], frame, timestamp: float):
         """保存用配列やビデオライターにposeおよびframeを追加していく
 
         Args:
@@ -64,12 +66,12 @@ class TrainingSaver:
     def _initialize_video_writer(self, frame: av.VideoFrame):
         frame_to_save = av.VideoFrame.from_ndarray(frame, format="rgb24")
         assert self.video_save_path is not None
-        self.video_writer = create_video_writer(fps=30, frame=frame_to_save, video_save_path=self.video_save_path)
+        self.video_writer = create_video_writer(fps=30, frame=frame_to_save, video_save_path=str(self.video_save_path))
         print(f"initialized video writer to save {self.video_save_path}")
 
-    def save(self):
+    def save(self) -> None:
         # pose の保存（書き出し）
         save_pose(pose_save_path=self.pose_save_path, pose_memory=self.pose_memory)
         self.pose_memory = []
         # 動画の保存（writerの解放）
-        release_video_writer(video_writer=self.video_writer, video_save_path=self.video_save_path)
+        release_video_writer(video_writer=self.video_writer, video_save_path=str(self.video_save_path))
