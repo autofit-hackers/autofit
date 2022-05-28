@@ -3,9 +3,9 @@ from typing import Any, List, Tuple, Union
 
 import cv2
 import numpy as np
+from matplotlib import colors
 from PIL import Image
 from ui_components.video_widget import CircleHoldButton
-import cmapy
 
 
 class Display:
@@ -17,7 +17,7 @@ class Display:
         text: str,
         position: Tuple[float, float],
         font_size: float,
-        color: Tuple[int, int, int] = (255, 255, 255),
+        color_name: str = "White",
         thickness: int = 1,
     ):
         """
@@ -27,7 +27,7 @@ class Display:
             text (str): _description_
             position (Tuple[float]): bottom-left position relative to the frame. Must be (0,0) ~ (1.0, 1.0)
             font_size (float): relative to the frame width. Must be in [0.0, 1.0]
-            color (Tuple): _description_
+            color (str):
             thickness (int): _description_
         """
 
@@ -38,6 +38,7 @@ class Display:
         frame_height = self.frame[1]
         org = map(int, (frame_width * position[0], frame_height * position[1]))
         fontScale = font_size * frame_width
+        color = set_color(color_name)
 
         cv2.putText(
             self.frame,
@@ -102,8 +103,19 @@ class Display:
         text: str,
         position: Tuple[float, float],
         size: Tuple[float, float],
-        color_ing: Tuple[int, int, int] = (255, 255, 0),
-        color_ed: Tuple[int, int, int] = (0, 255, 255),
+        color_name_ing: str,
+        color_name_ed: str,
     ):
-
+        color_ing = set_color(color_name_ing)
+        color_ed = set_color(color_name_ed)
         button.update(self.frame, color_ing=color_ing, color_ed=color_ed, text=text)
+
+
+def set_color(color_name: str, return_gbr: bool = False) -> Tuple[int, int, int]:
+    color = colors.to_rgb(color_name)
+    if return_gbr:
+        color = (int(color[2]), int(color[1]), int(color[0]))
+    else:
+        color = (int(color[0]), int(color[1]), int(color[2]))
+
+    return color

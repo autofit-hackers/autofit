@@ -17,4 +17,3 @@ vosk
 jinja2
 dvc
 wkhtmltopdf
-cmapy

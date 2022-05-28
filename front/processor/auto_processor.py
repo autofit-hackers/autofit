@@ -183,7 +183,7 @@ class AutoProcessor(VideoProcessorBase):
         else:
             # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
             if result_exists:
-                self.hold_button.update(frame=processed_frame)
+                self.hold_button.update(frame=processed_frame, text="Start")
                 # スタート検知(キーフレーム検知)されたら次へ
                 if self.hold_button.is_pressed(processed_frame, result_pose):
                     # お手本の表示開始

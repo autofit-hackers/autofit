@@ -1,6 +1,7 @@
 import cv2
 from utils import PoseLandmarksObject
 import numpy as np
+from typing import Tuple
 
 
 class ResetButton:
@@ -129,7 +130,7 @@ class CircleHoldButton:
     def _reset_count(self):
         self.count = 0
 
-    def update(self, frame, text="Start", color_ing=(255, 255, 0), color_ed=(0, 255, 255)):
+    def update(self, frame, text: str, color_ing: Tuple[int, int, int] = (255, 255, 0), color_ed: Tuple[int, int, int] = (0, 255, 255)):
         if self._is_waiting():
             cv2.circle(frame, self.center, self.size, color_ed, thickness=3, lineType=cv2.LINE_8, shift=0)
             cv2.putText(
