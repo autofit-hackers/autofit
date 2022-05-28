@@ -1,18 +1,11 @@
-import time
-from http import server
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
 
 import av
 import cv2
-import mediapipe as mp
-import numpy as np
-import sounddevice as sd
 from utils.instruction import Instruction
 import vosk
-from apps.pose3d_reconstruction import reconstruct_pose_3d
-from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
@@ -54,19 +47,26 @@ class AutoProcessor(VideoProcessorBase):
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
 
+        self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
+        self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
+        print(self.cmtx, self.dist)
+
         # Start other processes
         self._pose_process.start()
         self.voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
+        # h, w = processed_frame.shape[:2]
+        # newcameramtx, roi = cv.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
+        # processed_frame = cv.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
 
         # 検出実施 #############################################################
         result_pose: PoseLandmarksObject = infer_pose(
             image=processed_frame, in_queue=self._in_queue, out_queue=self._out_queue
         )
-
         result_exists = result_pose is not None
+
         # Poseの描画 ################################################################
         if result_exists:
             processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=(0, 255, 255), show_z=False)
@@ -74,8 +74,9 @@ class AutoProcessor(VideoProcessorBase):
         # Ph0: QRコードログイン ################################################################
         if self.phase == 0:
             # TODO: こんちゃんよろしく！！！
-            # QRコード検知
+            # QRコード表示
             # 認証
+
 
             # 認証したら次へ
             if True:
@@ -193,7 +194,9 @@ class AutoProcessor(VideoProcessorBase):
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):
+        # TODO: 桂くんへ（@katsura）ここに以下の感じでレポート生成を呼び出し
+        # image = get_training_report(self.training_results)
+
         print("Stop the inference process...")
-        # Stop other processes
         stop_pose_process(in_queue=self._in_queue, pose_process=self._pose_process)
         self.voice_recognition_process.terminate()

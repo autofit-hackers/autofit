@@ -91,7 +91,9 @@ class Instruction:
             instruction_image_path = Path(f"data/instruction/{name}.png")
             instruction_image = cv2.imread(str(instruction_image_path))
             print(instruction_image_path)
-            pass
+
+    def get_training_result(self):
+        return {"menu": "squat", "weight": 80, "reps": 8, "instructions": self.data}
 
 
 #######################################################################
