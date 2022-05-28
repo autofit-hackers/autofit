@@ -54,12 +54,19 @@ class AutoProcessor(VideoProcessorBase):
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
 
+        self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
+        self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
+        print(self.cmtx, self.dist)
+
         # Start other processes
         self._pose_process.start()
         self.voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
+        # h, w = processed_frame.shape[:2]
+        # newcameramtx, roi = cv.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
+        # processed_frame = cv.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
 
         # 検出実施 #############################################################
         result_pose: PoseLandmarksObject = infer_pose(
