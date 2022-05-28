@@ -189,7 +189,8 @@ def app():
             min_value=trimmed_frame_start,
             disabled=not trimmed_frame_start,
         )
-        save_trimmed_pose = st.button("Save Trimmed Pose", disabled=not trimmed_frame_end)
+        coach_name = st.text_input("Coach name")
+        save_trimmed_pose = st.button("Save Trimmed Pose", disabled=not (trimmed_frame_end and coach_name))
 
     # Update st.session_state to hold flags between page refresh
     if start_visualize:
@@ -210,9 +211,9 @@ def app():
                     visibilities[trimmed_frame_start : trimmed_frame_end + 1],
                 )
             ]
-            os.makedirs(Path("data/coach_pose/"))
-            now = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
-            with open(Path(f"data/coach_pose/{now}.pkl"), "wb") as f:
+            os.makedirs(Path("data/coach_pose/"), exist_ok=True)
+            now = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
+            with open(Path(f"data/coach_pose/{coach_name}_{now}.pkl"), "wb") as f:
                 pickle.dump(trimmed_pose, f)
             st.write("Trimmed Pose Successfully Saved!")
 
