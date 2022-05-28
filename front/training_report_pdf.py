@@ -81,7 +81,8 @@ def convert_png_report_from_pdf():
     training_report_image = convert_from_path(pdf_path=input_pdf_path, dpi=200, fmt="png")
     print(type(training_report_image))
     print(len(training_report_image))
-    training_report_image.save("training_report.png")
+    for repo in training_report_image:
+        repo.save("training_report.png")
 
 
 if __name__ == "__main__":

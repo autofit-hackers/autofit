@@ -6,7 +6,6 @@ from datetime import datetime
 import av
 import cv2
 import numpy as np
-import vosk
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
@@ -151,7 +150,6 @@ class AutoProcessor(VideoProcessorBase):
                     processed_frame = display.image(
                         image=self.instruction_img, position=(0.45, 0.05), size=(0.52, 0), hold_aspect_ratio=True
                     )
-                    
 
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
@@ -179,24 +177,14 @@ class AutoProcessor(VideoProcessorBase):
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             # レポート表示
-            report_frame = processed_frame * 0
-            cv2.putText(
-                report_frame,
-                f"GJ!!Say owari!",
-                (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 0, 255),
-                2,
-                cv2.LINE_AA,
-            )
+            # TODO: @katsura ここでdisplay
 
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
             if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
                 self.phase += 1
                 print(self.phase)
 
-            return av.VideoFrame.from_ndarray(report_frame, format="bgr24")
+            return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
         # Ph5: 次へ進む ################################################################
         else:
