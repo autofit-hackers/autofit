@@ -1,4 +1,5 @@
 from pathlib import Path
+from re import I
 from typing import Any, List, Tuple, Union
 
 import cv2
@@ -57,6 +58,7 @@ class Display:
         position: Tuple[float, float],
         size: Tuple[float, float],
         alpha: float = 1,
+        fit_aspect_ratio: bool = False
     ):
         """
         put transparent image on the frame
@@ -75,7 +77,11 @@ class Display:
         frame_width = self.frame[0]
         frame_height = self.frame[1]
         box = (frame_width * position[0], frame_height * position[1])
-        size = (frame_width * size[0], frame_height * size[1])
+        org_aspect_ratio = image.height / image.width
+        if fit_aspect_ratio:
+            size = (frame_width * size[0], frame_width * size[0] * org_aspect_ratio)
+        else:
+            size = (frame_width * size[0], frame_height * size[1])
         alpha = int(255 * alpha)
 
         # Add alpha channel to image
