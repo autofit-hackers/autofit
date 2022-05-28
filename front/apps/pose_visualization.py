@@ -212,7 +212,7 @@ def app():
                 )
             ]
             os.makedirs(Path("data/coach_pose/"), exist_ok=True)
-            now = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M")
+            now = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
             with open(Path(f"data/coach_pose/{coach_name}_{now}.pkl"), "wb") as f:
                 pickle.dump(trimmed_pose, f)
             st.write("Trimmed Pose Successfully Saved!")
