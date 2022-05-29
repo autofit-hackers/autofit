@@ -5,7 +5,7 @@ from pathlib import Path
 from pdf2image import convert_from_path
 
 from training_report_render_html import training_report_render_html
-from utils.instruction import Instruction
+from utils.instruction import Instructions
 
 
 def generate_html_report(coaching_contents, html_path):
@@ -22,7 +22,7 @@ def generate_pdf_report(training_result):
 
 
 def generate_data_report():
-    instruction = Instruction()
+    instruction = Instructions()
     training_result = {"menu": "squat", "weight": 80, "reps": 8, "instructions": instruction}
     return training_result
 
