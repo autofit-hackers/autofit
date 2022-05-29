@@ -33,7 +33,7 @@ class VoiceRecognitionProcess(Process):
 
     def _run_recognizer_with_vosk(self):
         model = vosk.Model("./data/ml_model/vosk-model-small-ja-0.22")
-        device_id = 1
+        device_id = 0
         device_info = sd.query_devices(device_id, "input")
         # soundfile expects an int, sounddevice provides a float:
         samplerate = int(device_info["default_samplerate"])
