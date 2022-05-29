@@ -42,3 +42,4 @@ $ python3 -m pip install pyaudio --global-option="build_ext" --global-option="-I
   * `<type>: <commit-message> #<issue_id>`
     * 例: `refactor: hogehoge #27`
 * **実機（両国）環境での動作が確認されたもののみ、 `stable` ブランチにマージする**
+* 詳細は [contributing.md](/.github/contributing.md)を参照すると良い
