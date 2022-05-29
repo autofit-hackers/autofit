@@ -1,12 +1,12 @@
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
 from numpy import ndarray
 
-from utils.class_objects import PoseLandmarksObject, RepObject
 import utils.form_evaluation as eval
+from utils.class_objects import PoseLandmarksObject, RepObject
 
 
 @dataclass(frozen=True)
@@ -15,16 +15,14 @@ class InstructionRule:
     judge_function: Callable
     reason: str
     menu_to_recommend: List[str]
-    # ここ、APIリクエストを受け取って格納するイメージがまだ湧いてない（遠藤）
-    # こんちゃん相談案件
 
 
 @dataclass
 class InstructionLog:
     """mutable"""
 
-    is_cleared_in_each_rep: List[bool] = []
-    set_score: float = 0
+    is_cleared_in_each_rep: List[bool]
+    set_score: float
 
 
 @dataclass
@@ -47,10 +45,10 @@ class Instructions:
         }
     )
 
-    data: Dict[str, InstructionLog] = field(
+    logs: Dict[str, InstructionLog] = field(
         default_factory=lambda: {
-            "squat_knees_in": InstructionLog(),
-            "squat_depth": InstructionLog(),
+            "squat_knees_in": InstructionLog([], 0),
+            "squat_depth": InstructionLog([], 0),
         }
     )
 
@@ -60,8 +58,9 @@ class Instructions:
         Args:
             rep_obj (RepObject): _description_
         """
-        for name, instruction_item in self.data.items():
-            instruction_item.is_cleared_in_each_rep.append(instruction_item.info.judge_function(rep_obj))
+
+        for log, rule in zip(self.logs.values(), self.rules.values()):
+            log.is_cleared_in_each_rep.append(rule.judge_function(rep_obj))
 
     def show(self, frame: ndarray) -> None:
         """frameに指導画像を描画する関数
@@ -69,13 +68,13 @@ class Instructions:
         Args:
             frame (ndarray): フレームだよ
         """
-        for name, instruction_item in self.data.items():
+        for name in self.logs.keys():
             instruction_image_path = Path(f"data/instruction/{name}.png")
             instruction_image = cv2.imread(str(instruction_image_path))
             print(instruction_image_path)
 
     def get_training_result(self):
-        return {"menu": "squat", "weight": 80, "reps": 8, "instructions": self.data}
+        return {"menu": "squat", "weight": 80, "reps": 8, "instructions": self.logs}
 
 
 #######################################################################
