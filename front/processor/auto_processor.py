@@ -45,11 +45,10 @@ class AutoProcessor(VideoProcessorBase):
 
         self.phase = 0
         self.display_objects = DisplayObjects()
-        self.instruction_manager = Instructions()
+        self.instructions = Instructions()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
-        self.instruction_img = Image.open("./data/instruction/squat_depth.png")
 
         # self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
         # self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
@@ -85,7 +84,6 @@ class AutoProcessor(VideoProcessorBase):
             # TODO: 認証
             # TODO: user_name を認証情報から取得
             self.user_name: str = "tmp"
-            
 
             # 認証したら次へ
             if self.user_name:
@@ -157,11 +155,12 @@ class AutoProcessor(VideoProcessorBase):
 
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    toshow = self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
                     self.set_obj.make_new_rep()
 
-                    # 指導内容の表示
-                    # self.instruction_manager.show_instruction(frame=processed_frame)
+                # 指導内容の表示
+                # display.image(eval.rules[toshow].image)
+                # self.instructions.show_instruction(frame=processed_frame)
 
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
@@ -169,7 +168,7 @@ class AutoProcessor(VideoProcessorBase):
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
                 self.training_saver.save()
-                # resultsを生成
+                # TODO: @katsura ここでimageを生成
                 self.phase += 1
                 print("training phase: ", self.phase)
 
@@ -199,9 +198,6 @@ class AutoProcessor(VideoProcessorBase):
         return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
     def __del__(self):
-        # TODO: 桂くんへ（@katsura）ここに以下の感じでレポート生成を呼び出し
-        # image = get_training_report(self.training_results)
-
         print("Stop the inference process...")
         stop_pose_process(in_queue=self._in_queue, pose_process=self._pose_process)
         self.voice_recognition_process.terminate()

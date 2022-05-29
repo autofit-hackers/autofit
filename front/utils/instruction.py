@@ -42,15 +42,20 @@ class Instructions:
         }
     )
 
+    instruction_to_show: str = ""
+
     def evaluate_rep(self, rep_obj: RepObject):
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
 
         Args:
             rep_obj (RepObject): _description_
         """
-
+        
+        score: float = 0.0
         for key, rule in eval.rules.items():
+            
             self.logs[key].is_cleared_in_each_rep.append(rule.judge_function(rep_obj))
+        
 
     def show(self, frame: ndarray) -> None:
         """frameに指導画像を描画する関数
