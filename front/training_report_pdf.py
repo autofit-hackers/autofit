@@ -27,8 +27,8 @@ def generate_data_report():
     return training_result
 
 
-def convert_png_report_from_pdf():
-    input_pdf_path = Path("./training_report.pdf")
+def convert_png_report_from_pdf(training_report_path):
+    input_pdf_path = Path(training_report_path)
     training_report_image = convert_from_path(pdf_path=input_pdf_path, dpi=200, fmt="png")
     for repo in training_report_image:
         repo.save("training_report.png")
@@ -37,4 +37,4 @@ def convert_png_report_from_pdf():
 if __name__ == "__main__":
     training_result = generate_data_report()
     generate_pdf_report(training_result)
-    convert_png_report_from_pdf()
+    convert_png_report_from_pdf("./training_report.pdf")

@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
+from training_report_pdf import convert_png_report_from_pdf, generate_data_report, generate_pdf_report
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
@@ -19,25 +20,19 @@ from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 
+
 _SENTINEL_ = "_SENTINEL_"
 
 
 class AutoProcessor(VideoProcessorBase):
     def __init__(
-        self,
-        model_settings: ModelSettings,
-        display_settings: DisplaySettings,
-        rep_count_settings: RepCountSettings,
+        self, model_settings: ModelSettings, display_settings: DisplaySettings, rep_count_settings: RepCountSettings,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
         self._pose_process = Process(
             target=pose_process,
-            kwargs={
-                "in_queue": self._in_queue,
-                "out_queue": self._out_queue,
-                "model_settings": model_settings,
-            },
+            kwargs={"in_queue": self._in_queue, "out_queue": self._out_queue, "model_settings": model_settings,},
         )
         self.voice_recognition_process = VoiceRecognitionProcess(stt_api="vosk")
         self.display_settings = display_settings
@@ -60,7 +55,7 @@ class AutoProcessor(VideoProcessorBase):
         self.voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-        recv_timestamp: float =  time.time()
+        recv_timestamp: float = time.time()
 
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
         # h, w = processed_frame.shape[:2]
@@ -110,25 +105,32 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print(self.phase)
 
+
+                # # training_reportを表示させる（本来の位置と異なる）
+                # self.training_report_png = convert_png_report_from_pdf("./training_report.pdf")
+
+
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットのパラメータをリセット
             cv2.putText(
-                processed_frame,
-                f"Say Start!",
-                (10, 100),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 0, 255),
-                2,
-                cv2.LINE_AA,
+                processed_frame, f"Say Start!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv2.LINE_AA,
             )
+
             # 開始が入力されたら(声)セットを開始
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
                 print(self.phase)
+
+
+            # # training_reportを表示させる（本来の位置と異なる）
+            # processed_frame = display.image(
+            #     image=self.training_report_png, position=(0.1, 0.05), size=(0.8, 0), hold_aspect_ratio=True, alpha=0.8
+            # )
+            # self.phase = 2
+
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
@@ -171,10 +173,23 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print(self.phase)
 
+
+                # training_reportを表示させる
+                # TODO: pdf保存せずに表示させる
+                self.training_report_png = convert_png_report_from_pdf("./training_report.pdf")
+
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             # レポート表示
             # TODO: @katsura ここでdisplay
+
+
+            # training_reportを表示させる
+            processed_frame = display.image(
+                image=self.training_report_png, position=(0.1, 0.05), size=(0.8, 0), hold_aspect_ratio=True, alpha=0.8
+            )
+            print("phase4")
+
 
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
             if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
