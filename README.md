@@ -1,4 +1,5 @@
 # posefit
+![](/assets/posefit_logo.png)
 
 ## Prerequisite
 ### [dvc](https://dvc.org/doc/start)

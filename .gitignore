@@ -215,6 +215,7 @@ fabric.properties
 
 # images, videos and pose-record
 *.png
+!/assets/*
 *.jpg
 *.mp4
 *.dat
