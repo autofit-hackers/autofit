@@ -1,10 +1,8 @@
 from pathlib import Path
-import string
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
-
 from numpy import ndarray
 
 from utils.class_objects import PoseLandmarksObject, RepObject
@@ -12,7 +10,7 @@ import utils.form_evaluation as eval
 
 
 @dataclass(frozen=True)
-class InstructionInfo:
+class InstructionRule:
     text: str
     judge_function: Callable
     reason: str
@@ -22,34 +20,37 @@ class InstructionInfo:
 
 
 @dataclass
-class InstructionItem:
-    info: InstructionInfo
-    is_cleared_in_each_rep: List[bool]
-    set_score: float
+class InstructionLog:
+    """mutable"""
+
+    is_cleared_in_each_rep: List[bool] = []
+    set_score: float = 0
 
 
 @dataclass
-class Instruction:
+class Instructions:
     """
     Add instance variable if you want to define a new instruction.
     """
 
-    data: Dict[str, InstructionItem] = field(
+    rules: Dict[str, InstructionRule] = field(
         default_factory=lambda: {
-            "squat_knees_in": InstructionItem(
-                info=InstructionInfo(
-                    text="内股やな", judge_function=eval.squat_knees_in, reason="外転筋が弱いんちゃうか", menu_to_recommend=["ヒップアブダクション"]
-                ),
-                is_cleared_in_each_rep=[],
-                set_score=0,
+            "squat_knees_in": InstructionRule(
+                text="内股やな",
+                judge_function=eval.squat_knees_in,
+                reason="外転筋が弱いんちゃうか",
+                menu_to_recommend=["ヒップアブダクション"],
             ),
-            "squat_depth": InstructionItem(
-                info=InstructionInfo(
-                    text="しゃがめてへんで", judge_function=eval.squat_depth, reason="足首固いんちゃうか", menu_to_recommend=["足首ストレッチ"]
-                ),
-                is_cleared_in_each_rep=[],
-                set_score=0,
+            "squat_depth": InstructionRule(
+                text="しゃがめてへんで", judge_function=eval.squat_depth, reason="足首固いんちゃうか", menu_to_recommend=["足首ストレッチ"]
             ),
+        }
+    )
+
+    data: Dict[str, InstructionLog] = field(
+        default_factory=lambda: {
+            "squat_knees_in": InstructionLog(),
+            "squat_depth": InstructionLog(),
         }
     )
 
