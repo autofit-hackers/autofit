@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
 from numpy import ndarray
+from PIL import Image
 
 import utils.form_evaluation as eval
 from utils.class_objects import PoseLandmarksObject, RepObject
@@ -17,6 +18,7 @@ class InstructionRule:
     judge_function: Callable
     reason: str
     menu_to_recommend: Tuple[str]
+    instruction_image: Image.Image
 
 
 @dataclass
@@ -33,20 +35,6 @@ class Instructions:
     Add instance variable if you want to define a new instruction.
     """
 
-    rules: Dict[str, InstructionRule] = field(
-        default_factory=lambda: {
-            "squat_knees_in": InstructionRule(
-                text="内股やな",
-                judge_function=eval.squat_knees_in,
-                reason="外転筋が弱いんちゃうか",
-                menu_to_recommend=("ヒップアブダクション",),
-            ),
-            "squat_depth": InstructionRule(
-                text="しゃがめてへんで", judge_function=eval.squat_depth, reason="足首固いんちゃうか", menu_to_recommend=("足首ストレッチ",)
-            ),
-        }
-    )
-
     logs: Dict[str, InstructionLog] = field(
         default_factory=lambda: {
             "squat_knees_in": InstructionLog([], 0),
@@ -54,15 +42,20 @@ class Instructions:
         }
     )
 
+    instruction_to_show: str = ""
+
     def evaluate_rep(self, rep_obj: RepObject):
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
 
         Args:
             rep_obj (RepObject): _description_
         """
-
-        for log, rule in zip(self.logs.values(), self.rules.values()):
-            log.is_cleared_in_each_rep.append(rule.judge_function(rep_obj))
+        
+        score: float = 0.0
+        for key, rule in eval.rules.items():
+            
+            self.logs[key].is_cleared_in_each_rep.append(rule.judge_function(rep_obj))
+        
 
     def show(self, frame: ndarray) -> None:
         """frameに指導画像を描画する関数
