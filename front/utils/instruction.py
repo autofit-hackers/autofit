@@ -11,10 +11,12 @@ from utils.class_objects import PoseLandmarksObject, RepObject
 
 @dataclass(frozen=True)
 class InstructionRule:
+    """Rule of form instruction (immutable)"""
+
     text: str
     judge_function: Callable
     reason: str
-    menu_to_recommend: List[str]
+    menu_to_recommend: Tuple[str]
 
 
 @dataclass
@@ -37,10 +39,10 @@ class Instructions:
                 text="内股やな",
                 judge_function=eval.squat_knees_in,
                 reason="外転筋が弱いんちゃうか",
-                menu_to_recommend=["ヒップアブダクション"],
+                menu_to_recommend=("ヒップアブダクション",),
             ),
             "squat_depth": InstructionRule(
-                text="しゃがめてへんで", judge_function=eval.squat_depth, reason="足首固いんちゃうか", menu_to_recommend=["足首ストレッチ"]
+                text="しゃがめてへんで", judge_function=eval.squat_depth, reason="足首固いんちゃうか", menu_to_recommend=("足首ストレッチ",)
             ),
         }
     )
