@@ -14,7 +14,7 @@ from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
 from utils.display import Display
 from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects, Instruction_Old_ForMitouAD
-from utils.instruction import Instruction
+from utils.instruction import Instructions
 from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
@@ -45,11 +45,10 @@ class AutoProcessor(VideoProcessorBase):
 
         self.phase = 0
         self.display_objects = DisplayObjects()
-        self.instruction_manager = Instruction()
+        self.instruction_manager = Instructions()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
-        self.instruction = Instruction_Old_ForMitouAD()
         self.instruction_img = Image.open("./data/instruction/squat_depth.png")
 
         # self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))

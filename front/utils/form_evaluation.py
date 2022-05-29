@@ -1,5 +1,21 @@
+from dataclasses import field
+from typing import Dict
 from utils.class_objects import RepObject
+from utils.instruction import InstructionRule
 
+rules: Dict[str, InstructionRule] = field(
+        default_factory=lambda: {
+            "squat_knees_in": InstructionRule(
+                text="内股やな",
+                judge_function=squat_knees_in,
+                reason="外転筋が弱いんちゃうか",
+                menu_to_recommend=("ヒップアブダクション",),
+            ),
+            "squat_depth": InstructionRule(
+                text="しゃがめてへんで", judge_function=squat_depth, reason="足首固いんちゃうか", menu_to_recommend=("足首ストレッチ",)
+            ),
+        }
+    )
 
 def squat_knees_in(self, rep_obj: RepObject) -> bool:
     if "bottom" in rep_obj.keyframes.keys():
