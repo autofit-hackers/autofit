@@ -17,8 +17,4 @@ vosk
 jinja2
 dvc
 wkhtmltopdf
-<<<<<<< HEAD
-=======
-poppler
->>>>>>> c1c5147a66067aca77b5f679d115ea2f5af91c40
 pdf2image
