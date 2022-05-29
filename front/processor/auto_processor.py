@@ -127,7 +127,6 @@ class AutoProcessor(VideoProcessorBase):
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
-                self.instruction.update_knee_y(pose=result_pose, frame_height=processed_frame.shape[0])
                 self.phase += 1
                 print(self.phase)
 
@@ -148,13 +147,6 @@ class AutoProcessor(VideoProcessorBase):
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
-
-                # 手動の指導
-                if self.rep_state.rep_count >= 2:
-                    line_color = self.instruction.check_pose(pose=result_pose, frame_height=processed_frame.shape[0])
-                    processed_frame = display.image(
-                        image=self.instruction_img, position=(0.45, 0.05), size=(0.52, 0), hold_aspect_ratio=True
-                    )
 
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
