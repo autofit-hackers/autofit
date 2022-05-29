@@ -13,7 +13,7 @@ from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
 from utils.display import Display
-from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects, Instruction_Old_ForMitouAD
+from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from utils.instruction import Instructions
 from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
@@ -84,18 +84,13 @@ class AutoProcessor(VideoProcessorBase):
             # TODO: QRコード表示
             # TODO: 認証
             # TODO: user_name を認証情報から取得
-
-            # initialize training_saver
-            user_name: str = "tmp"
-            session_created_at = datetime.now().strftime("%Y-%m-%d-%H-%M")
-            save_path = Path("data") / "session" / user_name / session_created_at
-            self.training_saver = TrainingSaver(save_path=save_path)
+            self.user_name: str = "tmp"
+            
 
             # 認証したら次へ
-            if True:
+            if self.user_name:
                 self.phase += 1
-                print(self.phase)
-                self.instruction_manager.show(frame=processed_frame)
+                print("training phase: ", self.phase)
 
         # Ph1: メニュー・重量の入力 ################################################################
         elif self.phase == 1:
@@ -105,10 +100,17 @@ class AutoProcessor(VideoProcessorBase):
 
             # 必要情報が入力されたら次へ(save path の入力を検知?)
             if True:
+                # initialize training saver
+                session_created_at = datetime.now().strftime("%Y-%m-%d-%H-%M")
+                menu_name: str = "squat"
+                save_path = Path("data") / "training" / self.user_name / menu_name / session_created_at
+                self.training_saver = TrainingSaver(save_path=save_path)
                 # お手本ポーズのロード
+                # XXX: ハードコードなので注意
                 self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/endo_squat.pkl"))
                 self.phase += 1
-                print(self.phase)
+                print("training phase: ", self.phase)
+
 
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
@@ -128,7 +130,7 @@ class AutoProcessor(VideoProcessorBase):
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
-                print(self.phase)
+                print("training phase: ", self.phase)
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
@@ -155,7 +157,7 @@ class AutoProcessor(VideoProcessorBase):
 
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    # self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    self.instruction_manager.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
                     self.set_obj.make_new_rep()
 
                     # 指導内容の表示
@@ -169,7 +171,7 @@ class AutoProcessor(VideoProcessorBase):
                 self.training_saver.save()
                 # resultsを生成
                 self.phase += 1
-                print(self.phase)
+                print("training phase: ", self.phase)
 
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
@@ -179,7 +181,7 @@ class AutoProcessor(VideoProcessorBase):
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
             if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
                 self.phase += 1
-                print(self.phase)
+                print("training phase: ", self.phase)
 
             return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
 
