@@ -10,21 +10,21 @@
     <p style=" font-size: 60px; letter-spacing: 1px;">{{ coaching_contents["menu"] }}を{{ coaching_contents["reps"] }}回お疲れ様でした．</p>
 
     <p style=" font-size: 60px;"><span style="color: #6BBCDE;">Good Point</span>
-    <br>{{coaching_contents["instructions"].data["squat_knees_in"].info.text}}</p>
+    <br>{{coaching_contents["good_points"][0]["text"]}}</p>
 
     <p style=" font-size: 1px; line-height: 1px;">&ensp;</p>
 
     <p style=" font-size: 60px;"><span style="color: #D43653;">Bad Point</span>
-    <br>{{coaching_contents["instructions"].data["squat_knees_in"].info.text}}
-    <br>{{coaching_contents["instructions"].data["squat_knees_in"].info.reason}}ためと考えられます．</p>
+    <br>{{coaching_contents["good_points"][0]["text"]}}
+    <br>{{coaching_contents["good_points"][0]["reason"]}}ためと考えられます．</p>
 
     <p style=" font-size: 1px; line-height: 1px;">&ensp;</p>
 
 
-    {% if coaching_contents["instructions"].data["squat_knees_in"].info.menu_to_recommend != []%}
+    {% if coaching_contents["good_points"][0]["menu_to_recommend"] != []%}
         <p style=" font-size: 60px; line-height: 1px;"><span style="color: #A6C849;">おすすめのメニュー</span></p>
         <ul>
-        {% for i in coaching_contents["instructions"].data["squat_knees_in"].info.menu_to_recommend %}
+        {% for i in coaching_contents["good_points"][0]["menu_to_recommend"] %}
         <li style=" font-size: 60px; line-height: 1px;">{{i}}</li>
         {% endfor %}
         </ul>
