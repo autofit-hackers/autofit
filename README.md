@@ -25,7 +25,8 @@ $ python3 -m pip install pyaudio --global-option="build_ext" --global-option="-I
 ### Coding
 * [Python: pep8](https://pep8-ja.readthedocs.io/ja/latest/)
 
-### Commit Message Rules
+### Commit message rules
+#### Prefix
 * feat: A new feature
 * fix: A bug fix
 * docs: Documentation only changes
@@ -35,12 +36,13 @@ $ python3 -m pip install pyaudio --global-option="build_ext" --global-option="-I
 * test: Adding missing or correcting existing tests
 * chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
 
-### Branch
+### Branch name rules
 * ブランチ名
-  * `<type>/<issue_id>/<issue-name>` の命名規則で切る
-    * 例: `refactor/27/use-numpy-to-deal-with-mediapipe-result`
+  * `<prefix>/<issue-name>` の命名規則で切る
+    * 例: `refactor/use-numpy-to-deal-with-mediapipe-result`
 * コミットメッセージ
-  * `<type>: <commit-message> #<issue_id>`
-    * 例: `refactor: hogehoge #27`
+  * `<type>: <commit-message> (#<issue_id>)`
+    * 例: `refactor: hogehoge (#27)`
+    * 対応する issue が存在しない場合は、 `issue_id` はなくてもよい
 * **実機（両国）環境での動作が確認されたもののみ、 `stable` ブランチにマージする**
 * 詳細は [contributing.md](/.github/contributing.md)を参照すると良い
