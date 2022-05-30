@@ -8,6 +8,7 @@ from numpy import ndarray
 from PIL import Image
 
 import utils.form_evaluation as eval
+import utils.guide_line as guide
 from utils.class_objects import PoseLandmarksObject, RepObject
 import utils.display as disp
 
@@ -18,6 +19,7 @@ class InstructionRule:
 
     text: str
     judge_function: Callable
+    guide_func: Callable
     reason: str
     menu_to_recommend: Tuple[str]
     instruction_image: Image.Image
@@ -42,6 +44,7 @@ class Instructions:
             "squat_knees_in": InstructionRule(
                 text="内股やな",
                 judge_function=eval.squat_knees_in,
+                guide_func=guide.squat_knees_in,
                 reason="外転筋が弱いんちゃうか",
                 menu_to_recommend=("ヒップアブダクション",),
                 instruction_image=Image.open(Path("data/instruction/squat_knees_in.png")),
@@ -49,6 +52,7 @@ class Instructions:
             "squat_depth": InstructionRule(
                 text="しゃがめてへんで",
                 judge_function=eval.squat_depth,
+                guide_func=guide.squat_knees_in,
                 reason="足首固いんちゃうか",
                 menu_to_recommend=("足首ストレッチ",),
                 instruction_image=Image.open(Path("data/instruction/squat_depth.png")),
