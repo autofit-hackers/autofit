@@ -1,6 +1,6 @@
 import streamlit as st
 
-from apps import auto_app, flexibility_app, prototype_app, pose_app, make_session_app
+from apps import auto_app, flexibility_app, pose_visualization, prototype_app, pose_app, make_session_app
 from utils import MultiApp
 
 
@@ -10,8 +10,7 @@ def main():
     # Add all your application here
     app.add_app("Auto", auto_app.app)
     app.add_app("Prototype", prototype_app.app)
-    app.add_app("Pose Main", pose_app.app)
-    app.add_app("Make Session", make_session_app.app)
+    app.add_app("Visualize", pose_visualization.app)
 
     # The main app
     app.run()

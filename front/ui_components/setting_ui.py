@@ -2,12 +2,17 @@ from email.policy import default
 from pathlib import Path
 
 import streamlit as st
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, SaveSettings, SaveStates
+from utils.class_objects import (
+    AudioSettings,
+    DisplaySettings,
+    ModelSettings,
+    RepCountSettings,
+    SaveSettings,
+    SaveStates,
+)
 
 
 def model_setting_ui() -> ModelSettings:
-    st.markdown("---")
-    st.markdown("## Other Settings")
     with st.expander("Model parameters (there parameters are effective only at initialization)"):
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
         min_detection_confidence = st.slider(
@@ -37,6 +42,7 @@ def display_setting_ui() -> DisplaySettings:
             rotate_webcam_input=st.checkbox("Rotate webcam input", value=True),
             show_2d=st.checkbox("Show 2D", value=True),
             show_fps=st.checkbox("Show FPS", value=True),
+            correct_distortion=st.checkbox("Correct distortion", value=False),
         )
 
 
@@ -46,6 +52,14 @@ def rep_count_setting_ui() -> RepCountSettings:
             do_count_rep=st.checkbox("Count rep", value=True),
             upper_thresh=st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01),
             lower_thresh=st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01),
+        )
+
+
+def audio_setting_ui() -> AudioSettings:
+    with st.expander("Audio settings"):
+        return AudioSettings(
+            play_audio=st.checkbox("Play Audio", value=False),
+            audio_device_id=int(st.number_input("Device Id", min_value=0, format="%d")),
         )
 
 

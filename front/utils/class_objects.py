@@ -2,11 +2,10 @@ import json
 import pickle
 import time
 from dataclasses import dataclass, field
-from dis import dis
 from distutils.command.upload import upload
 from pathlib import Path
-from turtle import pos
 from typing import Any, List, NamedTuple, Union
+
 
 import numpy as np
 import pandas as pd
@@ -95,16 +94,11 @@ class PoseLandmarksObject(NamedTuple):
 
 
 class RepObject:
-    """Key Frame はtop, bottom...
+    """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]
 
     Returns:
         _type_: _description_
     """
-
-    poses: List[PoseLandmarksObject] = []
-    body_heights: List[float] = []
-    keyframes: dict = {}
-    rep_number: int
 
     def __init__(self, rep_number) -> None:
         self.poses = []
@@ -125,11 +119,38 @@ class RepObject:
         """それまでに溜まっているフレーム情報から、min, max を計算し、KeyFrameを算出
 
         Returns:
-            dict: keys = ["top", "1st_middle", "bottom", "2nd_middle"]
+            dict: keys = ["top", "descending_middle", "bottom", "ascending_middle"]
         """
         self.body_heights = [float(pose.get_2d_height()) for pose in self.poses]
-        idx = self.body_heights.index(min(self.body_heights))
-        self.keyframes["bottom"] = idx
+        # calculate top
+        top_height = max(self.body_heights)
+        top_idx = self.body_heights.index(top_height)
+        self.keyframes["top"] = top_idx
+
+        # calculate bottom
+        bottom_height = min(self.body_heights)
+        bottom_idx = self.body_heights.index(bottom_height)
+        self.keyframes["bottom"] = bottom_idx
+
+        # top should be before bottom
+        if top_idx < bottom_idx:
+            middle_height = (top_height + bottom_height) / 2
+
+            # calculate descending_middle
+            descending_middle_idx = top_idx
+            while self.body_heights[descending_middle_idx] > middle_height:
+                descending_middle_idx += 1
+            self.keyframes["descending_middle"] = descending_middle_idx
+
+            # calculate ascending_middle
+            ascending_middle_idx = bottom_idx
+            while (
+                self.body_heights[ascending_middle_idx] < middle_height
+                and ascending_middle_idx < len(self.body_heights) - 1
+            ):
+                ascending_middle_idx += 1
+            self.keyframes["ascending_middle"] = ascending_middle_idx
+
         return self.keyframes
 
     def calculate_velocity(self) -> pd.DataFrame:
@@ -173,6 +194,13 @@ class DisplaySettings:
     rotate_webcam_input: bool
     show_fps: bool
     show_2d: bool
+    correct_distortion: bool
+
+
+@dataclass
+class AudioSettings:
+    play_audio: bool
+    audio_device_id: int
 
 
 @dataclass
