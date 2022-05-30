@@ -6,7 +6,6 @@ from distutils.command.upload import upload
 from pathlib import Path
 from typing import Any, List, NamedTuple, Union
 
-
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -168,9 +167,11 @@ class RepObject:
 
 
 class SetObject:
-    reps: List[RepObject] = [RepObject(1)]
-    menu: str
-    weight: int
+
+    def __init__(self, menu: str, weight: int):
+        self.reps: List[RepObject] = [RepObject(1)]
+        self.menu: str = menu
+        self.weight: int = weight
 
     def make_new_rep(self) -> None:
         """新しいRepObjectを作成し、配列に追加する
