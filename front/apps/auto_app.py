@@ -1,19 +1,15 @@
-from ast import Not
-from curses import meta
-from genericpath import exists
 from pathlib import Path
 from typing import Dict, Any
 from processor.auto_processor import AutoProcessor
 
 import streamlit as st
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
-from processor.proto_processor import PrototypeProcessor
-from ui_components.session import load_session_meta_data
 from ui_components.setting_ui import (
     display_setting_ui,
     model_setting_ui,
     rep_count_setting_ui,
     save_state_ui,
+    audio_setting_ui,
 )
 import plotly.express as px
 import time
@@ -24,11 +20,14 @@ def app():
     settings_to_refresh: Dict[str, Any] = {}
 
     with st.sidebar:
+        st.markdown("---")
+        st.markdown("## Settings")
         settings_to_refresh.update(
             {
+                "display_settings": display_setting_ui(),
+                "audio_settings": audio_setting_ui(),
                 "model_settings": model_setting_ui(),
                 "rep_count_settings": rep_count_setting_ui(),
-                "display_settings": display_setting_ui(),
             }
         )
 

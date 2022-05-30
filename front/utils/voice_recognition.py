@@ -10,13 +10,14 @@ import vosk
 
 
 class VoiceRecognitionProcess(Process):
-    def __init__(self, stt_api: str = "vosk"):
+    def __init__(self, stt_api: str = "vosk", device_id: int = 0):
         """
         Args:
             stt_api (str, optional): used Speech to Text API. Should be "vosk"(default) or "sr".
         """
         super(VoiceRecognitionProcess, self).__init__()
         self._stt_api = stt_api
+        self.device_id = device_id
         self._recognized_voice_queue = Queue()
 
     def run(self):
@@ -33,7 +34,7 @@ class VoiceRecognitionProcess(Process):
 
     def _run_recognizer_with_vosk(self):
         model = vosk.Model("./data/ml_model/vosk-model-small-ja-0.22")
-        device_id = 0
+        device_id = self.device_id
         device_info = sd.query_devices(device_id, "input")
         # soundfile expects an int, sounddevice provides a float:
         samplerate = int(device_info["default_samplerate"])

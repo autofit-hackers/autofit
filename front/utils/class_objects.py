@@ -2,11 +2,10 @@ import json
 import pickle
 import time
 from dataclasses import dataclass, field
-from dis import dis
 from distutils.command.upload import upload
 from pathlib import Path
-from turtle import pos
 from typing import Any, List, NamedTuple, Union
+
 
 import numpy as np
 import pandas as pd
@@ -173,6 +172,13 @@ class DisplaySettings:
     rotate_webcam_input: bool
     show_fps: bool
     show_2d: bool
+    correct_distortion: bool
+
+
+@dataclass
+class AudioSettings:
+    play_audio: bool
+    audio_device_id: int
 
 
 @dataclass
