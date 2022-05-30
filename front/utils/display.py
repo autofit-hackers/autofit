@@ -8,6 +8,7 @@ from matplotlib import colors
 from PIL import Image
 from ui_components.video_widget import CircleHoldButton
 
+
 def text(
     frame,
     text: str,
@@ -46,6 +47,7 @@ def text(
         thickness=thickness,
         lineType=cv2.LINE_4,
     )
+
 
 def image(
     frame,
@@ -97,6 +99,7 @@ def image(
     frame = cv2.cvtColor(frame_copy, cv2.COLOR_RGBA2BGR)
 
     return frame
+
 
 def button(
     frame,

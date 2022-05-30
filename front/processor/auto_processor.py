@@ -11,7 +11,15 @@ from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
+from utils.class_objects import (
+    AudioSettings,
+    DisplaySettings,
+    ModelSettings,
+    RepCountSettings,
+    RepObject,
+    RepState,
+    SetObject,
+)
 from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from utils.instruction import Instructions
 from utils.video_recorder import TrainingSaver
@@ -28,6 +36,7 @@ class AutoProcessor(VideoProcessorBase):
         model_settings: ModelSettings,
         display_settings: DisplaySettings,
         rep_count_settings: RepCountSettings,
+        audio_settings: AudioSettings,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -39,9 +48,12 @@ class AutoProcessor(VideoProcessorBase):
                 "model_settings": model_settings,
             },
         )
-        self.voice_recognition_process = VoiceRecognitionProcess(stt_api="vosk")
+        self.voice_recognition_process = VoiceRecognitionProcess(
+            stt_api="vosk", device_id=audio_settings.audio_device_id
+        )
         self.display_settings = display_settings
         self.rep_count_settings = rep_count_settings
+        self.audio_settings = audio_settings
 
         self.phase = 0
         self.display_objects = DisplayObjects()
@@ -49,9 +61,10 @@ class AutoProcessor(VideoProcessorBase):
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
-
-        # self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
-        # self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
+        
+        if self.display_settings.correct_distortion:
+            self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
+            self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
         # print(self.cmtx, self.dist)
 
         # Start other processes
@@ -62,9 +75,10 @@ class AutoProcessor(VideoProcessorBase):
         recv_timestamp: float = time.time()
 
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
-        # h, w = processed_frame.shape[:2]
-        # newcameramtx, roi = cv.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
-        # processed_frame = cv.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
+        if self.display_settings.correct_distortion:
+            h, w = processed_frame.shape[:2]
+            newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
+            processed_frame = cv2.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
 
         # 検出実施 #############################################################
         result_pose: PoseLandmarksObject = infer_pose(
@@ -149,7 +163,8 @@ class AutoProcessor(VideoProcessorBase):
                 # 回数が増えた時、指導を実施する
                 if did_count_up:
                     # 音声によるカウントの実施
-                    self.rep_state.playsound_rep()
+                    if self.audio_settings.play_audio:
+                        self.rep_state.playsound_rep()
 
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()

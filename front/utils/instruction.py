@@ -69,7 +69,7 @@ class Instructions:
         """rep_objectを全てのinstruction.judge_functionにかけてis_okにboolを代入
 
         Args:
-            rep_obj (RepObject): _description_
+            rep_obj (RepObject):
         """
 
         judge_loss: float = 0.0
@@ -83,17 +83,20 @@ class Instructions:
                 judge_loss = loss
         print("INSTRUCTION================", self.instruction_to_show)
 
-    def show(self, frame: ndarray):
-        """frameに指導画像を描画する関数
+    def show(self, frame: ndarray) -> ndarray:
+        """when self has instructions to show (the trainee made some mistakes in a rep), show corresponding image
 
         Args:
-            frame (ndarray): フレームだよ
+            frame (ndarray): frame image
+
+        Returns:
+            ndarray: frame image with instruction(if nothing to show, returns input frame)
         """
         # if nothing to show, pass
         if self.instruction_to_show == "":
             return frame
 
-        print("DISPLAYING", self.rules[self.instruction_to_show].instruction_image)
+        # put instruction img on frame
         return disp.image(
             frame=frame,
             image=self.rules[self.instruction_to_show].instruction_image,
