@@ -161,13 +161,13 @@ class AutoProcessor(VideoProcessorBase):
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
 
-                # 回数が増えた時、指導を実施する
+                # レップカウントが増えた時、フォーム評価を実施する
                 if did_count_up:
-                    # 音声によるカウントの実施
+                    # レップカウントの音声出力
                     if self.audio_settings.play_audio:
                         self.rep_state.playsound_rep()
 
-                    # 指導の実施
+                    # 直前のレップのフォームを評価
                     self.set_obj.reps[self.rep_state.rep_count-1].recalculate_keyframes()
                     self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count-1])
                     self.set_obj.make_new_rep()
@@ -175,7 +175,7 @@ class AutoProcessor(VideoProcessorBase):
                 # 2レップ目以降はガイドラインと指導テキストを表示
                 if self.rep_state.rep_count >= 1:
                     frame = self.instructions.show_text(frame=frame)
-                    self.instructions.show_text(frame=frame)
+                    self.instructions.show_guideline(frame=frame, pose=result_pose)
 
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
