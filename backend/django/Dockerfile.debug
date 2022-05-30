@@ -36,4 +36,6 @@ RUN pipenv install --system --skip-lock --dev
 COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
 COPY . /usr/src/app/
 
+RUN . /usr/src/app/.django_bash_completion
+
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
