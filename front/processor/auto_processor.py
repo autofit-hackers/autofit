@@ -60,8 +60,8 @@ class AutoProcessor(VideoProcessorBase):
         self.instructions = Instructions()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
-        self.set_obj = SetObject()
-        
+        self.set_obj = SetObject(menu="squat", weight=50)
+
         if self.display_settings.correct_distortion:
             self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
             self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
@@ -140,6 +140,7 @@ class AutoProcessor(VideoProcessorBase):
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
+                self.set_obj.make_new_rep()
                 print("training phase: ", self.phase)
 
         # Ph3: セット中 ################################################################
@@ -152,7 +153,7 @@ class AutoProcessor(VideoProcessorBase):
                     self.coach_pose_mgr.reload_coach_pose()
 
                 # RepObjectの更新
-                self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
+                self.set_obj.reps[self.rep_state.rep_count].update(pose=result_pose)
                 # 回数の更新（updateで回数が増えたらTrue）
                 did_count_up = self.rep_state.update_rep(
                     pose=result_pose,
@@ -167,11 +168,12 @@ class AutoProcessor(VideoProcessorBase):
                         self.rep_state.playsound_rep()
 
                     # 指導の実施
-                    self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    self.set_obj.reps[self.rep_state.rep_count-1].recalculate_keyframes()
+                    self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count-1])
                     self.set_obj.make_new_rep()
 
-                # 指導内容の表示
+            # 2レップ目移行はガイドラインと指導テキストを表示
+            if self.rep_state.rep_count >= 1:
                 processed_frame = self.instructions.show(frame=processed_frame)
 
             # 保存用配列の更新

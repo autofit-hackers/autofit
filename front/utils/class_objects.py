@@ -94,9 +94,6 @@ class PoseLandmarksObject(NamedTuple):
 
 class RepObject:
     """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]
-
-    Returns:
-        _type_: _description_
     """
 
     def __init__(self, rep_number) -> None:
@@ -169,15 +166,12 @@ class RepObject:
 class SetObject:
 
     def __init__(self, menu: str, weight: int):
-        self.reps: List[RepObject] = [RepObject(1)]
+        self.reps: List[RepObject] = []
         self.menu: str = menu
         self.weight: int = weight
 
     def make_new_rep(self) -> None:
         """新しいRepObjectを作成し、配列に追加する
-
-        Returns:
-            _type_: _description_
         """
         idx = len(self.reps) + 1
         self.reps.append(RepObject(idx))
