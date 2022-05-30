@@ -74,21 +74,21 @@ class AutoProcessor(VideoProcessorBase):
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         recv_timestamp: float = time.time()
 
-        processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
+        frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
         if self.display_settings.correct_distortion:
-            h, w = processed_frame.shape[:2]
+            h, w = frame.shape[:2]
             newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
-            processed_frame = cv2.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
+            frame = cv2.undistort(src=frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
 
         # 検出実施 #############################################################
         result_pose: PoseLandmarksObject = infer_pose(
-            image=processed_frame, in_queue=self._in_queue, out_queue=self._out_queue
+            image=frame, in_queue=self._in_queue, out_queue=self._out_queue
         )
         result_exists = result_pose is not None
 
         # Poseの描画 ################################################################
         if result_exists:
-            processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=(0, 255, 255), show_z=False)
+            frame = draw_landmarks_pose(frame, result_pose, pose_color=(0, 255, 255), show_z=False)
 
         # Ph0: QRコードログイン ################################################################
         if self.phase == 0:
@@ -126,7 +126,7 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 2:
             # セットのパラメータをリセット
             cv2.putText(
-                processed_frame,
+                frame,
                 f"Say Start!",
                 (10, 100),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -147,7 +147,7 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 3:
             if result_exists:
                 # お手本ポーズの更新
-                self.coach_pose_mgr.show_coach_pose(frame=processed_frame)
+                self.coach_pose_mgr.show_coach_pose(frame=frame)
                 # keyframeが検知（レップが開始）された時、お手本ポーズをReload
                 if self.rep_state.is_keyframe(pose=result_pose):
                     self.coach_pose_mgr.reload_coach_pose()
@@ -172,12 +172,13 @@ class AutoProcessor(VideoProcessorBase):
                     self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count-1])
                     self.set_obj.make_new_rep()
 
-            # 2レップ目移行はガイドラインと指導テキストを表示
-            if self.rep_state.rep_count >= 1:
-                processed_frame = self.instructions.show(frame=processed_frame)
+                # 2レップ目以降はガイドラインと指導テキストを表示
+                if self.rep_state.rep_count >= 1:
+                    frame = self.instructions.show_text(frame=frame)
+                    self.instructions.show_text(frame=frame)
 
             # 保存用配列の更新
-            self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
+            self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
 
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
@@ -196,20 +197,20 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-            return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
+            return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
         # Ph5: 次へ進む ################################################################
         else:
             # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
             if result_exists:
-                self.hold_button.update(frame=processed_frame, text="Start")
+                self.hold_button.update(frame=frame, text="Start")
                 # スタート検知(キーフレーム検知)されたら次へ
-                if self.hold_button.is_pressed(processed_frame, result_pose):
+                if self.hold_button.is_pressed(frame, result_pose):
                     # お手本の表示開始
                     self.phase = 1
 
-        self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
-        return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
+        self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
+        return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
     def __del__(self):
         print("Stop the inference process...")
