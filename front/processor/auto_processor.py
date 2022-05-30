@@ -12,12 +12,12 @@ from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepObject, RepState, SetObject
-from utils.display import Display
 from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from utils.instruction import Instructions
 from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
+import utils.display as disp
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -59,13 +59,12 @@ class AutoProcessor(VideoProcessorBase):
         self.voice_recognition_process.start()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-        recv_timestamp: float =  time.time()
+        recv_timestamp: float = time.time()
 
         processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
         # h, w = processed_frame.shape[:2]
         # newcameramtx, roi = cv.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
         # processed_frame = cv.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
-        display = Display(frame=processed_frame)
 
         # 検出実施 #############################################################
         result_pose: PoseLandmarksObject = infer_pose(
@@ -109,7 +108,6 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットのパラメータをリセット
@@ -124,7 +122,7 @@ class AutoProcessor(VideoProcessorBase):
                 cv2.LINE_AA,
             )
             # 開始が入力されたら(声)セットを開始
-            if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists:
+            if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists or True:
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
@@ -155,12 +153,11 @@ class AutoProcessor(VideoProcessorBase):
 
                     # 指導の実施
                     self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    toshow = self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
                     self.set_obj.make_new_rep()
 
                 # 指導内容の表示
-                # display.image(eval.rules[toshow].image)
-                # self.instructions.show_instruction(frame=processed_frame)
+                processed_frame = self.instructions.show(frame=processed_frame)
 
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
