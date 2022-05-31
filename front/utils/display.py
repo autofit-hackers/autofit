@@ -85,10 +85,7 @@ def image(
     image = image.resize(size)
     image.putalpha(alpha)
 
-    # Convert ndarray to pillow.Image
-    frame_copy = frame.copy()
-    frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2RGB)
-    frame_copy = Image.fromarray(frame_copy)
+    frame_copy = convert_array2PIL(frame)
 
     # Put transparent image on the frame
     frame_copy.putalpha(255)
@@ -123,3 +120,9 @@ def set_color(color_name: str, return_gbr: bool = False) -> Tuple[int, int, int]
         color = (int(color[0]), int(color[1]), int(color[2]))
 
     return color
+
+def convert_array2PIL(image: np.ndarray) -> Image.Image:
+    image_copy = image.copy()
+    image_copy = cv2.cvtColor(image_copy, cv2.COLOR_BGR2RGB)
+    image_copy = Image.fromarray(image_copy)
+    return image_copy
