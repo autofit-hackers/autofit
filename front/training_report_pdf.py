@@ -17,6 +17,7 @@ def generate_html_report(coaching_contents, template_jinja, html_path):
 def generate_pdf_report(training_result, template_jinja):
     os.makedirs("training_reports", exist_ok=True)
     generate_html_report(training_result, template_jinja, "training_report.html")
+    #TODO: training_report.pdf以外の名前も作成できるようにする
     os.system(f"wkhtmltopdf --enable-local-file-access training_report.html training_report.pdf")
     os.remove("training_report.html")
 
@@ -53,4 +54,5 @@ def convert_png_report_from_pdf(training_report_path):
 if __name__ == "__main__":
     training_result = generate_data_report()
     generate_pdf_report(training_result, "/template/training_report_display.jinja")
+    # generate_pdf_report(training_result, "/template/training_report_distribution.jinja")
     convert_png_report_from_pdf("./training_report.pdf")
