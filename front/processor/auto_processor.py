@@ -9,7 +9,11 @@ import cv2
 import numpy as np
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
-from training_report_pdf import convert_png_report_from_pdf, generate_data_report, generate_pdf_report
+from training_report_pdf import (
+    convert_png_report_from_pdf,
+    generate_data_report,
+    generate_pdf_report,
+)
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
 from utils.class_objects import (
@@ -25,7 +29,13 @@ from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from utils.instruction import Instructions
 from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
-from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
+from utils.webcam_input import (
+    infer_pose,
+    pose_process,
+    process_frame_initially,
+    save_pose,
+    stop_pose_process,
+)
 import utils.display as disp
 
 
@@ -44,7 +54,11 @@ class AutoProcessor(VideoProcessorBase):
         self._out_queue = Queue()
         self._pose_process = Process(
             target=pose_process,
-            kwargs={"in_queue": self._in_queue, "out_queue": self._out_queue, "model_settings": model_settings,},
+            kwargs={
+                "in_queue": self._in_queue,
+                "out_queue": self._out_queue,
+                "model_settings": model_settings,
+            },
         )
         self.voice_recognition_process = VoiceRecognitionProcess(
             stt_api="vosk", device_id=audio_settings.audio_device_id
@@ -59,7 +73,7 @@ class AutoProcessor(VideoProcessorBase):
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
-        
+
         if self.display_settings.correct_distortion:
             self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
             self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
@@ -120,16 +134,21 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-
                 # # training_reportを表示させる（本来の位置と異なる）
                 # self.training_report_png = convert_png_report_from_pdf("./training_report.pdf")
-
 
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットのパラメータをリセット
             cv2.putText(
-                processed_frame, f"Say Start!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv2.LINE_AA,
+                processed_frame,
+                f"Say Start!",
+                (10, 100),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv2.LINE_AA,
             )
 
             # 開始が入力されたら(声)セットを開始
@@ -139,13 +158,11 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-
             # # training_reportを表示させる（本来の位置と異なる）
             # processed_frame = display.image(
             #     image=self.training_report_png, position=(0.1, 0.05), size=(0.8, 0), hold_aspect_ratio=True, alpha=0.8
             # )
             # self.phase = 2
-
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
@@ -189,7 +206,6 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-
                 # training_reportを表示させる
                 # TODO: pdf保存せずに表示させる
                 self.training_report_png = convert_png_report_from_pdf("./training_report.pdf")
@@ -199,13 +215,15 @@ class AutoProcessor(VideoProcessorBase):
             # レポート表示
             # TODO: @katsura ここでdisplay
 
-
             # training_reportを表示させる
             processed_frame = display.image(
-                image=self.training_report_png, position=(0.1, 0.05), size=(0.8, 0), hold_aspect_ratio=True, alpha=0.8
+                image=self.training_report_png,
+                position=(0.1, 0.05),
+                size=(0.8, 0),
+                hold_aspect_ratio=True,
+                alpha=0.8,
             )
             print("phase4")
-
 
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
             if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
