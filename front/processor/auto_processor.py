@@ -1,12 +1,13 @@
+import time
+from datetime import datetime
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
-from datetime import datetime
-import time
 
 import av
 import cv2
 import numpy as np
+import utils.display as disp
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from ui_components.video_widget import CircleHoldButton
@@ -25,7 +26,6 @@ from utils.instruction import Instructions
 from utils.video_recorder import TrainingSaver
 from utils.voice_recognition import VoiceRecognitionProcess
 from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
-import utils.display as disp
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -81,9 +81,7 @@ class AutoProcessor(VideoProcessorBase):
             frame = cv2.undistort(src=frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
 
         # 検出実施 #############################################################
-        result_pose: PoseLandmarksObject = infer_pose(
-            image=frame, in_queue=self._in_queue, out_queue=self._out_queue
-        )
+        result_pose: PoseLandmarksObject = infer_pose(image=frame, in_queue=self._in_queue, out_queue=self._out_queue)
         result_exists = result_pose is not None
 
         # Poseの描画 ################################################################
@@ -152,24 +150,25 @@ class AutoProcessor(VideoProcessorBase):
                 if self.rep_state.is_keyframe(pose=result_pose):
                     self.coach_pose_mgr.reload_coach_pose()
 
-                # RepObjectの更新
-                self.set_obj.reps[self.rep_state.rep_count].update(pose=result_pose)
-                # 回数の更新（updateで回数が増えたらTrue）
-                did_count_up = self.rep_state.update_rep(
+                # 実行中のRepに推定poseを記録
+                self.set_obj.reps[self.rep_state.rep_count].record_pose(pose=result_pose)
+
+                # レップ数の更新（updateで回数が増えたらTrue）
+                is_last_frame_in_rep = self.rep_state.update_rep_count(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
 
                 # レップカウントが増えた時、フォーム評価を実施する
-                if did_count_up:
+                if is_last_frame_in_rep:
                     # レップカウントの音声出力
                     if self.audio_settings.play_audio:
                         self.rep_state.playsound_rep()
 
                     # 直前のレップのフォームを評価
-                    self.set_obj.reps[self.rep_state.rep_count-1].recalculate_keyframes()
-                    self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count-1])
+                    self.set_obj.reps[self.rep_state.rep_count - 1].recalculate_keyframes()
+                    self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 1])
                     self.set_obj.make_new_rep()
 
                 # 2レップ目以降はガイドラインと指導テキストを表示

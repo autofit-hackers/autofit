@@ -239,7 +239,7 @@ class PoseProcessor(VideoProcessorBase):
                 # レップカウントを更新
                 assert self.rep_count_settings.upper_thresh is not None
                 assert self.rep_count_settings.lower_thresh is not None
-                self.rep_state.update_rep(
+                self.rep_state.update_rep_count(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
