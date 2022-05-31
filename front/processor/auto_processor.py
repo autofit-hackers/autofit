@@ -6,26 +6,20 @@ import time
 
 import av
 import cv2
+from lib.pose.draw_pose import draw_landmarks_pose
+from lib.pose.pose import PoseLandmarksObject
+from lib.pose.training_set import RepState, SetObject
+import lib.streamlit_ui.setting_class as settings
 import numpy as np
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
-from ui_components.video_widget import CircleHoldButton
-from utils import PoseLandmarksObject, draw_landmarks_pose
-from utils.class_objects import (
-    AudioSettings,
-    DisplaySettings,
-    ModelSettings,
-    RepCountSettings,
-    RepObject,
-    RepState,
-    SetObject,
-)
-from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
-from utils.instruction import Instructions
-from utils.video_recorder import TrainingSaver
-from utils.voice_recognition import VoiceRecognitionProcess
-from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
-import utils.display as disp
+from lib.webrtc_ui.video_widget import CircleHoldButton
+from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
+from core.instruction import Instructions
+from lib.webrtc_ui.video_recorder import TrainingSaver
+from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
+from lib.webrtc_ui.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
+import lib.webrtc_ui.display as disp
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -33,10 +27,10 @@ _SENTINEL_ = "_SENTINEL_"
 class AutoProcessor(VideoProcessorBase):
     def __init__(
         self,
-        model_settings: ModelSettings,
-        display_settings: DisplaySettings,
-        rep_count_settings: RepCountSettings,
-        audio_settings: AudioSettings,
+        model_settings: settings.ModelSettings,
+        display_settings: settings.DisplaySettings,
+        rep_count_settings: settings.RepCountSettings,
+        audio_settings: settings.AudioSettings,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -61,7 +55,7 @@ class AutoProcessor(VideoProcessorBase):
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
-        
+
         if self.display_settings.correct_distortion:
             self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
             self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
@@ -118,7 +112,7 @@ class AutoProcessor(VideoProcessorBase):
                 self.training_saver = TrainingSaver(save_path=save_path)
                 # お手本ポーズのロード
                 # XXX: ハードコードなので注意
-                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/endo_squat.pkl"))
+                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("front/data/coach_pose/endo_squat.pkl"))
                 self.phase += 1
                 print("training phase: ", self.phase)
 
@@ -126,14 +120,7 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 2:
             # セットのパラメータをリセット
             cv2.putText(
-                processed_frame,
-                f"Say Start!",
-                (10, 100),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 0, 255),
-                2,
-                cv2.LINE_AA,
+                processed_frame, f"Say Start!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv2.LINE_AA,
             )
             # 開始が入力されたら(声)セットを開始
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists or True:

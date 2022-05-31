@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import av
 
-from utils.class_objects import PoseLandmarksObject
+from lib.streamlit_ui.setting_class import PoseLandmarksObject
 
 
 class PhysicalInfo:

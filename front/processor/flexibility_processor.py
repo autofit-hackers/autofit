@@ -9,13 +9,16 @@ from typing import List, Union
 
 import av
 import cv2
+from lib.pose.training_set import RepState
 import mediapipe as mp
 import numpy as np
 from pyparsing import ParseSyntaxException
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj, draw_joint_angle_2d
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
+from lib.streamlit_ui.setting_class import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
+
+
 
 _SENTINEL_ = "_SENTINEL_"
 
