@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   django:
-    container_name: django
+    container_name: posefit_django
     build: ./django
     command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
@@ -14,7 +14,7 @@ services:
       - postgres
 
   postgres:
-    container_name: postgres
+    container_name: posefit_postgres
     build: ./postgres
     volumes:
       # - postgres_sample_data:/var/lib/postgresql/data
@@ -24,7 +24,7 @@ services:
       - 5433:5432
 
   nginx:
-    container_name: nginx
+    container_name: posefit_nginx
     build: ./nginx
     volumes:
       - ./django/static:/usr/src/app/static
