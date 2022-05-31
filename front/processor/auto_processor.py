@@ -174,7 +174,7 @@ class AutoProcessor(VideoProcessorBase):
                 # 2レップ目以降はガイドラインと指導テキストを表示
                 if self.rep_state.rep_count >= 1:
                     frame = self.instructions.show_text(frame=frame)
-                    self.instructions.show_guideline(frame=frame, pose=result_pose)
+                    self.instructions.show_guideline(frame=frame, pose=result_pose, set_obj=self.set_obj)
 
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)

@@ -85,7 +85,7 @@ def image(
     image = image.resize(size)
     image.putalpha(alpha)
 
-    frame_copy = convert_array2PIL(frame)
+    frame_copy = convert_ndarray2PIL(frame)
 
     # Put transparent image on the frame
     frame_copy.putalpha(255)
@@ -112,7 +112,7 @@ def button(
     button.update(frame, color_ing=color_ing, color_ed=color_ed, text=text)
 
 
-def set_color(color_name: str, color_space: bool = False) -> Tuple[int, int, int]:
+def set_color(color_name: str, color_space: str = "bgr") -> Tuple[int, int, int]:
     assert color_space is "rgb" or "bgr", "Invalid color space."
 
     color = colors.to_rgb(color_name)
@@ -125,7 +125,8 @@ def set_color(color_name: str, color_space: bool = False) -> Tuple[int, int, int
 
     return color
 
-def convert_array2PIL(image: np.ndarray) -> Image.Image:
+
+def convert_ndarray2PIL(image: np.ndarray) -> Image.Image:
     image_copy = image.copy()
     image_copy = cv2.cvtColor(image_copy, cv2.COLOR_BGR2RGB)
     image_copy = Image.fromarray(image_copy)

@@ -10,7 +10,7 @@ from PIL import Image
 import utils.display as disp
 import utils.form_evaluation as eval
 import utils.guide_line as guide
-from utils.class_objects import PoseLandmarksObject, RepObject
+from utils.class_objects import PoseLandmarksObject, RepObject, SetObject
 
 
 @dataclass(frozen=True)
@@ -109,10 +109,10 @@ class Instructions:
             hold_aspect_ratio=True,
         )
 
-    def show_guideline(self, frame: ndarray, pose: PoseLandmarksObject):
+    def show_guideline(self, frame: ndarray, pose: PoseLandmarksObject, set_obj: SetObject):
         # TODO: どの指導項目を表示するかをスコアにもどついて決定
-        instruction_name = "squat_knees_in"
-        self.rules[instruction_name].guideline_func(frame=frame, pose=pose)
+        instruction_name = "squat_depth"
+        self.rules[instruction_name].guideline_func(frame=frame, pose=pose, set_obj=set_obj)
 
     def get_training_result(self):
         return {"menu": "squat", "weight": 80, "reps": 8, "instructions": self.logs}
