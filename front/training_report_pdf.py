@@ -1,5 +1,6 @@
 import os
 import imgkit
+import io
 
 from PIL import Image
 from pathlib import Path
@@ -10,8 +11,8 @@ from utils.instruction import Instructions
 
 
 #htmlファイルをディレクトリに保存する
-def generate_html_report(coaching_contents, template_jinja, html_path):
-    html = training_report_render_html(coaching_contents, template_jinja)
+def generate_html_report(coaching_contents, training_report_template_path, html_path):
+    html = training_report_render_html(coaching_contents, training_report_template_path)
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(html)
 
@@ -26,9 +27,9 @@ def generate_pdf_report(training_result, template_jinja):
 
 
 #pngファイルを変数に保存する
-def generate_png_report(training_result, template_jinja):
+def generate_png_report(training_result, training_report_template_path):
     os.makedirs("training_reports", exist_ok=True)
-    generate_html_report(training_result, template_jinja, "training_report.html")
+    generate_html_report(training_result, training_report_template_path, "training_report.html")
     # TODO: training_report.png以外の名前も作成できるようにする
     training_report_png = imgkit.from_file("training_report.html", False, {"enable-local-file-access": None})
     os.remove("training_report.html")
@@ -85,8 +86,28 @@ def convert_png_report_from_pdf(training_report_path):
 
 
 if __name__ == "__main__":
-    training_result = generate_data_report()
-    # generate_pdf_report(training_result, "/template/training_report_display.jinja")
-    generate_pdf_report(training_result, "/template/training_report_distribution.jinja")
-    convert_png_report_from_pdf("./training_report.pdf")
+    # training_result = generate_data_report()
+
+    # path_display = Path("/template/training_report_display.jinja")
+    # generate_pdf_report(training_result, str("/template/training_report_display.jinja"))
+    # path_distribution = Path("/template/training_report_distribution.jinja")
+    # generate_pdf_report(training_result, str(path_distribution))
+
+    # path_training_report_pdf = Path("./training_report.pdf")
+    # convert_png_report_from_pdf(path_training_report_pdf)
+
+    # template_path = Path("/template/training_report_display.jinja")
+    # generate_png_report(training_result, str(template_path))
     # generate_png_report(training_result, "/template/training_report_display.jinja")
+
+
+    training_result = generate_data_report()
+    template_report_path = Path("/template/training_report_display.jinja")
+    training_result_display_png = generate_png_report(training_result, str(template_report_path))
+    training_result_display_png_ = Image.open(io.BytesIO(training_result_display_png))
+    print(type(training_result_display_png))
+    print(type(training_result_display_png_))
+
+    # # bs = training_result_display_png.tobytes()  # 画像をバイト列に変換する
+    # dst_im = Image.frombytes('RGBA', training_result_display_png)  # バイト列から画像を生成
+    # dst_im.save('test.png')  # 画像を保存

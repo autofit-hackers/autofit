@@ -1,8 +1,10 @@
+import imp
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
 from datetime import datetime
 import time
+import io
 
 import av
 import cv2
@@ -13,6 +15,8 @@ from training_report_pdf import (
     convert_png_report_from_pdf,
     generate_data_report,
     generate_pdf_report,
+    generate_data_report,
+    generate_png_report,
 )
 from ui_components.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
@@ -134,9 +138,6 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-                # # training_reportを表示させる（本来の位置と異なる）
-                # self.training_report_png = convert_png_report_from_pdf("./training_report.pdf")
-
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットのパラメータをリセット
@@ -157,12 +158,6 @@ class AutoProcessor(VideoProcessorBase):
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
                 print("training phase: ", self.phase)
-
-            # # training_reportを表示させる（本来の位置と異なる）
-            # processed_frame = display.image(
-            #     image=self.training_report_png, position=(0.1, 0.05), size=(0.8, 0), hold_aspect_ratio=True, alpha=0.8
-            # )
-            # self.phase = 2
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
@@ -202,28 +197,26 @@ class AutoProcessor(VideoProcessorBase):
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
                 self.training_saver.save()
-                # TODO: @katsura ここでimageを生成
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-                # training_reportを表示させる
-                # TODO: pdf保存せずに表示させる
-                self.training_report_png = convert_png_report_from_pdf("./training_report.pdf")
+                # training_reportをpngにする
+                # TODO: 指示内容に合わせた画像を提示
+                training_result = generate_data_report()
+                template_report_path = Path("/template/training_report_display.jinja")
+                self.training_result_display_png = generate_png_report(training_result, str(template_report_path))
+                self.training_result_display_png = Image.open(io.BytesIO(self.training_result_display_png))
 
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
-            # レポート表示
-            # TODO: @katsura ここでdisplay
-
             # training_reportを表示させる
-            processed_frame = display.image(
-                image=self.training_report_png,
+            processed_frame = disp.image(
+                frame=processed_frame,
+                image=self.training_result_display_png,
                 position=(0.1, 0.05),
                 size=(0.8, 0),
                 hold_aspect_ratio=True,
-                alpha=0.8,
             )
-            print("phase4")
 
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
             if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
