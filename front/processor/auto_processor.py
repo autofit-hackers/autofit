@@ -6,6 +6,7 @@ import time
 
 import av
 import cv2
+from front.lib.pose.training_set import RepState, SetObject
 import numpy as np
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
@@ -16,12 +17,9 @@ from lib.pose.class_objects import (
     DisplaySettings,
     ModelSettings,
     RepCountSettings,
-    RepObject,
-    RepState,
-    SetObject,
 )
 from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
-from utils.instruction import Instructions
+from core.instruction import Instructions
 from lib.webrtc_ui.video_recorder import TrainingSaver
 from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
 from lib.webrtc_ui.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
@@ -61,7 +59,7 @@ class AutoProcessor(VideoProcessorBase):
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
         self.set_obj = SetObject()
-        
+
         if self.display_settings.correct_distortion:
             self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
             self.dist = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/dist.dat"))
@@ -126,14 +124,7 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 2:
             # セットのパラメータをリセット
             cv2.putText(
-                processed_frame,
-                f"Say Start!",
-                (10, 100),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 0, 255),
-                2,
-                cv2.LINE_AA,
+                processed_frame, f"Say Start!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv2.LINE_AA,
             )
             # 開始が入力されたら(声)セットを開始
             if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists or True:

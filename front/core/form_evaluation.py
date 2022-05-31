@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 from PIL import Image
-from lib.pose.class_objects import RepObject
+from front.lib.pose.training_set import RepObject
 
 
 def squat_knees_in(rep_obj: RepObject) -> Tuple[bool, float]:

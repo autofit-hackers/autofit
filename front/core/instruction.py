@@ -4,11 +4,12 @@ from traceback import print_tb
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
+from front.lib.pose.training_set import RepObject
 from numpy import ndarray
 from PIL import Image
 
-import utils.form_evaluation as eval
-from lib.pose.class_objects import PoseLandmarksObject, RepObject
+import core.form_evaluation as eval
+from lib.pose.class_objects import PoseLandmarksObject
 import lib.webrtc_ui.display as disp
 
 
