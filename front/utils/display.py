@@ -112,12 +112,16 @@ def button(
     button.update(frame, color_ing=color_ing, color_ed=color_ed, text=text)
 
 
-def set_color(color_name: str, return_gbr: bool = False) -> Tuple[int, int, int]:
+def set_color(color_name: str, color_space: bool = False) -> Tuple[int, int, int]:
+    assert color_space is "rgb" or "bgr", "Invalid color space."
+
     color = colors.to_rgb(color_name)
-    if return_gbr:
+    if color_space == "rgb":
+        color = (int(color[0]), int(color[1]), int(color[2]))
+    elif color_space == "bgr":
         color = (int(color[2]), int(color[1]), int(color[0]))
     else:
-        color = (int(color[0]), int(color[1]), int(color[2]))
+        color = (0, 0, 0)
 
     return color
 
