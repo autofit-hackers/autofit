@@ -41,6 +41,9 @@ class PoseLandmarksObject(NamedTuple):
     def get_hip_position(self) -> np.ndarray:
         return (self.landmark[23] + self.landmark[24]) / 2
 
+    def get_knees_distance(self) -> np.ndarray:
+        return abs(self.landmark[25] - self.landmark[26])
+
     def get_keypoint(self, training_name: str) -> np.ndarray:
         if training_name == "squat":
             return (self.landmark[11] + self.landmark[12]) / 2
@@ -93,8 +96,7 @@ class PoseLandmarksObject(NamedTuple):
 
 
 class RepObject:
-    """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]
-    """
+    """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]"""
 
     def __init__(self, rep_number: int) -> None:
         """
@@ -171,15 +173,13 @@ class RepObject:
 
 
 class SetObject:
-
     def __init__(self, menu: str, weight: int):
         self.reps: List[RepObject] = []
         self.menu: str = menu
         self.weight: int = weight
 
     def make_new_rep(self) -> None:
-        """新しいRepObjectを作成し、配列に追加する
-        """
+        """新しいRepObjectを作成し、配列に追加する"""
         idx = len(self.reps) + 1
         self.reps.append(RepObject(idx))
 
