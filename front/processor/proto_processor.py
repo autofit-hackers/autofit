@@ -11,14 +11,14 @@ from typing import List, Union
 
 import av
 import cv2
+from lib.pose.training_set import RepState
 import mediapipe as mp
 import numpy as np
 from PIL import Image
-from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from lib.webrtc_ui.video_widget import ResetButton
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from lib.pose.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
+from lib.streamlit_ui.setting_class import DisplaySettings, ModelSettings, RepCountSettings, SaveStates
 from lib.webrtc_ui.display_objects import CoachPose, Instruction_Old_ForMitouAD
 from lib.pose.draw_pose import draw_joint_angle_2d
 from lib.webrtc_ui.video_recorder import create_video_writer, release_video_writer

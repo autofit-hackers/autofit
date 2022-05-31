@@ -4,12 +4,11 @@ from traceback import print_tb
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
-from front.lib.pose.training_set import RepObject
+from lib.pose.training_set import RepObject
 from numpy import ndarray
 from PIL import Image
 
 import core.form_evaluation as eval
-from lib.pose.class_objects import PoseLandmarksObject
 import lib.webrtc_ui.display as disp
 
 
@@ -38,6 +37,7 @@ class Instructions:
     Add instance variable if you want to define a new instruction.
     """
 
+    # XXX: hardcode
     rules: Dict[str, InstructionRule] = field(
         default_factory=lambda: {
             "squat_knees_in": InstructionRule(
@@ -45,14 +45,14 @@ class Instructions:
                 judge_function=eval.squat_knees_in,
                 reason="外転筋が弱いんちゃうか",
                 menu_to_recommend=("ヒップアブダクション",),
-                instruction_image=Image.open(Path("data/instruction/squat_knees_in.png")),
+                instruction_image=Image.open(Path("front/data/instruction/squat_knees_in.png")),
             ),
             "squat_depth": InstructionRule(
                 text="しゃがめてへんで",
                 judge_function=eval.squat_depth,
                 reason="足首固いんちゃうか",
                 menu_to_recommend=("足首ストレッチ",),
-                instruction_image=Image.open(Path("data/instruction/squat_depth.png")),
+                instruction_image=Image.open(Path("front/data/instruction/squat_depth.png")),
             ),
         }
     )

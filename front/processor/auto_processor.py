@@ -6,18 +6,14 @@ import time
 
 import av
 import cv2
-from front.lib.pose.training_set import RepState, SetObject
+from lib.pose.draw_pose import draw_landmarks_pose
+from lib.pose.pose import PoseLandmarksObject
+from lib.pose.training_set import RepState, SetObject
+import lib.streamlit_ui.setting_class as settings
 import numpy as np
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from lib.webrtc_ui.video_widget import CircleHoldButton
-from utils import PoseLandmarksObject, draw_landmarks_pose
-from lib.pose.class_objects import (
-    AudioSettings,
-    DisplaySettings,
-    ModelSettings,
-    RepCountSettings,
-)
 from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from core.instruction import Instructions
 from lib.webrtc_ui.video_recorder import TrainingSaver
@@ -31,10 +27,10 @@ _SENTINEL_ = "_SENTINEL_"
 class AutoProcessor(VideoProcessorBase):
     def __init__(
         self,
-        model_settings: ModelSettings,
-        display_settings: DisplaySettings,
-        rep_count_settings: RepCountSettings,
-        audio_settings: AudioSettings,
+        model_settings: settings.ModelSettings,
+        display_settings: settings.DisplaySettings,
+        rep_count_settings: settings.RepCountSettings,
+        audio_settings: settings.AudioSettings,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -116,7 +112,7 @@ class AutoProcessor(VideoProcessorBase):
                 self.training_saver = TrainingSaver(save_path=save_path)
                 # お手本ポーズのロード
                 # XXX: ハードコードなので注意
-                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/endo_squat.pkl"))
+                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("front/data/coach_pose/endo_squat.pkl"))
                 self.phase += 1
                 print("training phase: ", self.phase)
 
