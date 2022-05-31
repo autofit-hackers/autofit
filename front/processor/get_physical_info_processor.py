@@ -11,7 +11,7 @@ import numpy as np
 from streamlit_webrtc import VideoProcessorBase
 
 from utils import FpsCalculator, draw_landmarks_pose, PoseLandmarksObject, mp_res_to_pose_obj
-from utils.class_objects import ModelSettings, DisplaySettings, PoseDef
+from lib.pose.class_objects import ModelSettings, DisplaySettings, PoseDef
 from processor.pose_processor import pose_process
 
 _SENTINEL_ = "_SENTINEL_"

@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 from sklearn.decomposition import PCA
 from frozendict import frozendict
 
-from .class_objects import PoseLandmarksObject
+from ..lib.pose.class_objects import PoseLandmarksObject
 
 
 class PosePCA:

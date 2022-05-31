@@ -9,9 +9,9 @@ import cv2
 import numpy as np
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
-from ui_components.video_widget import CircleHoldButton
+from lib.webrtc_ui.video_widget import CircleHoldButton
 from utils import PoseLandmarksObject, draw_landmarks_pose
-from utils.class_objects import (
+from lib.pose.class_objects import (
     AudioSettings,
     DisplaySettings,
     ModelSettings,
@@ -20,12 +20,12 @@ from utils.class_objects import (
     RepState,
     SetObject,
 )
-from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
+from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from utils.instruction import Instructions
-from utils.video_recorder import TrainingSaver
-from utils.voice_recognition import VoiceRecognitionProcess
-from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
-import utils.display as disp
+from lib.webrtc_ui.video_recorder import TrainingSaver
+from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
+from lib.webrtc_ui.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
+import lib.webrtc_ui.display as disp
 
 _SENTINEL_ = "_SENTINEL_"
 

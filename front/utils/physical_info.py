@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import av
 
-from utils.class_objects import PoseLandmarksObject
+from lib.pose.class_objects import PoseLandmarksObject
 
 
 class PhysicalInfo:

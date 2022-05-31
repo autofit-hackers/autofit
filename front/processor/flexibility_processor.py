@@ -15,7 +15,7 @@ from pyparsing import ParseSyntaxException
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj, draw_joint_angle_2d
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
+from lib.pose.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
 
 _SENTINEL_ = "_SENTINEL_"
 

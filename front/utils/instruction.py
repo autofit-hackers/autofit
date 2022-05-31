@@ -8,8 +8,8 @@ from numpy import ndarray
 from PIL import Image
 
 import utils.form_evaluation as eval
-from utils.class_objects import PoseLandmarksObject, RepObject
-import utils.display as disp
+from lib.pose.class_objects import PoseLandmarksObject, RepObject
+import lib.webrtc_ui.display as disp
 
 
 @dataclass(frozen=True)
