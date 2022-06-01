@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from typing import Dict, Any, List
 from cv2 import add
-from matplotlib.colors import ListedColormap
+from utils.class_objects import PoseLandmarksObject
 
 import numpy as np
 import plotly.graph_objs as go
@@ -11,10 +11,9 @@ import streamlit as st
 from apps.pose_visualization import visualize_pose
 from processor.get_physical_info_processor import GetPhysicalInfoProcessor
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
-from ui_components.session import load_session_meta_data
-from ui_components.setting_ui import display_setting_ui, model_setting_ui
-from utils.calib_cam import DLT, get_projection_matrix
-from utils.class_objects import PoseLandmarksObject
+from lib.streamlit_ui.session import load_session_meta_data
+from lib.streamlit_ui.setting_ui import display_setting_ui, model_setting_ui
+from lib.webrtc_ui.calib_cam import DLT, get_projection_matrix
 
 
 def app():

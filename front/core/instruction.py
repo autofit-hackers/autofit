@@ -4,13 +4,15 @@ from traceback import print_tb
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
+from front.lib.pose.training_set import SetObject
+from front.utils import guide_line
+from front.utils.class_objects import PoseLandmarksObject
+from lib.pose.training_set import RepObject
 from numpy import ndarray
 from PIL import Image
 
-import utils.display as disp
-import utils.form_evaluation as eval
-import utils.guide_line as guide
-from utils.class_objects import PoseLandmarksObject, RepObject, SetObject
+import core.form_evaluation as eval
+import lib.webrtc_ui.display as disp
 
 
 @dataclass(frozen=True)
@@ -39,12 +41,13 @@ class Instructions:
     Add instance variable if you want to define a new instruction.
     """
 
+    # XXX: hardcode
     rules: Dict[str, InstructionRule] = field(
         default_factory=lambda: {
             "squat_knees_in": InstructionRule(
                 text="内股やな",
                 judge_function=eval.squat_knees_in,
-                guideline_func=guide.squat_knees_in,
+                guideline_func=guide_line.squat_knees_in,
                 reason="外転筋が弱いんちゃうか",
                 menu_to_recommend=("ヒップアブダクション",),
                 instruction_image=Image.open(Path("data/instruction/squat_knees_in.png")),
@@ -52,7 +55,7 @@ class Instructions:
             "squat_depth": InstructionRule(
                 text="しゃがめてへんで",
                 judge_function=eval.squat_depth,
-                guideline_func=guide.squat_knees_in,
+                guideline_func=guide_line.squat_knees_in,
                 reason="足首固いんちゃうか",
                 menu_to_recommend=("足首ストレッチ",),
                 instruction_image=Image.open(Path("data/instruction/squat_depth.png")),

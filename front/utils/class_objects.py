@@ -1,15 +1,10 @@
+from dataclasses import dataclass
 import json
-import pickle
-import time
-from dataclasses import dataclass, field
-from distutils.command.upload import upload
 from pathlib import Path
 from typing import Any, List, NamedTuple, Union
 
 import numpy as np
-import pandas as pd
 import streamlit as st
-from playsound import playsound
 
 
 class PoseLandmarksObject(NamedTuple):
@@ -73,10 +68,10 @@ class PoseLandmarksObject(NamedTuple):
     def get_bone_lengths(self) -> dict:
         # FIXME: foot_neck_heightだけPoseDefに存在しない
         bone_dict = {"foot_neck_height": self.get_height()}
-        for bone_edge_key in PoseDef.bone_edge_names.keys():
+        for bone_edge_key in bone_edge_names.keys():
             bone_dict[bone_edge_key] = np.linalg.norm(
-                self.landmark[PoseDef.bone_edge_names[bone_edge_key][0]]
-                - self.landmark[PoseDef.bone_edge_names[bone_edge_key][1]]
+                self.landmark[bone_edge_names[bone_edge_key][0]]
+                - self.landmark[bone_edge_names[bone_edge_key][1]]
             )
         return bone_dict
 
@@ -94,180 +89,6 @@ class PoseLandmarksObject(NamedTuple):
         distance = hands[0] * hands[0] + hands[1] * hands[1]
         return distance < 0.01
 
-
-class RepObject:
-    """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]"""
-
-    def __init__(self, rep_number: int) -> None:
-        """
-        Args:
-            rep_number (int): start from 1
-        """
-        self.poses = []
-        self.body_heights: List[float] = []
-        self.keyframes: dict = {}
-        self.rep_number = rep_number
-
-    def record_pose(self, pose: PoseLandmarksObject):
-        self.poses.append(pose)
-        # self.body_heights.append(pose.get_2d_height())
-
-    def reset(self, rep_number):
-        self.poses: List[PoseLandmarksObject] = []
-        self.keyframes: dict = {}
-        self.rep_number: int = rep_number
-
-    def recalculate_keyframes(self) -> dict:
-        """それまでに溜まっているレップ中のフレーム情報からKeyFrameを算出
-
-        Returns:
-            dict: keys = ["top", "descending_middle", "bottom", "ascending_middle"]
-        """
-        self.body_heights = [float(pose.get_2d_height()) for pose in self.poses]
-        # calculate top
-        top_height = max(self.body_heights)
-        top_idx = self.body_heights.index(top_height)
-        self.keyframes["top"] = top_idx
-
-        # calculate bottom
-        bottom_height = min(self.body_heights)
-        bottom_idx = self.body_heights.index(bottom_height)
-        self.keyframes["bottom"] = bottom_idx
-
-        # top should be before bottom
-        if top_idx < bottom_idx:
-            middle_height = (top_height + bottom_height) / 2
-
-            # calculate descending_middle
-            descending_middle_idx = top_idx
-            while self.body_heights[descending_middle_idx] > middle_height:
-                descending_middle_idx += 1
-            self.keyframes["descending_middle"] = descending_middle_idx
-
-            # calculate ascending_middle
-            ascending_middle_idx = bottom_idx
-            while (
-                self.body_heights[ascending_middle_idx] < middle_height
-                and ascending_middle_idx < len(self.body_heights) - 1
-            ):
-                ascending_middle_idx += 1
-            self.keyframes["ascending_middle"] = ascending_middle_idx
-
-        return self.keyframes
-
-    def calculate_velocity(self) -> pd.DataFrame:
-        """
-        velocity = self.tmp_body_heights[9] - self.tmp_body_heights[0]
-        self.body_heights_df = pd.concat(
-            [self.body_heights_df, pd.DataFrame({"time": [time.time()], "height": [height], "velocity": [velocity]})],
-            ignore_index=True,
-        )
-
-        Returns:
-            pd.DataFrame: time, height, velocityの入ったdataframeを返す
-        """
-        return pd.DataFrame([])
-
-    def get_keyframe_pose(self, key: str):
-        return self.poses[self.keyframes["bottom"]]
-
-
-class SetObject:
-    def __init__(self, menu: str, weight: int):
-        self.reps: List[RepObject] = []
-        self.menu: str = menu
-        self.weight: int = weight
-
-    def make_new_rep(self) -> None:
-        """新しいRepObjectを作成し、配列に追加する"""
-        idx = len(self.reps) + 1
-        self.reps.append(RepObject(idx))
-
-
-@dataclass
-class ModelSettings:
-    model_complexity: int
-    min_detection_confidence: float
-    min_tracking_confidence: float
-
-
-@dataclass
-class DisplaySettings:
-    rotate_webcam_input: bool
-    show_fps: bool
-    show_2d: bool
-    correct_distortion: bool
-
-
-@dataclass
-class AudioSettings:
-    play_audio: bool
-    audio_device_id: int
-
-
-@dataclass
-class RepCountSettings:
-    do_count_rep: bool
-    upper_thresh: float
-    lower_thresh: float
-
-
-@dataclass
-class SaveSettings:
-    base_save_dir: Union[Path, None] = None
-    key: Union[str, None] = None
-
-    # video
-    video_save_dir: Union[Path, None] = None
-    video_save_path: Union[str, None] = None  # FIXME: duplicated
-
-    # pose
-    pose_save_dir: Union[Path, None] = None
-    pose_save_path: Union[str, None] = None  # FIXME: duplicated
-
-    # skeleton
-    skeleton_save_path: Union[str, None] = None
-
-
-@dataclass(frozen=False)
-class SaveStates:
-    is_saving_video: bool = False
-    is_saving_pose: bool = False
-
-
-class UploadSettings:
-    def __init__(self, uploaded_pose):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
-
-
-class OperationStates:
-    def __init__(
-        self,
-        reload_pose: bool,
-        capture_skeleton: bool,
-        is_clicked_reset_button: bool,
-    ):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
-
-
-class PoseStates:
-    def __init__(self):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
-
-
-class CalibrationSettings:
-    def __init__(self):
-        for variable_name, value in locals().items():
-            if not variable_name == "self":
-                self.__dict__[variable_name] = value
-
-
 def mp_res_to_pose_obj(mp_res, timestamp: Union[float, None]) -> PoseLandmarksObject:
     assert hasattr(mp_res, "pose_landmarks")
     assert hasattr(mp_res.pose_landmarks, "landmark")
@@ -281,95 +102,14 @@ def mp_res_to_pose_obj(mp_res, timestamp: Union[float, None]) -> PoseLandmarksOb
     return picklable_results
 
 
-@dataclass
-class RepState:
-    """
-    刹那的にrepの状態を見守るクラス
-    """
-
-    rep_count: int = 0
-    is_lifting_up = False
-    did_touch_bottom = False
-    did_touch_top = True
-    initial_body_height = 0
-    tmp_body_heights: List[np.double] = field(default_factory=list)
-
-    body_heights_df: pd.DataFrame = pd.DataFrame(columns=["time", "height", "velocity"])
-
-    def _init_rep(self, height: np.double):
-        self.initial_body_height = height
-        self.tmp_body_heights = [self.initial_body_height] * 10
-
-    def update_rep_count(self, pose: PoseLandmarksObject, lower_thre, upper_thre) -> bool:
-        """repが+1された時、Trueを返す
-
-        Args:
-            pose (PoseLandmarksObject): その瞬間のpose
-            lower_thre (_type_): _description_
-            upper_thre (_type_): _description_
-
-        Returns:
-            bool: repの+1タイミングでTrue
-        """
-        height = pose.get_2d_height()
-        if len(self.tmp_body_heights) < 10:
-            self._init_rep(height=height)
-        has_count_upped = self.check_if_rep_finished(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
-
-        self._update_lifting_state(height=height)
-
-        return has_count_upped
-
-    # HACK: 上のメソッドと役割が被っている
-    def check_if_rep_finished(self, height: np.double, lower_thre, upper_thre):
-        if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
-            self.did_touch_bottom = True
-        elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
-            self.rep_count += 1
-            self.did_touch_bottom = False
-            return True
-        return False
-
-    def _update_lifting_state(self, height: np.double):
-        self.tmp_body_heights.pop(0)
-        self.tmp_body_heights.append(height)
-
-    def playsound_rep(self):
-        sound_file = f"data/audio_src/rep_count/{self.rep_count}.mp3"
-        playsound(sound_file, block=False)
-
-    def is_keyframe(self, pose: PoseLandmarksObject, lower_thre=0.96, upper_thre=0.97):
-        height = pose.get_2d_height()
-        if self.did_touch_top and height < self.initial_body_height * lower_thre:
-            self.did_touch_top = False
-            return True
-        elif not self.did_touch_top and height > self.initial_body_height * upper_thre:
-            self.did_touch_top = True
-            return False
-        else:
-            return False
-
-    def reset_rep(self, pose: PoseLandmarksObject):
-        self.rep_count: int = 0
-        self.is_lifting_up = False
-        self.did_touch_bottom = False
-        self.did_touch_top = True
-        self.initial_body_height = pose.get_2d_height()
-        self.tmp_body_heights = [self.initial_body_height] * 10
-
-        self.body_heights_df = pd.DataFrame(index=[], columns=["time", "height", "velocity"])
-
-
-@dataclass(frozen=True)
-class PoseDef:
-    bone_edge_names = {
-        "shoulder_width": (11, 12),
-        "shin": (27, 25),
-        "thigh": (25, 23),
-        "full_leg": (27, 23),
-        "pelvic_width": (23, 24),
-        "flank": (23, 11),
-        "upper_arm": (11, 13),
-        "fore_arm": (13, 15),
-        "full_arm": (11, 15),
-    }
+bone_edge_names = {
+    "shoulder_width": (11, 12),
+    "shin": (27, 25),
+    "thigh": (25, 23),
+    "full_leg": (27, 23),
+    "pelvic_width": (23, 24),
+    "flank": (23, 11),
+    "upper_arm": (11, 13),
+    "fore_arm": (13, 15),
+    "full_arm": (11, 15),
+}

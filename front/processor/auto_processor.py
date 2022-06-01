@@ -6,26 +6,21 @@ from typing import List, Union
 
 import av
 import cv2
+from lib.pose.draw_pose import draw_landmarks_pose
+from utils.class_objects import PoseLandmarksObject
+from lib.pose.training_set import RepState, SetObject
+import lib.streamlit_ui.setting_class as settings
 import numpy as np
-import utils.display as disp
+import lib.webrtc_ui.display as disp
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
-from ui_components.video_widget import CircleHoldButton
-from utils import PoseLandmarksObject, draw_landmarks_pose
-from utils.class_objects import (
-    AudioSettings,
-    DisplaySettings,
-    ModelSettings,
-    RepCountSettings,
-    RepObject,
-    RepState,
-    SetObject,
-)
-from utils.display_objects import CoachPose, CoachPoseManager, DisplayObjects
-from utils.instruction import Instructions
-from utils.video_recorder import TrainingSaver
-from utils.voice_recognition import VoiceRecognitionProcess
-from utils.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
+from lib.webrtc_ui.video_widget import CircleHoldButton
+from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
+from core.instruction import Instructions
+from lib.webrtc_ui.video_recorder import TrainingSaver
+from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
+from lib.webrtc_ui.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
+import lib.webrtc_ui.display as disp
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -33,10 +28,10 @@ _SENTINEL_ = "_SENTINEL_"
 class AutoProcessor(VideoProcessorBase):
     def __init__(
         self,
-        model_settings: ModelSettings,
-        display_settings: DisplaySettings,
-        rep_count_settings: RepCountSettings,
-        audio_settings: AudioSettings,
+        model_settings: settings.ModelSettings,
+        display_settings: settings.DisplaySettings,
+        rep_count_settings: settings.RepCountSettings,
+        audio_settings: settings.AudioSettings,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()

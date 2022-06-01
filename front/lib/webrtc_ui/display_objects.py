@@ -1,17 +1,14 @@
 import pickle
 from dataclasses import dataclass, field
-import json
 from pathlib import Path
-from turtle import width
 from typing import Any, List, Union
 
 import cv2
 import numpy as np
-import pandas as pd
-from utils.calculate_fps import FpsCalculator
-
-from utils.class_objects import PoseLandmarksObject, RepState
-from utils.draw_pose import draw_landmarks_pose
+from utils.class_objects import PoseLandmarksObject
+from lib.pose.draw_pose import draw_landmarks_pose
+from lib.pose.training_set import RepState
+from lib.webrtc_ui.calculate_fps import FpsCalculator
 
 
 class CoachPoseManager:

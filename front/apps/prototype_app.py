@@ -8,8 +8,8 @@ from processor.auto_processor import AutoProcessor
 import streamlit as st
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 from processor.proto_processor import PrototypeProcessor
-from ui_components.session import load_session_meta_data
-from ui_components.setting_ui import (
+from lib.streamlit_ui.session import load_session_meta_data
+from lib.streamlit_ui.setting_ui import (
     display_setting_ui,
     model_setting_ui,
     rep_count_setting_ui,

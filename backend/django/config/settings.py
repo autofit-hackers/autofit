@@ -95,7 +95,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = "user_auth.User"
+AUTH_USER_MODEL = "user_auth.CustomUser"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -140,7 +140,8 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_RDIRECT_URL = "/"
+LOGIN_RDIRECT_URL = "home"
+LOGOUT_RDIRECT_URL = "home"
 
 
 # ref. https://python-social-auth.readthedocs.io/en/latest/configuration/django.html

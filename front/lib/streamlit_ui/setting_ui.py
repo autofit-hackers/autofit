@@ -2,17 +2,11 @@ from email.policy import default
 from pathlib import Path
 
 import streamlit as st
-from utils.class_objects import (
-    AudioSettings,
-    DisplaySettings,
-    ModelSettings,
-    RepCountSettings,
-    SaveSettings,
-    SaveStates,
-)
+import lib.streamlit_ui.setting_class as settings
 
 
-def model_setting_ui() -> ModelSettings:
+
+def model_setting_ui() -> settings.ModelSettings:
     with st.expander("Model parameters (there parameters are effective only at initialization)"):
         model_complexity = st.radio("Model complexity", [0, 1, 2], index=0)
         min_detection_confidence = st.slider(
@@ -29,16 +23,16 @@ def model_setting_ui() -> ModelSettings:
             value=0.5,
             step=0.01,
         )
-    return ModelSettings(
+    return settings.ModelSettings(
         model_complexity=model_complexity,
         min_detection_confidence=min_detection_confidence,
         min_tracking_confidence=min_tracking_confidence,
     )
 
 
-def display_setting_ui() -> DisplaySettings:
+def display_setting_ui() -> settings.DisplaySettings:
     with st.expander("Display settings"):
-        return DisplaySettings(
+        return settings.DisplaySettings(
             rotate_webcam_input=st.checkbox("Rotate webcam input", value=True),
             show_2d=st.checkbox("Show 2D", value=True),
             show_fps=st.checkbox("Show FPS", value=True),
@@ -46,18 +40,18 @@ def display_setting_ui() -> DisplaySettings:
         )
 
 
-def rep_count_setting_ui() -> RepCountSettings:
+def rep_count_setting_ui() -> settings.RepCountSettings:
     with st.expander("Rep counter settings"):
-        return RepCountSettings(
+        return settings.RepCountSettings(
             do_count_rep=st.checkbox("Count rep", value=True),
             upper_thresh=st.slider("upper_threshold", min_value=0.0, max_value=1.0, value=0.9, step=0.01),
             lower_thresh=st.slider("lower_threshold", min_value=0.0, max_value=1.0, value=0.8, step=0.01),
         )
 
 
-def audio_setting_ui() -> AudioSettings:
+def audio_setting_ui() -> settings.AudioSettings:
     with st.expander("Audio settings"):
-        return AudioSettings(
+        return settings.AudioSettings(
             play_audio=st.checkbox("Play Audio", value=False),
             audio_device_id=int(st.number_input("Device Id", min_value=0, format="%d")),
         )
@@ -81,7 +75,7 @@ def save_state_ui() -> bool:
 
 
 # TODO: use ui component in pose_app
-def save_setting_ui(session_meta_exists: bool) -> SaveSettings:
+def save_setting_ui(session_meta_exists: bool) -> settings.SaveSettings:
     st.markdown("### Video saving")
     is_saving_video = st.button("Start", key="is_saving_video")
 
@@ -97,4 +91,4 @@ def save_setting_ui(session_meta_exists: bool) -> SaveSettings:
     else:
         video_save_dir, pose_save_dir = None, None
 
-    return SaveSettings()
+    return settings.SaveSettings()

@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from matplotlib import colors
 from PIL import Image
-from ui_components.video_widget import CircleHoldButton
+from lib.webrtc_ui.video_widget import CircleHoldButton
 
 
 def text(
