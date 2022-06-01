@@ -1,0 +1,44 @@
+{#クラスを受け取った際に使用_pdf配布用#}
+<html>
+<head>
+</head>
+<meta charset="utf-8"/>
+  <body>
+    <img src="data/img_src/posefit_icon.png" width="200px" alt="posefit" align="right">
+
+    <p style=" font-size: 60px;">&ensp;</p>
+    <p style=" font-size: 20px;">{{ coaching_contents["menu"] }}を{{ coaching_contents["reps"] }}回お疲れ様でした．</p>
+    <p style=" font-size: 20px;">Good pointやBad pointなどについてお伝えします．</p>
+
+    <div style="background-color: #C4E4F2; border-radius: 10px; solid 10px; border: #6BBCDE solid 5px; font-size: 100%; padding: 0px 20px;">
+    <p style=" font-size: 30px;">Good Point</p>
+    <p style=" font-size: 20px;">{{coaching_contents["good_points"][0]["text"]}}</p>
+    </div>
+
+    <p style=" font-size: 10px;">&ensp;</p>
+
+    <div style="background-color: #EEAFBA; border-radius: 10px; solid 10px; border: #D43653 solid 5px; font-size: 100%; padding: 0px 20px;">
+    <p style=" font-size: 30px;">Bad Point</p>
+    <p style=" font-size: 20px;">{{coaching_contents["good_points"][0]["text"]}}</p>
+    <p style=" font-size: 20px;">{{coaching_contents["good_points"][0]["reason"]}}ためと考えられます．</p>
+    </div>
+
+    <p style=" font-size: 10px;">&ensp;</p>
+
+
+    {% if coaching_contents["good_points"][0]["menu_to_recommend"] != []%}
+        <div style="background-color: #DBE9B6; border-radius: 10px; solid 10px; border: #A6C849 solid 5px; font-size: 100%; padding: 0px 20px;">
+        <p style=" font-size: 20px;">おすすめのメニュー</p>
+        <ul>
+        {% for i in coaching_contents["good_points"][0]["menu_to_recommend"] %}
+        <li style=" font-size: 20px;">{{i}}</li>
+        {% endfor %}
+        </ul>
+        </div>
+
+        <p style=" font-size: 10px;">&ensp;</p>
+
+    {% endif %}
+
+  </body>
+</html>
