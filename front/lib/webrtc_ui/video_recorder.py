@@ -7,7 +7,7 @@ from aiortc.contrib.media import MediaRecorder
 import cv2
 import av
 from cv2 import VideoWriter
-from lib.pose.pose import PoseLandmarksObject
+from utils.class_objects import PoseLandmarksObject
 import numpy as np
 from lib.webrtc_ui.webcam_input import save_pose
 

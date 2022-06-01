@@ -7,7 +7,7 @@ from typing import List
 
 import av
 import cv2
-from lib.pose.pose import PoseLandmarksObject, mp_res_to_pose_obj
+from utils.class_objects import PoseLandmarksObject, mp_res_to_pose_obj
 from lib.streamlit_ui.setting_class import ModelSettings
 import mediapipe as mp
 import streamlit as st

@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from distutils.command.upload import upload
 from pathlib import Path
 from typing import Any, List, NamedTuple, Union
-from lib.pose.pose import PoseLandmarksObject
+from utils.class_objects import PoseLandmarksObject
 
 
 import numpy as np
@@ -96,8 +96,3 @@ class CalibrationSettings:
         for variable_name, value in locals().items():
             if not variable_name == "self":
                 self.__dict__[variable_name] = value
-
-
-
-
-

@@ -5,7 +5,7 @@ from typing import Any, List, Union
 
 import cv2
 import numpy as np
-from lib.pose.pose import PoseLandmarksObject
+from utils.class_objects import PoseLandmarksObject
 from lib.pose.draw_pose import draw_landmarks_pose
 from lib.pose.training_set import RepState
 from lib.webrtc_ui.calculate_fps import FpsCalculator

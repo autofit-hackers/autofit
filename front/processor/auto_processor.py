@@ -10,7 +10,7 @@ import av
 import cv2
 from lib.webrtc_ui.training_report import generate_data_report, generate_png_report
 from lib.pose.draw_pose import draw_landmarks_pose
-from lib.pose.pose import PoseLandmarksObject
+from utils.class_objects import PoseLandmarksObject
 from lib.pose.training_set import RepState, SetObject
 import lib.streamlit_ui.setting_class as settings
 import numpy as np
@@ -124,7 +124,14 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 2:
             # セットのパラメータをリセット
             cv2.putText(
-                processed_frame, f"Say Start!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv2.LINE_AA,
+                processed_frame,
+                f"Say Start!",
+                (10, 100),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv2.LINE_AA,
             )
 
             # 開始が入力されたら(声)セットを開始
