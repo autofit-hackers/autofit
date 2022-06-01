@@ -3,13 +3,11 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 import cv2
-from front.utils.class_objects import PoseLandmarksObject, SetObject
-from front.utils.display import convert_ndarray2PIL, set_color
+from lib.pose.training_set import SetObject
+from utils.class_objects import PoseLandmarksObject
+from lib.webrtc_ui.display import convert_ndarray2PIL, set_color
 from numpy import ndarray
 from PIL import Image, ImageDraw
-
-from utils.class_objects import RepObject
-
 
 def squat_knees_in(frame: ndarray, pose: PoseLandmarksObject, set_obj: SetObject):
     first_rep_poses = set_obj.reps[0].poses
