@@ -41,19 +41,62 @@ class Instructions:
     rules: Dict[str, InstructionRule] = field(
         default_factory=lambda: {
             "squat_knees_in": InstructionRule(
-                text="内股やな",
+                text="膝が内に入っています",
                 judge_function=eval.squat_knees_in,
-                reason="外転筋が弱いんちゃうか",
+                reason="外転筋が弱い",
                 menu_to_recommend=("ヒップアブダクション",),
                 instruction_image=Image.open(Path("data/instruction/squat_knees_in.png")),
             ),
             "squat_depth": InstructionRule(
-                text="しゃがめてへんで",
+                text="しゃがみ込みが浅いです",
                 judge_function=eval.squat_depth,
-                reason="足首固いんちゃうか",
+                reason="足首が固い",
                 menu_to_recommend=("足首ストレッチ",),
                 instruction_image=Image.open(Path("data/instruction/squat_depth.png")),
             ),
+            # TODO: form_evaluation.pyで関数が実装されるまでエラーになるのでコメントアウト
+            # "squat_knees_ahead": InstructionRule(
+            #     text="膝が前に出過ぎています",
+            #     judge_function=eval.squat_knees_ahead,
+            #     reason="",
+            #     menu_to_recommend=("",),
+            #     instruction_image=Image.open(Path("data/instruction/squat_knees_ahead.png")),
+            # ),
+            # "squat_feet_width": InstructionRule(
+            #     text="足幅が狭いです",
+            #     judge_function=eval.squat_feet_width,
+            #     reason="",
+            #     menu_to_recommend=("",),
+            #     instruction_image=Image.open(Path("data/instruction/squat_feet_width.png")),
+            # ),
+            # "squat_hands_width": InstructionRule(
+            #     text="手幅が狭いです",
+            #     judge_function=eval.squat_hands_width,
+            #     reason="",
+            #     menu_to_recommend=("",),
+            #     instruction_image=Image.open(Path("data/instruction/squat_hands_width.png")),
+            # ),
+            # "squat_bar_depth": InstructionRule(
+            #     text="バーが高すぎます",
+            #     judge_function=eval.squat_bar_depth,
+            #     reason="肩まわりの柔軟性が低い",
+            #     menu_to_recommend=("ブランコストレッチ",),
+            #     instruction_image=Image.open(Path("data/instruction/squat_bar_depth.png")),
+            # ),
+            # "squat_back_shin_parallel": InstructionRule(
+            #     text="背中とすねが平行になるようにしゃがみましょう",
+            #     judge_function=eval.squat_back_shin_parallel,
+            #     reason="足首固いんちゃうか",
+            #     menu_to_recommend=("足首ストレッチ",),
+            #     instruction_image=Image.open(Path("data/instruction/squat_back_shin_parallel.png")),
+            # ),
+            # "squat_heavier": InstructionRule(
+            #     text="バーが重すぎます",
+            #     judge_function=eval.squat_heavier,
+            #     reason="",
+            #     menu_to_recommend=("",),
+            #     instruction_image=Image.open(Path("data/instruction/squat_heavier.png")),
+            # ),
         }
     )
 
