@@ -9,17 +9,18 @@ from typing import List, Union
 
 import av
 import cv2
+from lib.pose.training_set import RepState
 import mediapipe as mp
 import numpy as np
 from apps.pose3d_reconstruction import reconstruct_pose_3d
 from streamlit_webrtc import VideoProcessorBase
 from utils import FpsCalculator, PoseLandmarksObject, draw_landmarks_pose, mp_res_to_pose_obj
-from utils.class_objects import DisplaySettings, ModelSettings, RepCountSettings, RepState, SaveStates
+import lib.streamlit_ui.setting_class as settings
 
 _SENTINEL_ = "_SENTINEL_"
 
 
-def pose_process(in_queue: Queue, out_queue: Queue, model_settings: ModelSettings) -> None:
+def pose_process(in_queue: Queue, out_queue: Queue, model_settings: settings.ModelSettings) -> None:
     mp_pose = mp.solutions.pose  # type: ignore
     # XXX: ぶっ壊れてる可能性
     pose = mp_pose.Pose(
@@ -54,11 +55,11 @@ class PoseProcessor(VideoProcessorBase):
     def __init__(
         # NOTE: ここはinitの瞬間に必要ないものは消していいらしい
         self,
-        model_settings: ModelSettings,
+        model_settings: settings.ModelSettings,
         is_saving: bool,
         # save_settings: SaveSettings,
-        display_settings: DisplaySettings,
-        rep_count_settings: RepCountSettings,
+        display_settings: settings.DisplaySettings,
+        rep_count_settings: settings.RepCountSettings,
         uploaded_pose_file=None,
         is_clicked_reset_button: bool = False,
         video_save_path: Union[str, None] = None,

@@ -4,12 +4,12 @@ from traceback import print_tb
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
+from lib.pose.training_set import RepObject
 from numpy import ndarray
 from PIL import Image
 
-import utils.form_evaluation as eval
-from utils.class_objects import PoseLandmarksObject, RepObject
-import utils.display as disp
+import core.form_evaluation as eval
+import lib.webrtc_ui.display as disp
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,7 @@ class Instructions:
     Add instance variable if you want to define a new instruction.
     """
 
+    # XXX: hardcode
     rules: Dict[str, InstructionRule] = field(
         default_factory=lambda: {
             "squat_knees_in": InstructionRule(

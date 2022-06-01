@@ -7,9 +7,9 @@ from aiortc.contrib.media import MediaRecorder
 import cv2
 import av
 from cv2 import VideoWriter
+from lib.pose.pose import PoseLandmarksObject
 import numpy as np
-from utils.class_objects import PoseLandmarksObject
-from utils.webcam_input import save_pose
+from lib.webrtc_ui.webcam_input import save_pose
 
 
 def create_video_writer(fps: int, frame: av.VideoFrame, video_save_path: str) -> cv2.VideoWriter:

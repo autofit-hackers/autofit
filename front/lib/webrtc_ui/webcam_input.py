@@ -7,12 +7,13 @@ from typing import List
 
 import av
 import cv2
+from lib.pose.pose import PoseLandmarksObject, mp_res_to_pose_obj
+from lib.streamlit_ui.setting_class import ModelSettings
 import mediapipe as mp
 import streamlit as st
 from numpy import ndarray
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
-from utils.class_objects import ModelSettings, PoseLandmarksObject, mp_res_to_pose_obj
 
 _SENTINEL_ = "_SENTINEL_"
 

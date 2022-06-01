@@ -6,8 +6,7 @@ from PIL import Image
 from pathlib import Path
 from pdf2image import convert_from_path
 
-from training_report_render_html import training_report_render_html
-from utils.instruction import Instructions
+from lib.webrtc_ui.training_report_render_html import training_report_render_html
 
 
 #htmlファイルをディレクトリに保存する
@@ -39,8 +38,6 @@ def generate_png_report(training_result, training_report_template_path):
 def generate_data_report():
     # training_resultを勝手に決定する
     # TODO: Instructionなどからtraining_resultを生成可能にする
-    # instruction = Instructions()
-    # training_result = {"menu": "squat", "weight": 80, "reps": 8, "instructions": instruction}
     training_result = {
         "menu": "squat",
         "weight": 80,
@@ -83,31 +80,3 @@ def convert_png_report_from_pdf(training_report_path):
     training_report_image = convert_from_path(pdf_path=input_pdf_path, dpi=200, fmt="png")
     for repo in training_report_image:
         repo.save("training_report.png")
-
-
-if __name__ == "__main__":
-    # training_result = generate_data_report()
-
-    # path_display = Path("/template/training_report_display.jinja")
-    # generate_pdf_report(training_result, str("/template/training_report_display.jinja"))
-    # path_distribution = Path("/template/training_report_distribution.jinja")
-    # generate_pdf_report(training_result, str(path_distribution))
-
-    # path_training_report_pdf = Path("./training_report.pdf")
-    # convert_png_report_from_pdf(path_training_report_pdf)
-
-    # template_path = Path("/template/training_report_display.jinja")
-    # generate_png_report(training_result, str(template_path))
-    # generate_png_report(training_result, "/template/training_report_display.jinja")
-
-
-    training_result = generate_data_report()
-    template_report_path = Path("/template/training_report_display.jinja")
-    training_result_display_png = generate_png_report(training_result, str(template_report_path))
-    training_result_display_png_ = Image.open(io.BytesIO(training_result_display_png))
-    print(type(training_result_display_png))
-    print(type(training_result_display_png_))
-
-    # # bs = training_result_display_png.tobytes()  # 画像をバイト列に変換する
-    # dst_im = Image.frombytes('RGBA', training_result_display_png)  # バイト列から画像を生成
-    # dst_im.save('test.png')  # 画像を保存

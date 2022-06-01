@@ -4,7 +4,7 @@ from turtle import color
 import cv2
 import numpy as np
 
-from .class_objects import PoseLandmarksObject
+from ..streamlit_ui.setting_class import PoseLandmarksObject
 from typing import List
 
 
