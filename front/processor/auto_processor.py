@@ -112,7 +112,7 @@ class AutoProcessor(VideoProcessorBase):
                 self.training_saver = TrainingSaver(save_path=save_path)
                 # お手本ポーズのロード
                 # XXX: ハードコードなので注意
-                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("front/data/coach_pose/endo_squat.pkl"))
+                self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/endo_squat.pkl"))
                 self.phase += 1
                 print("training phase: ", self.phase)
 

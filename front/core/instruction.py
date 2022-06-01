@@ -45,14 +45,14 @@ class Instructions:
                 judge_function=eval.squat_knees_in,
                 reason="外転筋が弱いんちゃうか",
                 menu_to_recommend=("ヒップアブダクション",),
-                instruction_image=Image.open(Path("front/data/instruction/squat_knees_in.png")),
+                instruction_image=Image.open(Path("data/instruction/squat_knees_in.png")),
             ),
             "squat_depth": InstructionRule(
                 text="しゃがめてへんで",
                 judge_function=eval.squat_depth,
                 reason="足首固いんちゃうか",
                 menu_to_recommend=("足首ストレッチ",),
-                instruction_image=Image.open(Path("front/data/instruction/squat_depth.png")),
+                instruction_image=Image.open(Path("data/instruction/squat_depth.png")),
             ),
         }
     )
