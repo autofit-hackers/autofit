@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from typing import Dict, Any, List
 from cv2 import add
-from lib.pose.pose import PoseLandmarksObject
+from utils.class_objects import PoseLandmarksObject
 
 import numpy as np
 import plotly.graph_objs as go

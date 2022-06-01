@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
-from lib.pose.pose import PoseLandmarksObject
+from utils.class_objects import PoseLandmarksObject
 
 
 import numpy as np
 import pandas as pd
 import streamlit as st
 from playsound import playsound
+
 
 class RepObject:
     """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]
