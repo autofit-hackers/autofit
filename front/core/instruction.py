@@ -4,9 +4,9 @@ from traceback import print_tb
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
-from front.lib.pose.training_set import SetObject
-from front.utils import guide_line
-from front.utils.class_objects import PoseLandmarksObject
+from lib.pose.training_set import SetObject
+from utils import guide_line
+from utils.class_objects import PoseLandmarksObject
 from lib.pose.training_set import RepObject
 from numpy import ndarray
 from PIL import Image
