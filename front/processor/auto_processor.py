@@ -77,10 +77,10 @@ class AutoProcessor(VideoProcessorBase):
 
         # 検出実施 #############################################################
         result_pose: PoseLandmarksObject = infer_pose(image=frame, in_queue=self._in_queue, out_queue=self._out_queue)
-        result_exists = result_pose is not None
+        exists_result = result_pose is not None
 
         # Poseの描画 ################################################################
-        if result_exists:
+        if exists_result:
             frame = draw_landmarks_pose(frame, result_pose, pose_color=(0, 255, 255), show_z=False)
 
         # Ph0: QRコードログイン ################################################################
@@ -129,7 +129,7 @@ class AutoProcessor(VideoProcessorBase):
                 cv2.LINE_AA,
             )
             # 開始が入力されたら(声)セットを開始
-            if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists or True:
+            if (self.voice_recognition_process.is_recognized_as(keyword="スタート") or True) and exists_result:
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
@@ -138,7 +138,7 @@ class AutoProcessor(VideoProcessorBase):
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
-            if result_exists:
+            if exists_result:
                 # お手本ポーズの更新
                 self.coach_pose_mgr.show_coach_pose(frame=frame)
                 # keyframeが検知（レップが開始）された時、お手本ポーズをReload
@@ -196,7 +196,7 @@ class AutoProcessor(VideoProcessorBase):
         # Ph5: 次へ進む ################################################################
         else:
             # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
-            if result_exists:
+            if exists_result:
                 self.hold_button.update(frame=frame, text="Start")
                 # スタート検知(キーフレーム検知)されたら次へ
                 if self.hold_button.is_pressed(frame, result_pose):

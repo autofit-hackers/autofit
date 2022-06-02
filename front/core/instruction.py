@@ -55,7 +55,7 @@ class Instructions:
             "squat_depth": InstructionRule(
                 text="しゃがめてへんで",
                 judge_function=eval.squat_depth,
-                guideline_func=guide_line.squat_knees_in,
+                guideline_func=guide_line.squat_depth,
                 reason="足首固いんちゃうか",
                 menu_to_recommend=("足首ストレッチ",),
                 instruction_image=Image.open(Path("data/instruction/squat_depth.png")),
@@ -115,7 +115,7 @@ class Instructions:
     def show_guideline(self, frame: ndarray, pose: PoseLandmarksObject, set_obj: SetObject):
         # TODO: どの指導項目を表示するかをスコアにもどついて決定
         instruction_name = "squat_depth"
-        self.rules[instruction_name].guideline_func(frame=frame, pose=pose, set_obj=set_obj)
+        self.rules[instruction_name].guideline_func(frame=frame, current_pose=pose, set_obj=set_obj)
 
     def get_training_result(self):
         return {"menu": "squat", "weight": 80, "reps": 8, "instructions": self.logs}

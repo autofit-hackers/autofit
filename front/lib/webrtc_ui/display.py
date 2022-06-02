@@ -4,9 +4,9 @@ from typing import Any, List, Tuple, Union
 
 import cv2
 import numpy as np
+from lib.webrtc_ui.video_widget import CircleHoldButton
 from matplotlib import colors
 from PIL import Image
-from lib.webrtc_ui.video_widget import CircleHoldButton
 
 
 def text(
@@ -131,3 +131,9 @@ def convert_ndarray2PIL(image: np.ndarray) -> Image.Image:
     image_copy = cv2.cvtColor(image_copy, cv2.COLOR_BGR2RGB)
     image_copy = Image.fromarray(image_copy)
     return image_copy
+
+
+def restore_landmark_in_frame_scale(landmark: np.ndarray, frame) -> np.ndarray:
+    assert landmark.size == 2, f"landmark must be xy. landmark.shape is now {landmark.shape}"
+    image_width, image_height = frame.shape[1], frame.shape[0]
+    return landmark[:2] * [image_width, image_height]
