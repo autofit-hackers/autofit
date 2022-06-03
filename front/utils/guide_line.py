@@ -25,7 +25,6 @@ def squat_depth(frame: ndarray, current_pose: PoseLandmarksObject, set_obj: SetO
     current_right_hip = restore_landmark_in_frame_scale(current_pose.landmark[24][:2], frame)
     current_hip_y = current_pose.get_hip_position()[1]
     is_standard_cleared = current_hip_y <= first_rep_top_knee_y
-    print(f"is_standard_cleared: {is_standard_cleared}")
 
     # 1レップ目topでの両膝を結ぶ直線を描画
     line_color = "red" if is_standard_cleared else "blue"
