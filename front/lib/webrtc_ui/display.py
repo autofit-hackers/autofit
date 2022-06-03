@@ -117,9 +117,9 @@ def set_color(color_name: str, color_space: str = "bgr") -> Tuple[int, int, int]
 
     color = colors.to_rgb(color_name)
     if color_space == "rgb":
-        color = (int(color[0]), int(color[1]), int(color[2]))
+        color = (int(color[0] * 255), int(color[1] * 255), int(color[2] * 255))
     elif color_space == "bgr":
-        color = (int(color[2]), int(color[1]), int(color[0]))
+        color = (int(color[2] * 255), int(color[1] * 255), int(color[0] * 255))
     else:
         color = (0, 0, 0)
 
