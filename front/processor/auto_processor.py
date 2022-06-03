@@ -1,11 +1,14 @@
-import time
-from datetime import datetime
+import imp
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
+from datetime import datetime
+import time
+import io
 
 import av
 import cv2
+from lib.webrtc_ui.training_report import generate_data_report, generate_png_report
 from lib.pose.draw_pose import draw_landmarks_pose
 from utils.class_objects import PoseLandmarksObject
 from lib.pose.training_set import RepState, SetObject
@@ -21,6 +24,7 @@ from lib.webrtc_ui.video_recorder import TrainingSaver
 from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
 from lib.webrtc_ui.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 import lib.webrtc_ui.display as disp
+
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -128,6 +132,7 @@ class AutoProcessor(VideoProcessorBase):
                 2,
                 cv2.LINE_AA,
             )
+
             # 開始が入力されたら(声)セットを開始
             if (self.voice_recognition_process.is_recognized_as(keyword="スタート") or True) and exists_result:
                 # お手本ポーズのリセット
@@ -177,14 +182,26 @@ class AutoProcessor(VideoProcessorBase):
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
                 self.training_saver.save()
-                # TODO: @katsura ここでimageを生成
                 self.phase += 1
                 print("training phase: ", self.phase)
 
+                # training_reportをpngにする
+                # TODO: 指示内容に合わせた画像を提示
+                training_result = generate_data_report()
+                template_report_path = Path("/template/training_report_display.jinja")
+                self.training_result_display_png = generate_png_report(training_result, str(template_report_path))
+                self.training_result_display_png = Image.open(io.BytesIO(self.training_result_display_png))
+
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
-            # レポート表示
-            # TODO: @katsura ここでdisplay
+            # training_reportを表示させる
+            frame = disp.image(
+                frame=frame,
+                image=self.training_result_display_png,
+                position=(0.1, 0.05),
+                size=(0.8, 0),
+                hold_aspect_ratio=True,
+            )
 
             # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
             if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
