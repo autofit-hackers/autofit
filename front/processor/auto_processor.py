@@ -14,6 +14,7 @@ from utils.class_objects import PoseLandmarksObject
 from lib.pose.training_set import RepState, SetObject
 import lib.streamlit_ui.setting_class as settings
 import numpy as np
+import lib.webrtc_ui.display as disp
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from lib.webrtc_ui.video_widget import CircleHoldButton
@@ -58,7 +59,7 @@ class AutoProcessor(VideoProcessorBase):
         self.instructions = Instructions()
         self.rep_state = RepState()
         self.hold_button = CircleHoldButton()
-        self.set_obj = SetObject()
+        self.set_obj = SetObject(menu="squat", weight=50)
 
         if self.display_settings.correct_distortion:
             self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
@@ -72,21 +73,19 @@ class AutoProcessor(VideoProcessorBase):
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         recv_timestamp: float = time.time()
 
-        processed_frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
+        frame = process_frame_initially(frame=frame, should_rotate=self.display_settings.rotate_webcam_input)
         if self.display_settings.correct_distortion:
-            h, w = processed_frame.shape[:2]
+            h, w = frame.shape[:2]
             newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.cmtx, self.dist, (w, h), 1, (w, h))
-            processed_frame = cv2.undistort(src=processed_frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
+            frame = cv2.undistort(src=frame, cameraMatrix=self.cmtx, distCoeffs=self.dist)
 
         # 検出実施 #############################################################
-        result_pose: PoseLandmarksObject = infer_pose(
-            image=processed_frame, in_queue=self._in_queue, out_queue=self._out_queue
-        )
-        result_exists = result_pose is not None
+        result_pose: PoseLandmarksObject = infer_pose(image=frame, in_queue=self._in_queue, out_queue=self._out_queue)
+        exists_result = result_pose is not None
 
         # Poseの描画 ################################################################
-        if result_exists:
-            processed_frame = draw_landmarks_pose(processed_frame, result_pose, pose_color=(0, 255, 255), show_z=False)
+        if exists_result:
+            frame = draw_landmarks_pose(frame, result_pose, pose_color=(0, 255, 255), show_z=False)
 
         # Ph0: QRコードログイン ################################################################
         if self.phase == 0:
@@ -124,7 +123,7 @@ class AutoProcessor(VideoProcessorBase):
         elif self.phase == 2:
             # セットのパラメータをリセット
             cv2.putText(
-                processed_frame,
+                frame,
                 f"Say Start!",
                 (10, 100),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -135,46 +134,50 @@ class AutoProcessor(VideoProcessorBase):
             )
 
             # 開始が入力されたら(声)セットを開始
-            if self.voice_recognition_process.is_recognized_as(keyword="スタート") and result_exists or True:
+            if (self.voice_recognition_process.is_recognized_as(keyword="スタート") or True) and exists_result:
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
+                self.set_obj.make_new_rep()
                 print("training phase: ", self.phase)
 
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
-            if result_exists:
+            if exists_result:
                 # お手本ポーズの更新
-                self.coach_pose_mgr.show_coach_pose(frame=processed_frame)
+                self.coach_pose_mgr.show_coach_pose(frame=frame)
                 # keyframeが検知（レップが開始）された時、お手本ポーズをReload
                 if self.rep_state.is_keyframe(pose=result_pose):
                     self.coach_pose_mgr.reload_coach_pose()
 
-                # RepObjectの更新
-                self.set_obj.reps[self.rep_state.rep_count - 1].update(pose=result_pose)
-                # 回数の更新（updateで回数が増えたらTrue）
-                did_count_up = self.rep_state.update_rep(
+                # 実行中のRepに推定poseを記録
+                self.set_obj.reps[self.rep_state.rep_count].record_pose(pose=result_pose)
+
+                # レップ数の更新（updateで回数が増えたらTrue）
+                is_last_frame_in_rep = self.rep_state.update_rep_count(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
 
-                # 回数が増えた時、指導を実施する
-                if did_count_up:
-                    # 音声によるカウントの実施
+                # レップカウントが増えた時、フォーム評価を実施する
+                if is_last_frame_in_rep:
+                    # レップカウントの音声出力
                     if self.audio_settings.play_audio:
                         self.rep_state.playsound_rep()
 
-                    # 指導の実施
-                    self.set_obj.reps[self.rep_state.rep_count - 2].recalculate_keyframes()
-                    self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 2])
+                    # 直前のレップのフォームを評価
+                    self.set_obj.reps[self.rep_state.rep_count - 1].recalculate_keyframes()
+                    self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 1])
                     self.set_obj.make_new_rep()
 
-                # 指導内容の表示
-                processed_frame = self.instructions.show(frame=processed_frame)
+                # 2レップ目以降はガイドラインと指導テキストを表示
+                if self.rep_state.rep_count >= 1:
+                    frame = self.instructions.show_text(frame=frame)
+                    self.instructions.show_guideline(frame=frame, pose=result_pose, set_obj=self.set_obj)
 
             # 保存用配列の更新
-            self.training_saver.update(pose=result_pose, frame=processed_frame, timestamp=recv_timestamp)
+            self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
 
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
@@ -192,8 +195,8 @@ class AutoProcessor(VideoProcessorBase):
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             # training_reportを表示させる
-            processed_frame = disp.image(
-                frame=processed_frame,
+            frame = disp.image(
+                frame=frame,
                 image=self.training_result_display_png,
                 position=(0.1, 0.05),
                 size=(0.8, 0),
@@ -205,20 +208,20 @@ class AutoProcessor(VideoProcessorBase):
                 self.phase += 1
                 print("training phase: ", self.phase)
 
-            return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
+            return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
         # Ph5: 次へ進む ################################################################
         else:
             # TODO: 目の前に3つ選択肢が出て、トレーニング終了・次のメニューへ・次のセットへを選択する
-            if result_exists:
-                self.hold_button.update(frame=processed_frame, text="Start")
+            if exists_result:
+                self.hold_button.update(frame=frame, text="Start")
                 # スタート検知(キーフレーム検知)されたら次へ
-                if self.hold_button.is_pressed(processed_frame, result_pose):
+                if self.hold_button.is_pressed(frame, result_pose):
                     # お手本の表示開始
                     self.phase = 1
 
-        self.display_objects.update_and_show(frame=processed_frame, reps=self.rep_state.rep_count)
-        return av.VideoFrame.from_ndarray(processed_frame, format="bgr24")
+        self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
+        return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
     def __del__(self):
         print("Stop the inference process...")

@@ -4,6 +4,9 @@ from traceback import print_tb
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
+from lib.pose.training_set import SetObject
+from utils import guide_line
+from utils.class_objects import PoseLandmarksObject
 from lib.pose.training_set import RepObject
 from numpy import ndarray
 from PIL import Image
@@ -18,6 +21,7 @@ class InstructionRule:
 
     text: str
     judge_function: Callable
+    guideline_func: Callable
     reason: str
     menu_to_recommend: Tuple[str]
     instruction_image: Image.Image
@@ -43,6 +47,7 @@ class Instructions:
             "squat_knees_in": InstructionRule(
                 text="膝が内に入っています",
                 judge_function=eval.squat_knees_in,
+                guideline_func=guide_line.squat_knees_in,
                 reason="外転筋が弱い",
                 menu_to_recommend=("ヒップアブダクション",),
                 instruction_image=Image.open(Path("data/instruction/squat_knees_in.png")),
@@ -50,6 +55,7 @@ class Instructions:
             "squat_depth": InstructionRule(
                 text="しゃがみ込みが浅いです",
                 judge_function=eval.squat_depth,
+                guideline_func=guide_line.squat_depth,
                 reason="足首が固い",
                 menu_to_recommend=("足首ストレッチ",),
                 instruction_image=Image.open(Path("data/instruction/squat_depth.png")),
@@ -127,7 +133,7 @@ class Instructions:
                 judge_loss = loss
         print("INSTRUCTION================", self.instruction_to_show)
 
-    def show(self, frame: ndarray) -> ndarray:
+    def show_text(self, frame: ndarray) -> ndarray:
         """when self has instructions to show (the trainee made some mistakes in a rep), show corresponding image
 
         Args:
@@ -148,6 +154,11 @@ class Instructions:
             size=(0.5, 0),
             hold_aspect_ratio=True,
         )
+
+    def show_guideline(self, frame: ndarray, pose: PoseLandmarksObject, set_obj: SetObject):
+        # TODO: どの指導項目を表示するかをスコアにもどついて決定
+        instruction_name = "squat_depth"
+        self.rules[instruction_name].guideline_func(frame=frame, current_pose=pose, set_obj=set_obj)
 
     def get_training_result(self):
         return {"menu": "squat", "weight": 80, "reps": 8, "instructions": self.logs}

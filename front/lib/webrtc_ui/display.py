@@ -4,9 +4,9 @@ from typing import Any, List, Tuple, Union
 
 import cv2
 import numpy as np
+from lib.webrtc_ui.video_widget import CircleHoldButton
 from matplotlib import colors
 from PIL import Image
-from lib.webrtc_ui.video_widget import CircleHoldButton
 
 
 def text(
@@ -85,10 +85,7 @@ def image(
     image = image.resize(size)
     image.putalpha(alpha)
 
-    # Convert ndarray to pillow.Image
-    frame_copy = frame.copy()
-    frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2RGB)
-    frame_copy = Image.fromarray(frame_copy)
+    frame_copy = convert_ndarray2PIL(frame)
 
     # Put transparent image on the frame
     frame_copy.putalpha(255)
@@ -115,11 +112,28 @@ def button(
     button.update(frame, color_ing=color_ing, color_ed=color_ed, text=text)
 
 
-def set_color(color_name: str, return_gbr: bool = False) -> Tuple[int, int, int]:
+def set_color(color_name: str, color_space: str = "bgr") -> Tuple[int, int, int]:
+    assert color_space is "rgb" or "bgr", "Invalid color space."
+
     color = colors.to_rgb(color_name)
-    if return_gbr:
-        color = (int(color[2]), int(color[1]), int(color[0]))
+    if color_space == "rgb":
+        color = (int(color[0] * 255), int(color[1] * 255), int(color[2] * 255))
+    elif color_space == "bgr":
+        color = (int(color[2] * 255), int(color[1] * 255), int(color[0] * 255))
     else:
-        color = (int(color[0]), int(color[1]), int(color[2]))
+        color = (0, 0, 0)
 
     return color
+
+
+def convert_ndarray2PIL(image: np.ndarray) -> Image.Image:
+    image_copy = image.copy()
+    image_copy = cv2.cvtColor(image_copy, cv2.COLOR_BGR2RGB)
+    image_copy = Image.fromarray(image_copy)
+    return image_copy
+
+
+def restore_landmark_in_frame_scale(landmark: np.ndarray, frame) -> np.ndarray:
+    assert landmark.size == 2, f"landmark must be xy. landmark.shape is now {landmark.shape}"
+    image_width, image_height = frame.shape[1], frame.shape[0]
+    return landmark[:2] * [image_width, image_height]

@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, NamedTuple, Union
 
@@ -35,6 +35,9 @@ class PoseLandmarksObject(NamedTuple):
 
     def get_hip_position(self) -> np.ndarray:
         return (self.landmark[23] + self.landmark[24]) / 2
+
+    def get_knees_distance(self) -> np.ndarray:
+        return abs(self.landmark[25] - self.landmark[26])
 
     def get_keypoint(self, training_name: str) -> np.ndarray:
         if training_name == "squat":

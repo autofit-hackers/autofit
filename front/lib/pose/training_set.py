@@ -11,19 +11,19 @@ from playsound import playsound
 
 
 class RepObject:
-    """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]
+    """Key Frame は ["top", "descending_middle", "bottom", "ascending_middle"]"""
 
-    Returns:
-        _type_: _description_
-    """
-
-    def __init__(self, rep_number) -> None:
+    def __init__(self, rep_number: int) -> None:
+        """
+        Args:
+            rep_number (int): start from 1
+        """
         self.poses = []
         self.body_heights: List[float] = []
         self.keyframes: dict = {}
         self.rep_number = rep_number
 
-    def update(self, pose: PoseLandmarksObject):
+    def record_pose(self, pose: PoseLandmarksObject):
         self.poses.append(pose)
         # self.body_heights.append(pose.get_2d_height())
 
@@ -33,7 +33,7 @@ class RepObject:
         self.rep_number: int = rep_number
 
     def recalculate_keyframes(self) -> dict:
-        """それまでに溜まっているフレーム情報から、min, max を計算し、KeyFrameを算出
+        """それまでに溜まっているレップ中のフレーム情報からKeyFrameを算出
 
         Returns:
             dict: keys = ["top", "descending_middle", "bottom", "ascending_middle"]
@@ -83,18 +83,18 @@ class RepObject:
         """
         return pd.DataFrame([])
 
+    def get_keyframe_pose(self, key: str):
+        return self.poses[self.keyframes["bottom"]]
+
 
 class SetObject:
-    reps: List[RepObject] = [RepObject(1)]
-    menu: str
-    weight: int
+    def __init__(self, menu: str, weight: int):
+        self.reps: List[RepObject] = []
+        self.menu: str = menu
+        self.weight: int = weight
 
     def make_new_rep(self) -> None:
-        """新しいRepObjectを作成し、配列に追加する
-
-        Returns:
-            _type_: _description_
-        """
+        """新しいRepObjectを作成し、配列に追加する"""
         idx = len(self.reps) + 1
         self.reps.append(RepObject(idx))
 
@@ -118,7 +118,7 @@ class RepState:
         self.initial_body_height = height
         self.tmp_body_heights = [self.initial_body_height] * 10
 
-    def update_rep(self, pose: PoseLandmarksObject, lower_thre, upper_thre) -> bool:
+    def update_rep_count(self, pose: PoseLandmarksObject, lower_thre, upper_thre) -> bool:
         """repが+1された時、Trueを返す
 
         Args:
@@ -132,12 +132,14 @@ class RepState:
         height = pose.get_2d_height()
         if len(self.tmp_body_heights) < 10:
             self._init_rep(height=height)
-        did_count_up = self._update_counter(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
+        has_count_upped = self.check_if_rep_finished(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
+
         self._update_lifting_state(height=height)
 
-        return did_count_up
+        return has_count_upped
 
-    def _update_counter(self, height: np.double, lower_thre, upper_thre):
+    # HACK: 上のメソッドと役割が被っている
+    def check_if_rep_finished(self, height: np.double, lower_thre, upper_thre):
         if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
             self.did_touch_bottom = True
         elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
