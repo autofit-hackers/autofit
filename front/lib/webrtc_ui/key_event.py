@@ -3,7 +3,7 @@ from queue import Empty, Queue
 import cv2
 from lib.webrtc_ui.display import text
 from pynput import keyboard
-
+import numpy as np
 
 class KeyEventMonitor:
     def __init__(self):
@@ -20,7 +20,13 @@ class KeyEventMonitor:
     def _on_release(self, key):
         pass
 
-    def check_input(self, frame):
+    def check_input(self, frame: np.ndarray):
+        """
+        VideoProcessorのrecv()から呼ばれる
+
+        Args:
+            frame (_type_): _description_
+        """
         try:
             key_input = self.key_queue.get_nowait()
             text(frame, text=key_input, position=(0.9, 0.2), font_size=3)
