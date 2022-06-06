@@ -46,3 +46,7 @@ $ python3 -m pip install pyaudio --global-option="build_ext" --global-option="-I
     * 対応する issue が存在しない場合は、 `issue_id` はなくてもよい
 * **実機（両国）環境での動作が確認されたもののみ、 `stable` ブランチにマージする**
 * 詳細は [contributing.md](/.github/contributing.md)を参照すると良い
+
+
+## Project management
+* [Jira](https://www.atlassian.com/software/jira)
