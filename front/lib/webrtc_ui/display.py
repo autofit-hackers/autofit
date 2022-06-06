@@ -31,10 +31,9 @@ def text(
     assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
 
     # Adjust parameters
-    frame_width = frame.shape[0]
-    frame_height = frame.shape[1]
-    org = map(int, (frame_width * position[0], frame_height * position[1]))
-    fontScale = font_size * frame_width
+    frame_width = frame.shape[1]
+    frame_height = frame.shape[0]
+    org = (int(frame_width * position[0]), int(frame_height * position[1]))
     color = set_color(color_name)
 
     cv2.putText(
@@ -42,7 +41,7 @@ def text(
         text=text,
         org=org,
         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-        fontScale=fontScale,
+        fontScale=font_size,
         color=color,
         thickness=thickness,
         lineType=cv2.LINE_4,
