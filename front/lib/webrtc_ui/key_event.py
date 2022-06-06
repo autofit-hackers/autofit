@@ -25,7 +25,7 @@ class KeyEventMonitor:
         VideoProcessorのrecv()から呼ばれる
 
         Args:
-            frame (_type_): _description_
+            frame (np.ndarray): VideoProcessorのframe。shapeはカメラとwebrtcのパフォーマンスによって変動。
         """
         try:
             key_input = self.key_queue.get_nowait()
