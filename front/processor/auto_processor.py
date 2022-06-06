@@ -1,30 +1,33 @@
 import imp
+import io
+import time
+from datetime import datetime
 from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import List, Union
-from datetime import datetime
-import time
-import io
 
 import av
 import cv2
-from lib.webrtc_ui.training_report import generate_data_report, generate_png_report
-from lib.pose.draw_pose import draw_landmarks_pose
-from utils.class_objects import PoseLandmarksObject
-from lib.pose.training_set import RepState, SetObject
 import lib.streamlit_ui.setting_class as settings
-import numpy as np
 import lib.webrtc_ui.display as disp
+import numpy as np
+from core.instruction import Instructions
+from lib.pose.draw_pose import draw_landmarks_pose
+from lib.pose.training_set import RepState, SetObject
+from lib.webrtc_ui.display_objects import (CoachPose, CoachPoseManager,
+                                           DisplayObjects)
+from lib.webrtc_ui.key_event import KeyEventMonitor
+from lib.webrtc_ui.training_report import (generate_data_report,
+                                           generate_png_report)
+from lib.webrtc_ui.video_recorder import TrainingSaver
+from lib.webrtc_ui.video_widget import CircleHoldButton
+from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
+from lib.webrtc_ui.webcam_input import (infer_pose, pose_process,
+                                        process_frame_initially, save_pose,
+                                        stop_pose_process)
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
-from lib.webrtc_ui.video_widget import CircleHoldButton
-from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
-from core.instruction import Instructions
-from lib.webrtc_ui.video_recorder import TrainingSaver
-from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
-from lib.webrtc_ui.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
-import lib.webrtc_ui.display as disp
-
+from utils.class_objects import PoseLandmarksObject
 
 _SENTINEL_ = "_SENTINEL_"
 
@@ -69,6 +72,8 @@ class AutoProcessor(VideoProcessorBase):
         # Start other processes
         self._pose_process.start()
         self.voice_recognition_process.start()
+
+        self.key_event_monitor = KeyEventMonitor()
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         recv_timestamp: float = time.time()
@@ -220,6 +225,8 @@ class AutoProcessor(VideoProcessorBase):
                     # お手本の表示開始
                     self.phase = 1
 
+        self.key_event_monitor.check_input(frame=frame)
+
         self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
@@ -227,3 +234,4 @@ class AutoProcessor(VideoProcessorBase):
         print("Stop the inference process...")
         stop_pose_process(in_queue=self._in_queue, pose_process=self._pose_process)
         self.voice_recognition_process.terminate()
+        self.key_event_monitor.stop()

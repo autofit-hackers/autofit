@@ -1,5 +1,5 @@
 import os
-import queue
+from queue import Queue, Empty
 import subprocess
 import sys
 from multiprocessing import Process, Queue
@@ -38,7 +38,7 @@ class VoiceRecognitionProcess(Process):
         device_info = sd.query_devices(device_id, "input")
         # soundfile expects an int, sounddevice provides a float:
         samplerate = int(device_info["default_samplerate"])
-        microphone_queue = queue.Queue()
+        microphone_queue = Queue()
 
         def callback(indata, frames, time, status):
             """This is called (from a separate thread) for each audio block."""
@@ -75,7 +75,7 @@ class VoiceRecognitionProcess(Process):
             if keyword in recognized_voice:
                 print(recognized_voice)
                 return True
-        except:
+        except Empty:
             pass
         return False
 
