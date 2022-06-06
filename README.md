@@ -50,3 +50,4 @@ $ python3 -m pip install pyaudio --global-option="build_ext" --global-option="-I
 
 ## Project management
 * [Jira](https://www.atlassian.com/software/jira)
+  * ブランチを切るときは jira のチケットから切りましょう
