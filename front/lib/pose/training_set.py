@@ -3,11 +3,30 @@ from pathlib import Path
 from typing import List
 from utils.class_objects import PoseLandmarksObject
 
-
 import numpy as np
 import pandas as pd
-import streamlit as st
 from playsound import playsound
+
+
+class TrainingObject:
+    def __init__(self, user_id: str) -> None:
+        self.user_id = user_id
+        self.sets: List[SetObject] = []
+
+    def make_new_set(self) -> None:
+        self.sets.append(SetObject(menu="menu", weight=60))
+
+
+class SetObject:
+    def __init__(self, menu: str, weight: int):
+        self.reps: List[RepObject] = []
+        self.menu: str = menu
+        self.weight: float = weight
+
+    def make_new_rep(self) -> None:
+        """新しいRepObjectを作成し、配列に追加する"""
+        idx = len(self.reps) + 1
+        self.reps.append(RepObject(idx))
 
 
 class RepObject:
@@ -85,18 +104,6 @@ class RepObject:
 
     def get_keyframe_pose(self, key: str):
         return self.poses[self.keyframes["bottom"]]
-
-
-class SetObject:
-    def __init__(self, menu: str, weight: int):
-        self.reps: List[RepObject] = []
-        self.menu: str = menu
-        self.weight: int = weight
-
-    def make_new_rep(self) -> None:
-        """新しいRepObjectを作成し、配列に追加する"""
-        idx = len(self.reps) + 1
-        self.reps.append(RepObject(idx))
 
 
 @dataclass
