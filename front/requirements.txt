@@ -19,3 +19,4 @@ dvc
 wkhtmltopdf
 pdf2image
 pynput
+imgkit

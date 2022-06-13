@@ -1,4 +1,3 @@
-import imp
 import io
 import time
 from datetime import datetime
@@ -14,7 +13,13 @@ import numpy as np
 from core.instruction import Instructions
 from lib.pose.draw_pose import draw_landmarks_pose
 from lib.pose.training_set import RepState, SetObject, TrainingObject
-from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
+from lib.webrtc_ui.display_objects import (
+    CoachPose,
+    CoachPoseManager,
+    DisplayObjects,
+    CoachInRestInput,
+    CoachInRestManager,
+)
 from lib.webrtc_ui.key_event import KeyEventMonitor
 import lib.webrtc_ui.training_report as repo
 from lib.webrtc_ui.video_recorder import TrainingSaver
@@ -53,8 +58,9 @@ class FlowProcessor(VideoProcessorBase):
         self.rep_count_settings = rep_count_settings
         self.audio_settings = audio_settings
 
-        self.phase = 0
+        self.phase: int = 0
         self.training_logger = TrainingObject(user_id="0x18")
+        self.coach_in_rest_manager: Union[CoachInRestManager, None] = None
         self.set_obj = SetObject(menu="squat", weight=50)
         self.rep_state = RepState()
         self.instructions = Instructions()
@@ -198,21 +204,15 @@ class FlowProcessor(VideoProcessorBase):
 
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
-            # training_reportを表示させる
-            frame = disp.image(
-                frame=frame,
-                image=self.training_result_display_png,
-                position=(0.1, 0.05),
-                size=(0.8, 0),
-                hold_aspect_ratio=True,
-            )
-
-            # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
-            if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
-                self.phase += 1
-                print("training phase: ", self.phase)
-
-            return av.VideoFrame.from_ndarray(frame, format="bgr24")
+            if self.coach_in_rest_manager is None:
+                # レスト中の表示マネージャ初期化
+                self.coach_in_rest_manager = CoachInRestManager(
+                    in_paths=CoachInRestInput(
+                        user_video_path=self.training_saver.video_save_path, user_pose_path=Path(".")
+                    )
+                )
+            _ret, _frame = next(self.coach_in_rest_manager)
+            return _frame  # av.VideoFrame.from_ndarray(frame, format="bgr24")
 
         # Ph5: 次へ進む ################################################################
         else:
@@ -258,9 +258,4 @@ menu=[
 ]
 
 まだ頑張れそう？で追加していくのはあり
-
-
-
-
-
 """
