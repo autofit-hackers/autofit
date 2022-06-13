@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Dict, Any
 from processor.auto_processor import AutoProcessor
 
@@ -8,12 +7,8 @@ from lib.streamlit_ui.setting_ui import (
     display_setting_ui,
     model_setting_ui,
     rep_count_setting_ui,
-    save_state_ui,
     audio_setting_ui,
 )
-import plotly.express as px
-import time
-import pandas as pd
 
 
 def app():
