@@ -1,4 +1,3 @@
-import io
 import time
 from datetime import datetime
 from multiprocessing import Process, Queue
@@ -8,7 +7,6 @@ from typing import List, Union
 import av
 import cv2
 import lib.streamlit_ui.setting_class as settings
-import lib.webrtc_ui.display as disp
 import numpy as np
 from core.instruction import Instructions
 from lib.pose.draw_pose import draw_landmarks_pose
@@ -19,6 +17,7 @@ from lib.webrtc_ui.display_objects import (
     DisplayObjects,
 )
 from lib.webrtc_ui.coach_in_rest import CoachInRestInput, CoachInRestManager
+from lib.webrtc_ui.countdown_timer import CountdownTimer
 from lib.webrtc_ui.key_event import KeyEventMonitor
 import lib.webrtc_ui.training_report as repo
 from lib.webrtc_ui.video_recorder import TrainingSaver
@@ -60,6 +59,7 @@ class FlowProcessor(VideoProcessorBase):
         self.phase: int = 0
         self.training_logger = TrainingObject(user_id="0x18")
         self.coach_in_rest_manager: Union[CoachInRestManager, None] = None
+        self.countdown_timer: Union[CountdownTimer, None] = None
         self.set_obj = SetObject(menu="squat", weight=50)
         self.rep_state = RepState()
         self.instructions = Instructions()
@@ -214,6 +214,7 @@ class FlowProcessor(VideoProcessorBase):
                         user_video_path=self.training_saver.video_save_path, user_pose_path=Path(".")
                     )
                 )
+                self.countdown_timer = CountdownTimer(remaining_time=10)
             # NOTE: overwrite a frame from cam with mp4 from phase=3
             try:
                 frame = next(self.coach_in_rest_manager)
@@ -227,6 +228,9 @@ class FlowProcessor(VideoProcessorBase):
                     2,
                     cv2.LINE_AA,
                 )
+                assert self.countdown_timer is not None
+                frame = self.countdown_timer.draw(frame)
+
             except StopIteration:
                 self.phase += 1
 
