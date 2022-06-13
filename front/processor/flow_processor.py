@@ -17,9 +17,8 @@ from lib.webrtc_ui.display_objects import (
     CoachPose,
     CoachPoseManager,
     DisplayObjects,
-    CoachInRestInput,
-    CoachInRestManager,
 )
+from lib.webrtc_ui.coach_in_rest import CoachInRestInput, CoachInRestManager
 from lib.webrtc_ui.key_event import KeyEventMonitor
 import lib.webrtc_ui.training_report as repo
 from lib.webrtc_ui.video_recorder import TrainingSaver
@@ -189,30 +188,47 @@ class FlowProcessor(VideoProcessorBase):
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
 
+            # draw rep count and FPS
+            self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
+
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
                 self.training_saver.save()
                 self.phase += 1
-                print("training phase: ", self.phase)
 
                 # training_reportをpngにする
                 # TODO: 指示内容に合わせた画像を提示
+                """
                 training_result = repo.generate_data_report()
                 template_report_path = Path("/template/training_report_display.jinja")
                 self.training_result_display_png = repo.generate_png_report(training_result, str(template_report_path))
                 self.training_result_display_png = Image.open(io.BytesIO(self.training_result_display_png))
+                """
 
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             if self.coach_in_rest_manager is None:
-                # レスト中の表示マネージャ初期化
+                # Initialize view manager for phase=3 replay
                 self.coach_in_rest_manager = CoachInRestManager(
                     in_paths=CoachInRestInput(
                         user_video_path=self.training_saver.video_save_path, user_pose_path=Path(".")
                     )
                 )
-            _ret, _frame = next(self.coach_in_rest_manager)
-            return _frame  # av.VideoFrame.from_ndarray(frame, format="bgr24")
+            # NOTE: overwrite a frame from cam with mp4 from phase=3
+            try:
+                frame = next(self.coach_in_rest_manager)
+                cv2.putText(
+                    frame,
+                    "Replay",
+                    (0, 30),  # 画面左上に表示
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0,
+                    (0, 0, 255),
+                    2,
+                    cv2.LINE_AA,
+                )
+            except StopIteration:
+                self.phase += 1
 
         # Ph5: 次へ進む ################################################################
         else:
@@ -226,7 +242,6 @@ class FlowProcessor(VideoProcessorBase):
 
         self.key_event_monitor.check_input(frame=frame)
 
-        self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
     def __del__(self):
