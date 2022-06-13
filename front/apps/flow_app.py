@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from processor.auto_processor import AutoProcessor
+from processor.flow_processor import FlowProcessor
 
 import streamlit as st
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
@@ -34,7 +34,7 @@ def app():
                 rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
                 media_stream_constraints={"video": True, "audio": False},
             ),
-            video_processor_factory=lambda: AutoProcessor(**settings_to_refresh),
+            video_processor_factory=lambda: FlowProcessor(**settings_to_refresh),
         )
 
     def _gen_and_refresh_webrtc_ctx(key: str):

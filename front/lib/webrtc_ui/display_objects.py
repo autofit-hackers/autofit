@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, List, Union
 
 import cv2
+import av
 import numpy as np
 from utils.class_objects import PoseLandmarksObject
 from lib.pose.draw_pose import draw_landmarks_pose

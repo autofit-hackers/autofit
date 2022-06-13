@@ -1,4 +1,3 @@
-import imp
 import io
 import time
 from datetime import datetime
@@ -14,7 +13,12 @@ import numpy as np
 from core.instruction import Instructions
 from lib.pose.draw_pose import draw_landmarks_pose
 from lib.pose.training_set import RepState, SetObject, TrainingObject
-from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
+from lib.webrtc_ui.display_objects import (
+    CoachPose,
+    CoachPoseManager,
+    DisplayObjects,
+)
+from lib.webrtc_ui.coach_in_rest import CoachInRestInput, CoachInRestManager
 from lib.webrtc_ui.key_event import KeyEventMonitor
 import lib.webrtc_ui.training_report as repo
 from lib.webrtc_ui.video_recorder import TrainingSaver
@@ -53,8 +57,9 @@ class FlowProcessor(VideoProcessorBase):
         self.rep_count_settings = rep_count_settings
         self.audio_settings = audio_settings
 
-        self.phase = 0
+        self.phase: int = 0
         self.training_logger = TrainingObject(user_id="0x18")
+        self.coach_in_rest_manager: Union[CoachInRestManager, None] = None
         self.set_obj = SetObject(menu="squat", weight=50)
         self.rep_state = RepState()
         self.instructions = Instructions()
@@ -183,36 +188,47 @@ class FlowProcessor(VideoProcessorBase):
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
 
+            # draw rep count and FPS
+            self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
+
             # 終了が入力されたら次へ
             if self.rep_state.rep_count == 8:
                 self.training_saver.save()
                 self.phase += 1
-                print("training phase: ", self.phase)
 
                 # training_reportをpngにする
                 # TODO: 指示内容に合わせた画像を提示
+                """
                 training_result = repo.generate_data_report()
                 template_report_path = Path("/template/training_report_display.jinja")
                 self.training_result_display_png = repo.generate_png_report(training_result, str(template_report_path))
                 self.training_result_display_png = Image.open(io.BytesIO(self.training_result_display_png))
+                """
 
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
-            # training_reportを表示させる
-            frame = disp.image(
-                frame=frame,
-                image=self.training_result_display_png,
-                position=(0.1, 0.05),
-                size=(0.8, 0),
-                hold_aspect_ratio=True,
-            )
-
-            # 次のセットorメニューorログアウトに進む（Ph5とマージ予定）
-            if self.voice_recognition_process.is_recognized_as(keyword="終わり"):
+            if self.coach_in_rest_manager is None:
+                # Initialize view manager for phase=3 replay
+                self.coach_in_rest_manager = CoachInRestManager(
+                    in_paths=CoachInRestInput(
+                        user_video_path=self.training_saver.video_save_path, user_pose_path=Path(".")
+                    )
+                )
+            # NOTE: overwrite a frame from cam with mp4 from phase=3
+            try:
+                frame = next(self.coach_in_rest_manager)
+                cv2.putText(
+                    frame,
+                    "Replay",
+                    (0, 30),  # 画面左上に表示
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0,
+                    (0, 0, 255),
+                    2,
+                    cv2.LINE_AA,
+                )
+            except StopIteration:
                 self.phase += 1
-                print("training phase: ", self.phase)
-
-            return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
         # Ph5: 次へ進む ################################################################
         else:
@@ -226,7 +242,6 @@ class FlowProcessor(VideoProcessorBase):
 
         self.key_event_monitor.check_input(frame=frame)
 
-        self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
         return av.VideoFrame.from_ndarray(frame, format="bgr24")
 
     def __del__(self):
@@ -258,9 +273,4 @@ menu=[
 ]
 
 まだ頑張れそう？で追加していくのはあり
-
-
-
-
-
 """
