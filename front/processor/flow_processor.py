@@ -203,7 +203,7 @@ class FlowProcessor(VideoProcessorBase):
                 # Initialize view manager for phase=3 replay
                 self.coach_in_rest_manager = CoachInRestManager(
                     in_paths=CoachInRestInput(
-                        user_video_path=self.training_saver.video_save_path, user_pose_path=Path(".")
+                        main_video_path=self.training_saver.video_save_path, main_pose_path=Path(".")
                     )
                 )
                 self.countdown_timer = CountdownTimer(remaining_time=10)
