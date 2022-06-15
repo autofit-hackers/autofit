@@ -115,6 +115,7 @@ class FlowProcessor(VideoProcessorBase):
             # 重量入力【音声入力！】
             # （回数入力）
 
+
             # 必要情報が入力されたら次へ(save path の入力を検知?)
             if True:
                 # initialize training saver
@@ -192,7 +193,7 @@ class FlowProcessor(VideoProcessorBase):
             self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
 
             # 終了が入力されたら次へ
-            if self.rep_state.rep_count == 8:
+            if self.key_event_monitor.pressed(char="f"):
                 self.training_saver.save()
                 self.phase += 1
 

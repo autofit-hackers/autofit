@@ -5,6 +5,7 @@ from lib.webrtc_ui.display import text
 from pynput import keyboard
 import numpy as np
 
+
 class KeyEventMonitor:
     def __init__(self):
         self.key_queue = Queue()
@@ -32,6 +33,14 @@ class KeyEventMonitor:
             text(frame, text=key_input, position=(0.9, 0.2), font_size=3)
         except Empty:
             pass
+
+    def pressed(self, char: str) -> bool:
+        try:
+            key_input = self.key_queue.get_nowait()
+            print(key_input)
+            return char == key_input
+        except Empty:
+            return False
 
     def stop(self):
         self.listener.stop()
