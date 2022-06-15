@@ -14,17 +14,13 @@ import numpy as np
 from core.instruction import Instructions
 from lib.pose.draw_pose import draw_landmarks_pose
 from lib.pose.training_set import RepState, SetObject
-from lib.webrtc_ui.display_objects import (CoachPose, CoachPoseManager,
-                                           DisplayObjects)
+from lib.webrtc_ui.display_objects import CoachPose, CoachPoseManager, DisplayObjects
 from lib.webrtc_ui.key_event import KeyEventMonitor
-from lib.webrtc_ui.training_report import (generate_data_report,
-                                           generate_png_report)
+from lib.webrtc_ui.training_report import generate_data_report, generate_png_report
 from lib.webrtc_ui.video_recorder import TrainingSaver
 from lib.webrtc_ui.video_widget import CircleHoldButton
 from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
-from lib.webrtc_ui.webcam_input import (infer_pose, pose_process,
-                                        process_frame_initially, save_pose,
-                                        stop_pose_process)
+from lib.webrtc_ui.webcam_input import infer_pose, pose_process, process_frame_initially, save_pose, stop_pose_process
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 from utils.class_objects import PoseLandmarksObject

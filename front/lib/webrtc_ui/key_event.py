@@ -6,7 +6,12 @@ from pynput import keyboard
 import numpy as np
 
 class KeyEventMonitor:
+
     def __init__(self):
+        """
+        キーイベントをnon-blockingで監視する
+        how to use with mac: enable vscode accessibility and input monitoring.
+        """
         self.key_queue = Queue()
         self.listener = keyboard.Listener(on_press=self._on_press, on_release=self._on_release)
         self.listener.start()
@@ -22,7 +27,8 @@ class KeyEventMonitor:
 
     def check_input(self, frame: np.ndarray):
         """
-        VideoProcessorのrecv()から呼ばれる
+        VideoProcessorのframeに入力されたキーを描画する。
+        アルファベット、数字は対応確認済み。特殊キーは未確認。
 
         Args:
             frame (np.ndarray): VideoProcessorのframe。shapeはカメラとwebrtcのパフォーマンスによって変動。
