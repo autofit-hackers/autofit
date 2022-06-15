@@ -7,6 +7,7 @@ from typing import List, Union
 import av
 import cv2
 import lib.streamlit_ui.setting_class as settings
+from lib.webrtc_ui.display import text
 import numpy as np
 from core.instruction import Instructions
 from lib.pose.draw_pose import draw_landmarks_pose
@@ -131,16 +132,7 @@ class FlowProcessor(VideoProcessorBase):
         # Ph2: セットの開始直前まで ################################################################
         elif self.phase == 2:
             # セットのパラメータをリセット
-            cv2.putText(
-                frame,
-                f"Say Start!",
-                (10, 100),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 0, 255),
-                2,
-                cv2.LINE_AA,
-            )
+            text(frame, text="Say Start!", position=(0.02, 0.15), color_name="Red", font_size=1.0)
 
             # 開始が入力されたら(声)セットを開始
             if (self.voice_recognition_process.is_recognized_as(keyword="スタート") or True) and exists_result:
@@ -218,16 +210,9 @@ class FlowProcessor(VideoProcessorBase):
             # NOTE: overwrite a frame from cam with mp4 from phase=3
             try:
                 frame = next(self.coach_in_rest_manager)
-                cv2.putText(
-                    frame,
-                    "Replay",
-                    (0, 30),  # 画面左上に表示
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    (0, 0, 255),
-                    2,
-                    cv2.LINE_AA,
-                )
+
+                text(frame, text="Replay", position=(0.005, 0.07), color_name="Red", font_size=1.0)
+
                 assert self.countdown_timer is not None
                 frame = self.countdown_timer.draw(frame)
 
