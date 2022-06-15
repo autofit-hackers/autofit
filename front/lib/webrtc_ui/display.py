@@ -1,6 +1,4 @@
-from pathlib import Path
-from re import I
-from typing import Any, List, Tuple, Union
+from typing import Tuple
 
 import cv2
 import numpy as np

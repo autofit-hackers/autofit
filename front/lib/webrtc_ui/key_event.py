@@ -1,9 +1,9 @@
 from queue import Empty, Queue
 
-import cv2
 from lib.webrtc_ui.display import text
 from pynput import keyboard
 import numpy as np
+
 
 class KeyEventMonitor:
 
