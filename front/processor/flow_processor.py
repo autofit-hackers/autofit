@@ -165,7 +165,7 @@ class FlowProcessor(VideoProcessorBase):
                 if is_last_frame_in_rep:
                     # レップカウントの音声出力
                     if self.audio_settings.play_audio:
-                        self.rep_state.playsound_rep()
+                        self.rep_state.play_rep_sound()
 
                     # 直前のレップのフォームを評価
                     self.set_obj.reps[self.rep_state.rep_count - 1].recalculate_keyframes()
@@ -197,7 +197,7 @@ class FlowProcessor(VideoProcessorBase):
                 self.training_result_display_png = Image.open(io.BytesIO(self.training_result_display_png))
                 """
 
-        # Ph4: レップ後（レスト中） ################################################################
+        # Ph4: セット後（レスト中） ################################################################
         elif self.phase == 4:
             if self.coach_in_rest_manager is None:
                 # Initialize view manager for phase=3 replay
