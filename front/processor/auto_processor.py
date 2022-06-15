@@ -165,7 +165,7 @@ class AutoProcessor(VideoProcessorBase):
                 if is_last_frame_in_rep:
                     # レップカウントの音声出力
                     if self.audio_settings.play_audio:
-                        self.rep_state.playsound_rep()
+                        self.rep_state.play_rep_sound()
 
                     # 直前のレップのフォームを評価
                     self.set_obj.reps[self.rep_state.rep_count - 1].recalculate_keyframes()
