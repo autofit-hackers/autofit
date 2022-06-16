@@ -202,8 +202,13 @@ class FlowProcessor(VideoProcessorBase):
             if self.coach_in_rest_manager is None:
                 # Initialize view manager for phase=3 replay
                 self.coach_in_rest_manager = CoachInRestManager(
-                    in_paths=CoachInRestInput(
-                        user_video_path=self.training_saver.video_save_path, user_pose_path=Path(".")
+                    _inputs=CoachInRestInput(
+                        frame_shape=frame.shape,  # (430, 270, 3),  # (960, 540, 3), # (1920, 1080, 3),  # Full HD RGB,
+                        report_img_path=Path(
+                            "data/instruction/squat_depth.png"
+                        ),  # TODO: generate report img automatically
+                        left_video_path=self.training_saver.video_save_path,
+                        right_video_path=self.training_saver.video_save_path,  # TODO: use video from right cam
                     )
                 )
                 self.countdown_timer = CountdownTimer(remaining_time=10)
