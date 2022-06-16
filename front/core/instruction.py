@@ -146,10 +146,10 @@ class Instructions:
             return frame
 
         # put instruction img on frame
-        return disp.image(
+        return disp.image_cv2(
             frame=frame,
             image=self.rules[self.instruction_to_show].instruction_image,
-            position=(0.45, 0.05),
+            normalized_position=(0.45, 0.05),
             size=(0.5, 0),
             hold_aspect_ratio=True,
         )

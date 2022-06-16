@@ -48,10 +48,40 @@ def text(
     )
 
 
-def image(
+def image_cv2(
+    frame,
+    image: np.ndarray,
+    normalized_position: Tuple[float, float],
+    size: Tuple[float, float],
+    alpha: float = 1,
+    hold_aspect_ratio: bool = False,
+):
+    assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
+    assert (0.0, 0.0) <= normalized_position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
+
+    # Adjust parameters
+    frame_width = frame.shape[1]
+    frame_height = frame.shape[0]
+    position = (int(frame_width * normalized_position[0]), int(frame_height * normalized_position[1]))
+    org_aspect_ratio = image[0] / image[1]
+    if hold_aspect_ratio:
+        size = (int(frame_width * size[0]), int(frame_width * size[0] * org_aspect_ratio))
+    else:
+        size = (int(frame_width * size[0]), int(frame_height * size[1]))
+
+    image[:, :, 3] = image[:, :, 3] * alpha
+    image = cv2.resize(image, position)
+
+    x1, y1, x2, y2 = position[0], position[1], position[0] + image.shape[1], position[1] + image.shape[0]
+    frame[y1:y2, x1:x2] = frame[y1:y2, x1:x2] * (1 - image[:, :, 3:] / 255) + image[:, :, :3] * (image[:, :, 3:] / 255)
+
+    return frame
+
+
+def image_pil(
     frame,
     image: Image.Image,
-    position: Tuple[float, float],
+    normalized_position: Tuple[float, float],
     size: Tuple[float, float],
     alpha: float = 1,
     hold_aspect_ratio: bool = False,
@@ -67,12 +97,12 @@ def image(
     """
 
     assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
-    assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
+    assert (0.0, 0.0) <= normalized_position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
 
     # Adjust parameters
     frame_width = frame.shape[1]
     frame_height = frame.shape[0]
-    box = (int(frame_width * position[0]), int(frame_height * position[1]))
+    position = (int(frame_width * normalized_position[0]), int(frame_height * normalized_position[1]))
     org_aspect_ratio = image.height / image.width
     if hold_aspect_ratio:
         size = (int(frame_width * size[0]), int(frame_width * size[0] * org_aspect_ratio))
@@ -88,7 +118,7 @@ def image(
 
     # Put transparent image on the frame
     frame_copy.putalpha(255)
-    frame_copy.paste(image, box=box)
+    frame_copy.paste(image, box=position)
 
     # Convert pillow.Image to ndarray
     frame_copy = np.array(frame_copy)
