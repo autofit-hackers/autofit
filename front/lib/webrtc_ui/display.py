@@ -52,25 +52,42 @@ def image_cv2(
     frame,
     image: np.ndarray,
     normalized_position: Tuple[float, float],
-    size: Tuple[float, float],
+    normalized_size: Tuple[float, float],
     alpha: float = 1,
     hold_aspect_ratio: bool = False,
 ):
+    """
+    put transparent image on the frame with cv2
+
+    Args:
+        image (np.ndarray): cv2 image to be put on the frame
+        normalized_position (Tuple[float]): top-left position relative to the frame. Must be (0.0, 0.0) ~ (1.0, 1.0).
+        size (Tuple): image size relative to the frame. Must be (0, 0) ~ (1.0, 1.0).
+        alpha (float): transparent alpha. Must be in [0.0, 1.0]
+        hold_aspect_ratio  (bool): whether to retain the image aspect ratio
+    """
     assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
     assert (0.0, 0.0) <= normalized_position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
 
     # Adjust parameters
     frame_width = frame.shape[1]
     frame_height = frame.shape[0]
+    image_width = image.shape[1]
+    image_height = image.shape[0]
     position = (int(frame_width * normalized_position[0]), int(frame_height * normalized_position[1]))
-    org_aspect_ratio = image[0] / image[1]
+    # org_aspect_ratio = image.shape[0] / image.shape[1]
+    org_aspect_ratio = image_height / image_width
     if hold_aspect_ratio:
-        size = (int(frame_width * size[0]), int(frame_width * size[0] * org_aspect_ratio))
+        size = (
+            int(frame_width * normalized_size[0]),
+            int(frame_width * normalized_size[0] * org_aspect_ratio),
+        )
     else:
-        size = (int(frame_width * size[0]), int(frame_height * size[1]))
+        size = (int(frame_width * normalized_size[0]), int(frame_height * normalized_size[1]))
 
+    image = image.copy()
     image[:, :, 3] = image[:, :, 3] * alpha
-    image = cv2.resize(image, position)
+    image = cv2.resize(image, size)
 
     x1, y1, x2, y2 = position[0], position[1], position[0] + image.shape[1], position[1] + image.shape[0]
     frame[y1:y2, x1:x2] = frame[y1:y2, x1:x2] * (1 - image[:, :, 3:] / 255) + image[:, :, :3] * (image[:, :, 3:] / 255)
@@ -82,18 +99,19 @@ def image_pil(
     frame,
     image: Image.Image,
     normalized_position: Tuple[float, float],
-    size: Tuple[float, float],
+    normalized_size: Tuple[float, float],
     alpha: float = 1,
     hold_aspect_ratio: bool = False,
 ):
     """
-    put transparent image on the frame
+    put transparent image on the frame with pillow
 
     Args:
-        img_path (Union[Path, str]): _description_
-        position (Tuple[float]): top-left position relative to the frame. Must be (0.0, 0.0) ~ (1.0, 1.0).
+        image (Image.Image)): pillow image to be put on the frame
+        normalized_position (Tuple[float]): top-left position relative to the frame. Must be (0.0, 0.0) ~ (1.0, 1.0).
         size (Tuple): image size relative to the frame. Must be (0, 0) ~ (1.0, 1.0).
         alpha (float): transparent alpha. Must be in [0.0, 1.0]
+        hold_aspect_ratio  (bool): whether to retain the image aspect ratio
     """
 
     assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
@@ -105,9 +123,12 @@ def image_pil(
     position = (int(frame_width * normalized_position[0]), int(frame_height * normalized_position[1]))
     org_aspect_ratio = image.height / image.width
     if hold_aspect_ratio:
-        size = (int(frame_width * size[0]), int(frame_width * size[0] * org_aspect_ratio))
+        size = (
+            int(frame_width * normalized_size[0]),
+            int(frame_width * normalized_size[0] * org_aspect_ratio),
+        )
     else:
-        size = (int(frame_width * size[0]), int(frame_height * size[1]))
+        size = (int(frame_width * normalized_size[0]), int(frame_height * normalized_size[1]))
     alpha = int(255 * alpha)
 
     # Add alpha channel to image

@@ -200,7 +200,7 @@ class AutoProcessor(VideoProcessorBase):
                 frame=frame,
                 image=self.training_result_display_png,
                 normalized_position=(0.1, 0.05),
-                size=(0.8, 0),
+                normalized_size=(0.8, 0),
                 alpha=1,
                 hold_aspect_ratio=True,
             )
