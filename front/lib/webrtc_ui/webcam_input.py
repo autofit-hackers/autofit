@@ -1,4 +1,3 @@
-import copy
 import os
 import pickle
 import time
@@ -10,7 +9,6 @@ import cv2
 from utils.class_objects import PoseLandmarksObject, mp_res_to_pose_obj
 from lib.streamlit_ui.setting_class import ModelSettings
 import mediapipe as mp
-import streamlit as st
 from numpy import ndarray
 from streamlit_webrtc import ClientSettings, WebRtcMode, webrtc_streamer
 
