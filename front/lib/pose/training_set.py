@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
+import os
 from pathlib import Path
 from typing import List
-from utils.class_objects import PoseLandmarksObject
+from gtts import gTTS
 
 import numpy as np
 import pandas as pd
 from playsound import playsound
+from utils.class_objects import PoseLandmarksObject
 
 
 class TrainingObject:
@@ -159,7 +161,11 @@ class RepState:
         self.tmp_body_heights.pop(0)
         self.tmp_body_heights.append(height)
 
-    def playsound_rep(self):
+    def play_rep_sound(self):
+        # 音声ファイルが存在しない場合は合成音声ライブラリで作成する
+        if not os.path.isfile(f"data/audio_src/rep_count/{self.rep_count}.mp3"):
+            gTTS(text=str(self.rep_count), lang="ja", slow=False).save(f"data/audio_src/rep_count/{self.rep_count}.mp3")
+
         sound_file = f"data/audio_src/rep_count/{self.rep_count}.mp3"
         playsound(sound_file, block=False)
 

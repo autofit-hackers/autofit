@@ -1,1 +1,0 @@
-# Form Instructions from Starting Strength
