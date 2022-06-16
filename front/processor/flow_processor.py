@@ -204,6 +204,9 @@ class FlowProcessor(VideoProcessorBase):
                 self.coach_in_rest_manager = CoachInRestManager(
                     _inputs=CoachInRestInput(
                         frame_shape=frame.shape,  # (430, 270, 3),  # (960, 540, 3), # (1920, 1080, 3),  # Full HD RGB,
+                        report_img_path=Path(
+                            "data/instruction/squat_depth.png"
+                        ),  # TODO: generate report img automatically
                         left_video_path=self.training_saver.video_save_path,
                         right_video_path=self.training_saver.video_save_path,  # TODO: use video from right cam
                     )
