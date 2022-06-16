@@ -4,14 +4,15 @@ from traceback import print_tb
 from typing import Any, Callable, Dict, List, Tuple
 
 import cv2
-from utils import guide_line
-from utils.class_objects import PoseLandmarksObject
+import lib.webrtc_ui.display as disp
+import numpy as np
 from lib.pose.training_set import RepObject, SetObject
 from numpy import ndarray
 from PIL import Image
+from utils import guide_line
+from utils.class_objects import PoseLandmarksObject
 
 import core.form_evaluation as eval
-import lib.webrtc_ui.display as disp
 
 
 @dataclass(frozen=True)
@@ -23,7 +24,7 @@ class InstructionRule:
     guideline_func: Callable
     reason: str
     menu_to_recommend: Tuple[str]
-    instruction_image: Image.Image
+    instruction_image: np.ndarray
 
 
 @dataclass
@@ -49,7 +50,7 @@ class Instructions:
                 guideline_func=guide_line.squat_knees_in,
                 reason="外転筋が弱い",
                 menu_to_recommend=("ヒップアブダクション",),
-                instruction_image=Image.open(Path("data/instruction/squat_knees_in.png")),
+                instruction_image=cv2.imread("data/instruction/squat_knees_in.png", cv2.IMREAD_UNCHANGED),
             ),
             "squat_depth": InstructionRule(
                 text="しゃがみ込みが浅いです",
@@ -57,7 +58,7 @@ class Instructions:
                 guideline_func=guide_line.squat_depth,
                 reason="足首が固い",
                 menu_to_recommend=("足首ストレッチ",),
-                instruction_image=Image.open(Path("data/instruction/squat_depth.png")),
+                instruction_image=cv2.imread("data/instruction/squat_depth.png", cv2.IMREAD_UNCHANGED),
             ),
             # TODO: form_evaluation.pyで関数が実装されるまでエラーになるのでコメントアウト
             # "squat_knees_ahead": InstructionRule(
@@ -146,11 +147,11 @@ class Instructions:
             return frame
 
         # put instruction img on frame
-        return disp.image(
+        return disp.image_cv2(
             frame=frame,
             image=self.rules[self.instruction_to_show].instruction_image,
-            position=(0.45, 0.05),
-            size=(0.5, 0),
+            normalized_position=(0.45, 0.05),
+            normalized_size=(0.5, 0),
             hold_aspect_ratio=True,
         )
 

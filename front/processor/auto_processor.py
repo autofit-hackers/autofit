@@ -191,16 +191,17 @@ class AutoProcessor(VideoProcessorBase):
                 training_result = generate_data_report()
                 template_report_path = Path("/template/training_report_display.jinja")
                 self.training_result_display_png = generate_png_report(training_result, str(template_report_path))
-                self.training_result_display_png = Image.open(io.BytesIO(self.training_result_display_png))
+                self.training_result_display_png = cv2.imread("alpha.png", cv2.IMREAD_UNCHANGED)  # アルファチャンネル込みで読み込む
 
         # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             # training_reportを表示させる
-            frame = disp.image(
+            frame = disp.image_cv2(
                 frame=frame,
                 image=self.training_result_display_png,
-                position=(0.1, 0.05),
-                size=(0.8, 0),
+                normalized_position=(0.1, 0.05),
+                normalized_size=(0.8, 0),
+                alpha=1,
                 hold_aspect_ratio=True,
             )
 
