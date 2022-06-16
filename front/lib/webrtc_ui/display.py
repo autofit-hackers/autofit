@@ -68,7 +68,7 @@ def image(
 
     assert 0.0 <= alpha <= 1.0, "Value of alpha must be in [0.0, 0.1]"
     assert (0.0, 0.0) <= position <= (1.0, 1.0), "position must be (0,0) ~ (1.0, 1.0)"
-
+    print(image.split()[-1])
     # Adjust parameters
     frame_width = frame.shape[1]
     frame_height = frame.shape[0]
@@ -79,6 +79,7 @@ def image(
     else:
         size = (int(frame_width * size[0]), int(frame_height * size[1]))
     alpha = int(255 * alpha)
+    print(alpha)
 
     # Add alpha channel to image
     image = image.resize(size)

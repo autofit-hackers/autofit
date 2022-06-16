@@ -170,7 +170,6 @@ class FlowProcessor(VideoProcessorBase):
             self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
             
             # 画面背景を白・表示の更新
-            frame = frame * 0 + 255
             cv2.putText(
                 frame,
                 f"Rep:{self.rep_state.rep_count}",
