@@ -27,6 +27,7 @@ from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
 import lib.webrtc_ui.webcam_input as wi
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
+import lib.webrtc_ui.display as disp
 from utils.class_objects import PoseLandmarksObject
 
 _SENTINEL_ = "_SENTINEL_"
@@ -77,6 +78,12 @@ class FlowProcessor(VideoProcessorBase):
         self.voice_recognition_process.start()
 
         self.key_event_monitor = KeyEventMonitor()
+
+        [x + 1 for x in range(0, 100)]
+        self.rep_imgs: List = [cv2.imread(f"data/rep_counter/{i}.png", cv2.IMREAD_UNCHANGED) for i in range(0, 11)]
+        for img in self.rep_imgs:
+            print(img.shape)
+        cv2.imread("data/instruction/squat_knees_in.png", cv2.IMREAD_UNCHANGED),
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         recv_timestamp: float = time.time()
@@ -168,8 +175,9 @@ class FlowProcessor(VideoProcessorBase):
 
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
-            
+
             # 画面背景を白・表示の更新
+            # frame = frame * 0 + 255
             cv2.putText(
                 frame,
                 f"Rep:{self.rep_state.rep_count}",
@@ -179,6 +187,16 @@ class FlowProcessor(VideoProcessorBase):
                 (0, 0, 255),
                 2,
                 cv2.LINE_AA,
+            )
+            if self.rep_state.rep_count < 10:
+                rep_cnt = self.rep_state.rep_count
+            else:
+                rep_cnt = 10
+            disp.image_cv2(
+                frame=frame,
+                image=self.rep_imgs[rep_cnt],
+                normalized_position=(0.25, 0.2),
+                normalized_size=(0.5, 0),
             )
 
             # 終了が入力されたら次へ

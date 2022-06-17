@@ -54,7 +54,7 @@ def image_cv2(
     normalized_position: Tuple[float, float],
     normalized_size: Tuple[float, float],
     alpha: float = 1,
-    hold_aspect_ratio: bool = False,
+    hold_aspect_ratio: bool = True,
 ):
     """
     put transparent image on the frame with cv2
