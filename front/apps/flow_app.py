@@ -38,12 +38,17 @@ def app():
         )
 
     def _gen_and_refresh_webrtc_ctx(key: str):
+        settings_to_refresh.update({"webrtc_key": key})
         webrtc_ctx = gen_webrtc_ctx(key=key)
         if webrtc_ctx.video_processor:
             _update_video_processor(webrtc_ctx.video_processor, settings_to_refresh)
         return webrtc_ctx
 
-    _gen_and_refresh_webrtc_ctx(key="front")
+    front_cam, side_cam = st.columns(2)
+    with front_cam:
+        _gen_and_refresh_webrtc_ctx(key="front")
+    with side_cam:
+        _gen_and_refresh_webrtc_ctx(key="side")
 
 
 def _update_video_processor(vp, to_refresh: Dict[str, Any]) -> None:

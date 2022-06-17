@@ -40,6 +40,7 @@ class FlowProcessor(VideoProcessorBase):
         display_settings: settings.DisplaySettings,
         rep_count_settings: settings.RepCountSettings,
         audio_settings: settings.AudioSettings,
+        webrtc_key: str,
     ) -> None:
         self._in_queue = Queue()
         self._out_queue = Queue()
@@ -67,6 +68,7 @@ class FlowProcessor(VideoProcessorBase):
         self.instructions = Instructions()
         self.hold_button = CircleHoldButton()
         self.display_objects = DisplayObjects()
+        self.webrtc_key = webrtc_key
 
         if self.display_settings.correct_distortion:
             self.cmtx = np.loadtxt(Path("data/camera_info/2022-05-27-09-29/front/mtx.dat"))
@@ -126,7 +128,7 @@ class FlowProcessor(VideoProcessorBase):
                 session_created_at = datetime.now().strftime("%Y-%m-%d-%H-%M")
                 menu_name: str = "squat"
                 save_path = Path("data") / "training" / self.user_name / menu_name / session_created_at
-                self.training_saver = TrainingSaver(save_path=save_path)
+                self.training_saver = TrainingSaver(save_path=save_path, key=self.webrtc_key)
                 # お手本ポーズのロード
                 # XXX: ハードコードなので注意
                 self.coach_pose_mgr = CoachPoseManager(coach_pose_path=Path("data/coach_pose/endo_squat.pkl"))
@@ -139,7 +141,7 @@ class FlowProcessor(VideoProcessorBase):
             text(frame, text="Say Start!", position=(0.02, 0.15), color_name="Red", font_size=1.0)
 
             # 開始が入力されたら(声)セットを開始
-            if (self.voice_recognition_process.is_recognized_as(keyword="スタート") or True) and exists_result:
+            if self.key_event_monitor.pressed(char="s"):
                 # お手本ポーズのリセット
                 self.coach_pose_mgr.setup_coach_pose(current_pose=result_pose)
                 self.phase += 1
@@ -207,12 +209,12 @@ class FlowProcessor(VideoProcessorBase):
                 # Initialize view manager for phase=3 replay
                 self.coach_in_rest_manager = CoachInRestManager(
                     _inputs=CoachInRestInput(
-                        frame_shape=frame.shape,  # (430, 270, 3),  # (960, 540, 3), # (1920, 1080, 3),  # Full HD RGB,
+                        frame_shape=frame.shape,  # (480, 270, 3),  # (960, 540, 3), # (1920, 1080, 3),  # Full HD RGB,
                         report_img_path=Path(
                             "data/instruction/squat_depth.png"
                         ),  # TODO: generate report img automatically
-                        left_video_path=self.training_saver.video_save_path,
-                        right_video_path=self.training_saver.video_save_path,  # TODO: use video from right cam
+                        left_video_path=self.training_saver.front_path,
+                        right_video_path=self.training_saver.side_path,  # TODO: use video from right cam
                     )
                 )
                 self.countdown_timer = CountdownTimer(remaining_time=30)
@@ -229,6 +231,8 @@ class FlowProcessor(VideoProcessorBase):
 
             except StopIteration:
                 self.phase = 1
+                self.rep_state = RepState()
+                self.coach_in_rest_manager: Union[CoachInRestManager, None] = None
 
         # Ph5: 次へ進む ################################################################
         else:

@@ -30,13 +30,15 @@ def release_video_writer(video_writer: Union[VideoWriter, None], video_save_path
 
 
 class TrainingSaver:
-    def __init__(self, save_path: Path) -> None:
+    def __init__(self, save_path: Path, key: str) -> None:
         save_path.mkdir(parents=True, exist_ok=True)
         assert save_path.is_dir()
-        self.pose_save_path: Path = save_path / "pose.pkl"
+        self.pose_save_path: Path = save_path / f"pose_{key}.pkl"
         self.pose_memory: List[PoseLandmarksObject] = []
-        self.video_save_path: Path = save_path / "video.mp4"
+        self.video_save_path: Path = save_path / f"video_{key}.mp4"
         self.video_writer: Union[cv2.VideoWriter, None] = None
+        self.front_path: Path = save_path / f"video_front.mp4"
+        self.side_path: Path = save_path / f"video_side.mp4"
 
     def update(self, pose: Union[PoseLandmarksObject, None], frame, timestamp: float):
         """保存用配列やビデオライターにposeおよびframeを追加していく
