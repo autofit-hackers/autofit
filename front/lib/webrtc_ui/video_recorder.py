@@ -1,7 +1,6 @@
 from typing import List, Union
 import os
 from pathlib import Path
-from typing import Callable
 
 from aiortc.contrib.media import MediaRecorder
 import cv2

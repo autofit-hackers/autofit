@@ -1,6 +1,3 @@
-from dataclasses import field
-from pathlib import Path
-from typing import Dict, Tuple
 
 import cv2
 from lib.pose.training_set import SetObject

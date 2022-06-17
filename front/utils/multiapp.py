@@ -1,6 +1,5 @@
 """Frameworks for running multiple Streamlit applications as a single app.
 """
-from email.policy import default
 import streamlit as st
 
 

@@ -1,10 +1,8 @@
 import copy
-import json
 import os
 import pickle
 import time
 from multiprocessing import Process, Queue
-from pathlib import Path
 from typing import List, Union
 
 import av

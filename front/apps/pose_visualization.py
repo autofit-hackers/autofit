@@ -2,7 +2,6 @@ import datetime
 import os
 import pickle
 from pathlib import Path
-from time import time
 from unicodedata import name
 
 import mediapipe as mp
