@@ -161,7 +161,7 @@ def button(
 
 
 def set_color(color_name: str, color_space: str = "bgr") -> Tuple[int, int, int]:
-    assert color_space is "rgb" or "bgr", "Invalid color space."
+    assert (color_space == "rgb") or (color_space == "bgr"), "Invalid color space."
 
     color = colors.to_rgb(color_name)
     if color_space == "rgb":
