@@ -86,7 +86,11 @@ class CoachInRestManager(object):
         return return_frame
 
     def change_instruction_by_key_input(self, key_input: str) -> None:
-        
+        """change displaying instruction img in lower right, according to key input
+
+        Args:
+            key_input (str): pressed key character, ex) key_event_monitor.get_key_input()
+        """
         if key_input != "":
             _report_img_path = "../assets/autofit_logo.png"
             if key_input == "q":
