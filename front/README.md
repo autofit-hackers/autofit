@@ -1,4 +1,4 @@
-# posefit-streamlit-example
+# autofit-streamlit-example
 
 ## Prerequisite
 * python 3.8.13
