@@ -1,6 +1,4 @@
-import os
 from queue import Queue, Empty
-import subprocess
 import sys
 from multiprocessing import Process, Queue
 

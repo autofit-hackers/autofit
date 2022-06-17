@@ -3,7 +3,7 @@ import glob
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, NamedTuple, Tuple, Union
+from typing import List, Tuple, Union
 
 import cv2
 import numpy as np

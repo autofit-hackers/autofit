@@ -1,6 +1,4 @@
-from dataclasses import field
-from pathlib import Path
-from typing import Dict, Tuple
+from typing import Tuple
 
 from lib.pose.training_set import RepObject
 from PIL import Image

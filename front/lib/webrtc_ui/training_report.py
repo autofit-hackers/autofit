@@ -1,6 +1,5 @@
 import os
 import imgkit
-import io
 
 from PIL import Image
 from pathlib import Path

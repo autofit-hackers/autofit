@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 import os
-from pathlib import Path
 from typing import List
 from gtts import gTTS
 
