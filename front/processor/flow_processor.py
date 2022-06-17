@@ -27,6 +27,7 @@ from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
 import lib.webrtc_ui.webcam_input as wi
 from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
+import lib.webrtc_ui.display as disp
 from utils.class_objects import PoseLandmarksObject
 
 _SENTINEL_ = "_SENTINEL_"
@@ -77,6 +78,9 @@ class FlowProcessor(VideoProcessorBase):
         self.voice_recognition_process.start()
 
         self.key_event_monitor = KeyEventMonitor()
+
+        self.rep_imgs: List = [cv2.imread(f"data/rep_counter/{i}.png", cv2.IMREAD_UNCHANGED) for i in range(0, 11)]
+        cv2.imread("data/instruction/squat_knees_in.png", cv2.IMREAD_UNCHANGED),
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         recv_timestamp: float = time.time()
@@ -145,24 +149,18 @@ class FlowProcessor(VideoProcessorBase):
         # Ph3: セット中 ################################################################
         elif self.phase == 3:
             if exists_result:
-                # お手本ポーズの更新
-                self.coach_pose_mgr.show_coach_pose(frame=frame)
-                # keyframeが検知（レップが開始）された時、お手本ポーズをReload
-                if self.rep_state.is_keyframe(pose=result_pose):
-                    self.coach_pose_mgr.reload_coach_pose()
-
                 # 実行中のRepに推定poseを記録
                 self.set_obj.reps[self.rep_state.rep_count].record_pose(pose=result_pose)
 
                 # レップ数の更新（updateで回数が増えたらTrue）
-                is_last_frame_in_rep = self.rep_state.update_rep_count(
+                did_count_up = self.rep_state.update_rep_count(
                     pose=result_pose,
                     upper_thre=self.rep_count_settings.upper_thresh,
                     lower_thre=self.rep_count_settings.lower_thresh,
                 )
 
                 # レップカウントが増えた時、フォーム評価を実施する
-                if is_last_frame_in_rep:
+                if did_count_up:
                     # レップカウントの音声出力
                     if self.audio_settings.play_audio:
                         self.rep_state.play_rep_sound()
@@ -172,32 +170,38 @@ class FlowProcessor(VideoProcessorBase):
                     self.instructions.evaluate_rep(rep_obj=self.set_obj.reps[self.rep_state.rep_count - 1])
                     self.set_obj.make_new_rep()
 
-                # 2レップ目以降はガイドラインと指導テキストを表示
-                if self.rep_state.rep_count >= 1:
-                    frame = self.instructions.show_text(frame=frame)
-                    self.instructions.show_guideline(frame=frame, pose=result_pose, set_obj=self.set_obj)
-
             # 保存用配列の更新
             self.training_saver.update(pose=result_pose, frame=frame, timestamp=recv_timestamp)
 
-            # draw rep count and FPS
-            self.display_objects.update_and_show(frame=frame, reps=self.rep_state.rep_count)
+            # 画面背景を白・表示の更新
+            # frame = frame * 0 + 255
+            cv2.putText(
+                frame,
+                f"Rep:{self.rep_state.rep_count}",
+                (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 0, 255),
+                2,
+                cv2.LINE_AA,
+            )
+            if self.rep_state.rep_count < 10:
+                rep_cnt = self.rep_state.rep_count
+            else:
+                rep_cnt = 10
+            disp.image_cv2(
+                frame=frame,
+                image=self.rep_imgs[rep_cnt],
+                normalized_position=(0.25, 0.2),
+                normalized_size=(0.5, 0),
+            )
 
             # 終了が入力されたら次へ
-            if self.rep_state.rep_count == 8:
+            if self.key_event_monitor.pressed(char="f"):
                 self.training_saver.save()
                 self.phase += 1
 
-                # training_reportをpngにする
-                # TODO: 指示内容に合わせた画像を提示
-                """
-                training_result = repo.generate_data_report()
-                template_report_path = Path("/template/training_report_display.jinja")
-                self.training_result_display_png = repo.generate_png_report(training_result, str(template_report_path))
-                self.training_result_display_png = Image.open(io.BytesIO(self.training_result_display_png))
-                """
-
-        # Ph4: セット後（レスト中） ################################################################
+        # Ph4: レップ後（レスト中） ################################################################
         elif self.phase == 4:
             if self.coach_in_rest_manager is None:
                 # Initialize view manager for phase=3 replay

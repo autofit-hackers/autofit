@@ -39,5 +39,13 @@ class KeyEventMonitor:
         except Empty:
             pass
 
+    def pressed(self, char: str) -> bool:
+        try:
+            key_input = self.key_queue.get_nowait()
+            print(key_input)
+            return char == key_input
+        except Empty:
+            return False
+
     def stop(self):
         self.listener.stop()
