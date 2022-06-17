@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from multiprocessing import Process, Queue
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 import av
 import cv2
@@ -187,10 +187,10 @@ class FlowProcessor(VideoProcessorBase):
                 2,
                 cv2.LINE_AA,
             )
-            if self.rep_state.rep_count < 10: # len(self.rep_imgs):
+            if self.rep_state.rep_count < len(self.rep_imgs) - 1:
                 rep_cnt = self.rep_state.rep_count
             else:
-                rep_cnt = 10#len(self.rep_imgs)
+                rep_cnt = len(self.rep_imgs) - 1
             disp.image_cv2(
                 frame=frame,
                 image=self.rep_imgs[rep_cnt],
@@ -218,7 +218,7 @@ class FlowProcessor(VideoProcessorBase):
                     )
                 )
                 self.countdown_timer = CountdownTimer(remaining_time=30)
-            # FIX: manual instruction
+            # TODO: manual instruction -> automate
             self.coach_in_rest_manager.change_instruction_by_key_input(self.key_event_monitor.get_input_char())
             # NOTE: overwrite a frame from cam with mp4 from phase=3
             try:
