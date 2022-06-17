@@ -21,3 +21,5 @@ pdf2image
 pynput
 imgkit
 gtts 
+scikit-image
+SpeechRecognition
