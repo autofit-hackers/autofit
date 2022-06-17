@@ -2,7 +2,6 @@ from typing import List, Union
 import os
 from pathlib import Path
 
-from aiortc.contrib.media import MediaRecorder
 import cv2
 import av
 from cv2 import VideoWriter
@@ -24,6 +23,7 @@ def create_video_writer(fps: int, frame: av.VideoFrame, video_save_path: str) ->
 
 def release_video_writer(video_writer: Union[VideoWriter, None], video_save_path: Union[str, None]) -> None:
     print("Releasing video_writer...")
+    assert video_writer is not None
     video_writer.release()
     video_writer = None
     print(f"Video has saved to {video_save_path}")
