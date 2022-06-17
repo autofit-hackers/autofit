@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from traceback import print_tb
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 import cv2
 import lib.webrtc_ui.display as disp

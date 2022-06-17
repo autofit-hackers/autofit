@@ -1,10 +1,8 @@
-import imp
 import io
 import time
 from datetime import datetime
 from multiprocessing import Process, Queue
 from pathlib import Path
-from typing import List, Union
 
 import av
 import cv2

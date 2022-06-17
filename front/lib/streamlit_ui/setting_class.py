@@ -1,10 +1,6 @@
-import json
-import pickle
-import time
-from dataclasses import dataclass, field
-from distutils.command.upload import upload
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, NamedTuple, Union
+from typing import Union
 from utils.class_objects import PoseLandmarksObject
 
 

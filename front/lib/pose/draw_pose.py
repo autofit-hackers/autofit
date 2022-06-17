@@ -1,5 +1,3 @@
-import math
-from turtle import color
 
 import cv2
 import numpy as np

@@ -1,9 +1,8 @@
 import copy
-import json
 import os
 import pickle
 from multiprocessing import Process, Queue
-from typing import List, Union
+from typing import Union
 
 import av
 import cv2
