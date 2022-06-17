@@ -79,10 +79,7 @@ class FlowProcessor(VideoProcessorBase):
 
         self.key_event_monitor = KeyEventMonitor()
 
-        [x + 1 for x in range(0, 100)]
         self.rep_imgs: List = [cv2.imread(f"data/rep_counter/{i}.png", cv2.IMREAD_UNCHANGED) for i in range(0, 11)]
-        for img in self.rep_imgs:
-            print(img.shape)
         cv2.imread("data/instruction/squat_knees_in.png", cv2.IMREAD_UNCHANGED),
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:

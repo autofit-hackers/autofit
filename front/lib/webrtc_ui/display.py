@@ -128,7 +128,6 @@ def image_pil(
     else:
         size = (int(frame_width * normalized_size[0]), int(frame_height * normalized_size[1]))
     alpha = int(255 * alpha)
-    print(alpha)
 
     # Add alpha channel to image
     image = image.resize(size)
