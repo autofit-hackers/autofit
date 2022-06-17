@@ -1,5 +1,5 @@
-# posefit
-![](/assets/posefit_logo.png)
+# autofit
+![](/assets/autofit_logo.png)
 
 ## Prerequisite
 ### [dvc](https://dvc.org/doc/start)
