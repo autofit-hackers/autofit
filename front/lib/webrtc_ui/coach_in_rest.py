@@ -9,6 +9,8 @@ import av
 from skimage.transform import resize
 from PIL import Image
 
+from lib.webrtc_ui.key_event import KeyEventMonitor
+
 
 @dataclass
 class CoachInRestInput:
@@ -82,3 +84,13 @@ class CoachInRestManager(object):
         self.counter += 1
 
         return return_frame
+
+    def change_instruction_by_key_input(self, key_input: str) -> None:
+        
+        if key_input != "":
+            _report_img_path = "../assets/autofit_logo.png"
+            if key_input == "q":
+                _report_img_path = "data/instruction/squat_depth.png"
+            elif key_input == "w":
+                _report_img_path = "data/instruction/squat_knees_in.png"
+            self.report_img: npt.NDArray[np.uint8] = np.array(Image.open(_report_img_path).convert("RGB"))

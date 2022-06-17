@@ -185,10 +185,10 @@ class FlowProcessor(VideoProcessorBase):
                 2,
                 cv2.LINE_AA,
             )
-            if self.rep_state.rep_count < 10:
+            if self.rep_state.rep_count < 10: # len(self.rep_imgs):
                 rep_cnt = self.rep_state.rep_count
             else:
-                rep_cnt = 10
+                rep_cnt = 10#len(self.rep_imgs)
             disp.image_cv2(
                 frame=frame,
                 image=self.rep_imgs[rep_cnt],
@@ -215,7 +215,9 @@ class FlowProcessor(VideoProcessorBase):
                         right_video_path=self.training_saver.video_save_path,  # TODO: use video from right cam
                     )
                 )
-                self.countdown_timer = CountdownTimer(remaining_time=10)
+                self.countdown_timer = CountdownTimer(remaining_time=30)
+            # FIX: manual instruction
+            self.coach_in_rest_manager.change_instruction_by_key_input(self.key_event_monitor.get_input_char())
             # NOTE: overwrite a frame from cam with mp4 from phase=3
             try:
                 frame = next(self.coach_in_rest_manager)
@@ -226,7 +228,7 @@ class FlowProcessor(VideoProcessorBase):
                 frame = self.countdown_timer.draw(frame)
 
             except StopIteration:
-                self.phase += 1
+                self.phase = 1
 
         # Ph5: 次へ進む ################################################################
         else:

@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from typing import Callable
 
-from aiortc.contrib.media import MediaRecorder
 import cv2
 import av
 from cv2 import VideoWriter

@@ -1,3 +1,4 @@
+from ctypes import Union
 from queue import Empty, Queue
 
 from lib.webrtc_ui.display import text
@@ -46,6 +47,13 @@ class KeyEventMonitor:
             return char == key_input
         except Empty:
             return False
+
+    def get_input_char(self) -> str:
+        try:
+            key_input = self.key_queue.get_nowait()
+            return key_input
+        except Empty:
+            return ""
 
     def stop(self):
         self.listener.stop()
