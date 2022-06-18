@@ -98,8 +98,31 @@ class CoachInRestManager(object):
         """
         if key_input != "":
             _report_img_path = "../assets/autofit_logo.png"
-            if key_input == "q":
-                _report_img_path = "data/instruction/squat_depth.png"
+            if key_input == "1":
+                _report_img_path = "data/instruction/バーの高さを低く.png"
+            elif key_input == "2":
+                _report_img_path = "data/instruction/バーの重さを軽く.png"
+            elif key_input == "3":
+                _report_img_path = "data/instruction/腰を丸めよう.png"
+            elif key_input == "4":
+                _report_img_path = "data/instruction/腰を反らす.png"
+            elif key_input == "5":
+                _report_img_path = "data/instruction/手幅狭めよう.png"
+            elif key_input == "6":
+                _report_img_path = "data/instruction/手幅広げよう.png"
+            elif key_input == "7":
+                _report_img_path = "data/instruction/足幅狭めよう.png"
+            elif key_input == "8":
+                _report_img_path = "data/instruction/足幅広げよう.png"
+            elif key_input == "9":
+                _report_img_path = "data/instruction/背中たてる.png"
+            elif key_input == "0":
+                _report_img_path = "data/instruction/背中前傾しよう.png"
+            elif key_input == "q":
+                _report_img_path = "data/instruction/膝前出るな.png"
             elif key_input == "w":
-                _report_img_path = "data/instruction/squat_knees_in.png"
+                _report_img_path = "data/instruction/膝内はいるな.png"
+            elif key_input == "e":
+                _report_img_path = "data/instruction/squat_depth.png"
+
             self.report_img: npt.NDArray[np.uint8] = np.array(Image.open(_report_img_path).convert("RGB"))
