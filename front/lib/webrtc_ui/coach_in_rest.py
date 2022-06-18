@@ -9,7 +9,7 @@ import av
 from skimage.transform import resize
 from PIL import Image
 
-from lib.webrtc_ui.key_event import KeyEventMonitor
+from lib.webrtc_ui.countdown_timer import CountdownTimer
 
 
 @dataclass
@@ -18,6 +18,7 @@ class CoachInRestInput:
     left_video_path: Path
     right_video_path: Path
     report_img_path: Path
+    countdown_timer: CountdownTimer
     left_pose_path: Union[Path, None] = None
     right_pose_path: Union[Path, None] = None
 
@@ -36,6 +37,7 @@ class CoachInRestManager(object):
         # TODO: draw user pose
         # with open(in_paths.user_video_path) as f:
         #     self.user_pose: List[PoseLandmarksObject] = pickle.load(f)
+        self.countdown_timer = _inputs.countdown_timer
 
         self.counter: int = 0
 
@@ -74,7 +76,10 @@ class CoachInRestManager(object):
             )
             return_frame[0 : one_quarter_shape[0], one_quarter_shape[1] :, :] = shrinked_right_frame[:, :, :]
         # lower right
-        # TODO: add report
+        timer_arr: npt.NDArray[np.uint8] = self._resize_frame(
+            arr=self.countdown_timer.draw(), resized_shape=one_quarter_shape
+        )
+        return_frame[one_quarter_shape[0] :, : one_quarter_shape[1], :] = timer_arr[:, :, :]
         # lower left
         report_arr: npt.NDArray[np.uint8] = self._resize_frame(arr=self.report_img, resized_shape=one_quarter_shape)
         return_frame[one_quarter_shape[0] :, one_quarter_shape[1] :, :] = report_arr[:, :, :]

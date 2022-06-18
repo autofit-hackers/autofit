@@ -23,3 +23,5 @@ imgkit
 gtts 
 scikit-image
 SpeechRecognition
+pygame
+dvc[gdrive]

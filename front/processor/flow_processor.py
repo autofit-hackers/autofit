@@ -9,23 +9,22 @@ import cv2
 import lib.streamlit_ui.setting_class as settings
 from lib.webrtc_ui.display import text
 import numpy as np
+import numpy.typing as npt
+
 from core.instruction import Instructions
 from lib.pose.draw_pose import draw_landmarks_pose
 from lib.pose.training_set import RepState, SetObject, TrainingObject
 from lib.webrtc_ui.display_objects import (
-    CoachPose,
     CoachPoseManager,
     DisplayObjects,
 )
 from lib.webrtc_ui.coach_in_rest import CoachInRestInput, CoachInRestManager
 from lib.webrtc_ui.countdown_timer import CountdownTimer
 from lib.webrtc_ui.key_event import KeyEventMonitor
-import lib.webrtc_ui.training_report as repo
 from lib.webrtc_ui.video_recorder import TrainingSaver
 from lib.webrtc_ui.video_widget import CircleHoldButton
 from lib.webrtc_ui.voice_recognition import VoiceRecognitionProcess
 import lib.webrtc_ui.webcam_input as wi
-from PIL import Image
 from streamlit_webrtc import VideoProcessorBase
 import lib.webrtc_ui.display as disp
 from utils.class_objects import PoseLandmarksObject
@@ -177,6 +176,7 @@ class FlowProcessor(VideoProcessorBase):
 
             # 画面背景を白・表示の更新
             # frame = frame * 0 + 255
+            assert frame is not None
             cv2.putText(
                 frame,
                 f"Rep:{self.rep_state.rep_count}",
@@ -191,15 +191,18 @@ class FlowProcessor(VideoProcessorBase):
                 rep_cnt = self.rep_state.rep_count
             else:
                 rep_cnt = len(self.rep_imgs) - 1
+            assert frame is not None
             disp.image_cv2(
                 frame=frame,
                 image=self.rep_imgs[rep_cnt],
                 normalized_position=(0.25, 0.2),
                 normalized_size=(0.5, 0),
             )
+            assert frame is not None
 
             # 終了が入力されたら次へ
             if self.key_event_monitor.pressed(char="f"):
+                print("pressed")
                 self.training_saver.save()
                 self.phase += 1
 
@@ -207,27 +210,29 @@ class FlowProcessor(VideoProcessorBase):
         elif self.phase == 4:
             if self.coach_in_rest_manager is None:
                 # Initialize view manager for phase=3 replay
+                self.countdown_timer = CountdownTimer(remaining_time=30)
                 self.coach_in_rest_manager = CoachInRestManager(
                     _inputs=CoachInRestInput(
-                        frame_shape=frame.shape,  # (480, 270, 3),  # (960, 540, 3), # (1920, 1080, 3),  # Full HD RGB,
+                        frame_shape=frame.shape,  # NOTE: you can hard-code the frame shape you want,
                         report_img_path=Path(
                             "data/instruction/squat_depth.png"
                         ),  # TODO: generate report img automatically
-                        left_video_path=self.training_saver.front_path,
-                        right_video_path=self.training_saver.side_path,  # TODO: use video from right cam
+                        left_video_path=self.training_saver.video_save_path,
+                        right_video_path=self.training_saver.video_save_path,  # TODO: use video from right cam
+                        countdown_timer=self.countdown_timer,
                     )
                 )
-                self.countdown_timer = CountdownTimer(remaining_time=30)
+                print("init phase 4")
             # TODO: manual instruction -> automate
             self.coach_in_rest_manager.change_instruction_by_key_input(self.key_event_monitor.get_input_char())
             # NOTE: overwrite a frame from cam with mp4 from phase=3
             try:
                 frame = next(self.coach_in_rest_manager)
 
-                text(frame, text="Replay", position=(0.005, 0.07), color_name="Red", font_size=1.0)
+                # text(frame, text="Replay", position=(0.005, 0.07), color_name="Red", font_size=1.0)
 
                 assert self.countdown_timer is not None
-                frame = self.countdown_timer.draw(frame)
+                timer_img: npt.NDArray[np.uint8] = self.countdown_timer.draw()
 
             except StopIteration:
                 self.phase = 1
