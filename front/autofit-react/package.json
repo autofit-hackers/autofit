@@ -24,7 +24,9 @@
     "prettier:base": "prettier --parser typescript --single-quote",
     "prettier:check": "yarn run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
     "prettier:write": "yarn run prettier:base -- --write \"src/**/*.{ts,tsx}\"",
-    "precommit": "yarn run prettier:write"
+    "precommit": "yarn run prettier:write",
+    "release": "standard-version",
+    "postrelease": "git push --follow-tags origin main"
   },
   "eslintConfig": {
     "extends": [
@@ -46,6 +48,7 @@
   },
   "devDependencies": {
     "husky": "^8.0.1",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "standard-version": "^9.5.0"
   }
 }
