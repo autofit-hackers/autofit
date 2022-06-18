@@ -7,7 +7,6 @@ import numpy as np
 
 
 class KeyEventMonitor:
-
     def __init__(self):
         """
         キーイベントをnon-blockingで監視する

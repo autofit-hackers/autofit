@@ -130,7 +130,6 @@ class Instructions:
             if loss > judge_loss:
                 self.instruction_to_show = key
                 judge_loss = loss
-        print("INSTRUCTION================", self.instruction_to_show)
 
     def show_text(self, frame: ndarray) -> ndarray:
         """when self has instructions to show (the trainee made some mistakes in a rep), show corresponding image
