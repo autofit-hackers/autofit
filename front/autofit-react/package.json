@@ -22,8 +22,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "prettier:base": "prettier --parser typescript --single-quote",
-    "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
-    "prettier:write": "npm run prettier:base -- --write \"src/**/*.{ts,tsx}\""
+    "prettier:check": "yarn run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
+    "prettier:write": "yarn run prettier:base -- --write \"src/**/*.{ts,tsx}\""
   },
   "eslintConfig": {
     "extends": [
