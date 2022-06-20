@@ -11,9 +11,6 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
 
-    defaults:
-      run:
-        working-directory: front/electron
 
     steps:
       - name: Check out Git repository
@@ -24,10 +21,12 @@ jobs:
         with:
           node-version: 16
           cache: npm
+        working-directory: ./front/electron
 
       - name: npm install
         run: |
           npm install
+        working-directory: ./front/electron
 
       - name: npm test
         env:
@@ -37,3 +36,4 @@ jobs:
           npm run lint
           npm exec tsc
           npm test
+        working-directory: ./front/electron
