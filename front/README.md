@@ -1,73 +1,10 @@
-# autofit-streamlit-example
+# front
 
-## Prerequisite
-* python 3.8.13
-* [dvc](https://dvc.org/doc/install)
-```
-$ pip install -r requirements.txt
-```
+## Prerequsite for development
+* [anyenv](https://github.com/anyenv/anyenv)
+* [anyenv-update](https://github.com/znz/anyenv-update)
+* [nodenv](https://github.com/znz/anyenv-update)
 
-## Demo (Recommended)
-```
-$ streamlit run streamlit_app.py
-```
-> :warning: ブラウザからローカルに立てたサーバに接続する際に、カメラの使用を許可しないと動作しない
-
-## Resources
-* [カメラキャリブレーションのサンプル用画像・動画](https://drive.google.com/drive/folders/1r3Z7lHwwfGPrODKtyt3r8PVc50vcdApI?usp=sharing)
-
-## データベース構造
-```
-session_meta = {
-    "session_path": "data/date_name",
-    "camera_info_path": "/cameras/date",
-    "created_at": "YYMMDD",
-    "user_name": "TaroYamada",
-    "user_info_path": "data/user_info/<uid>",
-}
-```
-
-```
-./data/<session_name>/
-├── video
-│   ├── front.mp4
-│   └── side.mp4
-├── pose
-│   ├── front.pkl
-│   └── side.pkl
-├── skeleton.json
-└── session_meta.json
-```
-
-
-```
-camera_meta = {
-    "camera_info_path": "/cameras/date",
-    "camera-names": {"front": "name-1", "side": "name-2"}
-    "created_at": "YY-MM~"
-    "used_in": ["session_path"]
-}
-```
-
-```
-./camera_info/<datetime>
-├── front
-    |---imgs/
-│   ├── mtx.dat
-│   └── dist.dat
-├── side
-|   |---imgs/
-│   ├── mtx.dat
-│   └── dist.dat
-└── camera_meta.json
-```
-
-
-```
-./user_info/<uid>/
-├── body_info
-│   ├── skeleton.json
-│   ├── flexibility
-│   └── muscle
-└── purpose
-```
+## Version
+* `node == 16.15.1`
+  * latest LTS on 2022/06/19
