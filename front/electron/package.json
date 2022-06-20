@@ -1,8 +1,7 @@
 {
-  "description": "A foundation for scalable desktop apps",
+  "description": "Autofit: a personalizing free-weight instruction system",
   "keywords": [
     "electron",
-    "boilerplate",
     "react",
     "typescript",
     "ts",
@@ -11,25 +10,14 @@
     "hot",
     "reload"
   ],
-  "homepage": "https://github.com/electron-react-boilerplate/electron-react-boilerplate#readme",
-  "bugs": {
-    "url": "https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
-  },
-  "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "name": "Autofit Maintainers"
   },
   "contributors": [
     {
-      "name": "Amila Welihinda",
-      "email": "amilajack@gmail.com",
-      "url": "https://github.com/amilajack"
+      "name": "Yusuke Kondo",
+      "email": "kondounagi@gmail.com",
+      "url": "https://github.com/kondounagi"
     }
   ],
   "main": "./src/main/main.ts",
@@ -183,8 +171,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "autofit",
+    "appId": "org.erb.autofit",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -245,9 +233,6 @@
       "owner": "electron-react-boilerplate",
       "repo": "electron-react-boilerplate"
     }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
   },
   "devEngines": {
     "node": ">=14.x",
