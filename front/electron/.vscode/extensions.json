@@ -6,6 +6,8 @@
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "visualstudioexptteam.vscodeintellicode",
-    "dsznajder.es7-react-js-snippets"
+    "dsznajder.es7-react-js-snippets",
+    "formulahendry.auto-rename-tag",
+    "formulahendry.auto-close-tag"
   ]
 }
