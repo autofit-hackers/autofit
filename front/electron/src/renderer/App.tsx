@@ -1,14 +1,20 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-import SampleComponent from './report';
-import Welcome from './welcomeTemplatePage';
+import { CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import MyBtn from './buttonTest';
+import Dashboard from './mui_template/Dashboard';
+import { Hoge, ReportSample } from './report';
+import { ThemeSample } from './themeTest';
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<SampleComponent />} />
-      </Routes>
-    </Router>
+    <>
+      {/* <Hoge
+        names={{
+          lastName: 'Endo',
+          firstName: 'Satoshi',
+        }}
+      /> */}
+      <Dashboard />
+    </>
   );
 }

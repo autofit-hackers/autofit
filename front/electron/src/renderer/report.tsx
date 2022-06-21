@@ -1,24 +1,20 @@
-import { Stack, Button } from '@mui/material';
-import theme from './theme';
+import { Button, Typography } from '@mui/material';
 
-export default function SampleComponent(): JSX.Element {
+export function ReportSample(): JSX.Element {
   return (
-    <Stack direction="row" spacing={2} sx={{ m: 2, p: 2 }}>
-      <Button variant="contained" color="primary">
-        primary
-      </Button>
-      <Button variant="contained" color="secondary">
-        secondary
-      </Button>
-      <Button variant="contained" color="warning">
-        warning
-      </Button>
-      <Button variant="contained" color="info">
-        info
-      </Button>
-      <Button variant="contained" color="success">
-        success
-      </Button>
-    </Stack>
+    <Button variant="contained" color="primary">
+      props ={' '}
+    </Button>
   );
 }
+
+export const Hoge = () => {
+  const f = 'aa';
+  const l = 'AA';
+  // { names: { lastName: l, firstName: f } }
+  return (
+    <Typography variant="h4" fontWeight={600}>
+      僕の名前は {f} {l} です！
+    </Typography>
+  );
+};
