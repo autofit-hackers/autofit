@@ -18,6 +18,11 @@
       "name": "Yusuke Kondo",
       "email": "kondounagi@gmail.com",
       "url": "https://github.com/kondounagi"
+    },
+    {
+      "name": "Satoshi Endo",
+      "email": "yattsa0902@gmail.com",
+      "url": "https://github.com/s-endo17"
     }
   ],
   "main": "./src/main/main.ts",
@@ -38,7 +43,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "cross-env NODE_ENV=development npx eslint --cache"
+      "npx cross-env NODE_ENV=development npx eslint --cache"
     ],
     "*.json,.{eslintrc,prettierrc}": [
       "npx prettier --ignore-path front/electron/.eslintignore --parser json --write"
