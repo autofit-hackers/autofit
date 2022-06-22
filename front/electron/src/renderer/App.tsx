@@ -10,7 +10,7 @@ export default function App() {
           element={
             <IntervalReport
               trainingMenuName="スクワット"
-              frontMoviePath={'https://www.youtube.com/embed/muuK4SpRR5M"'}
+              frontMoviePath="https://www.youtube.com/embed/muuK4SpRR5M"
               instructionText="膝が前に出ています"
             />
           }
