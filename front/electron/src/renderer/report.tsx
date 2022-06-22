@@ -1,23 +1,13 @@
-import { Copyright, Headphones } from '@mui/icons-material';
 import {
-  AppBar,
-  Badge,
   Box,
-  Button,
   CardMedia,
   CssBaseline,
-  Divider,
-  Drawer,
   Grid,
-  IconButton,
-  List,
   Paper,
-  ThemeProvider,
   Toolbar,
   Typography,
 } from '@mui/material';
 import { Container } from '@mui/system';
-import PropTypes from 'prop-types';
 import BarChart from './mui_template/Chart';
 
 interface IntervalReportProps {
@@ -27,7 +17,11 @@ interface IntervalReportProps {
 }
 
 export const IntervalReport = (prop: IntervalReportProps) => {
-  const { trainingMenuName: tn, frontMoviePath, instructionText: inst } = prop;
+  const {
+    trainingMenuName: tn,
+    frontMoviePath: fvpath,
+    instructionText: inst,
+  } = prop;
   return (
     <>
       <Box sx={{ display: 'flex' }}>
@@ -80,14 +74,13 @@ export const IntervalReport = (prop: IntervalReportProps) => {
                     flexDirection: 'column',
                   }}
                 >
-                  <Headphones />
                   <Typography variant="h4" fontWeight={600}>
                     {tn} おつかれさまでした。
                   </Typography>
                   <CardMedia
                     sx={{ borderRadius: 10 }}
                     component="iframe"
-                    src="https://www.youtube.com/embed/muuK4SpRR5M"
+                    src={fvpath}
                   />
                   <Typography variant="h4" fontWeight={600}>
                     {inst}

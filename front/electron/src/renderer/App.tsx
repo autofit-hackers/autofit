@@ -1,16 +1,21 @@
-// import Dashboard from './mui_template/Dashboard';
-import { Button } from '@mui/material';
-import Dashboard from './mui_template/Dashboard';
-import { IntervalReport, PropTest } from './report';
+import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import { IntervalReport } from './report';
 
 export default function App() {
   return (
-    <>
-      <IntervalReport
-        trainingMenuName="スクワット"
-        frontMoviePath="/aa"
-        instructionText="膝が内に入っていますね"
-      />
-    </>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <IntervalReport
+              trainingMenuName="スクワット"
+              frontMoviePath={'https://www.youtube.com/embed/muuK4SpRR5M"'}
+              instructionText="膝が前に出ています"
+            />
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
