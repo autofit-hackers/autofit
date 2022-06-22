@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 //   children?: React.ReactNode;
 // }
 
-export default function Title(props: TitleProps) {
+export default function Title() {
   return (
     <Typography component="h2" variant="h6" color="primary" gutterBottom>
       aaa

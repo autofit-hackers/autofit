@@ -1,4 +1,5 @@
 import { Button, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
 
 export function ReportSample(): JSX.Element {
   return (
@@ -16,5 +17,20 @@ export const Hoge = () => {
     <Typography variant="h4" fontWeight={600}>
       僕の名前は {f} {l} です！
     </Typography>
+  );
+};
+
+interface Props {
+  name: string;
+  num: number;
+}
+
+export const PropTest: React.FC<Props> = ({ name: n, num: v }: Props) => {
+  return (
+    <>
+      <Typography variant="h4" fontWeight={600}>
+        僕の名前は {n} {v} です！
+      </Typography>
+    </>
   );
 };

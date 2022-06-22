@@ -1,7 +1,7 @@
 // import Dashboard from './mui_template/Dashboard';
 import { Button } from '@mui/material';
 import Dashboard from './mui_template/Dashboard';
-import { Hoge, ReportSample } from './report';
+import { Hoge, PropTest, ReportSample } from './report';
 
 export default function App() {
   return (
@@ -12,6 +12,7 @@ export default function App() {
           firstName: 'Satoshi',
         }}
       /> */}
+      <PropTest name="ss" num={1} />
       <Dashboard />
     </>
   );
