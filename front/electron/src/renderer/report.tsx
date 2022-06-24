@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { Container } from '@mui/system';
 import SearchAppBar from './AppBar';
-import BarChart from './mui_template/Chart';
+import BarChart from './Chart';
 
 interface IntervalReportProps {
   trainingMenuName: string;
@@ -16,7 +16,7 @@ interface IntervalReportProps {
   instructionText: string;
 }
 
-export const IntervalReport = (prop: IntervalReportProps) => {
+export default function IntervalReport(prop: IntervalReportProps) {
   const {
     trainingMenuName: tn,
     frontMoviePath: fvpath,
@@ -112,20 +112,4 @@ export const IntervalReport = (prop: IntervalReportProps) => {
       </Box>
     </>
   );
-};
-
-interface Props {
-  name: string;
-  age: number;
 }
-
-export const PropTest = (prop: Props) => {
-  const { name, age } = prop;
-  return (
-    <>
-      <Typography variant="h4" fontWeight={600}>
-        僕の名前は {name}、 {age} 歳です！
-      </Typography>
-    </>
-  );
-};

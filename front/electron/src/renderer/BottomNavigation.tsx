@@ -6,6 +6,7 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Paper } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 export default function LabelBottomNavigation() {
   const [value, setValue] = React.useState('recents');

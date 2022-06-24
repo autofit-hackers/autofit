@@ -1,6 +1,6 @@
 import { MemoryRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import LabelBottomNavigation from './BottomNavigation';
-import { IntervalReport } from './Report';
+import IntervalReport from './Report';
 
 const Navigation = () => {
   return (
