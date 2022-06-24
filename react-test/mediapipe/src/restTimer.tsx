@@ -21,6 +21,7 @@ import { Doughnut } from 'react-chartjs-2';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 
+
 /*レスト時間の指定*/
 const restTime = 10;
 /*レスト時間延長の設定*/
@@ -39,40 +40,49 @@ function Timer({ expiryTimestamp}: { expiryTimestamp: Date }) {
     expiryTimestamp,
     onExpire: () => console.warn("onExpire called"),
   });
-
-
-
-
   return (
     <div style={{ textAlign: "center" }}>
       <h1>Rest </h1>
       <div style={{ fontSize: "120px" }}>
         <span>{minutes}</span>:<span>{seconds}</span>
       </div>
-
-
-
     <Container maxWidth="xs">
-
     <Doughnut data={{
       datasets: [
         {
           data: [(minutes * 60 + seconds), (restTime - minutes * 60 - seconds)],
           backgroundColor: ["#FF6384", "#36A2EB"],
           hoverBackgroundColor: ["#FF6384", "#36A2EB"],
-          borderWidth: 1
+          borderWidth: 1,
         }
       ]
-    }} />
-
-
+    }} options={{
+        plugins: {
+            legend: {
+                position: "chartArea" ,
+                align: "center",
+                maxHeight: 100,
+                maxWidth: 200,
+                rtl: true,
+                textDirection: 'ltr',
+                title: {
+                    // color: "#241e1f",
+                    display: true,
+                    font: {
+                        size:100,
+                    },
+                    position: "center",
+                    padding:{
+                        top:10,
+                        bottom:10,
+                    },
+                    text: "qqqqqqqqq" + String(minutes) + ":" + String(seconds),
+                },
+            },
+        },
+        cutout: "90%",
+    }}/>
     </Container>
-
-
-
-
-
-
 
       <p style={{textAlign:"center"}}>{(minutes === 0 && seconds === 0) ? "Let's start muscle training!" : "Rest Time"}</p>
       <Container maxWidth="xs">
@@ -102,8 +112,6 @@ function Timer({ expiryTimestamp}: { expiryTimestamp: Date }) {
 function RestTimers() {
   const time = new Date();
   time.setSeconds(time.getSeconds() + restTime );
-
-
   return (
     <div>
       <Timer expiryTimestamp={time as unknown as Date} />
