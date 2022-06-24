@@ -1,6 +1,6 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Stack, Button, CssBaseline } from '@mui/material';
-import MyBtn from './buttonTest';
+import MyBtn from './ButtonTest';
 
 export const theme = createTheme({
   palette: {

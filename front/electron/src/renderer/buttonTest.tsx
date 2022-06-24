@@ -1,4 +1,3 @@
-import React from 'react';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 
@@ -9,7 +8,7 @@ const MyButton = styled(Button)({
   },
 });
 
-const MyBtn: React.FC = () => {
+const MyBtn = () => {
   return <MyButton variant="contained">ボタン</MyButton>;
 };
 

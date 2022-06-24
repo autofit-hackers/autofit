@@ -1,5 +1,5 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import Welcome from './welcomeTemplatePage';
+import Welcome from './WelcomeTemplatePage';
 import './App.css';
 
 export default function routeSample() {

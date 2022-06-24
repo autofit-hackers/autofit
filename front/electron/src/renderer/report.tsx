@@ -43,13 +43,13 @@ export const IntervalReport = (prop: IntervalReportProps) => {
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               {/* text instruction */}
-              <Grid item xs={12} md={3} lg={9}>
+              <Grid item xs={9}>
                 <Paper
                   sx={{
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    // height: 240,
+                    height: '20vh',
                   }}
                 >
                   <Typography variant="h4" fontWeight={600}>
@@ -60,13 +60,29 @@ export const IntervalReport = (prop: IntervalReportProps) => {
                   </Typography>
                 </Paper>
               </Grid>
-              {/* Chart */}
-              <Grid item xs={12} md={8} lg={9}>
+              {/* text instruction */}
+              <Grid item xs={3}>
                 <Paper
                   sx={{
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
+                    height: '20vh',
+                  }}
+                >
+                  <Typography variant="h4" fontWeight={600}>
+                    Timer
+                  </Typography>
+                </Paper>
+              </Grid>
+              {/* Chart */}
+              <Grid item xs={6}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '40vh',
                   }}
                 >
                   <BarChart />
@@ -74,17 +90,17 @@ export const IntervalReport = (prop: IntervalReportProps) => {
               </Grid>
 
               {/* video */}
-              <Grid item xs={12} md={8} lg={9}>
+              <Grid item xs={6}>
                 <Paper
                   sx={{
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    // height: 240,
+                    height: '40vh',
                   }}
                 >
                   <CardMedia
-                    sx={{ borderRadius: 3, height: 500 }}
+                    sx={{ borderRadius: 3, height: 400 }}
                     component="iframe"
                     src={fvpath}
                   />
