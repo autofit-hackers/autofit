@@ -22,16 +22,15 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 
 /*レスト時間の指定*/
-const rest_time = 100;
+const restTime = 10;
 /*レスト時間延長の設定*/
-const rest_extension = 10;
+const restExtension = 5;
 
 
 function Timer({ expiryTimestamp}: { expiryTimestamp: Date }) {
   const {
     seconds,
     minutes,
-    isRunning,
     start,
     pause,
     resume,
@@ -40,12 +39,41 @@ function Timer({ expiryTimestamp}: { expiryTimestamp: Date }) {
     expiryTimestamp,
     onExpire: () => console.warn("onExpire called"),
   });
+
+
+
+
   return (
     <div style={{ textAlign: "center" }}>
       <h1>Rest </h1>
       <div style={{ fontSize: "120px" }}>
         <span>{minutes}</span>:<span>{seconds}</span>
       </div>
+
+
+
+    <Container maxWidth="xs">
+
+    <Doughnut data={{
+      datasets: [
+        {
+          data: [(minutes * 60 + seconds), (restTime - minutes * 60 - seconds)],
+          backgroundColor: ["#FF6384", "#36A2EB"],
+          hoverBackgroundColor: ["#FF6384", "#36A2EB"],
+          borderWidth: 1
+        }
+      ]
+    }} />
+
+
+    </Container>
+
+
+
+
+
+
+
       <p style={{textAlign:"center"}}>{(minutes === 0 && seconds === 0) ? "Let's start muscle training!" : "Rest Time"}</p>
       <Container maxWidth="xs">
         <Button variant="contained" color="primary" onClick={start} fullWidth style={{ marginTop: 3, marginBottom: 20}}>
@@ -60,10 +88,10 @@ function Timer({ expiryTimestamp}: { expiryTimestamp: Date }) {
         {(minutes === 0 && seconds === 0) &&
         <Button variant="contained" color="secondary" onClick={() => {
           const time = new Date();
-          time.setSeconds(time.getSeconds() + rest_extension);
+          time.setSeconds(time.getSeconds() + restExtension);
           restart(time as unknown as Date);
           }} fullWidth style={{ marginTop: 3, marginBottom: 20}}>
-          Extend rest time by {rest_extension} seconds
+          Extend rest time by {restExtension} seconds
         </Button>
         }
         </Container>
@@ -73,37 +101,15 @@ function Timer({ expiryTimestamp}: { expiryTimestamp: Date }) {
 
 function RestTimers() {
   const time = new Date();
-  time.setSeconds(time.getSeconds() + rest_time );
-
-  const data = {
-    datasets: [
-      {
-        data: [500, 500, 500, 500],
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-        hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-        borderWidth: 1
-      }
-    ]
-  };
+  time.setSeconds(time.getSeconds() + restTime );
 
 
   return (
     <div>
       <Timer expiryTimestamp={time as unknown as Date} />
-
-
-      <Container maxWidth="xs">
-      <Doughnut data={data} />;
-      </Container>
-
-      
-
     </div>
   );
 }
-
-
-
 
 
 export default RestTimers;
