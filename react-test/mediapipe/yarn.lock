@@ -1455,6 +1455,11 @@
   resolved "https://registry.npmjs.org/@mediapipe/camera_utils/-/camera_utils-0.3.1640029074.tgz"
   integrity sha512-jRV/Mp2lgqNYT68TeVRu/Xq+ptZO9F9vCjxzQsA3VM2r7oXg0TrnfO9De2KKOUTpt0p28dKHs625J8GdWjha8A==
 
+"@mediapipe/control_utils_3d@0.3.1635987963":
+  version "0.3.1635987963"
+  resolved "https://registry.yarnpkg.com/@mediapipe/control_utils_3d/-/control_utils_3d-0.3.1635987963.tgz#14a7903b5b8dff6d231ce41b3d8ed79b1523f39e"
+  integrity sha512-/eE5yl79CF5WKOzyEbwC64bLaTITByxdpiFPECQxjLTgNF0/HhwvM5EtA8tVt93FEj4nzkZlOU9LJzAKokesxQ==
+
 "@mediapipe/drawing_utils@0.3.1620248257":
   version "0.3.1620248257"
   resolved "https://registry.npmjs.org/@mediapipe/drawing_utils/-/drawing_utils-0.3.1620248257.tgz"
