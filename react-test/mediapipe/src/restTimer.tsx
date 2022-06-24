@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useState } from "react";
 import "./App.css";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
@@ -14,6 +14,8 @@ import { grey, orange, purple } from "@material-ui/core/colors";
 import { Container } from "@material-ui/core";
 import { useTimer } from "react-timer-hook";
 
+import ReactDOM from "react-dom";
+import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -28,93 +30,39 @@ const restTime = 10;
 const restExtension = 5;
 
 
-function Timer({ expiryTimestamp}: { expiryTimestamp: Date }) {
-  const {
-    seconds,
-    minutes,
-    start,
-    pause,
-    resume,
-    restart,
-  } = useTimer({
-    expiryTimestamp,
-    onExpire: () => console.warn("onExpire called"),
-  });
-  return (
-    <div style={{ textAlign: "center" }}>
-      <h1>Rest </h1>
-      <div style={{ fontSize: "120px" }}>
-        <span>{minutes}</span>:<span>{seconds}</span>
-      </div>
-    <Container maxWidth="xs">
-    <Doughnut data={{
-      datasets: [
-        {
-          data: [(minutes * 60 + seconds), (restTime - minutes * 60 - seconds)],
-          backgroundColor: ["#FF6384", "#36A2EB"],
-          hoverBackgroundColor: ["#FF6384", "#36A2EB"],
-          borderWidth: 1,
-        }
-      ]
-    }} options={{
-        plugins: {
-            legend: {
-                position: "chartArea" ,
-                align: "center",
-                maxHeight: 100,
-                maxWidth: 200,
-                rtl: true,
-                textDirection: 'ltr',
-                title: {
-                    // color: "#241e1f",
-                    display: true,
-                    font: {
-                        size:100,
-                    },
-                    position: "center",
-                    padding:{
-                        top:10,
-                        bottom:10,
-                    },
-                    text: "qqqqqqqqq" + String(minutes) + ":" + String(seconds),
-                },
-            },
-        },
-        cutout: "90%",
-    }}/>
-    </Container>
 
-      <p style={{textAlign:"center"}}>{(minutes === 0 && seconds === 0) ? "Let's start muscle training!" : "Rest Time"}</p>
-      <Container maxWidth="xs">
-        <Button variant="contained" color="primary" onClick={start} fullWidth style={{ marginTop: 3, marginBottom: 20}}>
-          Start
-        </Button>
-        <Button variant="contained" color="secondary" onClick={pause} fullWidth style={{ marginTop: 3, marginBottom: 20}}>
-          Pause
-        </Button>
-        <Button variant="contained" color="primary" onClick={resume} fullWidth style={{ marginTop: 3, marginBottom: 20}}>
-          Resume
-        </Button>
-        {(minutes === 0 && seconds === 0) &&
-        <Button variant="contained" color="secondary" onClick={() => {
-          const time = new Date();
-          time.setSeconds(time.getSeconds() + restExtension);
-          restart(time as unknown as Date);
-          }} fullWidth style={{ marginTop: 3, marginBottom: 20}}>
-          Extend rest time by {restExtension} seconds
-        </Button>
-        }
-        </Container>
+const renderTime = ({remainingTime}: {remainingTime: any}) => {
+  if (remainingTime === 0) {
+    return <div className="timer">Let's start muscle training!</div>;
+  }
+  return (
+    <div className="timer">
+    {/* <div className="text">Remaining</div> */}
+      <div style={{ fontSize: "40px" }}>{remainingTime}</div>
+      <div className="text">seconds</div>
     </div>
   );
-}
+};
+
 
 function RestTimers() {
-  const time = new Date();
-  time.setSeconds(time.getSeconds() + restTime );
   return (
-    <div>
-      <Timer expiryTimestamp={time as unknown as Date} />
+    <div className="App">
+      <h1>
+        Rest Time
+      </h1>
+      <div className="timer-wrapper">
+        <CountdownCircleTimer
+          isPlaying
+          duration={restTime}
+          colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
+          colorsTime={[10, 6, 3, 0]}
+          onComplete={() => ({ shouldRepeat: false, delay: 1 })}
+        >
+        {renderTime}
+        </CountdownCircleTimer>
+      </div>
+
     </div>
   );
 }
