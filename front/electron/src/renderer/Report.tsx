@@ -16,7 +16,7 @@ interface IntervalReportProps {
   instructionText: string;
 }
 
-export default function IntervalReport(prop: IntervalReportProps) {
+const IntervalReport = (prop: IntervalReportProps) => {
   const {
     trainingMenuName: tn,
     frontMoviePath: fvpath,
@@ -112,4 +112,6 @@ export default function IntervalReport(prop: IntervalReportProps) {
       </Box>
     </>
   );
-}
+};
+
+export default IntervalReport;
