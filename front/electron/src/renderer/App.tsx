@@ -2,7 +2,6 @@ import { Typography } from '@mui/material';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import LabelBottomNavigation from './BottomNavigation';
 import EndoWorkSpace from './Endo';
-import IntervalReport from './Report';
 
 export default function App() {
   return (
