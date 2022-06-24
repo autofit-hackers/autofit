@@ -7,7 +7,6 @@ import Webcam from "react-webcam";
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { POSE_CONNECTIONS, NormalizedLandmarkList } from '@mediapipe/pose';
 import { FormControlLabel, Switch } from '@material-ui/core';
-import { LandmarkGrid } from '@mediapipe/control_utils_3d';
 
 
 export default function PoseEstimation() {
@@ -16,7 +15,6 @@ export default function PoseEstimation() {
   const resultsRef = useRef<any>(null)
   var camera = null;
   const [{isRotated, w, h}, setConstrains] = useState({isRotated:true, w:1280, h:720});
-  // const grid = LandmarkGrid
 
   const onResults = useCallback((results: Results) => {
     const videoWidth = webcamRef.current!.video!.videoWidth;
