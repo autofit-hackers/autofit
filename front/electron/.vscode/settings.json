@@ -28,7 +28,7 @@
     "*.{css,sass,scss}.d.ts": true
   },
 
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "files.autoSave": "onFocusChange"
-
 }
