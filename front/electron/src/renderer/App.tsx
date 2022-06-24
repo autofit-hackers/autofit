@@ -2,6 +2,7 @@ import { Typography } from '@mui/material';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import LabelBottomNavigation from './BottomNavigation';
 import EndoWorkSpace from './Endo';
+import KatsuraWorkSpace from './Katsura';
 
 export default function App() {
   return (
@@ -12,7 +13,7 @@ export default function App() {
           <Route path="/endo" element={<EndoWorkSpace />} />
           <Route path="/kondo" element={<Typography>KONDO</Typography>} />
           <Route path="/ueno" element={<Typography>UENO</Typography>} />
-          <Route path="/katsura" element={<Typography>KATSURA</Typography>} />
+          <Route path="/katsura" element={<KatsuraWorkSpace />} />
         </Routes>
         <LabelBottomNavigation />
       </Router>
