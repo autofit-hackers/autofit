@@ -3,6 +3,7 @@ import "./App.css";
 import SignIn from "./SignIn";
 import PoseEstimation from "./poseEstimation";
 import Themes from "./theme";
+import RestTimers from "./RestTimers";
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <SignIn/>
       <PoseEstimation />
       <Themes />
+      <RestTimers />
     </div>
   );
 }
