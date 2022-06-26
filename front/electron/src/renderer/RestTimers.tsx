@@ -1,5 +1,5 @@
 import './App.css';
-import { CountdownCircleTimer } from 'react-countdown-circle-timer';
+import { CountdownCircleTimer, TimeProps } from 'react-countdown-circle-timer';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -7,7 +7,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 /* レスト時間の指定 */
 const restTime = 10;
 
-const renderTime = ({ remainingTime }: { remainingTime: any }) => {
+function renderTime({ remainingTime }: TimeProps): JSX.Element {
   if (remainingTime === 0) {
     return (
       <div className="timer">
@@ -21,7 +21,7 @@ const renderTime = ({ remainingTime }: { remainingTime: any }) => {
       <div>seconds</div>
     </div>
   );
-};
+}
 
 function RestTimers() {
   return (
