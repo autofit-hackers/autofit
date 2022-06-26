@@ -2,13 +2,14 @@ import { Typography } from '@mui/material';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import LabelBottomNavigation from './BottomNavigation';
 import EndoWorkSpace from './Endo';
+import Main from './Main';
 
 export default function App() {
   return (
     <>
       <Router>
         <Routes>
-          <Route path="/" element={<Typography>Main</Typography>} />
+          <Route path="/" element={<Main />} />
           <Route path="/endo" element={<EndoWorkSpace />} />
           <Route path="/kondo" element={<Typography>KONDO</Typography>} />
           <Route path="/ueno" element={<Typography>UENO</Typography>} />
