@@ -6,7 +6,6 @@ declare global {
 export interface IMyAPI {
   sendMessage: (message: string) => void;
   onReceiveMessage: (listener: (message: string) => void) => () => void;
-  openDialog: () => Promise<any>;
   openFile: () => Promise<void>;
   saveFile: () => Promise<void>;
 }

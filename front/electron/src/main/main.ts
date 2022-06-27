@@ -84,17 +84,6 @@ const createWindow = async () => {
     },
   });
 
-  ipcMain.handle('open-dialog', async (_e, _arg) => {
-    return dialog
-      .showOpenDialog(mainWindow as BrowserWindow, {
-        properties: ['openFile'],
-      })
-      .then((result) => {
-        if (result.canceled) return '';
-        return result.filePaths[0];
-      });
-  });
-
   ipcMain.handle('open-file', async (event) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [{ name: 'Documents', extensions: ['txt'] }],
@@ -109,7 +98,7 @@ const createWindow = async () => {
     return { canceled, data };
   });
 
-  ipcMain.handle('save', async (event, data) => {
+  ipcMain.handle('save-txt', async (event, data) => {
     const { canceled, filePath } = await dialog.showSaveDialog({
       filters: [{ name: 'Documents', extensions: ['txt'] }],
     });

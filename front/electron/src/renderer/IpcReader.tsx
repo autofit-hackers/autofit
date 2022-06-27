@@ -1,12 +1,6 @@
 import { Button } from '@mui/material';
 import { useState } from 'react';
 
-// document.querySelector('#open').addEventListener('click', async () => {
-//   const { canceled, data } = await ipcRenderer.invoke('open');
-//   if (canceled) return;
-//   document.querySelector('#text').value = data[0] || '';
-// });
-
 export const IpcReader = () => {
   const [text, dialoged] = useState('fight');
   return (
@@ -32,5 +26,3 @@ export const IpcSaver = () => {
     </Button>
   );
 };
-
-// export default IpcReader;
