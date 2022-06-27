@@ -13,3 +13,4 @@ root.render(<App />);
 // window.electron.ipcRenderer.sendMessage('ipc-example', ['ping']);
 
 window.myAPI.openDialog();
+window.myAPI.openFile();

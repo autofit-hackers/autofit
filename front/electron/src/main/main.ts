@@ -15,6 +15,7 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+const fs = require('fs');
 const { dialog } = require('electron');
 
 export default class AppUpdater {
@@ -92,6 +93,20 @@ const createWindow = async () => {
         if (result.canceled) return '';
         return result.filePaths[0];
       });
+  });
+
+  ipcMain.handle('open-file', async (event) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      filters: [{ name: 'Documents', extensions: ['txt'] }],
+    });
+
+    if (canceled) return { canceled, data: [] };
+
+    const data = filePaths.map((filePath) =>
+      fs.readFileSync(filePath, { encoding: 'utf8' })
+    );
+
+    return { canceled, data };
   });
 
   mainWindow.webContents.openDevTools({ mode: 'detach' });

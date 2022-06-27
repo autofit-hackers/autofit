@@ -5,6 +5,7 @@
       "name": "Electron: Main",
       "type": "node",
       "request": "launch",
+      "outputCapture": "std",
       "protocol": "inspector",
       "runtimeExecutable": "npm",
       "runtimeArgs": [

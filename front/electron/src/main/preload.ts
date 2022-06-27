@@ -23,6 +23,15 @@
 const { ipcRenderer, contextBridge } = require('electron');
 
 export type Channels = 'ipc-example';
+
 contextBridge.exposeInMainWorld('myAPI', {
   openDialog: async () => ipcRenderer.invoke('open-dialog'),
+  openFile: async () => {
+    console.log('###############################################');
+    // const { canceled, data } =
+    await ipcRenderer.invoke('open-file');
+    console.log('###############################################');
+    // if (canceled) return;
+    // {document.querySelector('#text') as }.value = data[0] || '';
+  },
 });

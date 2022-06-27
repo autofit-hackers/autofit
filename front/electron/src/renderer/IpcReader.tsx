@@ -12,7 +12,7 @@ const IpcReader = () => {
   return (
     <Button
       onClick={async () => {
-        await window.myAPI.openDialog();
+        await window.myAPI.openFile();
       }}
     >
       ファイルを選択
