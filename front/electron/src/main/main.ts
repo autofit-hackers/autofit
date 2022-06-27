@@ -15,6 +15,8 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+const { dialog } = require('electron');
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -76,9 +78,20 @@ const createWindow = async () => {
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
+        ? path.join(__dirname, 'preload.ts')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
+  });
+
+  ipcMain.handle('open-dialog', async (_e, _arg) => {
+    return dialog
+      .showOpenDialog(mainWindow as BrowserWindow, {
+        properties: ['openFile'],
+      })
+      .then((result) => {
+        if (result.canceled) return '';
+        return result.filePaths[0];
+      });
   });
 
   mainWindow.webContents.openDevTools({ mode: 'detach' });

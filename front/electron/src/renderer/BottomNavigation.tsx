@@ -10,7 +10,7 @@ import { Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 export default function LabelBottomNavigation() {
-  const [value, setValue] = React.useState('endo');
+  const [value, setValue] = React.useState('main');
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
