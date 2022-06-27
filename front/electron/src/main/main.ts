@@ -98,7 +98,31 @@ const createWindow = async () => {
     return { canceled, data };
   });
 
+  ipcMain.handle('open-txt-file', async (event) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      filters: [{ name: 'Documents', extensions: ['txt'] }],
+    });
+
+    if (canceled) return { canceled, data: [] };
+
+    const data = filePaths.map((filePath) =>
+      fs.readFileSync(filePath, { encoding: 'utf8' })
+    );
+
+    return { canceled, data };
+  });
+
   ipcMain.handle('save-txt', async (event, data) => {
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      filters: [{ name: 'Documents', extensions: ['txt'] }],
+    });
+
+    if (canceled) return;
+
+    fs.writeFileSync(filePath, data);
+  });
+
+  ipcMain.handle('save-message-txt', async (event, data) => {
     const { canceled, filePath } = await dialog.showSaveDialog({
       filters: [{ name: 'Documents', extensions: ['txt'] }],
     });
