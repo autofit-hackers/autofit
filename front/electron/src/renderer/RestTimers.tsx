@@ -1,4 +1,3 @@
-import './App.css';
 import { CountdownCircleTimer, TimeProps } from 'react-countdown-circle-timer';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 

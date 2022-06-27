@@ -34,4 +34,8 @@ contextBridge.exposeInMainWorld('myAPI', {
     // if (canceled) return;
     // {document.querySelector('#text') as }.value = data[0] || '';
   },
+  saveFile: async () => {
+    const data = 'Hello woooooorld!';
+    await ipcRenderer.invoke('save', data);
+  },
 });

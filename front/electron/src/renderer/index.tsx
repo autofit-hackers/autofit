@@ -14,3 +14,4 @@ root.render(<App />);
 
 window.myAPI.openDialog();
 window.myAPI.openFile();
+window.myAPI.saveFile();

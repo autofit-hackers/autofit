@@ -7,7 +7,7 @@ import { useState } from 'react';
 //   document.querySelector('#text').value = data[0] || '';
 // });
 
-const IpcReader = () => {
+export const IpcReader = () => {
   const [text, dialoged] = useState('fight');
   return (
     <Button
@@ -20,4 +20,17 @@ const IpcReader = () => {
   );
 };
 
-export default IpcReader;
+export const IpcSaver = () => {
+  const [text, dialoged] = useState('fight');
+  return (
+    <Button
+      onClick={async () => {
+        await window.myAPI.saveFile();
+      }}
+    >
+      保存だ！！
+    </Button>
+  );
+};
+
+// export default IpcReader;

@@ -109,6 +109,16 @@ const createWindow = async () => {
     return { canceled, data };
   });
 
+  ipcMain.handle('save', async (event, data) => {
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      filters: [{ name: 'Documents', extensions: ['txt'] }],
+    });
+
+    if (canceled) return;
+
+    fs.writeFileSync(filePath, data);
+  });
+
   mainWindow.webContents.openDevTools({ mode: 'detach' });
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
