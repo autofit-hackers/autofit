@@ -84,6 +84,12 @@ const createWindow = async () => {
     },
   });
 
+  ipcMain.on('ipc-example', async (event, arg) => {
+    const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+    console.log(msgTemplate(arg));
+    event.reply('ipc-example', msgTemplate('pong'));
+  });
+
   ipcMain.handle('open-file', async (event) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [{ name: 'Documents', extensions: ['txt'] }],
@@ -99,17 +105,9 @@ const createWindow = async () => {
   });
 
   ipcMain.handle('open-txt-file', async (event) => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      filters: [{ name: 'Documents', extensions: ['txt'] }],
-    });
-
-    if (canceled) return { canceled, data: [] };
-
-    const data = filePaths.map((filePath) =>
-      fs.readFileSync(filePath, { encoding: 'utf8' })
-    );
-
-    return { canceled, data };
+    const filePath = `${app.getPath('desktop')}/text_save_test.txt`;
+    const text: string = fs.readFileSync(filePath, { encoding: 'utf8' });
+    return text;
   });
 
   ipcMain.handle('save-txt', async (event, data) => {
@@ -122,13 +120,8 @@ const createWindow = async () => {
     fs.writeFileSync(filePath, data);
   });
 
-  ipcMain.handle('save-message-txt', async (event, data) => {
-    const { canceled, filePath } = await dialog.showSaveDialog({
-      filters: [{ name: 'Documents', extensions: ['txt'] }],
-    });
-
-    if (canceled) return;
-
+  ipcMain.handle('save-message-txt', async (event, data, fileName) => {
+    const filePath = `${app.getPath('desktop')}/${fileName}.txt`;
     fs.writeFileSync(filePath, data);
   });
 

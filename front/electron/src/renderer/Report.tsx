@@ -9,6 +9,7 @@ import {
 import { Container } from '@mui/system';
 import SearchAppBar from './AppBar';
 import BarChart from './Chart';
+import RestTimers from './RestTimers';
 
 interface IntervalReportProps {
   trainingMenuName: string;
@@ -70,9 +71,7 @@ const IntervalReport = (prop: IntervalReportProps) => {
                     height: '20vh',
                   }}
                 >
-                  <Typography variant="h4" fontWeight={600}>
-                    Timer
-                  </Typography>
+                  <RestTimers restTime={30} />
                 </Paper>
               </Grid>
               {/* Chart */}

@@ -1,5 +1,6 @@
-import { Button } from '@mui/material';
-import { useCallback, useRef, useState } from 'react';
+import { Button, Card, CardMedia, Paper } from '@mui/material';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 
 const WebcamStreamCapture = () => {
@@ -7,6 +8,9 @@ const WebcamStreamCapture = () => {
   const mediaRecorderRef = useRef<MediaRecorder>();
   const [capturing, setCapturing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
+  const [replayUrl, setUrl] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoBlob, setBlob] = useState<Blob>();
 
   const handleDataAvailable = useCallback(
     ({ data }: any) => {
@@ -41,6 +45,9 @@ const WebcamStreamCapture = () => {
         type: 'video/webm',
       });
       const url = URL.createObjectURL(blob);
+      setUrl(url);
+      setBlob(blob);
+      console.log(url);
       const a = document.createElement('a');
       document.body.appendChild(a);
       // a.style = 'display: none';
@@ -52,6 +59,10 @@ const WebcamStreamCapture = () => {
     }
   }, [recordedChunks]);
 
+  useEffect(() => {
+    videoRef.current?.play();
+  }, []);
+
   return (
     <>
       <Webcam audio={false} ref={webcamRef} />
@@ -62,6 +73,27 @@ const WebcamStreamCapture = () => {
       )}
       {recordedChunks.length > 0 && (
         <Button onClick={handleDownload}>Download</Button>
+      )}
+      {videoBlob && (
+        <>
+          <Card sx={{ maxWidth: 600 }}>
+            <Paper
+              sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                height: '40vh',
+              }}
+            >
+              <CardMedia
+                component="iframe"
+                height="330"
+                src={URL.createObjectURL(videoBlob)}
+                allow="autoPlay"
+              />
+            </Paper>
+          </Card>
+        </>
       )}
     </>
   );

@@ -1,17 +1,18 @@
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { useState } from 'react';
 
 export const IpcReader = () => {
-  const [text, dialoged] = useState('ファイルを選択');
+  const [text, setText] = useState('Not set');
   return (
     <>
       <Button
         onClick={async () => {
-          dialoged(await window.myAPI.openTxtFile());
+          setText(await window.myAPI.openTxtFile());
         }}
       >
-        {text}
+        ファイルを選択
       </Button>
+      <Typography>{text}</Typography>
     </>
   );
 };
