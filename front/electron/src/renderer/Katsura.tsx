@@ -1,7 +1,7 @@
 import RestTimers from './RestTimers';
 
 const KatsuraWorkSpace = () => {
-  return <RestTimers />;
+  return <RestTimers restTime={10} />;
 };
 
 export default KatsuraWorkSpace;
