@@ -1,6 +1,6 @@
 import Pose from "../form/pose";
 
-class Rep {
+class TrainingRep {
     form: Pose[];
     bodyHeights: number[];
     keyframes: { [key: string]: number };
@@ -61,4 +61,4 @@ class Rep {
     }
 }
 
-export default Rep;
+export default TrainingRep;
