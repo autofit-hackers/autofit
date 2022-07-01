@@ -30,5 +30,35 @@
 
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
-  "files.autoSave": "onFocusChange"
+  "files.autoSave": "onFocusChange",
+  "files.watcherExclude": {
+    // Default Settings
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+
+    // Cache用のディレクトリやファイル
+    "**/.cache": true,
+
+    // Buildディレクトリやファイル
+    "**/dist": true,
+    "**/build": true,
+
+    // 画像や動画用のディレクトリやファイル
+    "**/images": true,
+    "**/movies": true
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.cache": true,
+    "**/*.meta": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/node_modules/": true,
+    "**/dist": true,
+    "**/build": true
+  }
 }
