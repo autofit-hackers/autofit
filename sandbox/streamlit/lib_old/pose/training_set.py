@@ -140,14 +140,14 @@ class RepState:
         height = pose.get_2d_height()
         if len(self.tmp_body_heights) < 10:
             self._init_rep(height=height)
-        has_count_upped = self.check_if_rep_finished(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
+        has_count_upped = self._check_if_rep_finished(height=height, lower_thre=lower_thre, upper_thre=upper_thre)
 
         self._update_lifting_state(height=height)
 
         return has_count_upped
 
     # HACK: 上のメソッドと役割が被っている
-    def check_if_rep_finished(self, height: np.double, lower_thre, upper_thre):
+    def _check_if_rep_finished(self, height: np.double, lower_thre, upper_thre):
         if not self.did_touch_bottom and height < self.initial_body_height * lower_thre:
             self.did_touch_bottom = True
         elif self.did_touch_bottom and height > self.initial_body_height * upper_thre:
