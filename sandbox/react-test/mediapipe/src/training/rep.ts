@@ -3,13 +3,13 @@ import Pose from "../form/pose";
 class Rep {
     form: Pose[];
     bodyHeights: number[];
-    keyFrames: { [key: string]: number };
+    keyframes: { [key: string]: number };
     repNumber: number;
 
     constructor(repNumber: number) {
         this.form = [];
         this.bodyHeights = [];
-        this.keyFrames = {};
+        this.keyframes = {};
         this.repNumber = repNumber;
     }
 
@@ -20,7 +20,7 @@ class Rep {
 
     resetRep = (repNumber: number): void => {
         this.form = [];
-        this.keyFrames = {};
+        this.keyframes = {};
         this.repNumber = repNumber;
     };
 
@@ -29,11 +29,11 @@ class Rep {
         // calculate top
         const topHeight = Math.max(...this.bodyHeights);
         const topIdx = this.bodyHeights.indexOf(topHeight);
-        this.keyFrames["top"] = topIdx;
+        this.keyframes["top"] = topIdx;
         // calculate bottom
         const bottomHeight = Math.min(...this.bodyHeights);
         const bottomIdx = this.bodyHeights.indexOf(bottomHeight);
-        this.keyFrames["bottom"] = bottomIdx;
+        this.keyframes["bottom"] = bottomIdx;
         // top should be before bottom
         if (topIdx < bottomIdx) {
             const middleHeight = (topHeight + bottomHeight) / 2;
@@ -42,7 +42,7 @@ class Rep {
             while (this.bodyHeights[descendingMiddleIdx] > middleHeight) {
                 descendingMiddleIdx += 1;
             }
-            this.keyFrames["descending_middle"] = descendingMiddleIdx;
+            this.keyframes["descending_middle"] = descendingMiddleIdx;
             // calculate ascending_middle
             let ascendingMiddleIdx = bottomIdx;
             while (
@@ -51,13 +51,13 @@ class Rep {
             ) {
                 ascendingMiddleIdx += 1;
             }
-            this.keyFrames["ascending_middle"] = ascendingMiddleIdx;
+            this.keyframes["ascending_middle"] = ascendingMiddleIdx;
         }
-        return this.keyFrames;
+        return this.keyframes;
     };
 
     getKeyframePose(key: string): Pose {
-        return this.form[this.keyFrames[key]];
+        return this.form[this.keyframes[key]];
     }
 }
 
