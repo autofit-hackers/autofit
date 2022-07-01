@@ -1,4 +1,4 @@
-import Pose from "../form/pose";
+import Pose from "./pose";
 
 class RepState {
     repCount: number = 0;
