@@ -1,11 +1,11 @@
 import TrainingSet from "./trainingSet";
 
-class TrainingEvent {
+class TrainingExercise {
     userId: string;
     trainingSets: TrainingSet[];
 
-    constructor(public user_id: string) {
-        this.userId = user_id;
+    constructor(userId: string) {
+        this.userId = userId;
         this.trainingSets = [];
     }
 
@@ -14,4 +14,4 @@ class TrainingEvent {
     };
 }
 
-export default TrainingEvent;
+export default TrainingExercise;
