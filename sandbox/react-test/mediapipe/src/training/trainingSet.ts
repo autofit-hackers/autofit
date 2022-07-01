@@ -11,10 +11,10 @@ class TrainingSet {
         this.weight = weight;
     }
 
-    makeNewRep(): void {
+    createNewRep = (): void => {
         let idx = this.reps.length + 1;
         this.reps.push(new TrainingRep(idx));
-    }
+    };
 }
 
 export default TrainingSet;
