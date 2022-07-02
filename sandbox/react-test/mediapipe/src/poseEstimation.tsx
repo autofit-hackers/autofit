@@ -93,8 +93,8 @@ export default function PoseEstimation() {
 
     /* landmarksをconsoleに出力するコールバック関数 */
     const OutputResults = () => {
-        const current_pose = poseRef.current as Results  //type assertion
-        console.log(current_pose.poseLandmarks)
+        const current_pose = new Pose(poseRef.current)
+        console.log(current_pose.landmark)
     }
 
     let videoConstraints = {
