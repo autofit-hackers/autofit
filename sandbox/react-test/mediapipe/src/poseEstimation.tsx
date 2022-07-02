@@ -5,9 +5,10 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from "@mediapipe/pos
 import { useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import "./App.css";
-import React from 'react';
+import React from 'react'
 //import React from 'react';   TODO: 自動フォーマッティング時に消されるが、ないとエラー履く💩仕様。どうにかせい
-import Pose from './training/pose';
+import Pose from "./training/pose";
+import RepState from "./training/repState";
 
 export default function PoseEstimation() {
     const webcamRef = useRef<Webcam>(null);
@@ -17,6 +18,8 @@ export default function PoseEstimation() {
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1280, h: 720 });
     // const grid = LandmarkGrid
 
+    const repState = new RepState();
+
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
     が、onResults自体は非同期でずっと回ってるっぽい。
@@ -24,7 +27,21 @@ export default function PoseEstimation() {
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
     const onResults = useCallback((results: Results) => {
-        poseRef.current = results.poseLandmarks // 毎回の推定結果を格納
+        poseRef.current = results.poseLandmarks; // 毎回の推定結果を格納
+        const currentPose = new Pose(poseRef.current); // 自作Poseクラスに代入
+
+        /* とりあえずここにprocessor.recv()の内容を書いていく */
+
+        // レップ数の更新（updateで回数が増えたらTrue）
+        const isLastFrameInRep = repState.updateRepCount(currentPose, 0.9, 0.1);
+
+        // レップカウントが増えた時、フォーム評価を実施する
+        // if (isLastFrameInRep) {
+        //     // 直前のレップのフォームを評価
+        //     set_obj.reps[rep_state.rep_count - 1].recalculate_keyframes();
+        //     instructions.evaluate_rep(rep_obj = set_obj.reps[rep_state.rep_count - 1]);
+        //     set_obj.make_new_rep();
+        // }
 
         const videoWidth = webcamRef.current!.video!.videoWidth;
         const videoHeight = webcamRef.current!.video!.videoHeight;
@@ -77,7 +94,7 @@ export default function PoseEstimation() {
             minTrackingConfidence: 0.5,
         });
 
-        pose.onResults(onResults);     // Pose.onResultsメソッドによって、推定結果を受け取るコールバック関数を登録
+        pose.onResults(onResults); // Pose.onResultsメソッドによって、推定結果を受け取るコールバック関数を登録
 
         if (typeof webcamRef.current !== "undefined" && webcamRef.current !== null) {
             const camera = new Camera(webcamRef.current.video!, {
@@ -93,9 +110,9 @@ export default function PoseEstimation() {
 
     /* landmarksをconsoleに出力するコールバック関数 */
     const OutputResults = () => {
-        const current_pose = new Pose(poseRef.current)
-        console.log(current_pose.landmark)
-    }
+        const current_pose = new Pose(poseRef.current);
+        console.log(current_pose.landmark);
+    };
 
     let videoConstraints = {
         width: 1280,
