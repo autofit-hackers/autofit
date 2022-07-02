@@ -9,7 +9,7 @@ export type RepState = {
     tmpBodyHeights: number[];
 };
 
-export const initRep = (repState: RepState, height: number) => {
+const initRep = (repState: RepState, height: number) => {
     repState.initialBodyHeight = height;
     repState.tmpBodyHeights = new Array<number>(10);
     for (let i = 0; i < 10; i++) {
@@ -32,7 +32,7 @@ export const updateRepCount = (
     return has_count_upped;
 };
 
-export const checkIfRepFinished = (
+const checkIfRepFinished = (
     repState: RepState,
     height: number,
     lowerThreshold: number,
@@ -48,7 +48,7 @@ export const checkIfRepFinished = (
     return false;
 };
 
-export const updateLiftingState = (repState: RepState, height: number): void => {
+const updateLiftingState = (repState: RepState, height: number): void => {
     repState.tmpBodyHeights.shift();
     repState.tmpBodyHeights.push(height);
 };
