@@ -5,10 +5,9 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from "@mediapipe/pos
 import { useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import "./App.css";
-import React from 'react'
 //import React from 'react';   TODO: 自動フォーマッティング時に消されるが、ないとエラー履く💩仕様。どうにかせい
 import Pose from "./training/pose";
-import RepState from "./training/repState";
+import { RepState, updateRepState } from "./training/repState";
 
 export default function PoseEstimation() {
     const webcamRef = useRef<Webcam>(null);
@@ -18,7 +17,15 @@ export default function PoseEstimation() {
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1280, h: 720 });
     // const grid = LandmarkGrid
 
-    const repState = new RepState();
+    const [repState, setRepState] = useState<RepState>({
+        repCount: 0,
+        isLiftingUp: true,
+        didTouchBottom: false,
+        didTouchTop: true,
+        should_count_upped: false,
+        initialBodyHeight: 0,
+        tmpBodyHeights: [],
+    });
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -32,16 +39,14 @@ export default function PoseEstimation() {
 
         /* とりあえずここにprocessor.recv()の内容を書いていく */
 
-        // レップ数の更新（updateで回数が増えたらTrue）
-        const isLastFrameInRep = repState.updateRepCount(currentPose, 0.9, 0.1);
+        // 実行中のRepに推定poseを記録
+
+        // レップ数などの更新
+        setRepState(updateRepState(repState, poseRef.current, 0.9, 0.1));
 
         // レップカウントが増えた時、フォーム評価を実施する
-        // if (isLastFrameInRep) {
-        //     // 直前のレップのフォームを評価
-        //     set_obj.reps[rep_state.rep_count - 1].recalculate_keyframes();
-        //     instructions.evaluate_rep(rep_obj = set_obj.reps[rep_state.rep_count - 1]);
-        //     set_obj.make_new_rep();
-        // }
+
+        // 直前のレップのフォームを評価
 
         const videoWidth = webcamRef.current!.video!.videoWidth;
         const videoHeight = webcamRef.current!.video!.videoHeight;
@@ -142,8 +147,7 @@ export default function PoseEstimation() {
                         })
                     }
                 />
-                {
-                    <p>
+                {                    <p>
                         Rotation {w} {h}
                     </p>
                 }

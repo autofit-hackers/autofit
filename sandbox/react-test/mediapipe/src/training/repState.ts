@@ -5,52 +5,64 @@ export type RepState = {
     isLiftingUp: boolean;
     didTouchBottom: boolean;
     didTouchTop: boolean;
+    should_count_upped: boolean;
     initialBodyHeight: number;
     tmpBodyHeights: number[];
 };
 
-const initRep = (repState: RepState, height: number) => {
+const initRep = (repState: RepState, height: number): RepState => {
     repState.initialBodyHeight = height;
     repState.tmpBodyHeights = new Array<number>(10);
     for (let i = 0; i < 10; i++) {
         repState.tmpBodyHeights[i] = repState.initialBodyHeight;
     }
+
+    return repState;
 };
 
-export const updateRepCount = (
+export const updateRepState = (
     repState: RepState,
     pose: Pose,
     lowerThreshold: number,
     upperThreshold: number,
-) => {
+): RepState => {
     const height: number = pose.height();
+    //HACK: 初期化している。ロジックがわかりにくい
     if (repState.tmpBodyHeights.length < 10) {
-        initRep(repState, height);
+        repState = initRep(repState, height);
     }
-    const has_count_upped = checkIfRepFinished(repState, height, lowerThreshold, upperThreshold);
-    updateLiftingState(repState, height);
-    return has_count_upped;
+    repState = updateRepCount(repState, height, lowerThreshold, upperThreshold);
+    repState = updateTmpBodyHeight(repState, height);
+
+    return repState;
 };
 
-const checkIfRepFinished = (
+const updateRepCount = (
     repState: RepState,
     height: number,
     lowerThreshold: number,
     upperThreshold: number,
-): boolean => {
+): RepState => {
+    // カウント上げる場合
     if (!repState.didTouchBottom && height < repState.initialBodyHeight * lowerThreshold) {
         repState.didTouchBottom = true;
-    } else if (repState.didTouchBottom && height > repState.initialBodyHeight * upperThreshold) {
+        repState.should_count_upped = false;
+    }
+    // カウント上げない場合
+    else if (repState.didTouchBottom && height > repState.initialBodyHeight * upperThreshold) {
         repState.repCount += 1;
         repState.didTouchBottom = false;
-        return true;
+        repState.should_count_upped = true;
     }
-    return false;
+    return repState;
 };
 
-const updateLiftingState = (repState: RepState, height: number): void => {
+// HACK: tmpBodyHeightsをリストにする意味ある?
+const updateTmpBodyHeight = (repState: RepState, height: number): RepState => {
     repState.tmpBodyHeights.shift();
     repState.tmpBodyHeights.push(height);
+
+    return repState;
 };
 
 export const isKeyframe = (
@@ -58,7 +70,7 @@ export const isKeyframe = (
     pose: Pose,
     lowerThreshold: number,
     upperThreshold: number,
-) => {
+): boolean => {
     const height: number = pose.height();
     if (repState.didTouchTop && height < repState.initialBodyHeight * lowerThreshold) {
         repState.didTouchTop = false;
@@ -72,7 +84,7 @@ export const isKeyframe = (
 };
 
 // TODO: implement alternative of body_heights_df in training_set.py
-export const resetRep = (repState: RepState, pose: Pose): void => {
+export const resetRep = (repState: RepState, pose: Pose): RepState => {
     repState.repCount = 0;
     repState.isLiftingUp = false;
     repState.didTouchBottom = false;
@@ -81,4 +93,6 @@ export const resetRep = (repState: RepState, pose: Pose): void => {
     for (let i = 0; i < 10; i++) {
         repState.tmpBodyHeights[i] = repState.initialBodyHeight;
     }
+
+    return repState;
 };
