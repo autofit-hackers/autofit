@@ -42,7 +42,7 @@ export default function PoseEstimation() {
         // 実行中のRepに推定poseを記録
 
         // レップ数などの更新
-        setRepState(updateRepState(repState, poseRef.current, 0.9, 0.1));
+        setRepState(updateRepState(repState, currentPose, 0.9, 0.1));
 
         // レップカウントが増えた時、フォーム評価を実施する
 
