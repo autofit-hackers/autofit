@@ -1,12 +1,12 @@
 import "./App.css";
-import PoseEstimation from "./poseEstimation";
-import React from 'react';
+import PoseStream from "./pose_estimation/poseStream";
+//import React from 'react';   TODO: 自動フォーマッティング時に消されるが、ないとエラー履く💩仕様。どうにかせい
 
 function App() {
     return (
-        <div>
-            <PoseEstimation />
-        </div>
+        <>
+            <PoseStream />
+        </>
     );
 }
 

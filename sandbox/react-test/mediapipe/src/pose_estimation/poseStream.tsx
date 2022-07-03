@@ -6,10 +6,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import "./App.css";
 //import React from 'react';   TODO: 自動フォーマッティング時に消されるが、ないとエラー履く💩仕様。どうにかせい
-import Pose from "./training/pose";
-import { RepState, updateRepState } from "./training/repState";
+import Pose from "../training/pose";
+import { RepState, updateRepState } from "../training/repState";
 
-export default function PoseEstimation() {
+export default function PoseStream() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const poseRef = useRef<any>(null);
@@ -22,7 +22,7 @@ export default function PoseEstimation() {
         isLiftingUp: true,
         didTouchBottom: false,
         didTouchTop: true,
-        should_count_upped: false,
+        is_count_upped: false,
         initialBodyHeight: 0,
         tmpBodyHeights: [],
     });
@@ -43,6 +43,9 @@ export default function PoseEstimation() {
 
         // レップ数などの更新
         setRepState(updateRepState(repState, currentPose, 0.9, 0.1));
+        if (repState.is_count_upped) {
+            console.log("count upped");
+        }
 
         // レップカウントが増えた時、フォーム評価を実施する
 
@@ -134,7 +137,7 @@ export default function PoseEstimation() {
     }, [webcamRef]);
 
     return (
-        <div>
+        <>
             <div>
                 <FormControlLabel
                     control={<Switch defaultChecked />}
@@ -147,7 +150,8 @@ export default function PoseEstimation() {
                         })
                     }
                 />
-                {                    <p>
+                {
+                    <p>
                         Rotation {w} {h}
                     </p>
                 }
@@ -181,6 +185,6 @@ export default function PoseEstimation() {
                     }}
                 ></canvas>
             </div>
-        </div>
+        </>
     );
 }
