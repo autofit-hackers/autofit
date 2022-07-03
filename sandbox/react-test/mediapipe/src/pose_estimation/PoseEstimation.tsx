@@ -6,7 +6,7 @@ import PoseStream from "./PoseStream";
 const defaultUpperThreshold = 0.9;
 const defaultLowerThreshold = 0.8;
 
-// settingsをcontextにして下位コンポーネントで使用可能にする
+// settingsをcontextにして下位コンポーネント(PoseStream)で使用可能にする
 let repCountSetting = { upperThreshold: defaultUpperThreshold, lowerThreshold: defaultLowerThreshold };
 export const RepCountSettingContext = createContext(repCountSetting);
 

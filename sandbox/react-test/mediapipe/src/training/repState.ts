@@ -5,7 +5,7 @@ export type RepState = {
     isLiftingUp: boolean;
     didTouchBottom: boolean;
     didTouchTop: boolean;
-    should_count_upped: boolean;
+    is_count_upped: boolean;
     initialBodyHeight: number;
     tmpBodyHeights: number[];
 };
@@ -46,13 +46,13 @@ const updateRepCount = (
     // カウント上げる場合
     if (!repState.didTouchBottom && height < repState.initialBodyHeight * lowerThreshold) {
         repState.didTouchBottom = true;
-        repState.should_count_upped = false;
+        repState.is_count_upped = false;
     }
     // カウント上げない場合
     else if (repState.didTouchBottom && height > repState.initialBodyHeight * upperThreshold) {
         repState.repCount += 1;
         repState.didTouchBottom = false;
-        repState.should_count_upped = true;
+        repState.is_count_upped = true;
     }
     return repState;
 };
