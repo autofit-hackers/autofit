@@ -4,7 +4,7 @@ import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from "@mediapipe/pose";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
-import "./App.css";
+import "../App.css";
 //import React from 'react';   TODO: 自動フォーマッティング時に消されるが、ないとエラー履く💩仕様。どうにかせい
 import Pose from "../training/pose";
 import { RepState, updateRepState } from "../training/repState";
