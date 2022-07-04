@@ -39,12 +39,21 @@ const WebcamStreamCapture = () => {
     setCapturing(false);
   }, [mediaRecorderRef, setCapturing]);
 
+  const blobToBase64 = (blob: Blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+
   const handleDownload = useCallback(() => {
     if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, {
         type: 'video/webm',
       });
       const url = URL.createObjectURL(blob);
+      // const videoB64 = blobToBase64(blob);
       setUrl(url);
       setBlob(blob);
       console.log(url);
@@ -53,11 +62,19 @@ const WebcamStreamCapture = () => {
       // a.style = 'display: none';
       a.href = url;
       a.download = 'react-webcam-stream-capture.webm';
+      const obj = {
+        x: 10,
+        b: blob,
+      };
+      console.log(blobToBase64(blob));
+      // window.myAPI.saveVideo(blobToBase64(blob), 'testVideo');
+      console.log(replayUrl);
+      window.myAPI.saveVideoFromUrl(replayUrl, 'test_v');
       a.click();
       window.URL.revokeObjectURL(url);
       setRecordedChunks([]);
     }
-  }, [recordedChunks]);
+  }, [recordedChunks, replayUrl]);
 
   useEffect(() => {
     videoRef.current?.play();
@@ -72,7 +89,18 @@ const WebcamStreamCapture = () => {
         <Button onClick={handleStartCaptureClick}>Start Capture</Button>
       )}
       {recordedChunks.length > 0 && (
-        <Button onClick={handleDownload}>Download</Button>
+        <>
+          <Button onClick={handleDownload}>Download</Button>
+          {/* {replayUrl && (
+            <Button
+              onClick={async () => {
+                await window.myAPI.saveVideoFromUrl(replayUrl, 'testVideo');
+              }}
+            >
+              SAVE SAVE SAVE
+            </Button>
+          )} */}
+        </>
       )}
       {videoBlob && (
         <>

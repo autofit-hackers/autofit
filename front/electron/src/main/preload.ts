@@ -30,4 +30,10 @@ contextBridge.exposeInMainWorld('myAPI', {
   saveMessageFile: async (message: string) => {
     await ipcRenderer.invoke('save-message-txt', message, 'text_save_test');
   },
+  saveVideo: async (videoBlob: any, fileName: string) => {
+    await ipcRenderer.invoke('save-video', videoBlob, fileName);
+  },
+  saveVideoFromUrl: async (videoUrl: string, fileName: string) => {
+    await ipcRenderer.invoke('save-video-from-url', videoUrl, fileName);
+  },
 });

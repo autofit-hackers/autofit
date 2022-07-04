@@ -10,4 +10,6 @@ export interface IMyAPI {
   openTxtFile: () => Promise<string>;
   saveFile: () => Promise<void>;
   saveMessageFile: (message: string) => Promise<void>;
+  saveVideo: (videoBlob: any, fileName: string) => Promise<void>;
+  saveVideoFromUrl: (videoUrl: string, fileName: string) => Promise<void>;
 }

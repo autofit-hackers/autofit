@@ -125,6 +125,31 @@ const createWindow = async () => {
     fs.writeFileSync(filePath, data);
   });
 
+  // video saver
+  const savePath = `${app.getPath('desktop')}/video_test.webm`;
+  const writeStream = fs.createReadStream(savePath);
+
+  ipcMain.handle('save-video', async (event, videoBlob, fileName) => {
+    // const filePath = `${app.getPath('desktop')}/${fileName}.webm`;
+    // const buffer = Buffer.from(await videoBlob.arrayBuffer());
+    // fs.writeFile('video.webm', buffer, () => console.log('video saved!'));
+
+    writeStream.write(videoBlob);
+    writeStream.end();
+  });
+
+  ipcMain.handle('save-video-from-url', async (event, videoUrl, fileName) => {
+    const filePath = `${app.getPath('desktop')}/test_movie/${fileName}.webm`;
+    console.log(videoUrl);
+    const buf = Buffer.from(videoUrl);
+    console.log(typeof buf);
+
+    // const videoBlob = await (await fetch(videoUrl)).blob();
+    // const buffer = Buffer.from(await videoBlob.arrayBuffer());
+
+    fs.writeFile(filePath, buf, () => console.log('video saved!'));
+  });
+
   mainWindow.webContents.openDevTools({ mode: 'detach' });
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
