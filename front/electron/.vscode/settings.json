@@ -55,10 +55,6 @@
     "**/CVS": true,
     "**/.cache": true,
     "**/*.meta": true,
-    "**/.DS_Store": true,
-    "**/node_modules": true,
-    "**/node_modules/": true,
-    "**/dist": true,
-    "**/build": true
+    "**/.DS_Store": true
   }
 }
