@@ -17,5 +17,6 @@
   "python.formatting.blackArgs": ["--line-length", "119"],
   "python.languageServer": "Pylance",
   "python.linting.enabled": true,
-  "python.analysis.extraPaths": ["./front"]
+  "python.analysis.extraPaths": ["./front"],
+  "eslint.workingDirectories": [{ "mode": "auto" }]
 }
