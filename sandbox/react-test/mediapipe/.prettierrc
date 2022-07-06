@@ -1,5 +1,6 @@
 {
-	"doubleQuote": true,
-	"trailingComma": "all",
-	"tabWidth": 4
+    "doubleQuote": true,
+    "trailingComma": "all",
+    "tabWidth": 4,
+    "printWidth": 107
 }

@@ -1,19 +1,12 @@
-import React from "react";
 import "./App.css";
-import SignIn from "./SignIn";
-import PoseEstimation from "./poseEstimation";
-import Themes from "./theme";
-import RestTimers from "./RestTimers";
+import PoseEstimation from "./pose_estimation/PoseEstimation";
 
 function App() {
-  return (
-    <div >
-      <SignIn/>
-      <PoseEstimation />
-      <Themes />
-      <RestTimers />
-    </div>
-  );
+    return (
+        <>
+            <PoseEstimation />
+        </>
+    );
 }
 
 export default App;
