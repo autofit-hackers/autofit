@@ -130,10 +130,6 @@ const createWindow = async () => {
   const writeStream = fs.createReadStream(savePath);
 
   ipcMain.handle('save-video', async (event, videoBlob, fileName) => {
-    // const filePath = `${app.getPath('desktop')}/${fileName}.webm`;
-    // const buffer = Buffer.from(await videoBlob.arrayBuffer());
-    // fs.writeFile('video.webm', buffer, () => console.log('video saved!'));
-
     writeStream.write(videoBlob);
     writeStream.end();
   });
@@ -143,9 +139,6 @@ const createWindow = async () => {
     console.log(videoUrl);
     const buf = Buffer.from(videoUrl);
     console.log(typeof buf);
-
-    // const videoBlob = await (await fetch(videoUrl)).blob();
-    // const buffer = Buffer.from(await videoBlob.arrayBuffer());
 
     fs.writeFile(filePath, buf, () => console.log('video saved!'));
   });
