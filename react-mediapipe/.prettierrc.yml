@@ -1,6 +1,6 @@
-tabWidth: 2
+tabWidth: 4
 singleQuote: true
-trailingComma: "none"
+trailingComma: 'none'
 semi: false
 useTabs: false
 printWidth: 119
