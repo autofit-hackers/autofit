@@ -6,25 +6,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import "../App.css";
 import Pose from "../training/pose";
-import { RepState, updateRepState } from "../training/repState";
+import { RepState } from "../training/repState";
 
 export default function PoseStream() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const poseRef = useRef<any>(null);
-    var camera = null;
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1280, h: 720 });
     // const grid = LandmarkGrid
 
-    const [repState, setRepState] = useState<RepState>({
-        repCount: 0,
-        isLiftingUp: true,
-        didTouchBottom: false,
-        didTouchTop: true,
-        is_count_upped: false,
-        initialBodyHeight: 0,
-        tmpBodyHeights: [],
-    });
+    // const [repState, setRepState] = useState<RepState>({
+    //     repCount: 0,
+    //     isLiftingUp: true,
+    //     didTouchBottom: false,
+    //     didTouchTop: true,
+    //     is_count_upped: false,
+    //     initialBodyHeight: 0,
+    //     tmpBodyHeights: [],
+    // });
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -50,8 +49,8 @@ export default function PoseStream() {
 
         // 直前のレップのフォームを評価
 
-        const videoWidth = webcamRef.current!.video!.videoWidth;
-        const videoHeight = webcamRef.current!.video!.videoHeight;
+        // const videoWidth = webcamRef.current!.video!.videoWidth;
+        // const videoHeight = webcamRef.current!.video!.videoHeight;
         canvasRef.current!.width = 1280;
         canvasRef.current!.height = 720;
         const canvasElement = canvasRef.current;
@@ -115,13 +114,7 @@ export default function PoseStream() {
         }
     }, [onResults]);
 
-    /* landmarksをconsoleに出力するコールバック関数 */
-    const OutputResults = () => {
-        const current_pose = new Pose(poseRef.current);
-        console.log(current_pose.landmark);
-    };
-
-    let videoConstraints = {
+    const videoConstraints = {
         width: 1280,
         height: 720,
         facingMode: "user",
