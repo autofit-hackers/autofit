@@ -1,64 +1,73 @@
 import Pose from './pose';
 
-class TrainingRep {
+type KeyframesIdx = { top: number; bottom: number; ascendingMiddle: number; descendingMiddle: number };
+
+export type TrainingRep = {
     form: Pose[];
     bodyHeights: number[];
-    keyframes: { [key: string]: number };
+    keyframesIdx: KeyframesIdx;
     repNumber: number;
+};
 
-    constructor(repNumber: number) {
-        this.form = [];
-        this.bodyHeights = [];
-        this.keyframes = {};
-        this.repNumber = repNumber;
-    }
+export const recordPose = (trainingRep: TrainingRep, pose: Pose): TrainingRep => {
+    trainingRep.form = [...trainingRep.form, pose];
+    // HACK: unlock this? => this.body_heights.push(pose.get_2d_height());
 
-    recordPose(pose: Pose): void {
-        this.form.push(pose);
-        // HACK: unlock this? => this.body_heights.push(pose.get_2d_height());
-    }
+    return trainingRep;
+};
 
-    resetRep = (repNumber: number): void => {
-        this.form = [];
-        this.keyframes = {};
-        this.repNumber = repNumber;
-    };
+export const resetRep = (trainingRep: TrainingRep, repNumber: number): TrainingRep => {
+    trainingRep.form = [];
+    trainingRep.keyframesIdx = { top: -1, bottom: -1, ascendingMiddle: -1, descendingMiddle: -1 };
+    trainingRep.repNumber = repNumber;
 
-    recalculateKeyframes = (): { [key: string]: number } => {
-        this.bodyHeights = this.form.map((pose) => pose.height());
-        // calculate top
-        const topHeight = Math.max(...this.bodyHeights);
-        const topIdx = this.bodyHeights.indexOf(topHeight);
-        this.keyframes.top = topIdx;
-        // calculate bottom
-        const bottomHeight = Math.min(...this.bodyHeights);
-        const bottomIdx = this.bodyHeights.indexOf(bottomHeight);
-        this.keyframes.bottom = bottomIdx;
-        // top should be before bottom
-        if (topIdx < bottomIdx) {
-            const middleHeight = (topHeight + bottomHeight) / 2;
-            // calculate descending_middle
-            let descendingMiddleIdx = topIdx;
-            while (this.bodyHeights[descendingMiddleIdx] > middleHeight) {
-                descendingMiddleIdx += 1;
-            }
-            this.keyframes.descending_middle = descendingMiddleIdx;
-            // calculate ascending_middle
-            let ascendingMiddleIdx = bottomIdx;
-            while (
-                this.bodyHeights[ascendingMiddleIdx] < middleHeight &&
-                ascendingMiddleIdx < this.bodyHeights.length - 1
-            ) {
-                ascendingMiddleIdx += 1;
-            }
-            this.keyframes.ascending_middle = ascendingMiddleIdx;
+    return trainingRep;
+};
+
+export const recalculateKeyframes = (trainingRep: TrainingRep): TrainingRep => {
+    trainingRep.bodyHeights = trainingRep.form.map((pose) => pose.height());
+    // calculate top
+    const topHeight = Math.max(...trainingRep.bodyHeights);
+    const topIdx = trainingRep.bodyHeights.indexOf(topHeight);
+    trainingRep.keyframesIdx.top = topIdx;
+    // calculate bottom
+    const bottomHeight = Math.min(...trainingRep.bodyHeights);
+    const bottomIdx = trainingRep.bodyHeights.indexOf(bottomHeight);
+    trainingRep.keyframesIdx.bottom = bottomIdx;
+    // top should be before bottom
+    if (topIdx < bottomIdx) {
+        const middleHeight = (topHeight + bottomHeight) / 2;
+        // calculate descending_middle
+        let descendingMiddleIdx = topIdx;
+        while (trainingRep.bodyHeights[descendingMiddleIdx] > middleHeight) {
+            descendingMiddleIdx += 1;
         }
-        return this.keyframes;
-    };
-
-    getKeyframePose(key: string): Pose {
-        return this.form[this.keyframes[key]];
+        trainingRep.keyframesIdx.descendingMiddle = descendingMiddleIdx;
+        // calculate ascending_middle
+        let ascendingMiddleIdx = bottomIdx;
+        while (
+            trainingRep.bodyHeights[ascendingMiddleIdx] < middleHeight &&
+            ascendingMiddleIdx < trainingRep.bodyHeights.length - 1
+        ) {
+            ascendingMiddleIdx += 1;
+        }
+        trainingRep.keyframesIdx.ascendingMiddle = ascendingMiddleIdx;
     }
-}
+    return trainingRep;
+};
 
-export default TrainingRep;
+export const getTopPose = (trainingRep: TrainingRep): Pose => {
+    return trainingRep.form[trainingRep.keyframesIdx.top];
+};
+
+export const getBottomPose = (trainingRep: TrainingRep): Pose => {
+    return trainingRep.form[trainingRep.keyframesIdx.bottom];
+};
+
+export const getAscendingMiddlePose = (trainingRep: TrainingRep): Pose => {
+    return trainingRep.form[trainingRep.keyframesIdx.ascendingMiddle];
+};
+
+export const getDescendingMiddlePose = (trainingRep: TrainingRep): Pose => {
+    return trainingRep.form[trainingRep.keyframesIdx.descendingMiddle];
+};

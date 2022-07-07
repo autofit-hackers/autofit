@@ -65,7 +65,7 @@ const updateTmpBodyHeight = (repState: RepState, height: number): RepState => {
     return repState;
 };
 
-export const isKeyframe = (
+export const isNowKeyframeNow = (
     repState: RepState,
     pose: Pose,
     lowerThreshold: number,
