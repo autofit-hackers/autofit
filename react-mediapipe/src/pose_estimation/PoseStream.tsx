@@ -26,7 +26,6 @@ export default function PoseStream() {
 
     const lowerThreshold = useContext(RepCountSettingContext).lowerThreshold;
     const upperThreshold = useContext(RepCountSettingContext).upperThreshold;
-    console.log('stream rendered');
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -36,7 +35,7 @@ export default function PoseStream() {
     */
     const onResults = useCallback((results: Results) => {
         /* とりあえずここにprocessor.recv()の内容を書いていく */
-        if (results != null) {
+        if ('poseLandmarks' in results) {
             const currentPose = new Pose(results); // 自作Poseクラスに代入
 
             // レップ数などの更新
@@ -53,14 +52,18 @@ export default function PoseStream() {
         canvasRef.current!.height = videoHeight;
         const canvasElement = canvasRef.current;
         const canvasCtx = canvasElement!.getContext('2d');
+
         canvasCtx!.save();
         canvasCtx!.clearRect(0, 0, canvasElement!.width, canvasElement!.height);
-        canvasCtx!.scale(-1, 1);
+        // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
+
+        // canvasCtx!.scale(-1, 1);
+
         // if (isRotated) {
         //     canvasCtx!.rotate(5 * (Math.PI / 180));
         // }
 
-        canvasCtx!.translate(-700, 0);
+        // canvasCtx!.translate(-700, 0);
         canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
         drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
             color: 'white',
@@ -72,6 +75,11 @@ export default function PoseStream() {
             radius: 8,
             fillColor: 'lightgreen'
         });
+
+        // レップカウントを表示
+        canvasCtx!.font = '50px serif';
+        canvasCtx!.fillText(repState.repCount.toString(), 50, 50);
+
         canvasCtx!.restore();
     }, []);
 
@@ -110,69 +118,53 @@ export default function PoseStream() {
         }
     }, [onResults]);
 
-    const videoConstraints = {
-        width: 1280,
-        height: 720,
-        facingMode: 'user'
-    };
-
-    const [url, setUrl] = useState<string | null>(null);
-    const capture = useCallback(() => {
-        const imageSrc = webcamRef.current!.getScreenshot();
-        if (imageSrc) {
-            setUrl(imageSrc);
-        }
-    }, [webcamRef]);
-
     return (
         <>
-            <div>
-                <FormControlLabel
-                    control={<Switch defaultChecked />}
-                    label="Rotate"
-                    onChange={() =>
-                        setConstrains({
-                            isRotated: !isRotated,
-                            w: isRotated ? 1280 : 720,
-                            h: isRotated ? 720 : 1280
-                        })
-                    }
-                />
-                {
-                    <p>
-                        Rotation {w} {h}
-                    </p>
+            <FormControlLabel
+                control={<Switch defaultChecked />}
+                label="Rotate"
+                onChange={() =>
+                    setConstrains({
+                        isRotated: !isRotated,
+                        w: isRotated ? 1280 : 720,
+                        h: isRotated ? 720 : 1280
+                    })
                 }
-                <Webcam
-                    ref={webcamRef}
-                    style={{
-                        position: 'absolute',
-                        marginLeft: 'auto',
-                        marginRight: 'auto',
-                        left: 0,
-                        right: 0,
-                        textAlign: 'center',
-                        // zIndex: 1,
-                        width: 0,
-                        height: 0
-                    }}
-                />{' '}
-                <canvas
-                    ref={canvasRef}
-                    className="output_canvas"
-                    style={{
-                        // position: "absolute",
-                        marginLeft: 'auto',
-                        marginRight: 'auto',
-                        left: 0,
-                        right: 0,
-                        textAlign: 'center',
-                        // zIndex: 1,
-                        width: w,
-                        height: h
-                    }}
-                ></canvas>
-            </div>
+            />
+            {
+                <p>
+                    Rotation {w} {h}
+                </p>
+            }
+            <Webcam
+                ref={webcamRef}
+                style={{
+                    position: 'absolute',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
+                    // zIndex: 1,
+                    width: 0,
+                    height: 0
+                }}
+            />{' '}
+            <canvas
+                ref={canvasRef}
+                className="output_canvas"
+                style={{
+                    position: 'absolute',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
+                    // zIndex: 1,
+                    width: w,
+                    height: h
+                }}
+            ></canvas>
         </>
     );
 }
