@@ -1,10 +1,10 @@
-import "./App.css";
-import PoseStream from "./pose_estimation/PoseStream";
+import './App.css';
+import PoseEstimation from './pose_estimation/PoseEstimation';
 
 function App() {
     return (
         <>
-            <PoseStream />
+            <PoseEstimation />
         </>
     );
 }

@@ -1,4 +1,4 @@
-import Pose from "./pose";
+import Pose from './pose';
 
 class TrainingRep {
     form: Pose[];
@@ -29,11 +29,11 @@ class TrainingRep {
         // calculate top
         const topHeight = Math.max(...this.bodyHeights);
         const topIdx = this.bodyHeights.indexOf(topHeight);
-        this.keyframes["top"] = topIdx;
+        this.keyframes.top = topIdx;
         // calculate bottom
         const bottomHeight = Math.min(...this.bodyHeights);
         const bottomIdx = this.bodyHeights.indexOf(bottomHeight);
-        this.keyframes["bottom"] = bottomIdx;
+        this.keyframes.bottom = bottomIdx;
         // top should be before bottom
         if (topIdx < bottomIdx) {
             const middleHeight = (topHeight + bottomHeight) / 2;
@@ -42,7 +42,7 @@ class TrainingRep {
             while (this.bodyHeights[descendingMiddleIdx] > middleHeight) {
                 descendingMiddleIdx += 1;
             }
-            this.keyframes["descending_middle"] = descendingMiddleIdx;
+            this.keyframes.descending_middle = descendingMiddleIdx;
             // calculate ascending_middle
             let ascendingMiddleIdx = bottomIdx;
             while (
@@ -51,7 +51,7 @@ class TrainingRep {
             ) {
                 ascendingMiddleIdx += 1;
             }
-            this.keyframes["ascending_middle"] = ascendingMiddleIdx;
+            this.keyframes.ascending_middle = ascendingMiddleIdx;
         }
         return this.keyframes;
     };

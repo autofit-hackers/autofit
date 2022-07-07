@@ -1,4 +1,4 @@
-import TrainingRep from "./trainingRep";
+import TrainingRep from './trainingRep';
 
 class TrainingSet {
     reps: TrainingRep[];
@@ -12,7 +12,7 @@ class TrainingSet {
     }
 
     createNewRep = (): void => {
-        let idx = this.reps.length + 1;
+        const idx = this.reps.length + 1;
         this.reps.push(new TrainingRep(idx));
     };
 }

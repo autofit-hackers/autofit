@@ -1,12 +1,11 @@
-import { Camera } from "@mediapipe/camera_utils";
-import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
-import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from "@mediapipe/pose";
-import { FormControlLabel, Switch } from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
-import Webcam from "react-webcam";
-import "../App.css";
-import Pose from "../training/pose";
-import { RepState } from "../training/repState";
+import { Camera } from '@mediapipe/camera_utils';
+import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
+import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
+import { FormControlLabel, Switch } from '@mui/material';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
+import '../App.css';
+import { RepCountSettingContext } from './PoseEstimation';
 
 export default function PoseStream() {
     const webcamRef = useRef<Webcam>(null);
@@ -22,8 +21,13 @@ export default function PoseStream() {
     //     didTouchTop: true,
     //     is_count_upped: false,
     //     initialBodyHeight: 0,
-    //     tmpBodyHeights: [],
+    //     tmpBodyHeights: []
     // });
+
+    const upperThreshold = useContext(RepCountSettingContext);
+    const lowerThreshold = useContext(RepCountSettingContext);
+
+    console.log(upperThreshold, lowerThreshold);
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -33,16 +37,16 @@ export default function PoseStream() {
     */
     const onResults = useCallback((results: Results) => {
         poseRef.current = results.poseLandmarks; // 毎回の推定結果を格納
-        const currentPose = new Pose(poseRef.current); // 自作Poseクラスに代入
+        // const currentPose = new Pose(poseRef.current); // 自作Poseクラスに代入
 
         /* とりあえずここにprocessor.recv()の内容を書いていく */
 
         // 実行中のRepに推定poseを記録
 
         // レップ数などの更新
-        // setRepState(updateRepState(repState, currentPose, 0.9, 0.1));
+        // setRepState(updateRepState(repState, currentPose, 0.9, 0.1))
         // if (repState.is_count_upped) {
-        //     console.log("count upped");
+        //     console.log('count upped')
         // }
 
         // レップカウントが増えた時、フォーム評価を実施する
@@ -54,7 +58,7 @@ export default function PoseStream() {
         canvasRef.current!.width = 1280;
         canvasRef.current!.height = 720;
         const canvasElement = canvasRef.current;
-        const canvasCtx = canvasElement!.getContext("2d");
+        const canvasCtx = canvasElement!.getContext('2d');
         canvasCtx!.save();
         canvasCtx!.clearRect(0, 0, canvasElement!.width, canvasElement!.height);
         canvasCtx!.scale(-1, 1);
@@ -67,14 +71,14 @@ export default function PoseStream() {
         canvasCtx!.translate(-1280, 0);
         canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
         drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
-            color: "white",
-            lineWidth: 4,
+            color: 'white',
+            lineWidth: 4
         });
         drawLandmarks(canvasCtx!, results.poseLandmarks, {
-            color: "white",
+            color: 'white',
             lineWidth: 4,
             radius: 8,
-            fillColor: "lightgreen",
+            fillColor: 'lightgreen'
         });
         canvasCtx!.restore();
     }, []);
@@ -88,7 +92,7 @@ export default function PoseStream() {
         const pose = new PoseMediapipe({
             locateFile: (file) => {
                 return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-            },
+            }
         });
 
         pose.setOptions({
@@ -97,18 +101,18 @@ export default function PoseStream() {
             enableSegmentation: true,
             smoothSegmentation: true,
             minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5,
+            minTrackingConfidence: 0.5
         });
 
         pose.onResults(onResults); // Pose.onResultsメソッドによって、推定結果を受け取るコールバック関数を登録
 
-        if (typeof webcamRef.current !== "undefined" && webcamRef.current !== null) {
+        if (typeof webcamRef.current !== 'undefined' && webcamRef.current !== null) {
             const camera = new Camera(webcamRef.current.video!, {
                 onFrame: async () => {
                     await pose.send({ image: webcamRef.current!.video! });
                 },
                 width: 1280,
-                height: 720,
+                height: 720
             });
             camera.start();
         }
@@ -117,7 +121,7 @@ export default function PoseStream() {
     const videoConstraints = {
         width: 1280,
         height: 720,
-        facingMode: "user",
+        facingMode: 'user'
     };
 
     const [url, setUrl] = useState<string | null>(null);
@@ -138,7 +142,7 @@ export default function PoseStream() {
                         setConstrains({
                             isRotated: !isRotated,
                             w: isRotated ? 1280 : 720,
-                            h: isRotated ? 720 : 1280,
+                            h: isRotated ? 720 : 1280
                         })
                     }
                 />
@@ -150,30 +154,30 @@ export default function PoseStream() {
                 <Webcam
                     ref={webcamRef}
                     style={{
-                        position: "absolute",
-                        marginLeft: "auto",
-                        marginRight: "auto",
+                        position: 'absolute',
+                        marginLeft: 'auto',
+                        marginRight: 'auto',
                         left: 0,
                         right: 0,
-                        textAlign: "center",
+                        textAlign: 'center',
                         // zIndex: 1,
                         width: 0,
-                        height: 0,
+                        height: 0
                     }}
-                />{" "}
+                />{' '}
                 <canvas
                     ref={canvasRef}
                     className="output_canvas"
                     style={{
                         // position: "absolute",
-                        marginLeft: "auto",
-                        marginRight: "auto",
+                        marginLeft: 'auto',
+                        marginRight: 'auto',
                         left: 0,
                         right: 0,
-                        textAlign: "center",
+                        textAlign: 'center',
                         // zIndex: 1,
                         width: 1280,
-                        height: 720,
+                        height: 720
                     }}
                 ></canvas>
             </div>
