@@ -7,10 +7,17 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "prettier -c src/*.{ts,tsx} && eslint src/*.{ts,tsx}",
     "postinstall": "husky install",
     "prepack": "pinst --disable",
-    "postpack": "pinst --enable"
+    "postpack": "pinst --enable",
+    "prepare": "cd .. && husky install react-mediapipe/",
+    "lint-staged": "lint-staged",
+    "lint:prettier": "prettier --check .",
+    "lint:eslint": "eslint --max-warnings 0 .",
+    "lint": "run-p -l -c --aggregate-output lint:*",
+    "fix:eslint": "npm run lint:eslint -- --fix",
+    "fix:prettier": "npm run lint:prettier -- --write",
+    "fix": "run-s fix:prettier fix:eslint"
   },
   "dependencies": {
     "@emotion/css": "*",
@@ -23,7 +30,8 @@
     "@mediapipe/pose": "*",
     "@mui/icons-material": "*",
     "@mui/material": "*",
-    "eslint": "^8.0.1",
+    "eslint": "^8.19.0",
+    "lint-staged": "^13.0.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-webcam": "^7.0.1",
@@ -44,6 +52,7 @@
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.1",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.7.1",
     "typescript": "^4.6.3",
     "vite": "^2.9.9"
