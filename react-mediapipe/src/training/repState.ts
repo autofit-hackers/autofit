@@ -2,10 +2,9 @@ import Pose from './pose';
 
 export type RepState = {
     repCount: number;
-    isLiftingUp: boolean;
     didTouchBottom: boolean;
     didTouchTop: boolean;
-    is_count_upped: boolean;
+    isCountUppedNow: boolean;
     initialBodyHeight: number;
     tmpBodyHeights: number[];
 };
@@ -43,16 +42,24 @@ const updateRepCount = (
     lowerThreshold: number,
     upperThreshold: number
 ): RepState => {
-    // カウント上げる場合
-    if (!repState.didTouchBottom && height < repState.initialBodyHeight * lowerThreshold) {
-        repState.didTouchBottom = true;
-        repState.is_count_upped = false;
+    // bottomに達してない場合（下がっている時）
+    if (!repState.didTouchBottom) {
+        // 体長が十分に小さくなったら、didTouchBottomをtrueにする
+        if (height < repState.initialBodyHeight * lowerThreshold) {
+            repState.didTouchBottom = true;
+        }
+        repState.isCountUppedNow = false;
     }
-    // カウント上げない場合
-    else if (repState.didTouchBottom && height > repState.initialBodyHeight * upperThreshold) {
-        repState.repCount += 1;
-        repState.didTouchBottom = false;
-        repState.is_count_upped = true;
+    // bottomに達している場合（上がっている時）
+    else {
+        // 体長が十分に大きくなったら、1レップ完了
+        if (height > repState.initialBodyHeight * upperThreshold) {
+            repState.repCount += 1;
+            repState.didTouchBottom = false;
+            repState.isCountUppedNow = true;
+        } else {
+            repState.isCountUppedNow = false;
+        }
     }
     return repState;
 };
@@ -65,7 +72,7 @@ const updateTmpBodyHeight = (repState: RepState, height: number): RepState => {
     return repState;
 };
 
-export const isNowKeyframeNow = (
+export const isKeyframeNow = (
     repState: RepState,
     pose: Pose,
     lowerThreshold: number,
@@ -86,7 +93,6 @@ export const isNowKeyframeNow = (
 // TODO: implement alternative of body_heights_df in training_set.py
 export const resetRep = (repState: RepState, pose: Pose): RepState => {
     repState.repCount = 0;
-    repState.isLiftingUp = false;
     repState.didTouchBottom = false;
     repState.didTouchTop = true;
     repState.initialBodyHeight = pose.height();

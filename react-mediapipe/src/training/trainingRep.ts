@@ -3,9 +3,9 @@ import Pose from './pose';
 type KeyframesIdx = { top: number; bottom: number; ascendingMiddle: number; descendingMiddle: number };
 
 export type TrainingRep = {
+    repIdx: number;
     form: Pose[];
     keyframesIdx: KeyframesIdx;
-    repIdx: number;
 };
 
 export const recordPose = (trainingRep: TrainingRep, pose: Pose): TrainingRep => {

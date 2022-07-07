@@ -5,29 +5,27 @@ import { FormControlLabel, Switch } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import '../App.css';
+import Pose from '../training/pose';
+import { RepState, updateRepState } from '../training/repState';
 import { RepCountSettingContext } from './PoseEstimation';
 
 export default function PoseStream() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const poseRef = useRef<any>(null);
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1280, h: 720 });
     // const grid = LandmarkGrid
 
-    // const [repState, setRepState] = useState<RepState>({
-    //     repCount: 0,
-    //     isLiftingUp: true,
-    //     didTouchBottom: false,
-    //     didTouchTop: true,
-    //     is_count_upped: false,
-    //     initialBodyHeight: 0,
-    //     tmpBodyHeights: []
-    // });
+    const [repState, setRepState] = useState<RepState>({
+        repCount: 0,
+        didTouchBottom: false,
+        didTouchTop: true,
+        isCountUppedNow: false,
+        initialBodyHeight: 0,
+        tmpBodyHeights: []
+    });
 
     const upperThreshold = useContext(RepCountSettingContext);
     const lowerThreshold = useContext(RepCountSettingContext);
-
-    console.log(upperThreshold, lowerThreshold);
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -36,39 +34,34 @@ export default function PoseStream() {
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
     const onResults = useCallback((results: Results) => {
-        poseRef.current = results.poseLandmarks; // 毎回の推定結果を格納
-        // const currentPose = new Pose(poseRef.current); // 自作Poseクラスに代入
-
-        /* とりあえずここにprocessor.recv()の内容を書いていく */
-
-        // 実行中のRepに推定poseを記録
+        const currentPose = new Pose(results); // 自作Poseクラスに代入
+        /* とりあえずここにprocessor.recv()の内容を書いていく */ // TODO: resultsがnullのときの回避処理
 
         // レップ数などの更新
-        // setRepState(updateRepState(repState, currentPose, 0.9, 0.1))
-        // if (repState.is_count_upped) {
-        //     console.log('count upped')
-        // }
+        setRepState(updateRepState(repState, currentPose, 0.6, 0.9));
+        if (repState.isCountUppedNow) {
+            console.log(currentPose.landmark);
+            console.log(repState);
+        }
 
         // レップカウントが増えた時、フォーム評価を実施する
 
         // 直前のレップのフォームを評価
 
-        // const videoWidth = webcamRef.current!.video!.videoWidth;
-        // const videoHeight = webcamRef.current!.video!.videoHeight;
-        canvasRef.current!.width = 1280;
-        canvasRef.current!.height = 720;
+        const videoWidth = webcamRef.current!.video!.videoWidth;
+        const videoHeight = webcamRef.current!.video!.videoHeight;
+        canvasRef.current!.width = videoWidth;
+        canvasRef.current!.height = videoHeight;
         const canvasElement = canvasRef.current;
         const canvasCtx = canvasElement!.getContext('2d');
         canvasCtx!.save();
         canvasCtx!.clearRect(0, 0, canvasElement!.width, canvasElement!.height);
         canvasCtx!.scale(-1, 1);
-        // if(isRotated){
-        //     canvasCtx!.rotate(90 * (Math.PI / 180))
+        // if (isRotated) {
+        //     canvasCtx!.rotate(5 * (Math.PI / 180));
         // }
-        // else {
 
-        // }
-        canvasCtx!.translate(-1280, 0);
+        canvasCtx!.translate(-700, 0);
         canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
         drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
             color: 'white',
@@ -176,8 +169,8 @@ export default function PoseStream() {
                         right: 0,
                         textAlign: 'center',
                         // zIndex: 1,
-                        width: 1280,
-                        height: 720
+                        width: w,
+                        height: h
                     }}
                 ></canvas>
             </div>

@@ -1,9 +1,9 @@
-import { NormalizedLandmark, NormalizedLandmarkList, Results } from "@mediapipe/pose";
+import { NormalizedLandmark, NormalizedLandmarkList, Results } from '@mediapipe/pose';
 
 class Pose {
     landmark: NormalizedLandmarkList;
 
-    constructor(public result: Results) {
+    constructor(result: Results) {
         this.landmark = result.poseLandmarks;
     }
 
@@ -11,7 +11,7 @@ class Pose {
         return {
             x: (this.landmark[11].x + this.landmark[12].x) / 2,
             y: (this.landmark[11].y + this.landmark[12].y) / 2,
-            z: (this.landmark[11].z + this.landmark[12].z) / 2,
+            z: (this.landmark[11].z + this.landmark[12].z) / 2
         };
     };
 
@@ -19,7 +19,7 @@ class Pose {
         return {
             x: (this.landmark[23].x + this.landmark[24].x) / 2,
             y: (this.landmark[23].y + this.landmark[24].y) / 2,
-            z: (this.landmark[23].z + this.landmark[24].z) / 2,
+            z: (this.landmark[23].z + this.landmark[24].z) / 2
         };
     };
 
@@ -27,7 +27,7 @@ class Pose {
         return {
             x: (this.landmark[25].x + this.landmark[26].x) / 2,
             y: (this.landmark[25].y + this.landmark[26].y) / 2,
-            z: (this.landmark[25].z + this.landmark[26].z) / 2,
+            z: (this.landmark[25].z + this.landmark[26].z) / 2
         };
     };
 
@@ -35,7 +35,7 @@ class Pose {
         return {
             x: (this.landmark[27].x + this.landmark[28].x) / 2,
             y: (this.landmark[27].y + this.landmark[28].y) / 2,
-            z: (this.landmark[27].z + this.landmark[28].z) / 2,
+            z: (this.landmark[27].z + this.landmark[28].z) / 2
         };
     };
 

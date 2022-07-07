@@ -1,4 +1,4 @@
-import TrainingRep from './trainingRep';
+import { TrainingRep } from './trainingRep';
 
 class TrainingSet {
     reps: TrainingRep[];
@@ -11,10 +11,10 @@ class TrainingSet {
         this.weight = weight;
     }
 
-    createNewRep = (): void => {
-        const idx = this.reps.length + 1;
-        this.reps.push(new TrainingRep(idx));
-    };
+    // createNewRep = (): void => {
+    //     const idx = this.reps.length + 1;
+    //     this.reps.push(new TrainingRep(idx));
+    // };
 }
 
 export default TrainingSet;
