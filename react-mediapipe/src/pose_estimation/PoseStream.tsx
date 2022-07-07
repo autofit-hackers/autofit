@@ -34,19 +34,21 @@ export default function PoseStream() {
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
     const onResults = useCallback((results: Results) => {
-        const currentPose = new Pose(results); // 自作Poseクラスに代入
-        /* とりあえずここにprocessor.recv()の内容を書いていく */ // TODO: resultsがnullのときの回避処理
+        /* とりあえずここにprocessor.recv()の内容を書いていく */
+        if (results != null) {
+            const currentPose = new Pose(results); // 自作Poseクラスに代入
 
-        // レップ数などの更新
-        setRepState(updateRepState(repState, currentPose, 0.6, 0.9));
-        if (repState.isCountUppedNow) {
-            console.log(currentPose.landmark);
-            console.log(repState);
+            // レップ数などの更新
+            setRepState(updateRepState(repState, currentPose, 0.6, 0.9));
+            if (repState.isCountUppedNow) {
+                console.log(currentPose.landmark);
+                console.log(repState);
+            }
+
+            // レップカウントが増えた時、フォーム評価を実施する
+
+            // 直前のレップのフォームを評価
         }
-
-        // レップカウントが増えた時、フォーム評価を実施する
-
-        // 直前のレップのフォームを評価
 
         const videoWidth = webcamRef.current!.video!.videoWidth;
         const videoHeight = webcamRef.current!.video!.videoHeight;
