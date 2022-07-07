@@ -4,9 +4,8 @@ type KeyframesIdx = { top: number; bottom: number; ascendingMiddle: number; desc
 
 export type TrainingRep = {
     form: Pose[];
-    bodyHeights: number[];
     keyframesIdx: KeyframesIdx;
-    repNumber: number;
+    repIdx: number;
 };
 
 export const recordPose = (trainingRep: TrainingRep, pose: Pose): TrainingRep => {
@@ -19,40 +18,43 @@ export const recordPose = (trainingRep: TrainingRep, pose: Pose): TrainingRep =>
 export const resetRep = (trainingRep: TrainingRep, repNumber: number): TrainingRep => {
     trainingRep.form = [];
     trainingRep.keyframesIdx = { top: -1, bottom: -1, ascendingMiddle: -1, descendingMiddle: -1 };
-    trainingRep.repNumber = repNumber;
+    trainingRep.repIdx = repNumber;
 
     return trainingRep;
 };
 
 export const recalculateKeyframes = (trainingRep: TrainingRep): TrainingRep => {
-    trainingRep.bodyHeights = trainingRep.form.map((pose) => pose.height());
+    const bodyHeights = trainingRep.form.map((pose) => pose.height());
+
     // calculate top
-    const topHeight = Math.max(...trainingRep.bodyHeights);
-    const topIdx = trainingRep.bodyHeights.indexOf(topHeight);
+    const topHeight = Math.max(...bodyHeights);
+    const topIdx = bodyHeights.indexOf(topHeight);
     trainingRep.keyframesIdx.top = topIdx;
+
     // calculate bottom
-    const bottomHeight = Math.min(...trainingRep.bodyHeights);
-    const bottomIdx = trainingRep.bodyHeights.indexOf(bottomHeight);
+    const bottomHeight = Math.min(...bodyHeights);
+    const bottomIdx = bodyHeights.indexOf(bottomHeight);
     trainingRep.keyframesIdx.bottom = bottomIdx;
+
     // top should be before bottom
     if (topIdx < bottomIdx) {
         const middleHeight = (topHeight + bottomHeight) / 2;
+
         // calculate descending_middle
         let descendingMiddleIdx = topIdx;
-        while (trainingRep.bodyHeights[descendingMiddleIdx] > middleHeight) {
+        while (bodyHeights[descendingMiddleIdx] > middleHeight) {
             descendingMiddleIdx += 1;
         }
         trainingRep.keyframesIdx.descendingMiddle = descendingMiddleIdx;
+
         // calculate ascending_middle
         let ascendingMiddleIdx = bottomIdx;
-        while (
-            trainingRep.bodyHeights[ascendingMiddleIdx] < middleHeight &&
-            ascendingMiddleIdx < trainingRep.bodyHeights.length - 1
-        ) {
+        while (bodyHeights[ascendingMiddleIdx] < middleHeight && ascendingMiddleIdx < bodyHeights.length - 1) {
             ascendingMiddleIdx += 1;
         }
         trainingRep.keyframesIdx.ascendingMiddle = ascendingMiddleIdx;
     }
+
     return trainingRep;
 };
 
