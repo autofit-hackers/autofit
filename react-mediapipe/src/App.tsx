@@ -1,10 +1,10 @@
-import './App.css';
-import PoseEstimation from './pose_estimation/PoseEstimation';
+import MiniDrawer from './ui_component/SideBar';
 
 function App() {
     return (
         <>
-            <PoseEstimation />
+            {/* <PoseEstimation /> */}
+            <MiniDrawer />
         </>
     );
 }
