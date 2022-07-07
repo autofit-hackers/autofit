@@ -24,8 +24,9 @@ export default function PoseStream() {
         tmpBodyHeights: []
     });
 
-    const upperThreshold = useContext(RepCountSettingContext);
-    const lowerThreshold = useContext(RepCountSettingContext);
+    const lowerThreshold = useContext(RepCountSettingContext).lowerThreshold;
+    const upperThreshold = useContext(RepCountSettingContext).upperThreshold;
+    console.log('stream rendered');
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -39,11 +40,7 @@ export default function PoseStream() {
             const currentPose = new Pose(results); // 自作Poseクラスに代入
 
             // レップ数などの更新
-            setRepState(updateRepState(repState, currentPose, 0.6, 0.9));
-            if (repState.isCountUppedNow) {
-                console.log(currentPose.landmark);
-                console.log(repState);
-            }
+            setRepState(updateRepState(repState, currentPose, lowerThreshold, upperThreshold));
 
             // レップカウントが増えた時、フォーム評価を実施する
 
