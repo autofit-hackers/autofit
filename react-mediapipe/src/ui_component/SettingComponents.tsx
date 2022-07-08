@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import Slider from '@mui/material/Slider';
 import { createContext, useState } from 'react';
 import PoseStream from './PoseStream';
