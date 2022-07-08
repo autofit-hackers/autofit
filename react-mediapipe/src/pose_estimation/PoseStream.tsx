@@ -34,10 +34,13 @@ export default function PoseStream() {
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
     const onResults = useCallback((results: Results) => {
+        if (canvasRef.current === null || webcamRef.current === null) {
+            return;
+        }
         const videoWidth = webcamRef.current!.video!.videoWidth;
         const videoHeight = webcamRef.current!.video!.videoHeight;
-        canvasRef.current!.width = videoWidth;
-        canvasRef.current!.height = videoHeight;
+        canvasRef.current.width = videoWidth;
+        canvasRef.current.height = videoHeight;
         const canvasElement = canvasRef.current;
         const canvasCtx = canvasElement!.getContext('2d');
 
@@ -46,7 +49,7 @@ export default function PoseStream() {
         }
 
         canvasCtx.save();
-        canvasCtx.clearRect(0, 0, canvasElement!.width, canvasElement!.height);
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
 
         // canvasCtx!.scale(-1, 1);
@@ -56,7 +59,7 @@ export default function PoseStream() {
         // }
 
         // canvasCtx!.translate(-700, 0);
-        canvasCtx.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
+        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
         /* ここにprocessor.recv()の内容を書いていく */
         if ('poseLandmarks' in results) {
@@ -81,10 +84,9 @@ export default function PoseStream() {
         }
 
         // レップカウントを表示
-        canvasCtx!.font = '50px serif';
-        canvasCtx!.fillText(repState.repCount.toString(), 50, 50);
-
-        canvasCtx!.restore();
+        canvasCtx.font = '50px serif';
+        canvasCtx.fillText(repState.repCount.toString(), 50, 50);
+        canvasCtx.restore();
     }, []);
 
     /*
