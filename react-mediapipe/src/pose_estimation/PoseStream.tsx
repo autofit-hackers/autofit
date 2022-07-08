@@ -1,6 +1,6 @@
 import { Camera } from '@mediapipe/camera_utils';
-import { drawLandmarks } from '@mediapipe/drawing_utils';
-import { Pose as PoseMediapipe, Results } from '@mediapipe/pose';
+import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
+import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
 import { FormControlLabel, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
@@ -34,7 +34,33 @@ export default function PoseStream() {
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
     const onResults = useCallback((results: Results) => {
-        /* とりあえずここにprocessor.recv()の内容を書いていく */
+        if (canvasRef.current === null || webcamRef.current === null) {
+            return;
+        }
+        const videoWidth = webcamRef.current!.video!.videoWidth;
+        const videoHeight = webcamRef.current!.video!.videoHeight;
+        canvasRef.current.width = videoWidth;
+        canvasRef.current.height = videoHeight;
+        const canvasElement = canvasRef.current;
+        const canvasCtx = canvasElement!.getContext('2d');
+
+        if (canvasCtx == null) {
+            return;
+        }
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
+
+        // if (isRotated) {
+        //     canvasCtx!.rotate(5 * (Math.PI / 180));
+        // }
+
+        canvasCtx!.scale(-1, 1);
+        canvasCtx!.translate(-videoWidth, 0);
+        canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
+
+        /* ここにprocessor.recv()の内容を書いていく */
         if ('poseLandmarks' in results) {
             const currentPose = new Pose(results); // 自作Poseクラスに代入
 
@@ -44,48 +70,27 @@ export default function PoseStream() {
             // レップカウントが増えた時、フォーム評価を実施する
 
             // 直前のレップのフォームを評価
+            drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
+                color: 'white',
+                lineWidth: 4
+            });
+            drawLandmarks(canvasCtx!, results.poseLandmarks, {
+                color: 'white',
+                lineWidth: 4,
+                radius: 8,
+                fillColor: 'lightgreen'
+            });
+            drawLandmarks(
+                canvasCtx!,
+                [6].map((index) => results.poseLandmarks[index]),
+                { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
+            );
         }
 
-        const videoWidth = webcamRef.current!.video!.videoWidth;
-        const videoHeight = webcamRef.current!.video!.videoHeight;
-        canvasRef.current!.width = videoWidth;
-        canvasRef.current!.height = videoHeight;
-        const canvasElement = canvasRef.current;
-        const canvasCtx = canvasElement!.getContext('2d');
-
-        canvasCtx!.save();
-        canvasCtx!.clearRect(0, 0, canvasElement!.width, canvasElement!.height);
-        // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
-
-        // canvasCtx!.scale(-1, 1);
-
-        // if (isRotated) {
-        //     canvasCtx!.rotate(5 * (Math.PI / 180));
-        // }
-
-        // canvasCtx!.translate(-700, 0);
-        canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
-        // drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
-        //     color: 'white',
-        //     lineWidth: 4
-        // });
-        // drawLandmarks(canvasCtx!, results.poseLandmarks, {
-        //     color: 'white',
-        //     lineWidth: 4,
-        //     radius: 8,
-        //     fillColor: 'lightgreen'
-        // });
-        drawLandmarks(
-            canvasCtx!,
-            [6].map((index) => results.poseLandmarks[index]),
-            { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
-        );
-
         // レップカウントを表示
-        canvasCtx!.font = '50px serif';
-        canvasCtx!.fillText(repState.repCount.toString(), 50, 50);
-
-        canvasCtx!.restore();
+        // canvasCtx.font = '50px serif';
+        // canvasCtx.fillText(repState.repCount.toString(), 50, 50);
+        canvasCtx.restore();
     }, []);
 
     /*

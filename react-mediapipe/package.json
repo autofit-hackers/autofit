@@ -1,76 +1,75 @@
 {
-  "name": "react-mediapipe",
-  "private": true,
-  "version": "0.0.0",
-  "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "postinstall": "husky install",
-    "prepack": "pinst --disable",
-    "postpack": "pinst --enable",
-    "prepare": "cd ../ && husky install react-mediapipe/.husky",
-    "lint-staged": "lint-staged",
-    "lint:prettier": "prettier --check .",
-    "lint:eslint": "eslint --max-warnings 0 .",
-    "lint": "run-p -l -c --aggregate-output lint:*",
-    "fix:eslint": "npm run lint:eslint -- --fix",
-    "fix:prettier": "npm run lint:prettier -- --write",
-    "fix": "run-s fix:prettier fix:eslint"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "npx cross-env NODE_ENV=development npx eslint --cache"
-    ],
-    "*.json,.{eslintrc,prettierrc}": [
-      "npx prettier --ignore-path front/electron/.eslintignore --parser json --write"
-    ],
-    "*.{css,scss}": [
-      "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
-    ],
-    "*.{html,md,yml}": [
-      "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
-    ]
-  },
-  "dependencies": {
-    "@emotion/css": "*",
-    "@emotion/react": "*",
-    "@emotion/styled": "*",
-    "@mediapipe/camera_utils": "*",
-    "@mediapipe/control_utils_3d": "*",
-    "@mediapipe/drawing_utils": "*",
-    "@mediapipe/hands": "*",
-    "@mediapipe/pose": "*",
-    "@mui/icons-material": "*",
-    "@mui/material": "*",
-    "eslint": "^8.19.0",
-    "lint-staged": "^13.0.3",
-    "react": "^18.0.0",
-    "react-countdown-circle-timer": "3.0.9",
-    "react-dom": "^18.0.0",
-    "react-router-dom": "6.3.0",
-    "react-webcam": "^7.0.1",
-    "web-vitals": "^2.1.4"
-  },
-  "devDependencies": {
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.30.5",
-    "@typescript-eslint/parser": "^5.30.5",
-    "@vitejs/plugin-react": "^1.3.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-jsx-a11y": "^6.6.0",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-react": "^7.30.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "husky": "^8.0.1",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^2.7.1",
-    "typescript": "^4.6.3",
-    "vite": "^2.9.9"
-  }
+    "name": "react-mediapipe",
+    "private": true,
+    "version": "0.0.0",
+    "scripts": {
+        "start": "vite",
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "prepack": "pinst --disable",
+        "postpack": "pinst --enable",
+        "prepare": "cd ../ && husky install react-mediapipe/.husky",
+        "lint-staged": "lint-staged",
+        "lint:prettier": "prettier --check .",
+        "lint:eslint": "eslint --max-warnings 0 .",
+        "lint": "run-p -l -c --aggregate-output lint:*",
+        "fix:eslint": "npm run lint:eslint -- --fix",
+        "fix:prettier": "npm run lint:prettier -- --write",
+        "fix": "run-s fix:prettier fix:eslint"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": [
+            "npx cross-env NODE_ENV=development npx eslint --cache"
+        ],
+        "*.json,.{eslintrc,prettierrc}": [
+            "npx prettier --ignore-path front/electron/.eslintignore --parser json --write"
+        ],
+        "*.{css,scss}": [
+            "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
+        ],
+        "*.{html,md,yml}": [
+            "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
+        ]
+    },
+    "dependencies": {
+        "@emotion/css": "*",
+        "@emotion/react": "*",
+        "@emotion/styled": "*",
+        "@mediapipe/camera_utils": "*",
+        "@mediapipe/control_utils_3d": "*",
+        "@mediapipe/drawing_utils": "*",
+        "@mediapipe/hands": "*",
+        "@mediapipe/pose": "*",
+        "@mui/icons-material": "*",
+        "@mui/material": "*",
+        "eslint": "^8.19.0",
+        "lint-staged": "^13.0.3",
+        "react": "^18.0.0",
+        "react-countdown-circle-timer": "3.0.9",
+        "react-dom": "^18.0.0",
+        "react-router-dom": "6.3.0",
+        "react-webcam": "^7.0.1",
+        "web-vitals": "^2.1.4"
+    },
+    "devDependencies": {
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
+        "@typescript-eslint/eslint-plugin": "^5.30.5",
+        "@typescript-eslint/parser": "^5.30.5",
+        "@vitejs/plugin-react": "^1.3.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-config-standard": "^17.0.0",
+        "eslint-plugin-import": "^2.25.2",
+        "eslint-plugin-jsx-a11y": "^6.6.0",
+        "eslint-plugin-n": "^15.0.0",
+        "eslint-plugin-promise": "^6.0.0",
+        "eslint-plugin-react": "^7.30.1",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "husky": "^8.0.1",
+        "npm-run-all": "^4.1.5",
+        "prettier": "^2.7.1",
+        "typescript": "^4.6.3",
+        "vite": "^2.9.9"
+    }
 }
