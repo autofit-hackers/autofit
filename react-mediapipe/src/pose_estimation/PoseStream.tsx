@@ -1,7 +1,7 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { FormControlLabel, Switch } from '@mui/material';
+import { FormControlLabel, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import '../App.css';
@@ -65,16 +65,21 @@ export default function PoseStream() {
 
         // canvasCtx!.translate(-700, 0);
         canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
-        drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
-            color: 'white',
-            lineWidth: 4
-        });
-        drawLandmarks(canvasCtx!, results.poseLandmarks, {
-            color: 'white',
-            lineWidth: 4,
-            radius: 8,
-            fillColor: 'lightgreen'
-        });
+        // drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
+        //     color: 'white',
+        //     lineWidth: 4
+        // });
+        // drawLandmarks(canvasCtx!, results.poseLandmarks, {
+        //     color: 'white',
+        //     lineWidth: 4,
+        //     radius: 8,
+        //     fillColor: 'lightgreen'
+        // });
+        drawLandmarks(
+            canvasCtx!,
+            [6].map((index) => results.poseLandmarks[index]),
+            { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
+        );
 
         // レップカウントを表示
         canvasCtx!.font = '50px serif';
@@ -160,11 +165,14 @@ export default function PoseStream() {
                     left: 0,
                     right: 0,
                     textAlign: 'center',
-                    // zIndex: 1,
+                    zIndex: 1,
                     width: w,
                     height: h
                 }}
             ></canvas>
+            <Typography position={'absolute'} zIndex={10} fontSize={100}>
+                {repState.repCount}
+            </Typography>
         </>
     );
 }

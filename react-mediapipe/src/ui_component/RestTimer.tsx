@@ -1,11 +1,5 @@
 import { CountdownCircleTimer, TimeProps } from 'react-countdown-circle-timer';
-// import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Typography } from '@mui/material';
-
-// ChartJS.register(ArcElement, Tooltip, Legend);
-
-/* レスト時間の指定 */
-// const restTime = 10;
 
 const renderTime = ({ remainingTime }: TimeProps) => {
     if (remainingTime === 0) {
