@@ -1,9 +1,7 @@
 import { Button, Typography } from '@mui/material';
 import React, { createContext, useState } from 'react';
-import { SetButton, SetButton2 } from './ComponentSandbox';
-import PoseEstimation from './pose_estimation/PoseEstimation';
+import { SetButton2 } from './ComponentSandbox';
 import PoseStream from './pose_estimation/PoseStream';
-import RestTimer from './ui_component/RestTimer';
 
 export const PhaseTestContext = createContext(
     {} as {
@@ -20,10 +18,6 @@ export const TrainingMain = () => {
             <Typography fontWeight={600}>PHASE = {phase}</Typography>
             {phase === 0 && (
                 <>
-                    {/* <PoseEstimation />
-                    <Button onClick={() => setPhase(1)}>yahho</Button>
-                    <SetButton txt="AAA" setFunc={setPhase} /> */}
-                    <RestTimer restTime={30} />
                     <PhaseTestContext.Provider value={{ p: phase, setter: setPhase }}>
                         <SetButton2 />
                     </PhaseTestContext.Provider>

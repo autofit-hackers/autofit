@@ -1,7 +1,7 @@
-import { Box, Button } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import Slider from '@mui/material/Slider';
 import { createContext, useState } from 'react';
-import PoseStream from './PoseStream';
+import RestTimer from './RestTimer';
 
 // settingsの初期値を定義
 const defaultLowerThreshold = 0.8;
@@ -16,14 +16,14 @@ export const RepCountSettingContext = createContext<RepCountSetting>({
 });
 
 export default function SettingsComponent() {
-    const [isStreamStarted, setIsStreamStarted] = useState(false);
     const [repCountSetting, setRepCountSetting] = useState<RepCountSetting>({
         lowerThreshold: defaultLowerThreshold,
         upperThreshold: defaultUpperThreshold
     });
 
     return (
-        <>
+        <Stack spacing={1} sx={{ p: 2 }}>
+            <Typography>Lower Threshold: {repCountSetting.lowerThreshold}</Typography>
             <Slider
                 name="lowerThreshold"
                 min={0}
@@ -33,9 +33,10 @@ export default function SettingsComponent() {
                     setRepCountSetting({ ...repCountSetting, lowerThreshold: value as number });
                 }}
                 aria-label="lower_threshold"
-                valueLabelDisplay="on"
+                // valueLabelDisplay="on"
                 step={0.01}
             />
+            <Typography>Upper Threshold: {repCountSetting.upperThreshold}</Typography>
             <Slider
                 name="upperThreshold"
                 min={0}
@@ -45,9 +46,10 @@ export default function SettingsComponent() {
                     setRepCountSetting({ ...repCountSetting, upperThreshold: value as number });
                 }}
                 aria-label="lower_threshold"
-                valueLabelDisplay="on"
+                // valueLabelDisplay="on"
                 step={0.01}
             />
-        </>
+            <RestTimer restTime={100} />
+        </Stack>
     );
 }

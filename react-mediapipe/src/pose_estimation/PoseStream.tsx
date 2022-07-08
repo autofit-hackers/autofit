@@ -1,6 +1,6 @@
 import { Camera } from '@mediapipe/camera_utils';
-import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
-import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
+import { drawLandmarks } from '@mediapipe/drawing_utils';
+import { Pose as PoseMediapipe, Results } from '@mediapipe/pose';
 import { FormControlLabel, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
