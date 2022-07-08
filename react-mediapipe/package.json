@@ -10,7 +10,7 @@
     "postinstall": "husky install",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
-    "prepare": "cd .. && husky install react-mediapipe/",
+    "prepare": "cd ../ && husky install react-mediapipe/.husky",
     "lint-staged": "lint-staged",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "eslint --max-warnings 0 .",
@@ -18,6 +18,20 @@
     "fix:eslint": "npm run lint:eslint -- --fix",
     "fix:prettier": "npm run lint:prettier -- --write",
     "fix": "run-s fix:prettier fix:eslint"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "npx cross-env NODE_ENV=development npx eslint --cache"
+    ],
+    "*.json,.{eslintrc,prettierrc}": [
+      "npx prettier --ignore-path front/electron/.eslintignore --parser json --write"
+    ],
+    "*.{css,scss}": [
+      "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
+    ],
+    "*.{html,md,yml}": [
+      "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
+    ]
   },
   "dependencies": {
     "@emotion/css": "*",
