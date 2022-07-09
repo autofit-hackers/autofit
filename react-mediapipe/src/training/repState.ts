@@ -33,6 +33,11 @@ export const updateRepState = (
     repState = updateRepCount(repState, height, lowerThreshold, upperThreshold);
     repState = updateTmpBodyHeight(repState, height);
 
+    // レップ完了時にレップカウントを読み上げ
+    if (repState.isCountUppedNow) {
+        playRepCountAudio(repState.repCount);
+    }
+
     return repState;
 };
 
@@ -101,4 +106,17 @@ export const resetRep = (repState: RepState, pose: Pose): RepState => {
     }
 
     return repState;
+};
+
+const playRepCountAudio = (repCount: number): void => {
+    // ブラウザにWeb Speech API Speech Synthesis機能があるか判定
+    if ('speechSynthesis' in window) {
+        // 発言を設定
+        const uttr = new SpeechSynthesisUtterance();
+        uttr.text = `${repCount}`;
+        // 発言を再生
+        window.speechSynthesis.speak(uttr);
+    } else {
+        alert('大変申し訳ありません。このブラウザは音声合成に対応していません。');
+    }
 };
