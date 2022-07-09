@@ -1,60 +1,85 @@
 {
-  "files.associations": {
-    ".eslintrc": "jsonc",
-    ".prettierrc": "jsonc",
-    ".eslintignore": "ignore"
-  },
+    "files.associations": {
+        ".eslintrc": "jsonc",
+        ".prettierrc": "jsonc",
+        ".eslintignore": "ignore"
+    },
 
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "html",
-    "typescriptreact"
-  ],
+    "eslint.validate": ["javascript", "javascriptreact", "html", "typescriptreact"],
 
-  "javascript.validate.enable": false,
-  "javascript.format.enable": false,
-  "typescript.format.enable": false,
+    "javascript.validate.enable": false,
+    "javascript.format.enable": false,
+    "typescript.format.enable": false,
 
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "files.autoSave": "onFocusChange",
+    "files.watcherExclude": {
+        // Default Settings
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
 
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "files.autoSave": "onFocusChange",
-  "files.watcherExclude": {
-    // Default Settings
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/node_modules/**": true,
+        // Cache用のディレクトリやファイル
+        "**/.cache": true,
 
-    // Cache用のディレクトリやファイル
-    "**/.cache": true,
+        // Buildディレクトリやファイル
+        "**/dist": true,
+        "**/build": true,
 
-    // Buildディレクトリやファイル
-    "**/dist": true,
-    "**/build": true,
-
-    // 画像や動画用のディレクトリやファイル
-    "**/images": true,
-    "**/movies": true
-  },
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
-    "**/.cache": true,
-    "**/*.meta": true,
-    "**/.DS_Store": true
-  },
-  "search.exclude": {
-    ".git": true,
-    ".eslintcache": true,
-    ".erb/dll": true,
-    "release/{build,app/dist}": true,
-    "node_modules": true,
-    "npm-debug.log.*": true,
-    "test/**/__snapshots__": true,
-    "package-lock.json": true,
-    "*.{css,sass,scss}.d.ts": true
-  },
+        // 画像や動画用のディレクトリやファイル
+        "**/images": true,
+        "**/movies": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.cache": true,
+        "**/*.meta": true,
+        "**/.DS_Store": true
+    },
+    "search.exclude": {
+        ".git": true,
+        ".eslintcache": true,
+        ".erb/dll": true,
+        "release/{build,app/dist}": true,
+        "node_modules": true,
+        "npm-debug.log.*": true,
+        "test/**/__snapshots__": true,
+        "package-lock.json": true,
+        "*.{css,sass,scss}.d.ts": true
+    },
+    "todo-tree.general.tags": ["FIXME", "TODO", "WHY", "HELPME", "XXX"],
+    "todo-tree.highlights.defaultHighlight": {
+        "gutterIcon": true
+    },
+    "todo-tree.highlights.customHighlight": {
+        "TODO": {
+            "icon": "check-circle-fill",
+            "foreground": "orange",
+            "iconColour": "orange"
+        },
+        "FIXME": {
+            "icon": "bug",
+            "foreground": "red",
+            "iconColour": "red"
+        },
+        "WHY": {
+            "icon": "question",
+            "foreground": "purple",
+            "iconColour": "purple"
+        },
+        "HELPME": {
+            "icon": "comment-discussion",
+            "foreground": "#00bfff",
+            "iconColour": "#00bfff"
+        },
+        "XXX": {
+            "icon": "x-circle-fill",
+            "foreground": "yellow",
+            "iconColour": "yellow"
+        }
+    }
 }
