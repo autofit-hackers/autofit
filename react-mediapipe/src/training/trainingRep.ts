@@ -10,8 +10,11 @@ export type TrainingRep = {
 
 export const recordPose = (trainingRep: TrainingRep, pose: Pose): TrainingRep => {
     trainingRep.form = [...trainingRep.form, pose];
-    // HACK: unlock this? => this.body_heights.push(pose.get_2d_height());
-
+    // WHY: unlock this? => this.body_heights.push(pose.get_2d_height());
+    // XXX: why japanese people
+    // FIXME: aaa
+    // TODO: do nothing
+    // HELPME:
     return trainingRep;
 };
 

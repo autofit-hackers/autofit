@@ -26,7 +26,7 @@ export const updateRepState = (
     upperThreshold: number
 ): RepState => {
     const height: number = pose.height();
-    // HACK: 初期化している。ロジックがわかりにくい
+    // WHY: 初期化している。ロジックがわかりにくい
     if (repState.tmpBodyHeights.length < 10) {
         repState = initRep(repState, height);
     }
@@ -64,7 +64,7 @@ const updateRepCount = (
     return repState;
 };
 
-// HACK: tmpBodyHeightsをリストにする意味ある?
+// WHY: tmpBodyHeightsをリストにする意味ある?
 const updateTmpBodyHeight = (repState: RepState, height: number): RepState => {
     repState.tmpBodyHeights.shift();
     repState.tmpBodyHeights.push(height);
