@@ -38,7 +38,8 @@
         "**/CVS": true,
         "**/.cache": true,
         "**/*.meta": true,
-        "**/.DS_Store": true
+        "**/.DS_Store": true,
+        "node_modules": false
     },
     "search.exclude": {
         ".git": true,
