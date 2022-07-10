@@ -58,19 +58,19 @@
     },
     "todo-tree.highlights.customHighlight": {
         "TODO": {
-            "icon": "check-circle-fill",
-            "foreground": "orange",
-            "iconColour": "orange"
+            "icon": "bell-fill",
+            "foreground": "#ff9800",
+            "iconColour": "#ff9800"
         },
         "FIXME": {
             "icon": "bug",
-            "foreground": "red",
-            "iconColour": "red"
+            "foreground": "#ff0000",
+            "iconColour": "#ff0000"
         },
         "WHY": {
             "icon": "question",
-            "foreground": "purple",
-            "iconColour": "purple"
+            "foreground": "#af69ef",
+            "iconColour": "#af69ef"
         },
         "HELPME": {
             "icon": "comment-discussion",
@@ -79,8 +79,8 @@
         },
         "XXX": {
             "icon": "x-circle-fill",
-            "foreground": "yellow",
-            "iconColour": "yellow"
+            "foreground": "#ffff00",
+            "iconColour": "#ffff00"
         }
     }
 }
