@@ -10,7 +10,7 @@ type KeyframesIndex = {
 export type Rep = {
     form: Pose[];
     keyframesIndex: KeyframesIndex;
-    formEvaluationScores: number[];
+    formEvaluationScores: boolean[];
 };
 
 export const appendPoseToForm = (rep: Rep, pose: Pose): Rep => {
@@ -98,4 +98,3 @@ export const getDescendingMiddlePose = (rep: Rep): Pose | undefined => {
         return undefined;
     }
 };
-
