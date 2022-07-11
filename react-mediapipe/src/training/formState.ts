@@ -5,15 +5,12 @@ export type FormState = {
     didTouchTop: boolean;
     isRepEnd: boolean;
     initialBodyHeight: number;
-    tmpBodyHeights: number[];
 };
 
-export const initializeFormState = (formState: FormState, height: number): FormState => {
-    formState.initialBodyHeight = height;
-    formState.tmpBodyHeights = new Array<number>(10);
-    for (let i = 0; i < 10; i++) {
-        formState.tmpBodyHeights[i] = formState.initialBodyHeight;
-    }
+export const resetFormState = (formState: FormState, pose: Pose): FormState => {
+    formState.didTouchBottom = false;
+    formState.didTouchTop = true;
+    formState.initialBodyHeight = pose.height();
 
     return formState;
 };
@@ -25,14 +22,8 @@ export const monitorForm = (
     lowerThreshold: number,
     upperThreshold: number
 ): FormState => {
-    const height: number = pose.height();
-    // HACK: 初期化している。ロジックがわかりにくい
-    if (formState.tmpBodyHeights.length < 10) {
-        formState = initializeFormState(formState, height);
-    }
-
-    formState.isRepEnd = checkIfRepFinish(formState, height, lowerThreshold, upperThreshold);
-    formState.tmpBodyHeights = updateTmpBodyHeight(formState.tmpBodyHeights, height);
+    const currentHeight: number = pose.height();
+    formState.isRepEnd = checkIfRepFinish(formState, currentHeight, lowerThreshold, upperThreshold);
 
     return formState;
 };
@@ -43,28 +34,16 @@ export const isKeyframeNow = (
     lowerThreshold: number,
     upperThreshold: number
 ): boolean => {
-    const height: number = pose.height();
-    if (formState.didTouchTop && height < formState.initialBodyHeight * lowerThreshold) {
+    const currentHeight: number = pose.height();
+    if (formState.didTouchTop && currentHeight < formState.initialBodyHeight * lowerThreshold) {
         formState.didTouchTop = false;
         return true;
-    } else if (!formState.didTouchTop && height > formState.initialBodyHeight * upperThreshold) {
+    } else if (!formState.didTouchTop && currentHeight > formState.initialBodyHeight * upperThreshold) {
         formState.didTouchTop = true;
         return false;
     } else {
         return false;
     }
-};
-
-// TODO: implement alternative of body_heights_df in training_set.py
-export const resetRep = (formState: FormState, pose: Pose): FormState => {
-    formState.didTouchBottom = false;
-    formState.didTouchTop = true;
-    formState.initialBodyHeight = pose.height();
-    for (let i = 0; i < 10; i++) {
-        formState.tmpBodyHeights[i] = formState.initialBodyHeight;
-    }
-
-    return formState;
 };
 
 const checkIfRepFinish = (
@@ -91,12 +70,4 @@ const checkIfRepFinish = (
             return false;
         }
     }
-};
-
-// WHY: tmpBodyHeightsをリストにする意味ある?
-const updateTmpBodyHeight = (tmpBodyHeights: number[], height: number): number[] => {
-    tmpBodyHeights.shift();
-    tmpBodyHeights.push(height);
-
-    return tmpBodyHeights;
 };
