@@ -23,6 +23,7 @@
             "npx cross-env NODE_ENV=development npx eslint --cache"
         ],
         "*.json,.{eslintrc,prettierrc}": [
+<<<<<<< HEAD
             "npx prettier --ignore-path front/electron/.eslintignore --parser json --write"
         ],
         "*.{css,scss}": [
@@ -49,6 +50,29 @@
         "react-countdown-circle-timer": "3.0.9",
         "react-dom": "^18.0.0",
         "react-router-dom": "6.3.0",
+=======
+            "npx prettier --ignore-path react-mediapipe/.eslintignore --parser json --write"
+        ],
+        "*.{css,scss}": [
+            "npx prettier --ignore-path react-mediapipe/.eslintignore --single-quote --write"
+        ],
+        "*.{html,md,yml}": [
+            "npx prettier --ignore-path react-mediapipe/.eslintignore --single-quote --write"
+        ]
+    },
+    "dependencies": {
+        "@emotion/css": "^11.9.0",
+        "@emotion/react": "^11.9.3",
+        "@emotion/styled": "^11.9.3",
+        "@mediapipe/camera_utils": "^0.3.1657298508",
+        "@mediapipe/control_utils_3d": "^0.3.1657298791",
+        "@mediapipe/drawing_utils": "^0.3.1657299202",
+        "@mediapipe/pose": "^0.5.1657299384",
+        "@mui/icons-material": "^5.8.4",
+        "@mui/material": "^5.8.7",
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+>>>>>>> 8b2295a3e27c3446e2378fa6cefe03e8e89bba77
         "react-webcam": "^7.0.1",
         "web-vitals": "^2.1.4"
     },
@@ -58,6 +82,10 @@
         "@typescript-eslint/eslint-plugin": "^5.30.5",
         "@typescript-eslint/parser": "^5.30.5",
         "@vitejs/plugin-react": "^1.3.0",
+<<<<<<< HEAD
+=======
+        "eslint": "^8.19.0",
+>>>>>>> 8b2295a3e27c3446e2378fa6cefe03e8e89bba77
         "eslint-config-prettier": "^8.5.0",
         "eslint-config-standard": "^17.0.0",
         "eslint-plugin-import": "^2.25.2",
@@ -67,6 +95,10 @@
         "eslint-plugin-react": "^7.30.1",
         "eslint-plugin-react-hooks": "^4.6.0",
         "husky": "^8.0.1",
+<<<<<<< HEAD
+=======
+        "lint-staged": "^13.0.3",
+>>>>>>> 8b2295a3e27c3446e2378fa6cefe03e8e89bba77
         "npm-run-all": "^4.1.5",
         "prettier": "^2.7.1",
         "typescript": "^4.6.3",

@@ -151,7 +151,7 @@ class AutoProcessor(VideoProcessorBase):
 
                 # 実行中のRepに推定poseを記録
                 self.set_obj.reps[self.rep_state.rep_count].record_pose(pose=result_pose)
-w
+                
                 # レップ数の更新（updateで回数が増えたらTrue）
                 is_last_frame_in_rep = self.rep_state.update_rep_count(
                     pose=result_pose,

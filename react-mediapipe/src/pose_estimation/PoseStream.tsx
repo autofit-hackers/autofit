@@ -5,8 +5,13 @@ import { FormControlLabel, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import '../App.css';
+import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
+import { formInstructionItems } from '../coaching/formInstructionItems';
+import { playRepCountSound } from '../coaching/voiceGuidance';
+import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
-import { RepState, updateRepState } from '../training/repState';
+import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
+import { appendRepToSet, Set } from '../training/set';
 import { RepCountSettingContext } from './PoseEstimation';
 
 export default function PoseStream() {
@@ -15,17 +20,27 @@ export default function PoseStream() {
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1280, h: 720 });
     // const grid = LandmarkGrid
 
-    const [repState, setRepState] = useState<RepState>({
-        repCount: 0,
+    // セット・レップ・FormState変数を宣言
+    const [set, setSet] = useState<Set>({ reps: [] });
+    const [rep, setRep] = useState<Rep>({
+        form: [],
+        keyframesIndex: { top: undefined, bottom: undefined, ascendingMiddle: undefined, descendingMiddle: undefined },
+        formEvaluationScores: []
+    });
+    const [formState, setFormState] = useState<FormState>({
+        isFirstFrameInRep: true,
         didTouchBottom: false,
         didTouchTop: true,
-        isCountUppedNow: false,
-        initialBodyHeight: 0,
-        tmpBodyHeights: []
+        isRepEnd: false,
+        standingHeight: 0
     });
 
+    // settings
     const lowerThreshold = useContext(RepCountSettingContext).lowerThreshold;
     const upperThreshold = useContext(RepCountSettingContext).upperThreshold;
+    const formInstructionSettings: FormInstructionSettings = {
+        items: formInstructionItems
+    };
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -37,16 +52,17 @@ export default function PoseStream() {
         if (canvasRef.current === null || webcamRef.current === null) {
             return;
         }
-        const videoWidth = webcamRef.current!.video!.videoWidth;
-        const videoHeight = webcamRef.current!.video!.videoHeight;
+        const videoWidth = webcamRef.current.video!.videoWidth;
+        const videoHeight = webcamRef.current.video!.videoHeight;
         canvasRef.current.width = videoWidth;
         canvasRef.current.height = videoHeight;
         const canvasElement = canvasRef.current;
-        const canvasCtx = canvasElement!.getContext('2d');
+        const canvasCtx = canvasElement.getContext('2d');
 
         if (canvasCtx == null) {
             return;
         }
+        canvasCtx.font = '50px serif';
 
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
@@ -62,19 +78,36 @@ export default function PoseStream() {
 
         /* ここにprocessor.recv()の内容を書いていく */
         if ('poseLandmarks' in results) {
-            const currentPose = new Pose(results); // 自作Poseクラスに代入
+            // mediapipeの推論結果を自作のPoseクラスに代入
+            const currentPose = new Pose(results);
 
-            // レップ数などの更新
-            setRepState(updateRepState(repState, currentPose, lowerThreshold, upperThreshold));
+            // フォームのリアルタイム分析を行う（指導はしない）
+            setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
 
-            // レップカウントが増えた時、フォーム評価を実施する
+            // 現フレームの推定Poseをレップのフォームに追加
+            setRep(appendPoseToForm(rep, currentPose));
 
-            // 直前のレップのフォームを評価
-            drawConnectors(canvasCtx!, results.poseLandmarks, POSE_CONNECTIONS, {
+            // レップが終了したとき
+            if (formState.isRepEnd) {
+                // 完了したレップのフォームを分析・評価
+                setRep(calculateKeyframes(rep));
+                setRep(evaluateForm(rep, formInstructionSettings));
+                console.log(rep.formEvaluationScores);
+
+                // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
+                setSet(appendRepToSet(set, rep));
+                setRep(resetRep(rep));
+
+                // レップカウントを読み上げる
+                playRepCountSound(set.reps.length);
+            }
+
+            // pose estimationの結果を描画
+            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
                 color: 'white',
                 lineWidth: 4
             });
-            drawLandmarks(canvasCtx!, results.poseLandmarks, {
+            drawLandmarks(canvasCtx, results.poseLandmarks, {
                 color: 'white',
                 lineWidth: 4,
                 radius: 8,
@@ -88,13 +121,12 @@ export default function PoseStream() {
         }
 
         // レップカウントを表示
-        // canvasCtx.font = '50px serif';
-        // canvasCtx.fillText(repState.repCount.toString(), 50, 50);
+        canvasCtx.fillText(set.reps.length.toString(), 50, 50);
         canvasCtx.restore();
     }, []);
 
     /*
-    初期設定。
+    mediapipeの初期設定。
     依存配列が上で定義されたonResults関数であるため、下のuseEffectが実行されるのは初回レンダリング時のみ。
     （上記の通りonResults関数は初回レンダリング時にしか更新されない）
     */
@@ -108,10 +140,10 @@ export default function PoseStream() {
         pose.setOptions({
             modelComplexity: 1,
             smoothLandmarks: true,
-            enableSegmentation: true,
-            smoothSegmentation: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
+            enableSegmentation: false,
+            smoothSegmentation: false,
+            minDetectionConfidence: 0.1,
+            minTrackingConfidence: 0.1
         });
 
         pose.onResults(onResults); // Pose.onResultsメソッドによって、推定結果を受け取るコールバック関数を登録
@@ -176,7 +208,7 @@ export default function PoseStream() {
                 }}
             ></canvas>
             <Typography position={'absolute'} zIndex={10} fontSize={100}>
-                {repState.repCount}
+                {set.reps.length}
             </Typography>
         </>
     );
