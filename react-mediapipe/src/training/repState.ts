@@ -117,6 +117,6 @@ const playRepCountAudio = (repCount: number): void => {
         // 発言を再生
         window.speechSynthesis.speak(uttr);
     } else {
-        alert('大変申し訳ありません。このブラウザは音声合成に対応していません。');
+        alert('このブラウザは音声合成に対応していません。');
     }
 };
