@@ -28,6 +28,7 @@ export const resetRep = (rep: Rep): Rep => {
         ascendingMiddle: undefined,
         descendingMiddle: undefined
     };
+    rep.formEvaluationScores = [];
 
     return rep;
 };
