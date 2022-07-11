@@ -1,18 +1,19 @@
 import Pose from './pose';
 
 export type FormState = {
+    isFirstFrameInRep: boolean;
     didTouchBottom: boolean;
     didTouchTop: boolean;
     isRepEnd: boolean;
     standingHeight: number;
 };
 
-export const resetFormState = (formState: FormState, pose: Pose): FormState => {
+const resetFormState = (formState: FormState, pose: Pose): void => {
+    formState.isFirstFrameInRep = false;
     formState.didTouchBottom = false;
     formState.didTouchTop = true;
+    formState.isRepEnd = false;
     formState.standingHeight = pose.height();
-
-    return formState;
 };
 
 // PoseStreamで毎フレーム実行される
@@ -22,28 +23,13 @@ export const monitorForm = (
     lowerThreshold: number,
     upperThreshold: number
 ): FormState => {
+    if (formState.isFirstFrameInRep) {
+        resetFormState(formState, pose);
+    }
     const currentHeight: number = pose.height();
     formState.isRepEnd = checkIfRepFinish(formState, currentHeight, lowerThreshold, upperThreshold);
 
     return formState;
-};
-
-export const isKeyframeNow = (
-    formState: FormState,
-    pose: Pose,
-    lowerThreshold: number,
-    upperThreshold: number
-): boolean => {
-    const currentHeight: number = pose.height();
-    if (formState.didTouchTop && currentHeight < formState.standingHeight * lowerThreshold) {
-        formState.didTouchTop = false;
-        return true;
-    } else if (!formState.didTouchTop && currentHeight > formState.standingHeight * upperThreshold) {
-        formState.didTouchTop = true;
-        return false;
-    } else {
-        return false;
-    }
 };
 
 const checkIfRepFinish = (
@@ -58,16 +44,15 @@ const checkIfRepFinish = (
         if (height < formState.standingHeight * lowerThreshold) {
             formState.didTouchBottom = true;
         }
-        return false;
     }
     // bottomに達している場合（上がっている時）
     else {
         // 体長が十分に大きくなったら、1レップ完了
         if (height > formState.standingHeight * upperThreshold) {
             formState.didTouchBottom = false;
+            formState.isFirstFrameInRep = true;
             return true;
-        } else {
-            return false;
         }
     }
+    return false;
 };
