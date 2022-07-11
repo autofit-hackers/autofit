@@ -120,9 +120,13 @@ export default function PoseStream() {
                 { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
             );
         }
+
+        // RepCountが一定値に達するとphaseを更新し、レポートへ
+        // XXX: onResults内に書くのは良くない、、？
         if (set.reps.length === 2) {
             setter(phase + 1);
         }
+        canvasCtx.restore();
 
         // レップカウントを表示
         canvasCtx.fillText(set.reps.length.toString(), 50, 50);
@@ -163,15 +167,6 @@ export default function PoseStream() {
             camera.start();
         }
     }, [onResults]);
-
-    useEffect(() => {
-        console.log(set.reps.length);
-        console.log('############dadada############');
-        if (set.reps.length === 2) {
-            console.log(set.reps.length);
-            console.log('############UNKO############');
-        }
-    }, [set]);
 
     return (
         <>

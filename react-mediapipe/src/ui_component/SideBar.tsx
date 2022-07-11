@@ -107,7 +107,7 @@ export default function MiniDrawer() {
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            {fullScreen && (
+            {!fullScreen && (
                 <AppBar position="fixed" open={open}>
                     <Toolbar>
                         <IconButton
@@ -128,7 +128,7 @@ export default function MiniDrawer() {
                     </Toolbar>
                 </AppBar>
             )}
-            {fullScreen && (
+            {!fullScreen && (
                 <Drawer variant="permanent" open={open}>
                     <DrawerHeader>
                         <IconButton onClick={handleDrawerClose}>

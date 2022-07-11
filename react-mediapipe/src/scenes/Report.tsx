@@ -1,7 +1,6 @@
 import { Box, CardMedia, CssBaseline, Grid, Paper, Typography } from '@mui/material';
 import { Container } from '@mui/system';
 import RestTimer from '../ui_component/RestTimer';
-//   import BarChart from './Chart';
 
 interface IntervalReportProps {
     trainingMenuName: string;
