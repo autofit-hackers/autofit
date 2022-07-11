@@ -24,8 +24,8 @@ const squatDepth: FormInstructionItem = {
     }
 };
 
-const kneeOpening: FormInstructionItem = {
-    text: 'Knee opening',
+const kneeOut: FormInstructionItem = {
+    text: 'Knee out',
     evaluate: (rep: Rep) => {
         // undefinedの可能性があるためoptional chaining(?.)を使用
         const topPoseKneeDistance = getTopPose(rep)?.kneesDistance();
@@ -42,4 +42,4 @@ const kneeOpening: FormInstructionItem = {
     }
 };
 
-export const formInstructionItems: FormInstructionItem[] = [squatDepth, kneeOpening];
+export const formInstructionItems: FormInstructionItem[] = [squatDepth, kneeOut];
