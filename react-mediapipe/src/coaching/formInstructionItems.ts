@@ -8,7 +8,7 @@ export type FormInstructionItem = {
     readonly recommendMenu?: string[];
 };
 
-export const squatDepth: FormInstructionItem = {
+const squatDepth: FormInstructionItem = {
     text: 'Squat depth',
     evaluate: (rep: Rep) => {
         const topPoseKnee = getTopPose(rep)?.kneeCenter();
@@ -24,9 +24,10 @@ export const squatDepth: FormInstructionItem = {
     }
 };
 
-export const kneeOpening: FormInstructionItem = {
+const kneeOpening: FormInstructionItem = {
     text: 'Knee opening',
     evaluate: (rep: Rep) => {
+        // undefinedの可能性があるためoptional chaining(?.)を使用
         const topPoseKneeDistance = getTopPose(rep)?.kneesDistance();
         const bottomPoseKneeDistance = getBottomPose(rep)?.kneesDistance();
 
@@ -40,3 +41,5 @@ export const kneeOpening: FormInstructionItem = {
         return isCleared;
     }
 };
+
+export const formInstructionItems: FormInstructionItem[] = [squatDepth, kneeOpening];
