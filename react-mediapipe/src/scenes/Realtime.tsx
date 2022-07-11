@@ -80,7 +80,7 @@ export default function Realtime() {
             });
             drawLandmarks(
                 canvasCtx!,
-                [6].map((index) => results.poseLandmarks[index]),
+                [5, 6, 7].map((index) => results.poseLandmarks[index]),
                 { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
             );
         }

@@ -10,7 +10,7 @@ interface IntervalReportProps {
 }
 
 const IntervalReport = (prop: IntervalReportProps) => {
-    const { trainingMenuName: tn, frontMoviePath: fvpath, instructionText: inst } = prop;
+    const { trainingMenuName: tn, frontMoviePath: fv, instructionText: inst } = prop;
     return (
         <>
             <Box sx={{ display: 'flex' }}>
@@ -83,7 +83,7 @@ const IntervalReport = (prop: IntervalReportProps) => {
                                         height: '40vh'
                                     }}
                                 >
-                                    <CardMedia sx={{ borderRadius: 3, height: 400 }} component="iframe" src={fvpath} />
+                                    <CardMedia sx={{ borderRadius: 3, height: 400 }} component="iframe" src={fv} />
                                 </Paper>
                             </Grid>
                         </Grid>
