@@ -4,13 +4,13 @@ export type FormState = {
     didTouchBottom: boolean;
     didTouchTop: boolean;
     isRepEnd: boolean;
-    initialBodyHeight: number;
+    standingHeight: number;
 };
 
 export const resetFormState = (formState: FormState, pose: Pose): FormState => {
     formState.didTouchBottom = false;
     formState.didTouchTop = true;
-    formState.initialBodyHeight = pose.height();
+    formState.standingHeight = pose.height();
 
     return formState;
 };
@@ -35,10 +35,10 @@ export const isKeyframeNow = (
     upperThreshold: number
 ): boolean => {
     const currentHeight: number = pose.height();
-    if (formState.didTouchTop && currentHeight < formState.initialBodyHeight * lowerThreshold) {
+    if (formState.didTouchTop && currentHeight < formState.standingHeight * lowerThreshold) {
         formState.didTouchTop = false;
         return true;
-    } else if (!formState.didTouchTop && currentHeight > formState.initialBodyHeight * upperThreshold) {
+    } else if (!formState.didTouchTop && currentHeight > formState.standingHeight * upperThreshold) {
         formState.didTouchTop = true;
         return false;
     } else {
@@ -55,7 +55,7 @@ const checkIfRepFinish = (
     // bottomに達してない場合（下がっている時）
     if (!formState.didTouchBottom) {
         // 体長が十分に小さくなったら、didTouchBottomをtrueにする
-        if (height < formState.initialBodyHeight * lowerThreshold) {
+        if (height < formState.standingHeight * lowerThreshold) {
             formState.didTouchBottom = true;
         }
         return false;
@@ -63,7 +63,7 @@ const checkIfRepFinish = (
     // bottomに達している場合（上がっている時）
     else {
         // 体長が十分に大きくなったら、1レップ完了
-        if (height > formState.initialBodyHeight * upperThreshold) {
+        if (height > formState.standingHeight * upperThreshold) {
             formState.didTouchBottom = false;
             return true;
         } else {
