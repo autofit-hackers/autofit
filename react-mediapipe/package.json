@@ -23,13 +23,13 @@
             "npx cross-env NODE_ENV=development npx eslint --cache"
         ],
         "*.json,.{eslintrc,prettierrc}": [
-            "npx prettier --ignore-path front/electron/.eslintignore --parser json --write"
+            "npx prettier --ignore-path react-mediapipe/.eslintignore --parser json --write"
         ],
         "*.{css,scss}": [
-            "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
+            "npx prettier --ignore-path react-mediapipe/.eslintignore --single-quote --write"
         ],
         "*.{html,md,yml}": [
-            "npx prettier --ignore-path front/electron/.eslintignore --single-quote --write"
+            "npx prettier --ignore-path react-mediapipe/.eslintignore --single-quote --write"
         ]
     },
     "dependencies": {
