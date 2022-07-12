@@ -4,7 +4,6 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { FormControlLabel, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import '../App.css';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
 import { playRepCountSound } from '../coaching/voiceGuidance';
@@ -17,6 +16,7 @@ import { TrainingContext } from '../TrainingMain';
 export default function Realtime() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const screenShotRef = useRef<HTMLCanvasElement>(null);
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1080, h: 1920 });
     // const grid = LandmarkGrid
 
@@ -159,7 +159,13 @@ export default function Realtime() {
         if (typeof webcamRef.current !== 'undefined' && webcamRef.current !== null) {
             const camera = new Camera(webcamRef.current.video!, {
                 onFrame: async () => {
-                    await pose.send({ image: webcamRef.current!.video! });
+                    const screenShotCtx = screenShotRef.current?.getContext('2d');
+                    screenShotCtx?.save();
+                    screenShotCtx?.clearRect(0, 0, 1080, 1920);
+                    screenShotCtx?.drawImage(webcamRef.current?.video!, 0, 0, 1080, 1920);
+                    // screenShotCtx?.rotate(5 * (Math.PI / 180));
+                    screenShotCtx?.restore();
+                    await pose.send({ image: webcamRef.current?.video! });
                 },
                 width: 1920,
                 height: 1080
