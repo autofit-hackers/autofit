@@ -14,7 +14,7 @@ import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training
 import { appendRepToSet, Set } from '../training/set';
 import { TrainingContext } from '../TrainingMain';
 
-export default function PoseStream() {
+export default function Realtime() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1080, h: 1920 });
@@ -156,12 +156,10 @@ export default function PoseStream() {
 
         pose.onResults(onResults); // Pose.onResultsメソッドによって、推定結果を受け取るコールバック関数を登録
 
-        if (webcamRef.current && webcamRef.current.video) {
-            const camera = new Camera(webcamRef.current.video, {
+        if (typeof webcamRef.current !== 'undefined' && webcamRef.current !== null) {
+            const camera = new Camera(webcamRef.current.video!, {
                 onFrame: async () => {
-                    if (webcamRef.current && webcamRef.current.video) {
-                        await pose.send({ image: webcamRef.current.video });
-                    }
+                    await pose.send({ image: webcamRef.current!.video! });
                 },
                 width: 1920,
                 height: 1080
@@ -201,7 +199,7 @@ export default function PoseStream() {
                     width: 0,
                     height: 0
                 }}
-            />{' '}
+            />
             <canvas
                 ref={canvasRef}
                 className="output_canvas"
