@@ -12,12 +12,12 @@ import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { appendRepToSet, Set } from '../training/set';
-import { RepCountSettingContext } from './PoseEstimation';
+import { TrainingContext } from '../TrainingMain';
 
-export default function PoseStream() {
+export default function Realtime() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1280, h: 720 });
+    const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1080, h: 1920 });
     // const grid = LandmarkGrid
 
     // セット・レップ・FormState変数を宣言
@@ -36,8 +36,9 @@ export default function PoseStream() {
     });
 
     // settings
-    const lowerThreshold = useContext(RepCountSettingContext).lowerThreshold;
-    const upperThreshold = useContext(RepCountSettingContext).upperThreshold;
+    const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
+    const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
+    const { allState: phase, stateSetter: setter } = useContext(TrainingContext);
     const formInstructionSettings: FormInstructionSettings = {
         items: formInstructionItems
     };
@@ -120,6 +121,13 @@ export default function PoseStream() {
             );
         }
 
+        // RepCountが一定値に達するとphaseを更新し、レポートへ
+        // XXX: onResults内に書くのは良くない、、？
+        if (set.reps.length === 2) {
+            setter(phase + 1);
+        }
+        canvasCtx.restore();
+
         // レップカウントを表示
         canvasCtx.fillText(set.reps.length.toString(), 50, 50);
         canvasCtx.restore();
@@ -153,8 +161,8 @@ export default function PoseStream() {
                 onFrame: async () => {
                     await pose.send({ image: webcamRef.current!.video! });
                 },
-                width: 1280,
-                height: 720
+                width: 1920,
+                height: 1080
             });
             camera.start();
         }
@@ -168,8 +176,8 @@ export default function PoseStream() {
                 onChange={() =>
                     setConstrains({
                         isRotated: !isRotated,
-                        w: isRotated ? 1280 : 720,
-                        h: isRotated ? 720 : 1280
+                        w: isRotated ? 1920 : 1080,
+                        h: isRotated ? 1080 : 1920
                     })
                 }
             />
@@ -191,7 +199,7 @@ export default function PoseStream() {
                     width: 0,
                     height: 0
                 }}
-            />{' '}
+            />
             <canvas
                 ref={canvasRef}
                 className="output_canvas"
