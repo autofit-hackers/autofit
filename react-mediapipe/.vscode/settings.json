@@ -50,7 +50,7 @@
         "package-lock.json": true,
         "*.{css,sass,scss}.d.ts": true
     },
-    "todo-tree.general.tags": ["FIXME", "TODO", "WHY", "HELPME", "XXX"],
+    "todo-tree.general.tags": ["FIXME", "TODO", "WHY", "HELPME", "XXX", "REF"],
     "todo-tree.highlights.defaultHighlight": {
         "gutterIcon": true
     },
@@ -79,6 +79,11 @@
             "icon": "x-circle-fill",
             "foreground": "#ffff00",
             "iconColour": "#ffff00"
+        },
+        "REF": {
+            "icon": "link",
+            "foreground": "#00ff00",
+            "iconColour": "#00ff00"
         }
     }
 }

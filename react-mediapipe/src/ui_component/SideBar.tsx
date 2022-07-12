@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
@@ -18,9 +17,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import SettingComponent from './SettingComponents';
 import { TrainingMain } from '../TrainingMain';
 import { FormControlLabel, Switch } from '@mui/material';
+import { useState } from 'react';
+import { SettingComponents } from './SettingComponents';
+
+// REF: https://mui.com/material-ui/react-drawer/
 
 const drawerWidth = 240;
 
@@ -93,8 +95,8 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function MiniDrawer() {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(false);
-    const [fullScreen, setFullScreen] = React.useState(true);
+    const [open, setOpen] = useState(false);
+    const [fullScreen, setFullScreen] = useState(true);
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -160,7 +162,7 @@ export default function MiniDrawer() {
                             </ListItem>
                         ))}
                     </List>
-                    {open && <SettingComponent />}
+                    {open && <SettingComponents />}
                 </Drawer>
             )}
             <Box component="main" sx={{ flexGrow: 1, p: 5 }}>

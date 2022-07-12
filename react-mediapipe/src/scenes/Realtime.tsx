@@ -36,8 +36,8 @@ export default function PoseStream() {
     });
 
     // settings
-    const lowerThreshold = 0.8; // XXX: useContext(RepCountSettingContext).lowerThreshold;
-    const upperThreshold = 0.9; // XXX: useContext(RepCountSettingContext).upperThreshold;
+    const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
+    const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
     const { allState: phase, stateSetter: setter } = useContext(TrainingContext);
     const formInstructionSettings: FormInstructionSettings = {
         items: formInstructionItems
@@ -156,10 +156,12 @@ export default function PoseStream() {
 
         pose.onResults(onResults); // Pose.onResultsメソッドによって、推定結果を受け取るコールバック関数を登録
 
-        if (typeof webcamRef.current !== 'undefined' && webcamRef.current !== null) {
-            const camera = new Camera(webcamRef.current.video!, {
+        if (webcamRef.current && webcamRef.current.video) {
+            const camera = new Camera(webcamRef.current.video, {
                 onFrame: async () => {
-                    await pose.send({ image: webcamRef.current!.video! });
+                    if (webcamRef.current && webcamRef.current.video) {
+                        await pose.send({ image: webcamRef.current.video });
+                    }
                 },
                 width: 1920,
                 height: 1080

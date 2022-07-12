@@ -15,7 +15,7 @@ export const RepCountSettingContext = createContext<RepCountSetting>({
     upperThreshold: defaultUpperThreshold
 });
 
-export default function SettingsComponent() {
+export const SettingComponents = () => {
     const [repCountSetting, setRepCountSetting] = useState<RepCountSetting>({
         lowerThreshold: defaultLowerThreshold,
         upperThreshold: defaultUpperThreshold
@@ -52,4 +52,4 @@ export default function SettingsComponent() {
             <RestTimer restTime={100} />
         </Stack>
     );
-}
+};
