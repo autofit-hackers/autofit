@@ -1,4 +1,4 @@
-export const playRepCountSound = (repCount: number): void => {
+const playRepCountSound = (repCount: number): void => {
     // ブラウザにWeb Speech API Speech Synthesis機能があるか判定
     if ('speechSynthesis' in window) {
         // 発言を設定
@@ -10,3 +10,5 @@ export const playRepCountSound = (repCount: number): void => {
         alert('このブラウザは音声合成に対応していません。');
     }
 };
+
+export default playRepCountSound;

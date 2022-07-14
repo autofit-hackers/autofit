@@ -1,6 +1,3 @@
-class MenuRecommend {
-
-    
-}
+class MenuRecommend {}
 
 export default MenuRecommend;
