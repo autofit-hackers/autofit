@@ -85,5 +85,6 @@
             "foreground": "#00ff00",
             "iconColour": "#00ff00"
         }
-    }
+    },
+    "typescript.tsdk": "./node_modules/typescript/lib"
 }

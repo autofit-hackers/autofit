@@ -32,3 +32,12 @@ npm-debug.log.*
 # eslint ignores hidden directories by default:
 # https://github.com/eslint/eslint/issues/8429
 !.erb
+
+# りあクト! Ⅱ p.62より
+build/
+public/
+**/coverage/
+**/node_modules/
+**/*.min.js
+*.config.js
+.*lintrc.js

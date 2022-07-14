@@ -12,10 +12,10 @@ export const evaluateForm = (rep: Rep, settings: FormInstructionSettings): Rep =
     }
 
     // settingsで指定した全ての項目についてフォームを評価する
-    for (const item of settings.items) {
+    settings.items.forEach((item) => {
         const isCleared = item.evaluate(rep);
         rep.formEvaluationScores = [...rep.formEvaluationScores, isCleared];
-    }
+    });
 
     return rep;
 };

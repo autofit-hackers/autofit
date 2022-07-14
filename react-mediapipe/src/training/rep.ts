@@ -71,31 +71,31 @@ export const calculateKeyframes = (rep: Rep): Rep => {
 export const getTopPose = (rep: Rep): Pose | undefined => {
     if (rep.keyframesIndex.top !== undefined) {
         return rep.form[rep.keyframesIndex.top];
-    } else {
-        return undefined;
     }
+
+    return undefined;
 };
 
 export const getBottomPose = (rep: Rep): Pose | undefined => {
     if (rep.keyframesIndex.bottom !== undefined) {
         return rep.form[rep.keyframesIndex.bottom];
-    } else {
-        return undefined;
     }
+
+    return undefined;
 };
 
 export const getAscendingMiddlePose = (rep: Rep): Pose | undefined => {
     if (rep.keyframesIndex.ascendingMiddle !== undefined) {
         return rep.form[rep.keyframesIndex.ascendingMiddle];
-    } else {
-        return undefined;
     }
+
+    return undefined;
 };
 
 export const getDescendingMiddlePose = (rep: Rep): Pose | undefined => {
     if (rep.keyframesIndex.descendingMiddle !== undefined) {
         return rep.form[rep.keyframesIndex.descendingMiddle];
-    } else {
-        return undefined;
     }
+
+    return undefined;
 };

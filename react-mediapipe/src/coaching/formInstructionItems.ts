@@ -21,6 +21,7 @@ const squatDepth: FormInstructionItem = {
         // TODO: improve algorithm
         // TODO: check if y is 0 at bottom of the frame
         const isCleared = bottomPoseHip.y <= topPoseKnee.y;
+
         return isCleared;
     }
 };
@@ -39,6 +40,7 @@ const kneeOut: FormInstructionItem = {
 
         // TODO: improve algorithm
         const isCleared = bottomPoseKneeDistance <= topPoseKneeDistance;
+
         return isCleared;
     }
 };
