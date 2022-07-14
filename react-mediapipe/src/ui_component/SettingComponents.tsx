@@ -15,7 +15,7 @@ export const RepCountSettingContext = createContext<RepCountSetting>({
     upperThreshold: defaultUpperThreshold
 });
 
-export const SettingComponents = () => {
+export function SettingComponents() {
     const [repCountSetting, setRepCountSetting] = useState<RepCountSetting>({
         lowerThreshold: defaultLowerThreshold,
         upperThreshold: defaultUpperThreshold
@@ -29,7 +29,7 @@ export const SettingComponents = () => {
                 min={0}
                 max={1}
                 defaultValue={defaultLowerThreshold}
-                onChange={(event: Event, value: number | number[], activeThumb: number) => {
+                onChange={(event: Event, value: number | number[]) => {
                     setRepCountSetting({ ...repCountSetting, lowerThreshold: value as number });
                 }}
                 aria-label="lower_threshold"
@@ -42,7 +42,7 @@ export const SettingComponents = () => {
                 min={0}
                 max={1}
                 defaultValue={defaultUpperThreshold}
-                onChange={(event: Event, value: number | number[], activeThumb: number) => {
+                onChange={(event: Event, value: number | number[]) => {
                     setRepCountSetting({ ...repCountSetting, upperThreshold: value as number });
                 }}
                 aria-label="lower_threshold"
@@ -52,4 +52,4 @@ export const SettingComponents = () => {
             <RestTimer restTime={100} />
         </Stack>
     );
-};
+}
