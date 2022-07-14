@@ -10,6 +10,7 @@ export type TrainingRep = {
 
 export const recordPose = (trainingRep: TrainingRep, pose: Pose): TrainingRep => {
     trainingRep.form = [...trainingRep.form, pose];
+
     // WHY: unlock this? => this.body_heights.push(pose.get_2d_height());
     return trainingRep;
 };
@@ -57,18 +58,12 @@ export const recalculateKeyframes = (trainingRep: TrainingRep): TrainingRep => {
     return trainingRep;
 };
 
-export const getTopPose = (trainingRep: TrainingRep): Pose => {
-    return trainingRep.form[trainingRep.keyframesIdx.top];
-};
+export const getTopPose = (trainingRep: TrainingRep): Pose => trainingRep.form[trainingRep.keyframesIdx.top];
 
-export const getBottomPose = (trainingRep: TrainingRep): Pose => {
-    return trainingRep.form[trainingRep.keyframesIdx.bottom];
-};
+export const getBottomPose = (trainingRep: TrainingRep): Pose => trainingRep.form[trainingRep.keyframesIdx.bottom];
 
-export const getAscendingMiddlePose = (trainingRep: TrainingRep): Pose => {
-    return trainingRep.form[trainingRep.keyframesIdx.ascendingMiddle];
-};
+export const getAscendingMiddlePose = (trainingRep: TrainingRep): Pose =>
+    trainingRep.form[trainingRep.keyframesIdx.ascendingMiddle];
 
-export const getDescendingMiddlePose = (trainingRep: TrainingRep): Pose => {
-    return trainingRep.form[trainingRep.keyframesIdx.descendingMiddle];
-};
+export const getDescendingMiddlePose = (trainingRep: TrainingRep): Pose =>
+    trainingRep.form[trainingRep.keyframesIdx.descendingMiddle];

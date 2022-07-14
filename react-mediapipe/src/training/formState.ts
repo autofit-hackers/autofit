@@ -16,22 +16,6 @@ const resetFormState = (formState: FormState, pose: Pose): void => {
     formState.standingHeight = pose.height();
 };
 
-// PoseStreamで毎フレーム実行される
-export const monitorForm = (
-    formState: FormState,
-    pose: Pose,
-    lowerThreshold: number,
-    upperThreshold: number
-): FormState => {
-    if (formState.isFirstFrameInRep) {
-        resetFormState(formState, pose);
-    }
-    const currentHeight: number = pose.height();
-    formState.isRepEnd = checkIfRepFinish(formState, currentHeight, lowerThreshold, upperThreshold);
-
-    return formState;
-};
-
 const checkIfRepFinish = (
     formState: FormState,
     height: number,
@@ -46,13 +30,29 @@ const checkIfRepFinish = (
         }
     }
     // bottomに達している場合（上がっている時）
-    else {
-        // 体長が十分に大きくなったら、1レップ完了
-        if (height > formState.standingHeight * upperThreshold) {
-            formState.didTouchBottom = false;
-            formState.isFirstFrameInRep = true;
-            return true;
-        }
+    // 体長が十分に大きくなったら、1レップ完了
+    else if (height > formState.standingHeight * upperThreshold) {
+        formState.didTouchBottom = false;
+        formState.isFirstFrameInRep = true;
+
+        return true;
     }
+
     return false;
+};
+
+// PoseStreamで毎フレーム実行される
+export const monitorForm = (
+    formState: FormState,
+    pose: Pose,
+    lowerThreshold: number,
+    upperThreshold: number
+): FormState => {
+    if (formState.isFirstFrameInRep) {
+        resetFormState(formState, pose);
+    }
+    const currentHeight: number = pose.height();
+    formState.isRepEnd = checkIfRepFinish(formState, currentHeight, lowerThreshold, upperThreshold);
+
+    return formState;
 };
