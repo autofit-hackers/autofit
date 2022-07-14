@@ -7,12 +7,12 @@ import Webcam from 'react-webcam';
 import '../App.css';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { playRepCountSound } from '../coaching/voiceGuidance';
+import playRepCountSound from '../coaching/voiceGuidance';
 import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { appendRepToSet, Set } from '../training/set';
-import { RepCountSettingContext } from './PoseEstimation';
+import { RepCountSettingContext } from './RepCountSettingContext';
 
 export default function PoseStream() {
     const webcamRef = useRef<Webcam>(null);
@@ -36,11 +36,7 @@ export default function PoseStream() {
     });
 
     // settings
-    const lowerThreshold = useContext(RepCountSettingContext).lowerThreshold;
-    const upperThreshold = useContext(RepCountSettingContext).upperThreshold;
-    const formInstructionSettings: FormInstructionSettings = {
-        items: formInstructionItems
-    };
+    const repCountSetting = useContext(RepCountSettingContext);
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -48,82 +44,91 @@ export default function PoseStream() {
     たぶんpose.onResults(onResults);のおかげだと思われる。
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
-    const onResults = useCallback((results: Results) => {
-        if (canvasRef.current === null || webcamRef.current === null) {
-            return;
-        }
-        const videoWidth = webcamRef.current.video!.videoWidth;
-        const videoHeight = webcamRef.current.video!.videoHeight;
-        canvasRef.current.width = videoWidth;
-        canvasRef.current.height = videoHeight;
-        const canvasElement = canvasRef.current;
-        const canvasCtx = canvasElement.getContext('2d');
+    const onResults = useCallback(
+        (results: Results) => {
+            const formInstructionSettings: FormInstructionSettings = {
+                items: formInstructionItems
+            };
 
-        if (canvasCtx == null) {
-            return;
-        }
-        canvasCtx.font = '50px serif';
+            if (canvasRef.current === null || webcamRef.current === null) {
+                return;
+            }
+            const { videoWidth } = webcamRef.current.video!;
+            const { videoHeight } = webcamRef.current.video!;
+            canvasRef.current.width = videoWidth;
+            canvasRef.current.height = videoHeight;
+            const canvasElement = canvasRef.current;
+            const canvasCtx = canvasElement.getContext('2d');
 
-        canvasCtx.save();
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
+            if (canvasCtx == null) {
+                return;
+            }
+            canvasCtx.font = '50px serif';
 
-        // if (isRotated) {
-        //     canvasCtx!.rotate(5 * (Math.PI / 180));
-        // }
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
 
-        canvasCtx!.scale(-1, 1);
-        canvasCtx!.translate(-videoWidth, 0);
-        canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
+            // if (isRotated) {
+            //     canvasCtx!.rotate(5 * (Math.PI / 180));
+            // }
 
-        /* ここにprocessor.recv()の内容を書いていく */
-        if ('poseLandmarks' in results) {
-            // mediapipeの推論結果を自作のPoseクラスに代入
-            const currentPose = new Pose(results);
+            canvasCtx.scale(-1, 1);
+            canvasCtx.translate(-videoWidth, 0);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-            // フォームのリアルタイム分析を行う（指導はしない）
-            setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
+            /* ここにprocessor.recv()の内容を書いていく */
+            if ('poseLandmarks' in results) {
+                // mediapipeの推論結果を自作のPoseクラスに代入
+                const currentPose = new Pose(results);
 
-            // 現フレームの推定Poseをレップのフォームに追加
-            setRep(appendPoseToForm(rep, currentPose));
+                // フォームのリアルタイム分析を行う（指導はしない）
+                setFormState(
+                    monitorForm(formState, currentPose, repCountSetting.lowerThreshold, repCountSetting.upperThreshold)
+                );
 
-            // レップが終了したとき
-            if (formState.isRepEnd) {
-                // 完了したレップのフォームを分析・評価
-                setRep(calculateKeyframes(rep));
-                setRep(evaluateForm(rep, formInstructionSettings));
-                console.log(rep.formEvaluationScores);
+                // 現フレームの推定Poseをレップのフォームに追加
+                setRep(appendPoseToForm(rep, currentPose));
 
-                // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
-                setSet(appendRepToSet(set, rep));
-                setRep(resetRep(rep));
+                // レップが終了したとき
+                if (formState.isRepEnd) {
+                    // 完了したレップのフォームを分析・評価
+                    setRep(calculateKeyframes(rep));
+                    setRep(evaluateForm(rep, formInstructionSettings));
+                    console.log(rep.formEvaluationScores);
 
-                // レップカウントを読み上げる
-                playRepCountSound(set.reps.length);
+                    // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
+                    setSet(appendRepToSet(set, rep));
+                    setRep(resetRep(rep));
+
+                    // レップカウントを読み上げる
+                    playRepCountSound(set.reps.length);
+                }
+
+                // pose estimationの結果を描画
+                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+                    color: 'white',
+                    lineWidth: 4
+                });
+                drawLandmarks(canvasCtx, results.poseLandmarks, {
+                    color: 'white',
+                    lineWidth: 4,
+                    radius: 8,
+                    fillColor: 'lightgreen'
+                });
+                drawLandmarks(
+                    canvasCtx,
+                    [6].map((index) => results.poseLandmarks[index]),
+                    { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
+                );
             }
 
-            // pose estimationの結果を描画
-            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-                color: 'white',
-                lineWidth: 4
-            });
-            drawLandmarks(canvasCtx, results.poseLandmarks, {
-                color: 'white',
-                lineWidth: 4,
-                radius: 8,
-                fillColor: 'lightgreen'
-            });
-            drawLandmarks(
-                canvasCtx!,
-                [6].map((index) => results.poseLandmarks[index]),
-                { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
-            );
-        }
-
-        // レップカウントを表示
-        canvasCtx.fillText(set.reps.length.toString(), 50, 50);
-        canvasCtx.restore();
-    }, []);
+            // レップカウントを表示
+            canvasCtx.fillText(set.reps.length.toString(), 50, 50);
+            canvasCtx.restore();
+        },
+        [formState, rep, repCountSetting.lowerThreshold, repCountSetting.upperThreshold, set]
+    );
 
     /*
     mediapipeの初期設定。
@@ -132,9 +137,7 @@ export default function PoseStream() {
     */
     useEffect(() => {
         const pose = new PoseMediapipe({
-            locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-            }
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
         });
 
         pose.setOptions({
@@ -156,7 +159,7 @@ export default function PoseStream() {
                 width: 1280,
                 height: 720
             });
-            camera.start();
+            void camera.start();
         }
     }, [onResults]);
 
@@ -173,11 +176,9 @@ export default function PoseStream() {
                     })
                 }
             />
-            {
-                <p>
-                    Rotation {w} {h}
-                </p>
-            }
+            <p>
+                Rotation {w} {h}
+            </p>
             <Webcam
                 ref={webcamRef}
                 style={{
@@ -206,8 +207,8 @@ export default function PoseStream() {
                     width: w,
                     height: h
                 }}
-            ></canvas>
-            <Typography position={'absolute'} zIndex={10} fontSize={100}>
+            />
+            <Typography position="absolute" zIndex={10} fontSize={100}>
                 {set.reps.length}
             </Typography>
         </>
