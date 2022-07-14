@@ -5,13 +5,27 @@
 
     "eslint.validate": ["javascript", "javascriptreact", "html", "typescriptreact", "typescript"],
 
+    "typescript.tsdk": "./node_modules/typescript/lib",
     "javascript.validate.enable": false,
     "javascript.format.enable": false,
     "typescript.format.enable": false,
+    "editor.codeActionsOnSave": ["source.organizeImports", "source.fixAll.eslint"],
+    "eslint.format.enable": false,
 
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnType": true,
+
+    "editor.wordWrap": "on",
+    "eslint.packageManager": "yarn",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "npm.packageManager": "yarn",
+
     "files.autoSave": "onFocusChange",
+
+    // to reduce cpu usage of code helper
     "files.watcherExclude": {
         // Default Settings
         "**/.git/objects/**": true,
@@ -50,6 +64,8 @@
         "package-lock.json": true,
         "*.{css,sass,scss}.d.ts": true
     },
+
+    // todo-tree
     "todo-tree.general.tags": ["FIXME", "TODO", "WHY", "HELPME", "XXX", "REF"],
     "todo-tree.highlights.defaultHighlight": {
         "gutterIcon": true
@@ -85,6 +101,5 @@
             "foreground": "#00ff00",
             "iconColour": "#00ff00"
         }
-    },
-    "typescript.tsdk": "./node_modules/typescript/lib"
+    }
 }

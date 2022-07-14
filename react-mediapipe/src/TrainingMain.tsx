@@ -1,31 +1,19 @@
 import { Typography } from '@mui/material';
-import React, { createContext, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { TrainingContext } from './customContexts';
 import { CameraPhase, ReportPhase } from './scenes/Phases';
 
-export const PhaseTestContext = createContext(
-    {} as {
-        p: number;
-        setter: React.Dispatch<React.SetStateAction<number>>;
-    }
-);
-
-export const TrainingContext = createContext(
-    {} as {
-        allState: number; // TODO: not only phase, but all states here
-        stateSetter: React.Dispatch<React.SetStateAction<number>>;
-    }
-);
-
-export const TrainingMain = () => {
+export default function TrainingMain() {
     const [phase, setPhase] = useState<number>(0);
+    const states = useMemo(() => ({ allState: phase, stateSetter: setPhase }), [phase]);
 
     return (
         <>
             <Typography fontWeight={600}>PHASE = {phase}</Typography>
-            <TrainingContext.Provider value={{ allState: phase, stateSetter: setPhase }}>
+            <TrainingContext.Provider value={states}>
                 {phase === 0 && <CameraPhase />}
                 {phase === 1 && <ReportPhase />}
             </TrainingContext.Provider>
         </>
     );
-};
+}

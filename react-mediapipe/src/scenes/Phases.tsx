@@ -1,10 +1,10 @@
 import { Button } from '@mui/material';
 import { useContext } from 'react';
-import { TrainingContext } from '../TrainingMain';
+import { TrainingContext } from '../customContexts';
 import Realtime from './Realtime';
 import IntervalReport from './Report';
 
-export const CameraPhase = () => {
+export function CameraPhase() {
     const { allState: phase, stateSetter: setter } = useContext(TrainingContext);
 
     return (
@@ -15,9 +15,9 @@ export const CameraPhase = () => {
             <Realtime doPlaySound={false} />
         </>
     );
-};
+}
 
-export const ReportPhase = () => {
+export function ReportPhase() {
     const { allState: phase, stateSetter: setter } = useContext(TrainingContext);
 
     return (
@@ -27,9 +27,9 @@ export const ReportPhase = () => {
             </Button>
             <IntervalReport
                 trainingMenuName="aaa"
-                frontMoviePath={'https://www.youtube.com/embed/muuK4SpRR5M'}
-                instructionText={'bbb'}
+                frontMoviePath="https://www.youtube.com/embed/muuK4SpRR5M"
+                instructionText="bbb"
             />
         </>
     );
-};
+}

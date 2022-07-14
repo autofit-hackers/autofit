@@ -28,7 +28,6 @@
     "rules": {
         "react/react-in-jsx-scope": "off",
         "import/no-extraneous-dependencies": "off",
-        "no-param-reassign": "off",
         "lines-between-class-members": [
             "error",
             "always",
