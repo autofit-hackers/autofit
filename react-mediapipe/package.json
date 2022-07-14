@@ -43,6 +43,7 @@
         "@mediapipe/pose": "^0.5.1657299384",
         "@mui/icons-material": "^5.8.4",
         "@mui/material": "^5.8.7",
+        "@mui/system": "^5.9.0",
         "react": "^18.0.0",
         "react-countdown-circle-timer": "3.0.9",
         "react-dom": "^18.0.0",
