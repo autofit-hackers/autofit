@@ -1,7 +1,7 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { FormControlLabel, Switch, Typography } from '@mui/material';
+import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
@@ -13,12 +13,14 @@ import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training
 import { appendRepToSet, Set } from '../training/set';
 import { TrainingContext } from '../TrainingMain';
 
-export default function Realtime() {
+const Realtime = (props: { doPlaySound: boolean }) => {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const screenShotRef = useRef<HTMLCanvasElement>(null);
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1080, h: 1920 });
-    const [debugNum, setDebug] = useState(0);
+
+    const [deviceId, setDeviceId] = useState({});
+    const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
     // const grid = LandmarkGrid
 
     // セット・レップ・FormState変数を宣言
@@ -69,24 +71,12 @@ export default function Realtime() {
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
-
-        // if (isRotated) {
-        //     canvasCtx!.rotate(5 * (Math.PI / 180));
-        // }
-
-        canvasCtx!.scale(-1, 1);
-        canvasCtx!.translate(-videoWidth, 0);
         canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
 
         /* ここにprocessor.recv()の内容を書いていく */
         if ('poseLandmarks' in results) {
             // mediapipeの推論結果を自作のPoseクラスに代入
             const currentPose = new Pose(results);
-            if (debugNum % 10 === 1) {
-                console.log(currentPose.landmark[19], currentPose.landmark[0]);
-            }
-            setDebug(debugNum + 1);
-            console.log(debugNum);
 
             // フォームのリアルタイム分析を行う（指導はしない）
             setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
@@ -99,14 +89,16 @@ export default function Realtime() {
                 // 完了したレップのフォームを分析・評価
                 setRep(calculateKeyframes(rep));
                 setRep(evaluateForm(rep, formInstructionSettings));
-                console.log(rep.formEvaluationScores);
+                // console.log(rep.formEvaluationScores);
 
                 // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
                 setSet(appendRepToSet(set, rep));
                 setRep(resetRep(rep));
 
                 // レップカウントを読み上げる
-                playRepCountSound(set.reps.length);
+                if (props.doPlaySound) {
+                    playRepCountSound(set.reps.length);
+                }
             }
 
             // pose estimationの結果を描画
@@ -203,21 +195,18 @@ export default function Realtime() {
         }
     }, [onResults]);
 
-    // const [deviceId, setDeviceId] = useState({});
-    // const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-
     // NOTE: iterate all camera devices
-    // const handleDevices = useCallback(
-    //     (mediaDevices: MediaDeviceInfo[]) => setDevices(mediaDevices.filter(({ kind }) => kind === 'videoinput')),
-    //     [setDevices]
-    // );
+    const handleDevices = useCallback(
+        (mediaDevices: MediaDeviceInfo[]) => setDevices(mediaDevices.filter(({ kind }) => kind === 'videoinput')),
+        [setDevices]
+    );
 
-    // useEffect(() => {
-    //     navigator.mediaDevices
-    //         .enumerateDevices()
-    //         .then(handleDevices)
-    //         .catch((reason) => console.log(reason)); // FIXME: remove logging in production
-    // }, [handleDevices]);
+    useEffect(() => {
+        navigator.mediaDevices
+            .enumerateDevices()
+            .then(handleDevices)
+            .catch((reason) => console.log(reason)); // FIXME: remove logging in production
+    }, [handleDevices]);
 
     return (
         <>
@@ -285,20 +274,27 @@ export default function Realtime() {
                 {set.reps.length}
             </Typography>
             {/* FIXME: initialize selector with default cam device */}
-            {/* <FormControl color="info" variant="filled" style={{ zIndex: 10, position: 'absolute' }}>
+            <FormControl color="info" variant="filled" style={{ zIndex: 10, position: 'absolute' }}>
                 <InputLabel htmlFor="cam-device-select">Camera</InputLabel>
                 <Select
                     labelId="cam-device-select-label"
                     id="webcam-device-select"
                     value={{ deviceId }}
                     label="Camera"
-                    onChange={(e) => setDeviceId(e.target.value as string)}
+                    onChange={(e) => {
+                        setDeviceId(e.target.value as string);
+                        // console.log(e.target.value);
+                    }}
                 >
                     {devices.map((device) => (
-                        <MenuItem value={device.deviceId}>{device.label}</MenuItem>
+                        <MenuItem key={device.deviceId} value={device.deviceId}>
+                            {device.label}
+                        </MenuItem>
                     ))}
                 </Select>
-            </FormControl> */}
+            </FormControl>
         </>
     );
-}
+};
+
+export default Realtime;

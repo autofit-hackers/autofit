@@ -12,7 +12,7 @@ export const CameraPhase = () => {
             <Button variant="contained" onClick={() => setter(phase + 1)}>
                 Phase Ahead
             </Button>
-            <Realtime />
+            <Realtime doPlaySound={false} />
         </>
     );
 };
