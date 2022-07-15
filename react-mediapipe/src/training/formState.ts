@@ -8,51 +8,56 @@ export type FormState = {
     standingHeight: number;
 };
 
-const resetFormState = (formState: FormState, pose: Pose): void => {
-    formState.isFirstFrameInRep = false;
-    formState.didTouchBottom = false;
-    formState.didTouchTop = true;
-    formState.isRepEnd = false;
-    formState.standingHeight = pose.height();
-};
+const resetFormState = (pose: Pose): FormState => ({
+    isFirstFrameInRep: false,
+    didTouchBottom: false,
+    didTouchTop: true,
+    isRepEnd: false,
+    standingHeight: pose.height()
+});
 
 const checkIfRepFinish = (
-    formState: FormState,
+    prevFormState: FormState,
     height: number,
     lowerThreshold: number,
     upperThreshold: number
-): boolean => {
+): FormState => {
+    const formState = prevFormState;
     // bottomに達してない場合（下がっている時）
-    if (!formState.didTouchBottom) {
+    if (!prevFormState.didTouchBottom) {
         // 体長が十分に小さくなったら、didTouchBottomをtrueにする
-        if (height < formState.standingHeight * lowerThreshold) {
+        if (height < prevFormState.standingHeight * lowerThreshold) {
             formState.didTouchBottom = true;
         }
     }
     // bottomに達している場合（上がっている時）
     // 体長が十分に大きくなったら、1レップ完了
-    else if (height > formState.standingHeight * upperThreshold) {
+    else if (height > prevFormState.standingHeight * upperThreshold) {
         formState.didTouchBottom = false;
         formState.isFirstFrameInRep = true;
+        formState.isRepEnd = true;
 
-        return true;
+        return formState;
     }
 
-    return false;
+    formState.isRepEnd = false;
+
+    return formState;
 };
 
 // PoseStreamで毎フレーム実行される
 export const monitorForm = (
-    formState: FormState,
+    prevFormState: FormState,
     pose: Pose,
     lowerThreshold: number,
     upperThreshold: number
 ): FormState => {
-    if (formState.isFirstFrameInRep) {
-        resetFormState(formState, pose);
+    let formState = prevFormState;
+    if (prevFormState.isFirstFrameInRep) {
+        formState = resetFormState(pose);
     }
     const currentHeight: number = pose.height();
-    formState.isRepEnd = checkIfRepFinish(formState, currentHeight, lowerThreshold, upperThreshold);
+    formState = checkIfRepFinish(prevFormState, currentHeight, lowerThreshold, upperThreshold);
 
     return formState;
 };

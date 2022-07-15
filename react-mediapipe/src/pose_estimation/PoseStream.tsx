@@ -98,7 +98,7 @@ export default function PoseStream() {
 
                     // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
                     setSet(appendRepToSet(set, rep));
-                    setRep(resetRep(rep));
+                    setRep(resetRep());
 
                     // レップカウントを読み上げる
                     playRepCountSound(set.reps.length);

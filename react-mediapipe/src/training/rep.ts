@@ -13,59 +13,60 @@ export type Rep = {
     formEvaluationScores: boolean[];
 };
 
-export const appendPoseToForm = (rep: Rep, pose: Pose): Rep => {
-    rep.form = [...rep.form, pose];
-    // HELPME: unlock this? => this.body_heights.push(pose.get_2d_height());
+export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
+    ...prevRep,
+    form: [...prevRep.form, pose]
+});
 
-    return rep;
-};
-
-export const resetRep = (rep: Rep): Rep => {
-    rep.form = [];
-    rep.keyframesIndex = {
+export const resetRep = (): Rep => ({
+    form: [],
+    keyframesIndex: {
         top: undefined,
         bottom: undefined,
         ascendingMiddle: undefined,
         descendingMiddle: undefined
-    };
-    rep.formEvaluationScores = [];
+    },
+    formEvaluationScores: []
+});
 
-    return rep;
-};
-
-export const calculateKeyframes = (rep: Rep): Rep => {
-    const bodyHeights = rep.form.map((pose) => pose.height());
+export const calculateKeyframes = (prevRep: Rep): Rep => {
+    const bodyHeights = prevRep.form.map((pose) => pose.height());
 
     // calculate top
     const topHeight = Math.max(...bodyHeights);
     const topIdx = bodyHeights.indexOf(topHeight);
-    rep.keyframesIndex.top = topIdx;
 
     // calculate bottom
     const bottomHeight = Math.min(...bodyHeights);
     const bottomIdx = bodyHeights.indexOf(bottomHeight);
-    rep.keyframesIndex.bottom = bottomIdx;
+
+    let descendingMiddleIdx = topIdx;
+    let ascendingMiddleIdx = bottomIdx;
 
     // top should be before bottom
     if (topIdx < bottomIdx) {
         const middleHeight = (topHeight + bottomHeight) / 2;
 
         // calculate descending_middle
-        let descendingMiddleIdx = topIdx;
         while (bodyHeights[descendingMiddleIdx] > middleHeight) {
             descendingMiddleIdx += 1;
         }
-        rep.keyframesIndex.descendingMiddle = descendingMiddleIdx;
 
         // calculate ascending_middle
-        let ascendingMiddleIdx = bottomIdx;
         while (bodyHeights[ascendingMiddleIdx] < middleHeight && ascendingMiddleIdx < bodyHeights.length - 1) {
             ascendingMiddleIdx += 1;
         }
-        rep.keyframesIndex.ascendingMiddle = ascendingMiddleIdx;
     }
 
-    return rep;
+    return {
+        ...prevRep,
+        keyframesIndex: {
+            top: topIdx,
+            bottom: bottomIdx,
+            ascendingMiddle: ascendingMiddleIdx,
+            descendingMiddle: descendingMiddleIdx
+        }
+    };
 };
 
 export const getTopPose = (rep: Rep): Pose | undefined => {
