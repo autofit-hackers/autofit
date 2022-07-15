@@ -8,89 +8,88 @@ interface IntervalReportProps {
     instructionText: string;
 }
 
-const IntervalReport = (prop: IntervalReportProps) => {
+function IntervalReport(prop: IntervalReportProps) {
     const { trainingMenuName: tn, frontMoviePath: fv, instructionText: inst } = prop;
+
     return (
-        <>
-            <Box sx={{ display: 'flex' }}>
-                <CssBaseline />
+        <Box sx={{ display: 'flex' }}>
+            <CssBaseline />
 
-                <Box
-                    component="main"
-                    sx={{
-                        backgroundColor: (theme) =>
-                            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
-                        flexGrow: 1,
-                        height: '100vh',
-                        overflow: 'auto'
-                    }}
-                >
-                    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                        <Grid container spacing={3}>
-                            {/* text instruction */}
-                            <Grid item xs={9}>
-                                <Paper
-                                    sx={{
-                                        p: 2,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        height: '20vh'
-                                    }}
-                                >
-                                    <Typography variant="h4" fontWeight={600}>
-                                        {tn} おつかれさまでした。
-                                    </Typography>
-                                    <Typography variant="h4" fontWeight={600}>
-                                        {inst}
-                                    </Typography>
-                                </Paper>
-                            </Grid>
-                            {/* text instruction */}
-                            <Grid item xs={3}>
-                                <Paper
-                                    sx={{
-                                        p: 2,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        height: '20vh'
-                                    }}
-                                >
-                                    <RestTimer restTime={100} />
-                                </Paper>
-                            </Grid>
-                            {/* Chart */}
-                            <Grid item xs={6}>
-                                <Paper
-                                    sx={{
-                                        p: 2,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        height: '40vh'
-                                    }}
-                                >
-                                    {/* <BarChart /> */}
-                                </Paper>
-                            </Grid>
-
-                            {/* video */}
-                            <Grid item xs={6}>
-                                <Paper
-                                    sx={{
-                                        p: 2,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        height: '40vh'
-                                    }}
-                                >
-                                    <CardMedia sx={{ borderRadius: 3, height: 400 }} component="iframe" src={fv} />
-                                </Paper>
-                            </Grid>
+            <Box
+                component="main"
+                sx={{
+                    backgroundColor: (theme) =>
+                        theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+                    flexGrow: 1,
+                    height: '100vh',
+                    overflow: 'auto'
+                }}
+            >
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                    <Grid container spacing={3}>
+                        {/* text instruction */}
+                        <Grid item xs={9}>
+                            <Paper
+                                sx={{
+                                    p: 2,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    height: '20vh'
+                                }}
+                            >
+                                <Typography variant="h4" fontWeight={600}>
+                                    {tn} おつかれさまでした。
+                                </Typography>
+                                <Typography variant="h4" fontWeight={600}>
+                                    {inst}
+                                </Typography>
+                            </Paper>
                         </Grid>
-                    </Container>
-                </Box>
+                        {/* text instruction */}
+                        <Grid item xs={3}>
+                            <Paper
+                                sx={{
+                                    p: 2,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    height: '20vh'
+                                }}
+                            >
+                                <RestTimer restTime={100} />
+                            </Paper>
+                        </Grid>
+                        {/* Chart */}
+                        <Grid item xs={6}>
+                            <Paper
+                                sx={{
+                                    p: 2,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    height: '40vh'
+                                }}
+                            >
+                                {/* <BarChart /> */}
+                            </Paper>
+                        </Grid>
+
+                        {/* video */}
+                        <Grid item xs={6}>
+                            <Paper
+                                sx={{
+                                    p: 2,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    height: '40vh'
+                                }}
+                            >
+                                <CardMedia sx={{ borderRadius: 3, height: 400 }} component="iframe" src={fv} />
+                            </Paper>
+                        </Grid>
+                    </Grid>
+                </Container>
             </Box>
-        </>
+        </Box>
     );
-};
+}
 
 export default IntervalReport;
