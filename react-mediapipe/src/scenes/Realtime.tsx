@@ -1,23 +1,27 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { FormControlLabel, Switch, Typography } from '@mui/material';
+import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import '../App.css';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { playRepCountSound } from '../coaching/voiceGuidance';
+import playRepCountSound from '../coaching/voiceGuidance';
+import { TrainingContext } from '../customContexts';
 import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { appendRepToSet, Set } from '../training/set';
-import { TrainingContext } from '../TrainingMain';
 
-export default function Realtime() {
+function Realtime(props: { doPlaySound: boolean }) {
+    const { doPlaySound } = props;
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const screenShotRef = useRef<HTMLCanvasElement>(null);
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1080, h: 1920 });
+
+    const [deviceId, setDeviceId] = useState({});
+    const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
     // const grid = LandmarkGrid
 
     // セット・レップ・FormState変数を宣言
@@ -39,9 +43,6 @@ export default function Realtime() {
     const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
     const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
     const { allState: phase, stateSetter: setter } = useContext(TrainingContext);
-    const formInstructionSettings: FormInstructionSettings = {
-        items: formInstructionItems
-    };
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -49,89 +50,90 @@ export default function Realtime() {
     たぶんpose.onResults(onResults);のおかげだと思われる。
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
-    const onResults = useCallback((results: Results) => {
-        if (canvasRef.current === null || webcamRef.current === null) {
-            return;
-        }
-        const videoWidth = webcamRef.current.video!.videoWidth;
-        const videoHeight = webcamRef.current.video!.videoHeight;
-        canvasRef.current.width = videoWidth;
-        canvasRef.current.height = videoHeight;
-        const canvasElement = canvasRef.current;
-        const canvasCtx = canvasElement.getContext('2d');
+    const onResults = useCallback(
+        (results: Results) => {
+            const formInstructionSettings: FormInstructionSettings = {
+                items: formInstructionItems
+            };
+            if (canvasRef.current === null || webcamRef.current === null) {
+                return;
+            }
+            const { videoWidth } = webcamRef.current.video!;
+            const { videoHeight } = webcamRef.current.video!;
+            canvasRef.current.width = videoWidth;
+            canvasRef.current.height = videoHeight;
+            const canvasElement = canvasRef.current;
+            const canvasCtx = canvasElement.getContext('2d');
 
-        if (canvasCtx == null) {
-            return;
-        }
-        canvasCtx.font = '50px serif';
+            if (canvasCtx == null) {
+                return;
+            }
+            canvasCtx.font = '50px serif';
 
-        canvasCtx.save();
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-        // if (isRotated) {
-        //     canvasCtx!.rotate(5 * (Math.PI / 180));
-        // }
+            /* ここにprocessor.recv()の内容を書いていく */
+            if ('poseLandmarks' in results) {
+                // mediapipeの推論結果を自作のPoseクラスに代入
+                const currentPose = new Pose(results);
 
-        canvasCtx!.scale(-1, 1);
-        canvasCtx!.translate(-videoWidth, 0);
-        canvasCtx!.drawImage(results.image, 0, 0, canvasElement!.width, canvasElement!.height);
+                // フォームのリアルタイム分析を行う（指導はしない）
+                setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
 
-        /* ここにprocessor.recv()の内容を書いていく */
-        if ('poseLandmarks' in results) {
-            // mediapipeの推論結果を自作のPoseクラスに代入
-            const currentPose = new Pose(results);
+                // 現フレームの推定Poseをレップのフォームに追加
+                setRep(appendPoseToForm(rep, currentPose));
 
-            // フォームのリアルタイム分析を行う（指導はしない）
-            setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
+                // レップが終了したとき
+                if (formState.isRepEnd) {
+                    // 完了したレップのフォームを分析・評価
+                    setRep(calculateKeyframes(rep));
+                    setRep(evaluateForm(rep, formInstructionSettings));
+                    // console.log(rep.formEvaluationScores);
 
-            // 現フレームの推定Poseをレップのフォームに追加
-            setRep(appendPoseToForm(rep, currentPose));
+                    // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
+                    setSet(appendRepToSet(set, rep));
+                    setRep(resetRep(rep));
 
-            // レップが終了したとき
-            if (formState.isRepEnd) {
-                // 完了したレップのフォームを分析・評価
-                setRep(calculateKeyframes(rep));
-                setRep(evaluateForm(rep, formInstructionSettings));
-                console.log(rep.formEvaluationScores);
+                    // レップカウントを読み上げる
+                    if (doPlaySound) {
+                        playRepCountSound(set.reps.length);
+                    }
+                }
 
-                // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
-                setSet(appendRepToSet(set, rep));
-                setRep(resetRep(rep));
-
-                // レップカウントを読み上げる
-                playRepCountSound(set.reps.length);
+                // pose estimationの結果を描画
+                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+                    color: 'white',
+                    lineWidth: 4
+                });
+                drawLandmarks(canvasCtx, results.poseLandmarks, {
+                    color: 'white',
+                    lineWidth: 4,
+                    radius: 8,
+                    fillColor: 'lightgreen'
+                });
+                drawLandmarks(
+                    canvasCtx,
+                    [6].map((index) => results.poseLandmarks[index]),
+                    { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
+                );
             }
 
-            // pose estimationの結果を描画
-            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-                color: 'white',
-                lineWidth: 4
-            });
-            drawLandmarks(canvasCtx, results.poseLandmarks, {
-                color: 'white',
-                lineWidth: 4,
-                radius: 8,
-                fillColor: 'lightgreen'
-            });
-            drawLandmarks(
-                canvasCtx!,
-                [6].map((index) => results.poseLandmarks[index]),
-                { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
-            );
-        }
+            // RepCountが一定値に達するとphaseを更新し、レポートへ
+            // XXX: onResults内に書くのは良くない、、？
+            if (set.reps.length === 200) {
+                setter(phase + 1);
+            }
+            canvasCtx.restore();
 
-        // RepCountが一定値に達するとphaseを更新し、レポートへ
-        // XXX: onResults内に書くのは良くない、、？
-        if (set.reps.length === 2) {
-            setter(phase + 1);
-        }
-        canvasCtx.restore();
-
-        // レップカウントを表示
-        canvasCtx.fillText(set.reps.length.toString(), 50, 50);
-        canvasCtx.restore();
-    }, []);
+            // レップカウントを表示
+            canvasCtx.fillText(set.reps.length.toString(), 50, 50);
+            canvasCtx.restore();
+        },
+        [formState, phase, doPlaySound, rep, set, setter]
+    );
 
     /*
     mediapipeの初期設定。
@@ -140,9 +142,7 @@ export default function Realtime() {
     */
     useEffect(() => {
         const pose = new PoseMediapipe({
-            locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-            }
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
         });
 
         pose.setOptions({
@@ -159,14 +159,56 @@ export default function Realtime() {
         if (typeof webcamRef.current !== 'undefined' && webcamRef.current !== null) {
             const camera = new Camera(webcamRef.current.video!, {
                 onFrame: async () => {
-                    await pose.send({ image: webcamRef.current!.video! });
+                    // TODO
+                    if (screenShotRef.current === null || webcamRef.current === null) {
+                        return;
+                    }
+                    const { videoWidth } = webcamRef.current.video!;
+                    const { videoHeight } = webcamRef.current.video!;
+                    // console.log(videoHeight, videoWidth);
+                    screenShotRef.current.width = videoWidth;
+                    screenShotRef.current.height = videoHeight;
+                    const screenShotElement = screenShotRef.current;
+                    const screenShotCtx = screenShotElement.getContext('2d');
+                    if (screenShotCtx == null) {
+                        return;
+                    }
+                    // screenShotCtx.beginPath();
+                    screenShotCtx.save();
+                    screenShotCtx.clearRect(0, 0, screenShotElement.width, screenShotElement.height);
+                    screenShotCtx.scale(-1, 1);
+                    // screenShotCtx!.translate(-videoWidth, 0);
+                    screenShotCtx.rotate(90 * (Math.PI / 180));
+                    screenShotCtx.drawImage(
+                        webcamRef.current.video!,
+                        0,
+                        0,
+                        screenShotElement.width,
+                        screenShotElement.height
+                    );
+                    screenShotCtx.restore();
+                    // TODO
+                    await pose.send({ image: screenShotElement });
                 },
-                width: 1920,
-                height: 1080
+                width: 480,
+                height: 640
             });
-            camera.start();
+            void camera.start();
         }
     }, [onResults]);
+
+    // NOTE: iterate all camera devices
+    const handleDevices = useCallback(
+        (mediaDevices: MediaDeviceInfo[]) => setDevices(mediaDevices.filter(({ kind }) => kind === 'videoinput')),
+        [setDevices]
+    );
+
+    useEffect(() => {
+        navigator.mediaDevices
+            .enumerateDevices()
+            .then(handleDevices)
+            .catch((reason) => console.log(reason)); // FIXME: remove logging in production
+    }, [handleDevices]);
 
     return (
         <>
@@ -181,11 +223,9 @@ export default function Realtime() {
                     })
                 }
             />
-            {
-                <p>
-                    Rotation {w} {h}
-                </p>
-            }
+            <p>
+                Rotation {w} {h}
+            </p>
             <Webcam
                 ref={webcamRef}
                 style={{
@@ -210,14 +250,51 @@ export default function Realtime() {
                     left: 0,
                     right: 0,
                     textAlign: 'center',
-                    zIndex: 1,
+                    zIndex: 2,
                     width: w,
                     height: h
                 }}
-            ></canvas>
-            <Typography position={'absolute'} zIndex={10} fontSize={100}>
+            />
+            <canvas
+                ref={screenShotRef}
+                className="output_canvas"
+                style={{
+                    position: 'absolute',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
+                    zIndex: 1,
+                    width: 1080,
+                    height: 1920
+                }}
+            />
+            <Typography position="absolute" zIndex={10} fontSize={100}>
                 {set.reps.length}
             </Typography>
+            {/* FIXME: initialize selector with default cam device */}
+            <FormControl color="info" variant="filled" style={{ zIndex: 10, position: 'absolute' }}>
+                <InputLabel htmlFor="cam-device-select">Camera</InputLabel>
+                <Select
+                    labelId="cam-device-select-label"
+                    id="webcam-device-select"
+                    value={{ deviceId }}
+                    label="Camera"
+                    onChange={(e) => {
+                        setDeviceId(e.target.value as string);
+                        // console.log(e.target.value);
+                    }}
+                >
+                    {devices.map((device) => (
+                        <MenuItem key={device.deviceId} value={device.deviceId}>
+                            {device.label}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
         </>
     );
 }
+
+export default Realtime;

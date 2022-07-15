@@ -4,7 +4,6 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { FormControlLabel, Switch, Typography } from '@mui/material';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import '../App.css';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
 import playRepCountSound from '../coaching/voiceGuidance';
