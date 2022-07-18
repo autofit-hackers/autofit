@@ -19,7 +19,7 @@ import { CSSObject, styled, Theme, useTheme } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
-import TrainingMain from '../TrainingMain';
+import TrainingMain from '../scenes/TrainingMain';
 import { SettingComponents } from './SettingComponents';
 
 // REF: https://mui.com/material-ui/react-drawer/

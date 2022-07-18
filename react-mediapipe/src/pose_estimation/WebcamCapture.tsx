@@ -8,6 +8,7 @@ export default function WebcamCapture() {
     const [capturing, setCapturing] = useState<boolean>(false);
     const [recordedBlobUrls, setRecordedBlobUrls] = useState<string[]>([]);
 
+    // handleStopCaptureClickの直後に呼ばれる
     const handleRecordBlob = useCallback(({ data }: { data: Blob }) => {
         if (data.size > 0) {
             const url = URL.createObjectURL(data);
