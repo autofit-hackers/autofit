@@ -1,10 +1,10 @@
 import { Button } from '@mui/material';
 import { useContext } from 'react';
-import { TrainingContext } from '../customContexts';
+import { TrainingContext } from './contexts';
 import Realtime from './Realtime';
 import IntervalReport from './Report';
 
-export function CameraPhase() {
+export function TrainingPhase() {
     const { allState: phase, stateSetter: setter } = useContext(TrainingContext);
 
     return (
