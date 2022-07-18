@@ -95,7 +95,7 @@ function Realtime(props: { doPlaySound: boolean }) {
 
                     // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
                     setSet(appendRepToSet(set, rep));
-                    setRep(resetRep(rep));
+                    setRep(resetRep());
 
                     // レップカウントを読み上げる
                     if (doPlaySound) {
