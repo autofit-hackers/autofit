@@ -11,7 +11,7 @@ import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { appendRepToSet, Set } from '../training/set';
-import { RepCountSettingContext } from './RepCountSettingContext';
+import { RepCountSettingContext } from './repCountSettingContext';
 
 export default function PoseStream() {
     const webcamRef = useRef<Webcam>(null);
@@ -126,7 +126,8 @@ export default function PoseStream() {
             canvasCtx.fillText(set.reps.length.toString(), 50, 50);
             canvasCtx.restore();
         },
-        [formState, rep, repCountSetting.lowerThreshold, repCountSetting.upperThreshold, set]
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
     );
 
     /*

@@ -7,11 +7,11 @@ import Webcam from 'react-webcam';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
 import playRepCountSound from '../coaching/voiceGuidance';
-import { TrainingContext } from '../customContexts';
 import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { appendRepToSet, Set } from '../training/set';
+import { TrainingContext } from './contexts';
 
 function Realtime(props: { doPlaySound: boolean }) {
     const { doPlaySound } = props;
@@ -50,90 +50,88 @@ function Realtime(props: { doPlaySound: boolean }) {
     たぶんpose.onResults(onResults);のおかげだと思われる。
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
-    const onResults = useCallback(
-        (results: Results) => {
-            const formInstructionSettings: FormInstructionSettings = {
-                items: formInstructionItems
-            };
-            if (canvasRef.current === null || webcamRef.current === null) {
-                return;
-            }
-            const { videoWidth } = webcamRef.current.video!;
-            const { videoHeight } = webcamRef.current.video!;
-            canvasRef.current.width = videoWidth;
-            canvasRef.current.height = videoHeight;
-            const canvasElement = canvasRef.current;
-            const canvasCtx = canvasElement.getContext('2d');
+    const onResults = useCallback((results: Results) => {
+        const formInstructionSettings: FormInstructionSettings = {
+            items: formInstructionItems
+        };
+        if (canvasRef.current === null || webcamRef.current === null) {
+            return;
+        }
+        const { videoWidth } = webcamRef.current.video!;
+        const { videoHeight } = webcamRef.current.video!;
+        canvasRef.current.width = videoWidth;
+        canvasRef.current.height = videoHeight;
+        const canvasElement = canvasRef.current;
+        const canvasCtx = canvasElement.getContext('2d');
 
-            if (canvasCtx == null) {
-                return;
-            }
-            canvasCtx.font = '50px serif';
+        if (canvasCtx == null) {
+            return;
+        }
+        canvasCtx.font = '50px serif';
 
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
+        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-            /* ここにprocessor.recv()の内容を書いていく */
-            if ('poseLandmarks' in results) {
-                // mediapipeの推論結果を自作のPoseクラスに代入
-                const currentPose = new Pose(results);
+        /* ここにprocessor.recv()の内容を書いていく */
+        if ('poseLandmarks' in results) {
+            // mediapipeの推論結果を自作のPoseクラスに代入
+            const currentPose = new Pose(results);
 
-                // フォームのリアルタイム分析を行う（指導はしない）
-                setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
+            // フォームのリアルタイム分析を行う（指導はしない）
+            setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
 
-                // 現フレームの推定Poseをレップのフォームに追加
-                setRep(appendPoseToForm(rep, currentPose));
+            // 現フレームの推定Poseをレップのフォームに追加
+            setRep(appendPoseToForm(rep, currentPose));
 
-                // レップが終了したとき
-                if (formState.isRepEnd) {
-                    // 完了したレップのフォームを分析・評価
-                    setRep(calculateKeyframes(rep));
-                    setRep(evaluateForm(rep, formInstructionSettings));
-                    // console.log(rep.formEvaluationScores);
+            // レップが終了したとき
+            if (formState.isRepEnd) {
+                // 完了したレップのフォームを分析・評価
+                setRep(calculateKeyframes(rep));
+                setRep(evaluateForm(rep, formInstructionSettings));
+                // console.log(rep.formEvaluationScores);
 
-                    // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
-                    setSet(appendRepToSet(set, rep));
-                    setRep(resetRep());
+                // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
+                setSet(appendRepToSet(set, rep));
+                setRep(resetRep());
 
-                    // レップカウントを読み上げる
-                    if (doPlaySound) {
-                        playRepCountSound(set.reps.length);
-                    }
+                // レップカウントを読み上げる
+                if (doPlaySound) {
+                    playRepCountSound(set.reps.length);
                 }
-
-                // pose estimationの結果を描画
-                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-                    color: 'white',
-                    lineWidth: 4
-                });
-                drawLandmarks(canvasCtx, results.poseLandmarks, {
-                    color: 'white',
-                    lineWidth: 4,
-                    radius: 8,
-                    fillColor: 'lightgreen'
-                });
-                drawLandmarks(
-                    canvasCtx,
-                    [6].map((index) => results.poseLandmarks[index]),
-                    { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
-                );
             }
 
-            // RepCountが一定値に達するとphaseを更新し、レポートへ
-            // XXX: onResults内に書くのは良くない、、？
-            if (set.reps.length === 200) {
-                setter(phase + 1);
-            }
-            canvasCtx.restore();
+            // pose estimationの結果を描画
+            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+                color: 'white',
+                lineWidth: 4
+            });
+            drawLandmarks(canvasCtx, results.poseLandmarks, {
+                color: 'white',
+                lineWidth: 4,
+                radius: 8,
+                fillColor: 'lightgreen'
+            });
+            drawLandmarks(
+                canvasCtx,
+                [6].map((index) => results.poseLandmarks[index]),
+                { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
+            );
+        }
 
-            // レップカウントを表示
-            canvasCtx.fillText(set.reps.length.toString(), 50, 50);
-            canvasCtx.restore();
-        },
-        [formState, phase, doPlaySound, rep, set, setter]
-    );
+        // RepCountが一定値に達するとphaseを更新し、レポートへ
+        // XXX: onResults内に書くのは良くない、、？
+        if (set.reps.length === 200) {
+            setter(phase + 1);
+        }
+        canvasCtx.restore();
+
+        // レップカウントを表示
+        canvasCtx.fillText(set.reps.length.toString(), 50, 50);
+        canvasCtx.restore();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     /*
     mediapipeの初期設定。

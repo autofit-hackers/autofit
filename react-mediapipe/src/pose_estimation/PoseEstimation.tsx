@@ -2,7 +2,7 @@ import { Button } from '@mui/material';
 import Slider from '@mui/material/Slider';
 import { useState } from 'react';
 import PoseStream from './PoseStream';
-import { defaultRepCountSettings, RepCountSetting, RepCountSettingContext } from './RepCountSettingContext';
+import { defaultRepCountSettings, RepCountSetting, RepCountSettingContext } from './repCountSettingContext';
 
 export default function PoseEstimation() {
     const [isStreamStarted, setIsStreamStarted] = useState(false);
