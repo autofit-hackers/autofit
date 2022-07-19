@@ -43,91 +43,89 @@ export default function PoseStream() {
     たぶんpose.onResults(onResults);のおかげだと思われる。
     mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
     */
-    const onResults = useCallback(
-        (results: Results) => {
-            const formInstructionSettings: FormInstructionSettings = {
-                items: formInstructionItems
-            };
+    const onResults = useCallback((results: Results) => {
+        const formInstructionSettings: FormInstructionSettings = {
+            items: formInstructionItems
+        };
 
-            if (canvasRef.current === null || webcamRef.current === null) {
-                return;
-            }
-            const { videoWidth } = webcamRef.current.video!;
-            const { videoHeight } = webcamRef.current.video!;
-            canvasRef.current.width = videoWidth;
-            canvasRef.current.height = videoHeight;
-            const canvasElement = canvasRef.current;
-            const canvasCtx = canvasElement.getContext('2d');
+        if (canvasRef.current === null || webcamRef.current === null) {
+            return;
+        }
+        const { videoWidth } = webcamRef.current.video!;
+        const { videoHeight } = webcamRef.current.video!;
+        canvasRef.current.width = videoWidth;
+        canvasRef.current.height = videoHeight;
+        const canvasElement = canvasRef.current;
+        const canvasCtx = canvasElement.getContext('2d');
 
-            if (canvasCtx == null) {
-                return;
-            }
-            canvasCtx.font = '50px serif';
+        if (canvasCtx == null) {
+            return;
+        }
+        canvasCtx.font = '50px serif';
 
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
 
-            // if (isRotated) {
-            //     canvasCtx!.rotate(5 * (Math.PI / 180));
-            // }
+        // if (isRotated) {
+        //     canvasCtx!.rotate(5 * (Math.PI / 180));
+        // }
 
-            canvasCtx.scale(-1, 1);
-            canvasCtx.translate(-videoWidth, 0);
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-videoWidth, 0);
+        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-            /* ここにprocessor.recv()の内容を書いていく */
-            if ('poseLandmarks' in results) {
-                // mediapipeの推論結果を自作のPoseクラスに代入
-                const currentPose = new Pose(results);
+        /* ここにprocessor.recv()の内容を書いていく */
+        if ('poseLandmarks' in results) {
+            // mediapipeの推論結果を自作のPoseクラスに代入
+            const currentPose = new Pose(results);
 
-                // フォームのリアルタイム分析を行う（指導はしない）
-                setFormState(
-                    monitorForm(formState, currentPose, repCountSetting.lowerThreshold, repCountSetting.upperThreshold)
-                );
+            // フォームのリアルタイム分析を行う（指導はしない）
+            setFormState(
+                monitorForm(formState, currentPose, repCountSetting.lowerThreshold, repCountSetting.upperThreshold)
+            );
 
-                // 現フレームの推定Poseをレップのフォームに追加
-                setRep(appendPoseToForm(rep, currentPose));
+            // 現フレームの推定Poseをレップのフォームに追加
+            setRep(appendPoseToForm(rep, currentPose));
 
-                // レップが終了したとき
-                if (formState.isRepEnd) {
-                    // 完了したレップのフォームを分析・評価
-                    setRep(calculateKeyframes(rep));
-                    setRep(evaluateForm(rep, formInstructionSettings));
-                    console.log(rep.formEvaluationScores);
+            // レップが終了したとき
+            if (formState.isRepEnd) {
+                // 完了したレップのフォームを分析・評価
+                setRep(calculateKeyframes(rep));
+                setRep(evaluateForm(rep, formInstructionSettings));
+                console.log(rep.formEvaluationScores);
 
-                    // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
-                    setSet(appendRepToSet(set, rep));
-                    setRep(resetRep());
+                // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
+                setSet(appendRepToSet(set, rep));
+                setRep(resetRep());
 
-                    // レップカウントを読み上げる
-                    playRepCountSound(set.reps.length);
-                }
-
-                // pose estimationの結果を描画
-                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-                    color: 'white',
-                    lineWidth: 4
-                });
-                drawLandmarks(canvasCtx, results.poseLandmarks, {
-                    color: 'white',
-                    lineWidth: 4,
-                    radius: 8,
-                    fillColor: 'lightgreen'
-                });
-                drawLandmarks(
-                    canvasCtx,
-                    [6].map((index) => results.poseLandmarks[index]),
-                    { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
-                );
+                // レップカウントを読み上げる
+                playRepCountSound(set.reps.length);
             }
 
-            // レップカウントを表示
-            canvasCtx.fillText(set.reps.length.toString(), 50, 50);
-            canvasCtx.restore();
-        },
-        [formState, rep, repCountSetting.lowerThreshold, repCountSetting.upperThreshold, set]
-    );
+            // pose estimationの結果を描画
+            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+                color: 'white',
+                lineWidth: 4
+            });
+            drawLandmarks(canvasCtx, results.poseLandmarks, {
+                color: 'white',
+                lineWidth: 4,
+                radius: 8,
+                fillColor: 'lightgreen'
+            });
+            drawLandmarks(
+                canvasCtx,
+                [6].map((index) => results.poseLandmarks[index]),
+                { visibilityMin: 0.65, color: 'white', fillColor: 'rgb(0,217,231)' }
+            );
+        }
+
+        // レップカウントを表示
+        canvasCtx.fillText(set.reps.length.toString(), 50, 50);
+        canvasCtx.restore();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     /*
     mediapipeの初期設定。

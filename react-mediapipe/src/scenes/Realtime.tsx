@@ -95,7 +95,7 @@ function Realtime(props: { doPlaySound: boolean }) {
 
                     // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
                     setSet(appendRepToSet(set, rep));
-                    setRep(resetRep(rep));
+                    setRep(resetRep());
 
                     // レップカウントを読み上げる
                     if (doPlaySound) {
@@ -132,7 +132,8 @@ function Realtime(props: { doPlaySound: boolean }) {
             canvasCtx.fillText(set.reps.length.toString(), 50, 50);
             canvasCtx.restore();
         },
-        [formState, phase, doPlaySound, rep, set, setter]
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
     );
 
     /*

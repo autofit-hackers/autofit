@@ -25,11 +25,7 @@ export function ReportPhase() {
             <Button variant="contained" onClick={() => setter(phase - 1)}>
                 Phase Back
             </Button>
-            <IntervalReport
-                trainingMenuName="aaa"
-                frontMoviePath="https://www.youtube.com/embed/muuK4SpRR5M"
-                instructionText="bbb"
-            />
+            <IntervalReport />
         </>
     );
 }
