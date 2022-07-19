@@ -2,7 +2,8 @@ import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
 import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, Typography } from '@mui/material';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useAtom } from 'jotai';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
@@ -11,7 +12,7 @@ import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { appendRepToSet, Set } from '../training/set';
-import { TrainingContext } from './contexts';
+import { phaseAtom } from './atoms';
 
 function Realtime(props: { doPlaySound: boolean }) {
     const { doPlaySound } = props;
@@ -39,10 +40,11 @@ function Realtime(props: { doPlaySound: boolean }) {
         standingHeight: 0
     });
 
+    const [_, setPhase] = useAtom(phaseAtom);
+
     // settings
     const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
     const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
-    const { allState: phase, stateSetter: setter } = useContext(TrainingContext);
 
     /*
     依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
@@ -76,6 +78,7 @@ function Realtime(props: { doPlaySound: boolean }) {
 
         /* ここにprocessor.recv()の内容を書いていく */
         if ('poseLandmarks' in results) {
+            console.log(results.poseLandmarks);
             // mediapipeの推論結果を自作のPoseクラスに代入
             const currentPose = new Pose(results);
 
@@ -120,11 +123,11 @@ function Realtime(props: { doPlaySound: boolean }) {
             );
         }
 
-        // RepCountが一定値に達するとphaseを更新し、レポートへ
-        // XXX: onResults内に書くのは良くない、、？
-        if (set.reps.length === 200) {
-            setter(phase + 1);
+        // RepCountが一定値に達するとphaseを更新し、セットレポートへ
+        if (set.reps.length === 100) {
+            setPhase(1);
         }
+
         canvasCtx.restore();
 
         // レップカウントを表示
