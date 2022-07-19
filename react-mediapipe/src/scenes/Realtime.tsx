@@ -58,8 +58,11 @@ function Realtime(props: { doPlaySound: boolean }) {
             if (canvasRef.current === null || webcamRef.current === null) {
                 return;
             }
-            const { videoWidth } = webcamRef.current.video!;
-            const { videoHeight } = webcamRef.current.video!;
+            if (!webcamRef.current.video) {
+                return;
+            }
+            const { videoWidth } = webcamRef.current.video;
+            const { videoHeight } = webcamRef.current.video;
             canvasRef.current.width = videoWidth;
             canvasRef.current.height = videoHeight;
             const canvasElement = canvasRef.current;
