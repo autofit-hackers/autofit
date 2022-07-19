@@ -58,8 +58,11 @@ function Realtime(props: { doPlaySound: boolean }) {
             if (canvasRef.current === null || webcamRef.current === null) {
                 return;
             }
-            const { videoWidth } = webcamRef.current.video!;
-            const { videoHeight } = webcamRef.current.video!;
+            if (!webcamRef.current.video) {
+                return;
+            }
+            const { videoWidth } = webcamRef.current.video;
+            const { videoHeight } = webcamRef.current.video;
             canvasRef.current.width = videoWidth;
             canvasRef.current.height = videoHeight;
             const canvasElement = canvasRef.current;
@@ -95,7 +98,7 @@ function Realtime(props: { doPlaySound: boolean }) {
 
                     // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
                     setSet(appendRepToSet(set, rep));
-                    setRep(resetRep(rep));
+                    setRep(resetRep());
 
                     // レップカウントを読み上げる
                     if (doPlaySound) {
@@ -132,7 +135,8 @@ function Realtime(props: { doPlaySound: boolean }) {
             canvasCtx.fillText(set.reps.length.toString(), 50, 50);
             canvasCtx.restore();
         },
-        [formState, phase, doPlaySound, rep, set, setter]
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
     );
 
     /*

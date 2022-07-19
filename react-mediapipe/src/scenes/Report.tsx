@@ -1,16 +1,8 @@
-import { Box, CardMedia, CssBaseline, Grid, Paper, Typography } from '@mui/material';
+import { Box, CssBaseline, Grid } from '@mui/material';
 import { Container } from '@mui/system';
-import RestTimer from '../ui_component/RestTimer';
+import { BadPoint, GoodPoint, TimerCard, TrainingResultChart, TrainingStats, VideoReplayer } from './ReportComponents';
 
-interface IntervalReportProps {
-    trainingMenuName: string;
-    frontMoviePath: string;
-    instructionText: string;
-}
-
-function IntervalReport(prop: IntervalReportProps) {
-    const { trainingMenuName: tn, frontMoviePath: fv, instructionText: inst } = prop;
-
+function IntervalReport() {
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
@@ -22,69 +14,26 @@ function IntervalReport(prop: IntervalReportProps) {
                         theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
                     flexGrow: 1,
                     height: '100vh',
+                    width: '100vw',
                     overflow: 'auto'
                 }}
             >
                 <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                     <Grid container spacing={3}>
-                        {/* text instruction */}
-                        <Grid item xs={9}>
-                            <Paper
-                                sx={{
-                                    p: 2,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    height: '20vh'
-                                }}
-                            >
-                                <Typography variant="h4" fontWeight={600}>
-                                    {tn} おつかれさまでした。
-                                </Typography>
-                                <Typography variant="h4" fontWeight={600}>
-                                    {inst}
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                        {/* text instruction */}
-                        <Grid item xs={3}>
-                            <Paper
-                                sx={{
-                                    p: 2,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    height: '20vh'
-                                }}
-                            >
-                                <RestTimer restTime={100} />
-                            </Paper>
-                        </Grid>
-                        {/* Chart */}
-                        <Grid item xs={6}>
-                            <Paper
-                                sx={{
-                                    p: 2,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    height: '40vh'
-                                }}
-                            >
-                                {/* <BarChart /> */}
-                            </Paper>
-                        </Grid>
-
+                        <TrainingStats text="スクワット10回" />
                         {/* video */}
+                        <VideoReplayer videoPath="./video_test.webm" />
                         <Grid item xs={6}>
-                            <Paper
-                                sx={{
-                                    p: 2,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    height: '40vh'
-                                }}
-                            >
-                                <CardMedia sx={{ borderRadius: 3, height: 400 }} component="iframe" src={fv} />
-                            </Paper>
+                            <Grid container spacing={3}>
+                                {/* Chart */}
+                                <TrainingResultChart text="Chart Here" />
+                                <TimerCard time={60} />
+                            </Grid>
                         </Grid>
+                        {/* text instruction */}
+                        <GoodPoint text="いい姿勢でスクワットができています。背骨の角度はバランスに関わります。この調子でいきましょう。" />
+                        {/* text instruction */}
+                        <BadPoint text="少ししゃがみ込みが甘かったですね。太ももが水平になるまで腰を落とすと脚全体筋肉を効果的に鍛えることができます。" />
                     </Grid>
                 </Container>
             </Box>
