@@ -1,14 +1,18 @@
 import { Box, CardMedia, CssBaseline, Grid, Paper, Typography } from '@mui/material';
 import { Container } from '@mui/system';
+import { useAtom } from 'jotai';
+import ReactPlayer from 'react-player';
 import RestTimer from '../ui_component/RestTimer';
+import { repVideoUrlsAtom } from './atoms';
 
-interface IntervalReportProps {
+type IntervalReportProps = {
     trainingMenuName: string;
     frontMoviePath: string;
     instructionText: string;
-}
+};
 
 function IntervalReport(prop: IntervalReportProps) {
+    const [repVideoUrls] = useAtom(repVideoUrlsAtom);
     const { trainingMenuName: tn, frontMoviePath: fv, instructionText: inst } = prop;
 
     return (
@@ -25,6 +29,7 @@ function IntervalReport(prop: IntervalReportProps) {
                     overflow: 'auto'
                 }}
             >
+                <ReactPlayer url={repVideoUrls.slice(-1)[0]} id="RepVideo" playing loop controls />
                 <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                     <Grid container spacing={3}>
                         {/* text instruction */}
