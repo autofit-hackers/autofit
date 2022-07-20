@@ -1,7 +1,7 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, Typography } from '@mui/material';
+import { FormControlLabel, Switch } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
@@ -11,7 +11,7 @@ import playRepCountSound from '../coaching/voiceGuidance';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
-import { appendRepToSet } from '../training/set';
+import { Set } from '../training/set';
 import { phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 function Realtime(props: { doPlaySound: boolean }) {
@@ -21,9 +21,6 @@ function Realtime(props: { doPlaySound: boolean }) {
     const screenShotRef = useRef<HTMLCanvasElement>(null);
     const [{ isRotated, w, h }, setConstrains] = useState({ isRotated: true, w: 1080, h: 1920 });
 
-    const [deviceId, setDeviceId] = useState({});
-    const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-
     /*
      *Phase
      */
@@ -32,16 +29,17 @@ function Realtime(props: { doPlaySound: boolean }) {
     /*
      *セット・レップ・RepState変数
      */
-    const [setRecord, setSetRecord] = useAtom(setRecordAtom);
-    const [rep, setRep] = useState<Rep>({
+    const [, setSetRecord] = useAtom(setRecordAtom);
+    const set = useRef<Set>({ reps: [] });
+    const rep = useRef<Rep>({
         form: [],
         keyframesIndex: { top: undefined, bottom: undefined, ascendingMiddle: undefined, descendingMiddle: undefined },
         formEvaluationScores: []
     });
-    const [repState, setRepState] = useState<RepState>(resetRepState());
+    const repState = useRef<RepState>(resetRepState());
 
     // settings
-    const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
+    const lowerThreshold = 0.7; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
     const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
 
     /*
@@ -108,42 +106,49 @@ function Realtime(props: { doPlaySound: boolean }) {
             const currentPose = new Pose(results);
 
             // レップの最初のフレームの場合
-            if (repState.isFirstFrameInRep) {
+            if (repState.current.isFirstFrameInRep) {
                 // 動画撮影を開始
                 startCaptureWebcam();
 
                 // レップの最初の身長を記録
-                setRepState(setStandingHeight(repState, currentPose.height()));
+                repState.current = setStandingHeight(repState.current, currentPose.height());
 
                 // レップの開始フラグをoffにする
-                setRepState((prevState) => ({ ...prevState, isFirstFrameInRep: false }));
+                repState.current.isFirstFrameInRep = false;
             }
 
             // フォームを分析し、レップの状態を更新する
-            setRepState(checkIfRepFinish(repState, currentPose.height(), lowerThreshold, upperThreshold));
+            repState.current = checkIfRepFinish(
+                repState.current,
+                currentPose.height(),
+                lowerThreshold,
+                upperThreshold
+            );
 
             // 現フレームの推定Poseをレップのフォームに追加
-            setRep(appendPoseToForm(rep, currentPose));
+            rep.current = appendPoseToForm(rep.current, currentPose);
 
             // レップが終了したとき
-            if (repState.isRepEnd) {
+            if (repState.current.isRepEnd) {
+                console.log('レップ終了');
                 // 動画撮影を停止し、配列に保存する
                 stopCaptureWebcam();
 
                 // 完了したレップのフォームを分析・評価
-                setRep(calculateKeyframes(rep));
-                setRep(evaluateForm(rep, formInstructionSettings));
+                rep.current = calculateKeyframes(rep.current);
+                rep.current = evaluateForm(rep.current, formInstructionSettings);
 
                 // 完了したレップの情報をセットに追加し、レップをリセットする
-                setSetRecord(appendRepToSet(setRecord, rep));
-                setRep(resetRep());
+                set.current.reps = [...set.current.reps, rep.current];
+                rep.current = resetRep();
+                console.log(set.current.reps.length);
 
                 // レップカウントを読み上げる
                 if (doPlaySound) {
-                    playRepCountSound(setRecord.reps.length);
+                    playRepCountSound(set.current.reps.length);
                 }
                 // RepStateの初期化
-                setRepState(resetRepState());
+                repState.current = resetRepState();
             }
 
             // pose estimationの結果を描画
@@ -164,15 +169,16 @@ function Realtime(props: { doPlaySound: boolean }) {
             );
         }
 
-        // RepCountが一定値に達するとphaseを更新し、セットレポートへ
-        if (setRecord.reps.length === 100) {
+        // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
+        if (set.current.reps.length === 100) {
+            setSetRecord(set.current);
             setPhase(1);
         }
 
         canvasCtx.restore();
 
         // レップカウントを表示
-        canvasCtx.fillText(setRecord.reps.length.toString(), 50, 50);
+        canvasCtx.fillText(set.current.reps.length.toString(), 50, 50);
         canvasCtx.restore();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -205,7 +211,6 @@ function Realtime(props: { doPlaySound: boolean }) {
                     }
                     const { videoWidth } = webcamRef.current.video!;
                     const { videoHeight } = webcamRef.current.video!;
-                    // console.log(videoHeight, videoWidth);
                     screenShotRef.current.width = videoWidth;
                     screenShotRef.current.height = videoHeight;
                     const screenShotElement = screenShotRef.current;
@@ -236,19 +241,6 @@ function Realtime(props: { doPlaySound: boolean }) {
             void camera.start();
         }
     }, [onResults]);
-
-    // NOTE: iterate all camera devices
-    const handleDevices = useCallback(
-        (mediaDevices: MediaDeviceInfo[]) => setDevices(mediaDevices.filter(({ kind }) => kind === 'videoinput')),
-        [setDevices]
-    );
-
-    useEffect(() => {
-        navigator.mediaDevices
-            .enumerateDevices()
-            .then(handleDevices)
-            .catch((reason) => console.log(reason)); // FIXME: remove logging in production
-    }, [handleDevices]);
 
     return (
         <>
@@ -310,28 +302,9 @@ function Realtime(props: { doPlaySound: boolean }) {
                     height: 1920
                 }}
             />
-            <Typography position="absolute" zIndex={10} fontSize={100}>
+            {/* <Typography position="absolute" zIndex={10} fontSize={100}>
                 {setRecord.reps.length}
-            </Typography>
-            {/* FIXME: initialize selector with default cam device */}
-            <FormControl color="info" variant="filled" style={{ zIndex: 10, position: 'absolute' }}>
-                <InputLabel htmlFor="cam-device-select">Camera</InputLabel>
-                <Select
-                    labelId="cam-device-select-label"
-                    id="webcam-device-select"
-                    value={{ deviceId }}
-                    label="Camera"
-                    onChange={(e) => {
-                        setDeviceId(e.target.value as string);
-                    }}
-                >
-                    {devices.map((device) => (
-                        <MenuItem key={device.deviceId} value={device.deviceId}>
-                            {device.label}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
+            </Typography> */}
         </>
     );
 }
