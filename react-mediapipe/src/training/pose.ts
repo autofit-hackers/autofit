@@ -46,10 +46,15 @@ class Pose {
     };
 
     height = (): number => {
-        const neck = this.neckCenter();
-        const foot = this.footCenter();
+        // TODO: デバッグ用に目と肩のラインで代替しているので、プロダクションではコメントアウトされている処理に戻す
+        // const neck = this.neckCenter();
+        // const foot = this.footCenter();
 
-        return Math.sqrt((neck.x - foot.x) ** 2 + (neck.y - foot.y) ** 2);
+        // return Math.sqrt((neck.x - foot.x) ** 2 + (neck.y - foot.y) ** 2);
+        const neck = this.neckCenter();
+        const nose = this.landmark[0];
+
+        return Math.sqrt((neck.x - nose.x) ** 2 + (neck.y - nose.y) ** 2);
     };
 }
 
