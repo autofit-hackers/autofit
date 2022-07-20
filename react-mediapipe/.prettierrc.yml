@@ -1,6 +1,3 @@
-tabWidth: 4
 singleQuote: true
-trailingComma: 'none'
-semi: true
-useTabs: false
-printWidth: 119
+trailingComma: 'all'
+endOfLine: 'auto'
