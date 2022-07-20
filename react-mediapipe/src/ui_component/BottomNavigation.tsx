@@ -17,50 +17,13 @@ export default function LabelBottomNavigation() {
   };
 
   return (
-    <Paper
-      sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
-      elevation={3}
-    >
-      <BottomNavigation
-        sx={{ width: '100vw' }}
-        value={value}
-        onChange={handleChange}
-      >
-        <BottomNavigationAction
-          label="Main"
-          value="main"
-          icon={<StarIcon />}
-          component={Link}
-          to="/"
-        />
-        <BottomNavigationAction
-          label="Endo"
-          value="endo"
-          icon={<RestoreIcon />}
-          component={Link}
-          to="/endo"
-        />
-        <BottomNavigationAction
-          label="Kondo"
-          value="kondo"
-          icon={<FavoriteIcon />}
-          component={Link}
-          to="/kondo"
-        />
-        <BottomNavigationAction
-          label="Ueno"
-          value="ueno"
-          icon={<LocationOnIcon />}
-          component={Link}
-          to="/ueno"
-        />
-        <BottomNavigationAction
-          label="Katsura"
-          value="katsura"
-          icon={<FolderIcon />}
-          component={Link}
-          to="/katsura"
-        />
+    <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+      <BottomNavigation sx={{ width: '100vw' }} value={value} onChange={handleChange}>
+        <BottomNavigationAction label="Main" value="main" icon={<StarIcon />} component={Link} to="/" />
+        <BottomNavigationAction label="Endo" value="endo" icon={<RestoreIcon />} component={Link} to="/endo" />
+        <BottomNavigationAction label="Kondo" value="kondo" icon={<FavoriteIcon />} component={Link} to="/kondo" />
+        <BottomNavigationAction label="Ueno" value="ueno" icon={<LocationOnIcon />} component={Link} to="/ueno" />
+        <BottomNavigationAction label="Katsura" value="katsura" icon={<FolderIcon />} component={Link} to="/katsura" />
       </BottomNavigation>
     </Paper>
   );

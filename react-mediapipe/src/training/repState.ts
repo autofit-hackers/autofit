@@ -14,10 +14,7 @@ export const resetRepState = (): RepState => ({
   standingHeight: undefined,
 });
 
-export const setStandingHeight = (
-  prevRepState: RepState,
-  height: number,
-): RepState => ({
+export const setStandingHeight = (prevRepState: RepState, height: number): RepState => ({
   ...prevRepState,
   standingHeight: height,
 });

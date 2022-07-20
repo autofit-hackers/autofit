@@ -4,14 +4,7 @@ import { useAtom } from 'jotai';
 import { useState } from 'react';
 import ReactPlayer from 'react-player';
 import { repVideoUrlsAtom } from './atoms';
-import {
-  BadPoint,
-  GoodPoint,
-  TimerCard,
-  TrainingResultChart,
-  TrainingStats,
-  VideoReplayer,
-} from './ReportComponents';
+import { BadPoint, GoodPoint, TimerCard, TrainingResultChart, TrainingStats, VideoReplayer } from './ReportComponents';
 
 function IntervalReport() {
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
@@ -25,9 +18,7 @@ function IntervalReport() {
         component="main"
         sx={{
           backgroundColor: (theme) =>
-            theme.palette.mode === 'light'
-              ? theme.palette.grey[100]
-              : theme.palette.grey[900],
+            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
           flexGrow: 1,
           height: '100vh',
           width: '100vw',
@@ -44,17 +35,9 @@ function IntervalReport() {
             step={1}
             min={1}
             max={repVideoUrls.length}
-            onChange={(event, value) =>
-              typeof value === 'number' ? setValue(value) : null
-            }
+            onChange={(event, value) => (typeof value === 'number' ? setValue(value) : null)}
           />
-          <ReactPlayer
-            url={repVideoUrls[repIndexToShow - 1]}
-            id="RepVideo"
-            playing
-            loop
-            controls
-          />
+          <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop controls />
         </Container>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>

@@ -1,8 +1,4 @@
-import {
-  NormalizedLandmark,
-  NormalizedLandmarkList,
-  Results,
-} from '@mediapipe/pose';
+import { NormalizedLandmark, NormalizedLandmarkList, Results } from '@mediapipe/pose';
 
 class Pose {
   landmark: NormalizedLandmarkList;
@@ -39,18 +35,14 @@ class Pose {
     const kneeLeft = this.landmark[25];
     const kneeRight = this.landmark[26];
 
-    return Math.sqrt(
-      (kneeLeft.x - kneeRight.x) ** 2 + (kneeLeft.y - kneeRight.y) ** 2,
-    );
+    return Math.sqrt((kneeLeft.x - kneeRight.x) ** 2 + (kneeLeft.y - kneeRight.y) ** 2);
   };
 
   handsDistance = (): number => {
     const handLeft = this.landmark[15];
     const handRight = this.landmark[16];
 
-    return Math.sqrt(
-      (handLeft.x - handRight.x) ** 2 + (handLeft.y - handRight.y) ** 2,
-    );
+    return Math.sqrt((handLeft.x - handRight.x) ** 2 + (handLeft.y - handRight.y) ** 2);
   };
 
   height = (): number => {

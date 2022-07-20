@@ -76,13 +76,7 @@ export function VideoReplayer(props: { videoPath: string }) {
           height: '50vh',
         }}
       >
-        <CardMedia
-          sx={{ borderRadius: 3, height: '50vh' }}
-          component="video"
-          autoPlay
-          image={videoPath}
-          loop
-        />
+        <CardMedia sx={{ borderRadius: 3, height: '50vh' }} component="video" autoPlay image={videoPath} loop />
       </Paper>
     </Grid>
   );

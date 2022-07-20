@@ -34,10 +34,7 @@ const kneeOut: FormInstructionItem = {
     const bottomPoseKneeDistance = getBottomPose(rep)?.kneesDistance();
 
     // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      topPoseKneeDistance === undefined ||
-      bottomPoseKneeDistance === undefined
-    ) {
+    if (topPoseKneeDistance === undefined || bottomPoseKneeDistance === undefined) {
       return true;
     }
 
@@ -48,7 +45,4 @@ const kneeOut: FormInstructionItem = {
   },
 };
 
-export const formInstructionItems: FormInstructionItem[] = [
-  squatDepth,
-  kneeOut,
-];
+export const formInstructionItems: FormInstructionItem[] = [squatDepth, kneeOut];

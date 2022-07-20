@@ -5,10 +5,7 @@ export type FormInstructionSettings = {
   items: FormInstructionItem[];
 };
 
-export const evaluateForm = (
-  prevRep: Rep,
-  settings: FormInstructionSettings,
-): Rep => {
+export const evaluateForm = (prevRep: Rep, settings: FormInstructionSettings): Rep => {
   const rep: Rep = prevRep;
 
   // settingsで指定した全ての指導項目に関してフォームを評価する

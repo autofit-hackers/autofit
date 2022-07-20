@@ -53,10 +53,7 @@ export const calculateKeyframes = (prevRep: Rep): Rep => {
     }
 
     // calculate ascending_middle
-    while (
-      bodyHeights[ascendingMiddleIdx] < middleHeight &&
-      ascendingMiddleIdx < bodyHeights.length - 1
-    ) {
+    while (bodyHeights[ascendingMiddleIdx] < middleHeight && ascendingMiddleIdx < bodyHeights.length - 1) {
       ascendingMiddleIdx += 1;
     }
   }
