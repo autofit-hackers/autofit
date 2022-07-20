@@ -8,11 +8,11 @@ import Webcam from 'react-webcam';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
 import playRepCountSound from '../coaching/voiceGuidance';
-import { FormState, monitorForm } from '../training/formState';
 import Pose from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
-import { appendRepToSet, Set } from '../training/set';
-import { phaseAtom } from './atoms';
+import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
+import { appendRepToSet } from '../training/set';
+import { phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 function Realtime(props: { doPlaySound: boolean }) {
     const { doPlaySound } = props;
@@ -23,35 +23,61 @@ function Realtime(props: { doPlaySound: boolean }) {
 
     const [deviceId, setDeviceId] = useState({});
     const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-    // const grid = LandmarkGrid
 
-    // セット・レップ・FormState変数を宣言
-    const [set, setSet] = useState<Set>({ reps: [] });
+    /*
+     *Phase
+     */
+    const [, setPhase] = useAtom(phaseAtom);
+
+    /*
+     *セット・レップ・RepState変数
+     */
+    const [setRecord, setSetRecord] = useAtom(setRecordAtom);
     const [rep, setRep] = useState<Rep>({
         form: [],
         keyframesIndex: { top: undefined, bottom: undefined, ascendingMiddle: undefined, descendingMiddle: undefined },
         formEvaluationScores: []
     });
-    const [formState, setFormState] = useState<FormState>({
-        isFirstFrameInRep: true,
-        didTouchBottom: false,
-        didTouchTop: true,
-        isRepEnd: false,
-        standingHeight: 0
-    });
-
-    const [_, setPhase] = useAtom(phaseAtom);
+    const [repState, setRepState] = useState<RepState>(resetRepState());
 
     // settings
     const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
     const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
 
     /*
-    依存配列が空であるため、useCallbackの返り値であるコールバック関数はは初回レンダリング時にのみ更新される。
-    が、onResults自体は非同期でずっと回ってるっぽい。
-    たぶんpose.onResults(onResults);のおかげだと思われる。
-    mediapipe定義のPose.onResultsメソッドと、ここで定義されたonResults関数の2種類があるのに注意。
-    */
+     *映像保存用の変数やコールバック関数
+     */
+    const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+    // handleStopCaptureClickの直後に呼ばれる
+    const handleRecordVideoUrl = useCallback(
+        ({ data }: { data: Blob }) => {
+            if (data.size > 0) {
+                const url = URL.createObjectURL(data);
+                setRepVideoUrls((prevUrls) => [...prevUrls, url]);
+            }
+        },
+        [setRepVideoUrls]
+    );
+
+    const startCaptureWebcam = useCallback(() => {
+        mediaRecorderRef.current = new MediaRecorder(webcamRef.current!.stream!, {
+            mimeType: 'video/webm'
+        });
+        mediaRecorderRef.current.addEventListener('dataavailable', handleRecordVideoUrl);
+        mediaRecorderRef.current.start();
+    }, [handleRecordVideoUrl]);
+
+    const stopCaptureWebcam = useCallback(() => {
+        if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.stop();
+        }
+    }, [mediaRecorderRef]);
+
+    /*
+     * 毎フレームまわっている関数
+     */
     const onResults = useCallback((results: Results) => {
         const formInstructionSettings: FormInstructionSettings = {
             items: formInstructionItems
@@ -78,31 +104,46 @@ function Realtime(props: { doPlaySound: boolean }) {
 
         /* ここにprocessor.recv()の内容を書いていく */
         if ('poseLandmarks' in results) {
-            console.log(results.poseLandmarks);
             // mediapipeの推論結果を自作のPoseクラスに代入
             const currentPose = new Pose(results);
 
-            // フォームのリアルタイム分析を行う（指導はしない）
-            setFormState(monitorForm(formState, currentPose, lowerThreshold, upperThreshold));
+            // レップの最初のフレームの場合
+            if (repState.isFirstFrameInRep) {
+                // 動画撮影を開始
+                startCaptureWebcam();
+
+                // レップの最初の身長を記録
+                setRepState(setStandingHeight(repState, currentPose.height()));
+
+                // レップの開始フラグをoffにする
+                setRepState((prevState) => ({ ...prevState, isFirstFrameInRep: false }));
+            }
+
+            // フォームを分析し、レップの状態を更新する
+            setRepState(checkIfRepFinish(repState, currentPose.height(), lowerThreshold, upperThreshold));
 
             // 現フレームの推定Poseをレップのフォームに追加
             setRep(appendPoseToForm(rep, currentPose));
 
             // レップが終了したとき
-            if (formState.isRepEnd) {
+            if (repState.isRepEnd) {
+                // 動画撮影を停止し、配列に保存する
+                stopCaptureWebcam();
+
                 // 完了したレップのフォームを分析・評価
                 setRep(calculateKeyframes(rep));
                 setRep(evaluateForm(rep, formInstructionSettings));
-                // console.log(rep.formEvaluationScores);
 
-                // 完了したレップの情報をセットに追加し、レップをリセットする（Form StateはMonitorで内部的にリセットされる）
-                setSet(appendRepToSet(set, rep));
+                // 完了したレップの情報をセットに追加し、レップをリセットする
+                setSetRecord(appendRepToSet(setRecord, rep));
                 setRep(resetRep());
 
                 // レップカウントを読み上げる
                 if (doPlaySound) {
-                    playRepCountSound(set.reps.length);
+                    playRepCountSound(setRecord.reps.length);
                 }
+                // RepStateの初期化
+                setRepState(resetRepState());
             }
 
             // pose estimationの結果を描画
@@ -124,23 +165,21 @@ function Realtime(props: { doPlaySound: boolean }) {
         }
 
         // RepCountが一定値に達するとphaseを更新し、セットレポートへ
-        if (set.reps.length === 100) {
+        if (setRecord.reps.length === 100) {
             setPhase(1);
         }
 
         canvasCtx.restore();
 
         // レップカウントを表示
-        canvasCtx.fillText(set.reps.length.toString(), 50, 50);
+        canvasCtx.fillText(setRecord.reps.length.toString(), 50, 50);
         canvasCtx.restore();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     /*
-    mediapipeの初期設定。
-    依存配列が上で定義されたonResults関数であるため、下のuseEffectが実行されるのは初回レンダリング時のみ。
-    （上記の通りonResults関数は初回レンダリング時にしか更新されない）
-    */
+     *mediapipeの初期設定。
+     */
     useEffect(() => {
         const pose = new PoseMediapipe({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
@@ -272,7 +311,7 @@ function Realtime(props: { doPlaySound: boolean }) {
                 }}
             />
             <Typography position="absolute" zIndex={10} fontSize={100}>
-                {set.reps.length}
+                {setRecord.reps.length}
             </Typography>
             {/* FIXME: initialize selector with default cam device */}
             <FormControl color="info" variant="filled" style={{ zIndex: 10, position: 'absolute' }}>
@@ -284,7 +323,6 @@ function Realtime(props: { doPlaySound: boolean }) {
                     label="Camera"
                     onChange={(e) => {
                         setDeviceId(e.target.value as string);
-                        // console.log(e.target.value);
                     }}
                 >
                     {devices.map((device) => (
