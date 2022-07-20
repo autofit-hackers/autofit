@@ -1,6 +1,7 @@
-import { Box, CardMedia, CssBaseline, Grid, Paper, Typography } from '@mui/material';
+import { Box, CardMedia, CssBaseline, Grid, Paper, Slider, Typography } from '@mui/material';
 import { Container } from '@mui/system';
 import { useAtom } from 'jotai';
+import { useState } from 'react';
 import ReactPlayer from 'react-player';
 import RestTimer from '../ui_component/RestTimer';
 import { repVideoUrlsAtom } from './atoms';
@@ -14,6 +15,7 @@ type IntervalReportProps = {
 function IntervalReport(prop: IntervalReportProps) {
     const [repVideoUrls] = useAtom(repVideoUrlsAtom);
     const { trainingMenuName: tn, frontMoviePath: fv, instructionText: inst } = prop;
+    const [repIndexToShow, setValue] = useState(0);
 
     return (
         <Box sx={{ display: 'flex' }}>
@@ -29,7 +31,20 @@ function IntervalReport(prop: IntervalReportProps) {
                     overflow: 'auto'
                 }}
             >
-                <ReactPlayer url={repVideoUrls.slice(-1)[0]} id="RepVideo" playing loop controls />
+                <Container>
+                    <Slider
+                        aria-label="Rep Index"
+                        size="small"
+                        valueLabelDisplay="auto"
+                        value={repIndexToShow}
+                        marks
+                        step={1}
+                        min={1}
+                        max={repVideoUrls.length}
+                        onChange={(event, value) => (typeof value === 'number' ? setValue(value) : null)}
+                    />
+                    <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop controls />
+                </Container>
                 <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                     <Grid container spacing={3}>
                         {/* text instruction */}
