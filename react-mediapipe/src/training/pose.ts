@@ -46,6 +46,7 @@ class Pose {
     };
 
     height = (): number => {
+        // TODO: デバッグ用に目と肩のラインで代替しているので、プロダクションではコメントアウトされている処理に戻す
         // const neck = this.neckCenter();
         // const foot = this.footCenter();
 

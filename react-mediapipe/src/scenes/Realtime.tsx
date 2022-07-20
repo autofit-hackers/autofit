@@ -60,7 +60,10 @@ function Realtime(props: { doPlaySound: boolean }) {
     );
 
     const startCaptureWebcam = useCallback(() => {
-        mediaRecorderRef.current = new MediaRecorder(webcamRef.current!.stream!, {
+        if (!(webcamRef.current && webcamRef.current.stream)) {
+            throw Error('Webcam stream is null');
+        }
+        mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
             mimeType: 'video/webm'
         });
         mediaRecorderRef.current.addEventListener('dataavailable', handleRecordVideoUrl);
@@ -302,6 +305,7 @@ function Realtime(props: { doPlaySound: boolean }) {
                     height: 1920
                 }}
             />
+            {/* TODO: レップカウントをMUIで表示する */}
             {/* <Typography position="absolute" zIndex={10} fontSize={100}>
                 {setRecord.reps.length}
             </Typography> */}
