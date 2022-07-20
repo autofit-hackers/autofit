@@ -46,10 +46,14 @@ class Pose {
     };
 
     height = (): number => {
-        const neck = this.neckCenter();
-        const foot = this.footCenter();
+        // const neck = this.neckCenter();
+        // const foot = this.footCenter();
 
-        return Math.sqrt((neck.x - foot.x) ** 2 + (neck.y - foot.y) ** 2);
+        // return Math.sqrt((neck.x - foot.x) ** 2 + (neck.y - foot.y) ** 2);
+        const neck = this.neckCenter();
+        const nose = this.landmark[0];
+
+        return Math.sqrt((neck.x - nose.x) ** 2 + (neck.y - nose.y) ** 2);
     };
 }
 
