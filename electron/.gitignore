@@ -15,6 +15,7 @@ dist-ssr
 # Editor directories and files
 .idea
 .DS_Store
+.erb/dll
 *.suo
 *.ntvs*
 *.njsproj
@@ -23,6 +24,17 @@ dist-ssr
 
 release
 .vscode/.debug.env
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage
+.eslintcache
+
+npm-debug.log.*
+*.css.d.ts
+*.sass.d.ts
+*.scss.d.ts
