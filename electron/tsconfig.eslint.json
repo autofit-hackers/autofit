@@ -1,5 +1,14 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "electron/**/*.js",
+    "electron/**/*.jsx",
+    "electron/**/*.ts",
+    "electron/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }
