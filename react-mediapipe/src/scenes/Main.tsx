@@ -23,11 +23,7 @@ export default function TrainingMain() {
                     <Button variant="contained" onClick={() => setPhase(0)}>
                         Phase Back
                     </Button>
-                    <IntervalReport
-                        trainingMenuName="aaa"
-                        frontMoviePath="https://www.youtube.com/embed/muuK4SpRR5M"
-                        instructionText="bbb"
-                    />
+                    <IntervalReport />
                 </>
             )}
         </>
