@@ -1,12 +1,17 @@
-import { NormalizedLandmark, NormalizedLandmarkList, Results } from '@mediapipe/pose';
+import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList, Results } from '@mediapipe/pose';
 
 class Pose {
   landmark: NormalizedLandmarkList;
+  worldLandmark: LandmarkList;
 
   constructor(result: Results) {
     this.landmark = result.poseLandmarks;
+    this.worldLandmark = result.poseWorldLandmarks;
   }
 
+  /*
+   * 画像サイズを基準とした[0,1]スケールのメソッド
+   */
   neckCenter = (): NormalizedLandmark => ({
     x: (this.landmark[11].x + this.landmark[12].x) / 2,
     y: (this.landmark[11].y + this.landmark[12].y) / 2,
@@ -55,6 +60,59 @@ class Pose {
     const nose = this.landmark[0];
 
     return Math.sqrt((neck.x - nose.x) ** 2 + (neck.y - nose.y) ** 2);
+  };
+
+  /*
+   * 実世界を基準としたcm単位のメソッド
+   */
+  neckCenterWorld = (): Landmark => ({
+    x: (this.worldLandmark[11].x + this.worldLandmark[12].x) / 2,
+    y: (this.worldLandmark[11].y + this.worldLandmark[12].y) / 2,
+    z: (this.worldLandmark[11].z + this.worldLandmark[12].z) / 2,
+  });
+
+  hipCenterWorld = (): Landmark => ({
+    x: (this.worldLandmark[23].x + this.worldLandmark[24].x) / 2,
+    y: (this.worldLandmark[23].y + this.worldLandmark[24].y) / 2,
+    z: (this.worldLandmark[23].z + this.worldLandmark[24].z) / 2,
+  });
+
+  kneeCenterWorld = (): Landmark => ({
+    x: (this.worldLandmark[25].x + this.worldLandmark[26].x) / 2,
+    y: (this.worldLandmark[25].y + this.worldLandmark[26].y) / 2,
+    z: (this.worldLandmark[25].z + this.worldLandmark[26].z) / 2,
+  });
+
+  footCenterWorld = (): Landmark => ({
+    x: (this.worldLandmark[27].x + this.worldLandmark[28].x) / 2,
+    y: (this.worldLandmark[27].y + this.worldLandmark[28].y) / 2,
+    z: (this.worldLandmark[27].z + this.worldLandmark[28].z) / 2,
+  });
+
+  kneesDistanceWorld = (): number => {
+    const kneeLeftWorld = this.worldLandmark[25];
+    const kneeRightWorld = this.worldLandmark[26];
+
+    return Math.sqrt((kneeLeftWorld.x - kneeRightWorld.x) ** 2 + (kneeLeftWorld.y - kneeRightWorld.y) ** 2);
+  };
+
+  handsDistanceWorld = (): number => {
+    const handLeftWorld = this.worldLandmark[15];
+    const handRightWorld = this.worldLandmark[16];
+
+    return Math.sqrt((handLeftWorld.x - handRightWorld.x) ** 2 + (handLeftWorld.y - handRightWorld.y) ** 2);
+  };
+
+  heightWorld = (): number => {
+    // TODO: デバッグ用に目と肩のラインで代替しているので、プロダクションではコメントアウトされている処理に戻す
+    // const neckWorld = this.neckCenterWorld();
+    // const footWorld = this.footCenterWorld();
+
+    // return Math.sqrt((neckWorld.x - footWorld.x) ** 2 + (neckWorld.y - footWorld.y) ** 2);
+    const neckWorld = this.neckCenterWorld();
+    const noseWorld = this.worldLandmark[0];
+
+    return Math.sqrt((neckWorld.x - noseWorld.x) ** 2 + (neckWorld.y - noseWorld.y) ** 2);
   };
 }
 
