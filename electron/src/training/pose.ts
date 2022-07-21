@@ -1,6 +1,7 @@
 import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList, Results } from '@mediapipe/pose';
 
 class Pose {
+  // REF: landmarkの定義はこちら（https://assets.st-note.com/production/uploads/images/46801007/picture_pc_d52f232d75a3595083c4f793a586a933.png）
   landmark: NormalizedLandmarkList;
   worldLandmark: LandmarkList;
 
@@ -36,11 +37,11 @@ class Pose {
     z: (this.landmark[27].z + this.landmark[28].z) / 2,
   });
 
-  kneesDistance = (): number => {
-    const kneeLeft = this.landmark[25];
-    const kneeRight = this.landmark[26];
+  shoulderDistance = (): number => {
+    const shoulderLeft = this.landmark[11];
+    const shoulderRight = this.landmark[12];
 
-    return Math.sqrt((kneeLeft.x - kneeRight.x) ** 2 + (kneeLeft.y - kneeRight.y) ** 2);
+    return Math.sqrt((shoulderLeft.x - shoulderRight.x) ** 2 + (shoulderLeft.y - shoulderRight.y) ** 2);
   };
 
   handsDistance = (): number => {
@@ -48,6 +49,20 @@ class Pose {
     const handRight = this.landmark[16];
 
     return Math.sqrt((handLeft.x - handRight.x) ** 2 + (handLeft.y - handRight.y) ** 2);
+  };
+
+  kneesDistance = (): number => {
+    const kneeLeft = this.landmark[25];
+    const kneeRight = this.landmark[26];
+
+    return Math.sqrt((kneeLeft.x - kneeRight.x) ** 2 + (kneeLeft.y - kneeRight.y) ** 2);
+  };
+
+  heelDistance = (): number => {
+    const heelLeft = this.landmark[29];
+    const heelRight = this.landmark[30];
+
+    return Math.sqrt((heelLeft.x - heelRight.x) ** 2 + (heelLeft.y - heelRight.y) ** 2);
   };
 
   height = (): number => {
@@ -89,18 +104,18 @@ class Pose {
     z: (this.worldLandmark[27].z + this.worldLandmark[28].z) / 2,
   });
 
-  kneesDistanceWorld = (): number => {
-    const kneeLeftWorld = this.worldLandmark[25];
-    const kneeRightWorld = this.worldLandmark[26];
-
-    return Math.sqrt((kneeLeftWorld.x - kneeRightWorld.x) ** 2 + (kneeLeftWorld.y - kneeRightWorld.y) ** 2);
-  };
-
   handsDistanceWorld = (): number => {
     const handLeftWorld = this.worldLandmark[15];
     const handRightWorld = this.worldLandmark[16];
 
     return Math.sqrt((handLeftWorld.x - handRightWorld.x) ** 2 + (handLeftWorld.y - handRightWorld.y) ** 2);
+  };
+
+  kneesDistanceWorld = (): number => {
+    const kneeLeftWorld = this.worldLandmark[25];
+    const kneeRightWorld = this.worldLandmark[26];
+
+    return Math.sqrt((kneeLeftWorld.x - kneeRightWorld.x) ** 2 + (kneeLeftWorld.y - kneeRightWorld.y) ** 2);
   };
 
   heightWorld = (): number => {
