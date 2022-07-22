@@ -8,7 +8,7 @@ import Webcam from 'react-webcam';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
 import playRepCountSound from '../coaching/voiceGuidance';
-import Pose from '../training/pose';
+import { heightInFrame, Pose } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
@@ -114,8 +114,8 @@ function Realtime(props: { doPlaySound: boolean }) {
 
     /* ここにprocessor.recv()の内容を書いていく */
     if ('poseLandmarks' in results) {
-      // mediapipeの推論結果を自作のPoseクラスに代入
-      const currentPose = new Pose(results);
+      // mediapipeの推論結果を自作のPose型に代入
+      const currentPose: Pose = { landmark: results.poseLandmarks, worldLandmark: results.poseWorldLandmarks };
 
       // レップの最初のフレームの場合
       if (repState.current.isFirstFrameInRep) {
@@ -123,14 +123,19 @@ function Realtime(props: { doPlaySound: boolean }) {
         startCaptureWebcam();
 
         // レップの最初の身長を記録
-        repState.current = setStandingHeight(repState.current, currentPose.height());
+        repState.current = setStandingHeight(repState.current, heightInFrame(currentPose));
 
         // レップの開始フラグをoffにする
         repState.current.isFirstFrameInRep = false;
       }
 
       // フォームを分析し、レップの状態を更新する
-      repState.current = checkIfRepFinish(repState.current, currentPose.height(), lowerThreshold, upperThreshold);
+      repState.current = checkIfRepFinish(
+        repState.current,
+        heightInFrame(currentPose),
+        lowerThreshold,
+        upperThreshold,
+      );
 
       // 現フレームの推定Poseをレップのフォームに追加
       rep.current = appendPoseToForm(rep.current, currentPose);
