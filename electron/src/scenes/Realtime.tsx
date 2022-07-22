@@ -217,7 +217,6 @@ function Realtime(props: { doPlaySound: boolean }) {
     if (typeof webcamRef.current !== 'undefined' && webcamRef.current !== null && webcamRef.current.video !== null) {
       const camera = new Camera(webcamRef.current.video, {
         onFrame: async () => {
-          // TODO
           if (screenShotRef.current === null || webcamRef.current === null || webcamRef.current.video === null) {
             return;
           }
@@ -238,7 +237,6 @@ function Realtime(props: { doPlaySound: boolean }) {
           screenShotCtx.rotate(90 * (Math.PI / 180));
           screenShotCtx.drawImage(webcamRef.current.video, 0, 0, screenShotElement.width, screenShotElement.height);
           screenShotCtx.restore();
-          // TODO
           await pose.send({ image: screenShotElement });
         },
         width: 480,

@@ -30,7 +30,7 @@ const barbellOnFootCenter: FormInstructionItem = {
     if (topPoseWrist === undefined || topPoseAnkle === undefined || topPoseFoot === undefined) {
       return true;
     }
-    // TODO: check if y is 0 at bottom of the frame
+    // XXX: y座標の向きを確認すること!!
     const isCleared = topPoseWrist.x <= (topPoseAnkle.x + topPoseFoot.x) / 2;
 
     return isCleared;
@@ -49,7 +49,6 @@ const barbellOnFootCenter: FormInstructionItem = {
     if (topPoseKnee === undefined || bottomPoseHip === undefined) {
       return true;
     }
-    // TODO: check if y is 0 at bottom of the frame
     const isCleared = bottomPoseHip.y <= topPoseKnee.y;
 
     return isCleared;
@@ -70,7 +69,6 @@ const barbellOnFootCenter: FormInstructionItem = {
       return true;
     }
 
-    // TODO: improve algorithm
     const isCleared = bottomPoseKneeDistance <= topPoseKneeDistance;
 
     return isCleared;
@@ -103,7 +101,6 @@ const barbellOnFootCenter: FormInstructionItem = {
     if (topPoseHeelDistance === undefined || topPoseShoulderDistance === undefined) {
       return true;
     }
-    // TODO: improve algorithm
     // 左右の踵の距離が肩幅の0.9倍以上1.1倍以下
     // if (bottomPoseHip.y <= topPoseKnee.y * 1.1 && bottomPoseHip.y >= topPoseKnee.y * 0.9) {
     // return true;
