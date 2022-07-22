@@ -9,7 +9,7 @@ export type FormInstructionItem = {
   readonly recommendMenu?: string[];
 };
 
-// REF: landmarkの定義はこちら（https://assets.st-note.com/production/uploads/images/46801007/picture_pc_d52f232d75a3595083c4f793a586a933.png）
+// REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
 // バーベルは足の中心の真上を移動
 const barbellOnFootCenter: FormInstructionItem = {

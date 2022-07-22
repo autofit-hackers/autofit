@@ -1,4 +1,53 @@
-import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
+import {
+  Landmark,
+  LandmarkConnectionArray,
+  LandmarkList,
+  NormalizedLandmark,
+  NormalizedLandmarkList,
+} from '@mediapipe/pose';
+
+// REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
+
+export const KINECT_POSE_CONNECTIONS: LandmarkConnectionArray = [
+  // 胴体
+  [0, 1],
+  [1, 2],
+  // 左腕
+  [2, 3],
+  [3, 4],
+  [4, 5],
+  [5, 6],
+  [6, 7],
+  [7, 8],
+  [8, 9],
+  [7, 10],
+  // 右腕
+  [2, 11],
+  [11, 12],
+  [12, 13],
+  [13, 14],
+  [14, 15],
+  [15, 16],
+  [14, 17],
+  // 左脚
+  [0, 18],
+  [18, 19],
+  [19, 20],
+  [20, 21],
+  // 右脚
+  [0, 22],
+  [22, 23],
+  [23, 24],
+  [24, 25],
+  // 首から顔
+  [2, 3],
+  [3, 26],
+  [26, 27],
+  [27, 28],
+  [28, 29],
+  [27, 30],
+  [30, 31],
+];
 
 export type Pose = {
   landmark: NormalizedLandmarkList;
