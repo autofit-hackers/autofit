@@ -1,18 +1,18 @@
-import { rmSync } from 'fs'
-import { join } from 'path'
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import electron from 'vite-plugin-electron'
-import pkg from './package.json'
+import react from '@vitejs/plugin-react';
+import { rmSync } from 'fs';
+import { join } from 'path';
+import { defineConfig } from 'vite';
+import electron from 'vite-plugin-electron';
+import pkg from './package.json';
 
-rmSync(join(__dirname, 'dist'), { recursive: true, force: true }) // v14.14.0
+rmSync(join(__dirname, 'dist'), { recursive: true, force: true }); // v14.14.0
 
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
     alias: {
       '@': join(__dirname, 'src'),
-      'styles': join(__dirname, 'src/assets/styles'),
+      styles: join(__dirname, 'src/assets/styles'),
     },
   },
   plugins: [
@@ -24,6 +24,8 @@ export default defineConfig({
           build: {
             sourcemap: false,
             outDir: 'dist/electron/main',
+            plugins: 'esbuild.plugins.js',
+            external: ['pg-native', 'ssh2'],
           },
         },
       },
@@ -37,7 +39,9 @@ export default defineConfig({
             // For debug
             sourcemap: 'inline',
             outDir: 'dist/electron/preload',
-          }
+            plugins: 'esbuild.plugins.js',
+            external: ['pg-native', 'ssh2'],
+          },
         },
       },
       // Enables use of Node.js API in the Electron-Renderer
@@ -48,4 +52,4 @@ export default defineConfig({
     host: pkg.env.VITE_DEV_SERVER_HOST,
     port: pkg.env.VITE_DEV_SERVER_PORT,
   },
-})
+});
