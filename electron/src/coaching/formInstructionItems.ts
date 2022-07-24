@@ -27,7 +27,10 @@ const barbellOnFootCenter: FormInstructionItem = {
     // TODO: マイフレームごとに書き換えること
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      throw new Error('topPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('topPose is undefined');
+
+      return true;
     }
     // 手首の中心をバーベルと推定して実行
     const topPoseWristCenter = midpointBetween(topPose.landmark[7], topPose.landmark[14]);
@@ -80,7 +83,10 @@ const squatDepth: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      throw new Error('bottomPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('bottomPose is undefined');
+
+      return true;
     }
     const bottomPoseKnee = midpointBetween(bottomPose.landmark[19], bottomPose.landmark[23]);
     // TODO: 十分に腰が下がっているかを判定可能か?
@@ -97,7 +103,10 @@ const kneeOut: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      throw new Error('bottomPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('bottomPose is undefined');
+
+      return true;
     }
     const bottomPoseLeftThighAngleZX = angleInZX(bottomPose.landmark[18], bottomPose.landmark[19]);
     const bottomPoseRightThighAngleZX = angleInZX(bottomPose.landmark[22], bottomPose.landmark[23]);
@@ -149,10 +158,16 @@ const backBent: FormInstructionItem = {
     const topPose = getTopPose(rep);
     const bottomPose = getBottomPose(rep);
     if (topPose === undefined) {
-      throw new Error('topPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('topPose is undefined');
+
+      return true;
     }
     if (bottomPose === undefined) {
-      throw new Error('bottomPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('bottomPose is undefined');
+
+      return true;
     }
     const topPosePelvisNavalAngleYZ = angleInYZ(topPose.landmark[0], topPose.landmark[1]);
     const topPoseNavalChestAngleYZ = angleInYZ(topPose.landmark[1], topPose.landmark[2]);
@@ -185,7 +200,10 @@ const backSlant: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      throw new Error('bottomPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('bottomPose is undefined');
+
+      return true;
     }
     const bottomPosePelvisNavalAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[1]);
     // const bottomPoseNavalChestAngleYZ = angleInYZ(bottomPose.landmark[1], bottomPose.landmark[2]);
@@ -216,7 +234,10 @@ const feetAngle: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      throw new Error('topPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('topPose is undefined');
+
+      return true;
     }
     const topPoseLeftFootAngleZX = angleInZX(topPose.landmark[20], topPose.landmark[21]);
     const topPoseRightFootAngleZX = angleInZX(topPose.landmark[24], topPose.landmark[25]);
@@ -254,10 +275,16 @@ const feetGround: FormInstructionItem = {
     const topPose = getTopPose(rep);
     const bottomPose = getBottomPose(rep);
     if (topPose === undefined) {
-      throw new Error('topPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('topPose is undefined');
+
+      return true;
     }
     if (bottomPose === undefined) {
-      throw new Error('bottomPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('bottomPose is undefined');
+
+      return true;
     }
     const LeftAnkleMovedDistance = Math.abs(distanceInZ(topPose.landmark[20], bottomPose.landmark[20]));
     const RightAnkleMovedDistance = Math.abs(distanceInZ(topPose.landmark[24], bottomPose.landmark[24]));
@@ -298,7 +325,10 @@ const gazeDirection: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      throw new Error('bottomPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('bottomPose is undefined');
+
+      return true;
     }
     const bottomPoseNeckHeadAngleYZ = angleInYZ(bottomPose.landmark[3], bottomPose.landmark[26]);
     const bottomPoseEyes = midpointBetween(bottomPose.landmark[28], bottomPose.landmark[30]);
@@ -326,7 +356,10 @@ const feetWidth: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      throw new Error('topPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('topPose is undefined');
+
+      return true;
     }
     const topPoseLeftShoulderAnkle = Math.abs(distanceInX(topPose.landmark[5], topPose.landmark[20]));
     const topPoseRightShoulderAnkle = Math.abs(distanceInX(topPose.landmark[12], topPose.landmark[24]));
@@ -355,7 +388,10 @@ const barbellPosition: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      throw new Error('topPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('topPose is undefined');
+
+      return true;
     }
     const topPoseWristCenter = midpointBetween(topPose.landmark[7], topPose.landmark[14]);
 
@@ -385,7 +421,10 @@ const kneePosition: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      throw new Error('bottomPose is undefined');
+      // eslint-disable-next-line no-console
+      console.log('bottomPose is undefined');
+
+      return true;
     }
     const bottomPoseLeftKneeFootZX = distanceInZX(bottomPose.landmark[21], bottomPose.landmark[19]);
     const bottomPoseRightKneeFootZX = distanceInZX(bottomPose.landmark[25], bottomPose.landmark[23]);

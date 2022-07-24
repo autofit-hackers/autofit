@@ -21,12 +21,16 @@ export default function BodyTrack2d() {
       pixelArray[i + 2] = newPixelData[i];
       pixelArray[i + 3] = 0xff;
     }
+    console.log('imagedata', canvasImageData.width, canvasImageData.height);
     ctx.putImageData(canvasImageData, 0, 0);
   };
 
   // 毎kinect更新時に回っている関数
   const onResults = useCallback(
-    (data: { colorImageFrame: { width: number; height: number }; bodyFrame: { bodies: any[] } }) => {
+    (data: {
+      colorImageFrame: { imageData: ImageData; width: number; height: number };
+      bodyFrame: { bodies: any[] };
+    }) => {
       if (canvasRef.current === null) {
         throw new Error('canvasRef is null');
       }
@@ -34,13 +38,14 @@ export default function BodyTrack2d() {
       if (canvasCtx === null) {
         throw new Error('canvasCtx is null');
       }
+      console.log('canvas', canvasRef.current.width, canvasRef.current.height);
       if (outputImageData === null && data.colorImageFrame.width > 0) {
         canvasRef.current.height = data.colorImageFrame.height;
         outputImageData = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       }
       if (outputImageData !== null) {
         renderBGRA32ColorFrame(canvasCtx, outputImageData, data.colorImageFrame);
-        // canvasCtx.putImageData(outputImageData, 0, 0);
+        // canvasCtx.putImageData(data.colorImageFrame.imageData, 0, 0);
       }
       if (data.bodyFrame.bodies.length > 0) {
         // render the skeleton joints on top of the depth feed
@@ -96,6 +101,8 @@ export default function BodyTrack2d() {
       <canvas
         ref={canvasRef}
         className="output_canvas"
+        width="1280"
+        height="720"
         style={{
           position: 'absolute',
           marginLeft: 'auto',
@@ -104,8 +111,8 @@ export default function BodyTrack2d() {
           right: 0,
           textAlign: 'center',
           zIndex: 2,
-          width: 'auto',
-          height: 'auto',
+          width: 1280,
+          height: 720,
         }}
       />
     </>
