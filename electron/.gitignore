@@ -39,6 +39,7 @@ npm-debug.log.*
 *.sass.d.ts
 *.scss.d.ts
 
+# kinect-azure
 *.dll
 *.onnx
 *.exe

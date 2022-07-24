@@ -1,15 +1,13 @@
-import { useState } from 'react';
+import MiniDrawer from './ui_component/SideBar';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div>
-      <p>Hello Electron + Vite + React!</p>
-      <p>
-        <button onClick={() => setCount((count) => count + 1)}>count is: {count}</button>
-      </p>
-    </div>
+    <>
+      <div>
+        <p>Hello Electron + Vite + React!</p>
+      </div>
+      <MiniDrawer />
+    </>
   );
 }
 
