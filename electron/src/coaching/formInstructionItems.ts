@@ -1,4 +1,12 @@
-import { angleInYZ, angleInZX, distanceBetweenX, distanceBetweenXYZ, distanceBetweenZ, distanceBetweenZX, midpointBetween } from '../training/pose';
+import {
+  angleInYZ,
+  angleInZX,
+  distanceBetweenX,
+  distanceBetweenXYZ,
+  distanceBetweenZ,
+  distanceBetweenZX,
+  midpointBetween,
+} from '../training/pose';
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
 
 export type FormInstructionItem = {
@@ -14,14 +22,14 @@ export type FormInstructionItem = {
 // バーベルは足の中心の真上を移動
 const barbellOnFootCenter: FormInstructionItem = {
   text: 'Barbel on foot center',
-  // 手首の中心をバーベルと推定して実行
-  // 毎フレーム(サンプリングしても良い)
   evaluate: (rep: Rep) => {
+    // 毎フレーム(サンプリングしても良い)
     // TODO: マイフレームごとに書き換えること
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
       throw new Error('topPose is undefined');
     }
+    // 手首の中心をバーベルと推定して実行
     const topPoseWristCenter = midpointBetween(topPose.landmark[7], topPose.landmark[14]);
     const topPoseAnkleCenter = midpointBetween(topPose.landmark[20], topPose.landmark[24]);
     const topPoseFootCenter = midpointBetween(topPose.landmark[21], topPose.landmark[25]);
@@ -41,19 +49,31 @@ const barbellOnFootCenter: FormInstructionItem = {
     // TODO: acceptableErrorについて検証
     // TODO: 足の中心を表せているかについて検証
     const acceptableError = 0.1;
-    if (topPoseWristCenter.x >= (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 + topDistanceRightFoot * acceptableError) {
+    if (
+      topPoseWristCenter.x >=
+      (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 + topDistanceRightFoot * acceptableError
+    ) {
       //バーベルが左に寄っている
       return false;
     }
-    if (topPoseWristCenter.x <= (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 - topDistanceRightFoot * acceptableError) {
+    if (
+      topPoseWristCenter.x <=
+      (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 - topDistanceRightFoot * acceptableError
+    ) {
       //バーベルが右に寄っている
       return false;
     }
-    if (topPoseWristCenter.z <= (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 - topDistanceRightFoot * acceptableError) {
+    if (
+      topPoseWristCenter.z <=
+      (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 - topDistanceRightFoot * acceptableError
+    ) {
       //バーベルが前すぎる
       return false;
     }
-    if (topPoseWristCenter.z >= (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 + topDistanceRightFoot * acceptableError) {
+    if (
+      topPoseWristCenter.z >=
+      (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 + topDistanceRightFoot * acceptableError
+    ) {
       //バーベルが後ろすぎる
       return false;
     }
@@ -72,7 +92,6 @@ const squatDepth: FormInstructionItem = {
       throw new Error('bottomPose is undefined');
     }
     const bottomPoseKnee = midpointBetween(bottomPose.landmark[19], bottomPose.landmark[23]);
-
     // キーフレーム検出ができていなかった場合はクリアとする
     if (bottomPoseKnee === undefined) {
       return true;
@@ -109,19 +128,23 @@ const kneeOut: FormInstructionItem = {
 
     // TODO: acceptableErrorについて検証
     const acceptableError = 0.1;
+    //左右の足がどのようにずれているのか，関数を分けてもよい
     if (
-      Math.abs(bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX) <=
+      Math.abs(bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX) >=
       acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
     ) {
-      if (
-        Math.abs(bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX) <=
-        acceptableError * Math.abs(bottomPoseRightFootAngleZX)
-      ) {
-        return true;
-      }
+      // 左太ももと左足が同じ方向を向いていない
+      return false;
+    }
+    if (
+      Math.abs(bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX) >=
+      acceptableError * Math.abs(bottomPoseRightFootAngleZX)
+    ) {
+      // 右太ももと右足が同じ方向を向いていない
+      return false;
     }
 
-    return false;
+    return true;
   },
 };
 
@@ -176,7 +199,6 @@ const backBent: FormInstructionItem = {
   },
 };
 
-
 // 背中の傾き
 // bottomで判定
 const backSlant: FormInstructionItem = {
@@ -202,21 +224,19 @@ const backSlant: FormInstructionItem = {
     }
 
     // TODO: acceptableErrorについて検証
-    // TODO: 一旦，後回し
-    // const acceptableError = 0.1;
-    // if (
-    //   Math.abs(bottomPoseLeftThighAngle - bottomPoseLeftFootAngle) <=
-    //   acceptableError * Math.abs(bottomPoseLeftFootAngle)
-    // ) {
-    //   if (
-    //     Math.abs(bottomPoseRightThighAngle - bottomPoseRightFootAngle) <=
-    //     acceptableError * Math.abs(bottomPoseRightFootAngle)
-    //   ) {
-    //     return true;
-    //   }
-    // }
+    // TODO: 一つずつ書く
+    // TODO: それぞれの部位で，傾きすぎ，傾かなさすぎを判定する関数or返し方を作成する
+    const acceptableError = 0.1;
+    if (bottomPosePelvisNavalAngleYZ >= ((1 + acceptableError) * Math.PI * 45) / 180) {
+      // 傾きすぎ
+      return false;
+    }
+    if (bottomPosePelvisNavalAngleYZ <= ((1 - acceptableError) * Math.PI * 45) / 180) {
+      // 傾かなさすぎ
+      return false;
+    }
 
-    return false;
+    return true;
   },
 };
 
@@ -240,26 +260,32 @@ const feetAngle: FormInstructionItem = {
     // TODO: acceptableErrorについて検証
     // TODO: 体の前後を見分けるために，absでなく，正負を残しても良い
     const acceptableError = 0.1;
-    if (Math.abs(topPoseLeftFootAngleZX) <= ((1 + acceptableError) * Math.PI * 30) / 180) {
-      if (Math.abs(topPoseLeftFootAngleZX) <= ((1 - acceptableError) * Math.PI * 30) / 180) {
-        if (Math.abs(topPoseRightFootAngleZX) <= ((1 + acceptableError) * Math.PI * 30) / 180) {
-          if (Math.abs(topPoseRightFootAngleZX) <= ((1 - acceptableError) * Math.PI * 30) / 180) {
-            return true;
-          }
-        }
-      }
+    if (Math.abs(topPoseLeftFootAngleZX) >= ((1 + acceptableError) * Math.PI * 30) / 180) {
+      //左のつま先の向く方向が30度を大きく超えている
+      return false;
+    }
+    if (Math.abs(topPoseLeftFootAngleZX) <= ((1 - acceptableError) * Math.PI * 30) / 180) {
+      //左のつま先の向く方向が30度を大きく下回っている
+      return false;
+    }
+    if (Math.abs(topPoseRightFootAngleZX) >= ((1 + acceptableError) * Math.PI * 30) / 180) {
+      //右のつま先の向く方向が30度を大きく超えている
+      return false;
+    }
+    if (Math.abs(topPoseRightFootAngleZX) <= ((1 - acceptableError) * Math.PI * 30) / 180) {
+      //右のつま先の向く方向が30度を大きく下回っている
+      return false;
     }
 
-    return false;
+    return true;
   },
 };
 
 // 足のうらがべったり地面につく
-// topとbottomを比較
 // TODO: 角度で比較するか，位置で比較するかを検討
 const feetGround: FormInstructionItem = {
   text: 'Feet ground',
-  // topで判定する
+  // topとbottomを比較
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
     const bottomPose = getBottomPose(rep);
@@ -287,18 +313,26 @@ const feetGround: FormInstructionItem = {
     }
 
     // TODO: acceptableErrorについて検証
+    // topPoseは足がべったりと地面についていると想定しているが，良いのか
     const acceptableError = 0.1;
-    if (LeftAnkleChange <= acceptableError * topPoseRightFoot) {
-      if (RightAnkleChange <= acceptableError * topPoseRightFoot) {
-        if (LeftFootChange <= acceptableError * topPoseRightFoot) {
-          if (RightFootChange <= acceptableError * topPoseRightFoot) {
-            return true;
-          }
-        }
-      }
+    if (LeftAnkleChange >= acceptableError * topPoseRightFoot) {
+      // 左足首の位置が変化した
+      return false;
+    }
+    if (RightAnkleChange >= acceptableError * topPoseRightFoot) {
+      //右足首の位置が変化した
+      return false;
+    }
+    if (LeftFootChange >= acceptableError * topPoseRightFoot) {
+      //左足先の位置が変化した
+      return false;
+    }
+    if (RightFootChange >= acceptableError * topPoseRightFoot) {
+      //右足先の位置が変化した
+      return false;
     }
 
-    return false;
+    return true;
   },
 };
 
@@ -315,19 +349,20 @@ const gazeDirection: FormInstructionItem = {
     const bottomPoseNeckHeadAngleYZ = angleInYZ(bottomPose.landmark[3], bottomPose.landmark[26]);
     const bottomPoseEyes = midpointBetween(bottomPose.landmark[28], bottomPose.landmark[30]);
     // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      bottomPoseNeckHeadAngleYZ === undefined ||
-      bottomPoseEyes === undefined
-    ) {
+    if (bottomPoseNeckHeadAngleYZ === undefined || bottomPoseEyes === undefined) {
       return true;
     }
-
     // TODO: 視線の向きが適当かについて検証
-    const gazeTarget = bottomPoseEyes.y * Math.abs(Math.tan(bottomPoseNeckHeadAngleYZ))
-    if (gazeTarget >= 120 && gazeTarget <= 150) {
-      return true;
+    const gazeTarget = bottomPoseEyes.y * Math.abs(Math.tan(bottomPoseNeckHeadAngleYZ));
+    if (gazeTarget <= 120) {
+      // 視線が1.2mより手前を向いている
+      return false;
     }
-    return false;
+    if (gazeTarget >= 150) {
+      // 視線が1.5mより置くを向いている．顎を引き，視線を1.2m~1.5mにする
+      return false;
+    }
+    return true;
   },
 };
 
@@ -356,13 +391,16 @@ const feetWidth: FormInstructionItem = {
 
     // TODO: acceptableErrorについて検証
     const acceptableError = 0.1;
-    if (topPoseLeftShoulderAnkle <= acceptableError * topPoseShoulder) {
-      if (topPoseRightShoulderAnkle <= acceptableError * topPoseShoulder) {
-        return true;
-      }
+    if (topPoseLeftShoulderAnkle >= acceptableError * topPoseShoulder) {
+      // 左肩と左足の相対位置がおかしい
+      return false;
+    }
+    if (topPoseRightShoulderAnkle >= acceptableError * topPoseShoulder) {
+      // 右肩と右足の相対位置がおかしい
+      return false;
     }
 
-    return false;
+    return true;
   },
 };
 
@@ -382,11 +420,7 @@ const barbellPosition: FormInstructionItem = {
     const topDistanceRightFoot = distanceBetweenXYZ(topPose.landmark[24], topPose.landmark[25]);
 
     // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      topPoseWristCenter === undefined ||
-      topPose.landmark[2] === undefined ||
-      topDistanceRightFoot === undefined
-    ) {
+    if (topPoseWristCenter === undefined || topPose.landmark[2] === undefined || topDistanceRightFoot === undefined) {
       return true;
     }
     // TODO: acceptableErrorについて検証
@@ -395,8 +429,7 @@ const barbellPosition: FormInstructionItem = {
     if (topPoseWristCenter.y <= topPose.landmark[2].y + topDistanceRightFoot * acceptableErrorUnder) {
       //バーベルが肩甲棘と比べ，下すぎる
       return false;
-    }
-    else if (topPoseWristCenter.y >= topPose.landmark[2].y + topDistanceRightFoot * acceptableErrorUp) {
+    } else if (topPoseWristCenter.y >= topPose.landmark[2].y + topDistanceRightFoot * acceptableErrorUp) {
       //バーベルが肩甲棘と比べ，上すぎる
       return false;
     }
@@ -416,8 +449,12 @@ const kneePosition: FormInstructionItem = {
     }
     const bottomPoseLeftKneeFootZX = distanceBetweenZX(bottomPose.landmark[21], bottomPose.landmark[19]);
     const bottomPoseRightKneeFootZX = distanceBetweenZX(bottomPose.landmark[25], bottomPose.landmark[23]);
-    const bottomPoseLeftKneeFootDirection = Math.sign(distanceBetweenZ(bottomPose.landmark[21], bottomPose.landmark[19]));
-    const bottomPoseRightKneeFootDirection = Math.sign(distanceBetweenZ(bottomPose.landmark[25], bottomPose.landmark[23]));
+    const bottomPoseLeftKneeFootDirection = Math.sign(
+      distanceBetweenZ(bottomPose.landmark[21], bottomPose.landmark[19]),
+    );
+    const bottomPoseRightKneeFootDirection = Math.sign(
+      distanceBetweenZ(bottomPose.landmark[25], bottomPose.landmark[23]),
+    );
     // キーフレーム検出ができていなかった場合はクリアとする
     if (
       bottomPoseLeftKneeFootZX === undefined ||
@@ -430,7 +467,7 @@ const kneePosition: FormInstructionItem = {
 
     // TODO: 膝の位置を検討
     // TODO: 許容されるずれについて検討．将来的には骨格から値を得たい
-    const acceptableKneeAhead = - 10;
+    const acceptableKneeAhead = -10;
     const acceptableKneeBack = 10;
     if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection <= acceptableKneeAhead) {
       //左膝が前に出すぎ
@@ -453,11 +490,8 @@ const kneePosition: FormInstructionItem = {
   },
 };
 
-
-
 // ラックの高さ
 // TopとButtomだけでは厳しい
-
 
 // 指導項目を追加したらここにもかく
 export const formInstructionItems: FormInstructionItem[] = [
