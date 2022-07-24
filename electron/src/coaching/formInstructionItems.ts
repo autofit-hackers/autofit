@@ -33,8 +33,8 @@ const barbellOnFootCenter: FormInstructionItem = {
     const topPoseWristCenter = midpointBetween(topPose.landmark[7], topPose.landmark[14]);
     const topPoseAnkleCenter = midpointBetween(topPose.landmark[20], topPose.landmark[24]);
     const topPoseFootCenter = midpointBetween(topPose.landmark[21], topPose.landmark[25]);
-    //誤差の許容値を得るために使用
-    //TODO 動作中，一定に近い値をとる場所を特定
+    // 誤差の許容値を得るために使用
+    // TODO 動作中，一定に近い値をとる場所を特定
     const topDistanceRightFoot = distanceBetweenXYZ(topPose.landmark[24], topPose.landmark[25]);
 
     // キーフレーム検出ができていなかった場合はクリアとする
@@ -53,28 +53,28 @@ const barbellOnFootCenter: FormInstructionItem = {
       topPoseWristCenter.x >=
       (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 + topDistanceRightFoot * acceptableError
     ) {
-      //バーベルが左に寄っている
+      // バーベルが左に寄っている
       return false;
     }
     if (
       topPoseWristCenter.x <=
       (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 - topDistanceRightFoot * acceptableError
     ) {
-      //バーベルが右に寄っている
+      // バーベルが右に寄っている
       return false;
     }
     if (
       topPoseWristCenter.z <=
       (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 - topDistanceRightFoot * acceptableError
     ) {
-      //バーベルが前すぎる
+      // バーベルが前すぎる
       return false;
     }
     if (
       topPoseWristCenter.z >=
       (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 + topDistanceRightFoot * acceptableError
     ) {
-      //バーベルが後ろすぎる
+      // バーベルが後ろすぎる
       return false;
     }
 
@@ -128,7 +128,7 @@ const kneeOut: FormInstructionItem = {
 
     // TODO: acceptableErrorについて検証
     const acceptableError = 0.1;
-    //左右の足がどのようにずれているのか，関数を分けてもよい
+    // 左右の足がどのようにずれているのか，関数を分けてもよい
     if (
       Math.abs(bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX) >=
       acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
@@ -261,19 +261,19 @@ const feetAngle: FormInstructionItem = {
     // TODO: 体の前後を見分けるために，absでなく，正負を残しても良い
     const acceptableError = 0.1;
     if (Math.abs(topPoseLeftFootAngleZX) >= ((1 + acceptableError) * Math.PI * 30) / 180) {
-      //左のつま先の向く方向が30度を大きく超えている
+      // 左のつま先の向く方向が30度を大きく超えている
       return false;
     }
     if (Math.abs(topPoseLeftFootAngleZX) <= ((1 - acceptableError) * Math.PI * 30) / 180) {
-      //左のつま先の向く方向が30度を大きく下回っている
+      // 左のつま先の向く方向が30度を大きく下回っている
       return false;
     }
     if (Math.abs(topPoseRightFootAngleZX) >= ((1 + acceptableError) * Math.PI * 30) / 180) {
-      //右のつま先の向く方向が30度を大きく超えている
+      // 右のつま先の向く方向が30度を大きく超えている
       return false;
     }
     if (Math.abs(topPoseRightFootAngleZX) <= ((1 - acceptableError) * Math.PI * 30) / 180) {
-      //右のつま先の向く方向が30度を大きく下回っている
+      // 右のつま先の向く方向が30度を大きく下回っている
       return false;
     }
 
@@ -320,15 +320,15 @@ const feetGround: FormInstructionItem = {
       return false;
     }
     if (RightAnkleChange >= acceptableError * topPoseRightFoot) {
-      //右足首の位置が変化した
+      // 右足首の位置が変化した
       return false;
     }
     if (LeftFootChange >= acceptableError * topPoseRightFoot) {
-      //左足先の位置が変化した
+      // 左足先の位置が変化した
       return false;
     }
     if (RightFootChange >= acceptableError * topPoseRightFoot) {
-      //右足先の位置が変化した
+      // 右足先の位置が変化した
       return false;
     }
 
@@ -337,7 +337,7 @@ const feetGround: FormInstructionItem = {
 };
 
 // 視線
-//首と顔から顔の傾きをとっているが，首と両耳の中心でもよいかもしれない
+// 首と顔から顔の傾きをとっているが，首と両耳の中心でもよいかもしれない
 const gazeDirection: FormInstructionItem = {
   text: 'Gaze direction',
   // bottomで判定する
@@ -362,6 +362,7 @@ const gazeDirection: FormInstructionItem = {
       // 視線が1.5mより置くを向いている．顎を引き，視線を1.2m~1.5mにする
       return false;
     }
+
     return true;
   },
 };
@@ -415,8 +416,8 @@ const barbellPosition: FormInstructionItem = {
     }
     const topPoseWristCenter = midpointBetween(topPose.landmark[7], topPose.landmark[14]);
 
-    //誤差の許容値を得るために使用
-    //TODO 動作中，一定に近い値をとる場所を特定
+    // 誤差の許容値を得るために使用
+    // TODO 動作中，一定に近い値をとる場所を特定
     const topDistanceRightFoot = distanceBetweenXYZ(topPose.landmark[24], topPose.landmark[25]);
 
     // キーフレーム検出ができていなかった場合はクリアとする
@@ -427,10 +428,11 @@ const barbellPosition: FormInstructionItem = {
     const acceptableErrorUnder = 0.1;
     const acceptableErrorUp = 0.1;
     if (topPoseWristCenter.y <= topPose.landmark[2].y + topDistanceRightFoot * acceptableErrorUnder) {
-      //バーベルが肩甲棘と比べ，下すぎる
+      // バーベルが肩甲棘と比べ，下すぎる
       return false;
-    } else if (topPoseWristCenter.y >= topPose.landmark[2].y + topDistanceRightFoot * acceptableErrorUp) {
-      //バーベルが肩甲棘と比べ，上すぎる
+    }
+    if (topPoseWristCenter.y >= topPose.landmark[2].y + topDistanceRightFoot * acceptableErrorUp) {
+      // バーベルが肩甲棘と比べ，上すぎる
       return false;
     }
 
@@ -470,19 +472,19 @@ const kneePosition: FormInstructionItem = {
     const acceptableKneeAhead = -10;
     const acceptableKneeBack = 10;
     if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection <= acceptableKneeAhead) {
-      //左膝が前に出すぎ
+      // 左膝が前に出すぎ
       return false;
     }
     if (bottomPoseRightKneeFootZX * bottomPoseRightKneeFootDirection <= acceptableKneeAhead) {
-      //右膝が前に出すぎ
+      // 右膝が前に出すぎ
       return false;
     }
     if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection >= acceptableKneeBack) {
-      //左膝が後すぎる
+      // 左膝が後すぎる
       return false;
     }
     if (bottomPoseRightKneeFootZX * bottomPoseRightKneeFootDirection >= acceptableKneeBack) {
-      //左膝が後ろすぎる
+      // 左膝が後ろすぎる
       return false;
     }
 

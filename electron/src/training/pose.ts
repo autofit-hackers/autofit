@@ -3,7 +3,7 @@ import {
   LandmarkConnectionArray,
   LandmarkList,
   NormalizedLandmark,
-  NormalizedLandmarkList
+  NormalizedLandmarkList,
 } from '@mediapipe/pose';
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -54,17 +54,17 @@ export type Pose = {
   worldLandmark: LandmarkList;
 };
 
-//正負あり
+// 正負あり
 export const distanceBetweenX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  (p2.x - p1.x);
+  p2.x - p1.x;
 
-  //正負あり
+// 正負あり
 export const distanceBetweenY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  (p2.y - p1.y);
+  p2.y - p1.y;
 
-  //正負あり
+// 正負あり
 export const distanceBetweenZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  (p2.z - p1.z);
+  p2.z - p1.z;
 
 export const distanceBetweenXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
