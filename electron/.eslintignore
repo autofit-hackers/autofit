@@ -42,5 +42,4 @@ public/
 *.config.js
 .*lintrc.js
 
-*html
-*
+# tmp

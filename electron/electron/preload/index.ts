@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable consistent-return */
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise((resolve) => {
     if (condition.includes(document.readyState)) {
@@ -83,37 +88,10 @@ function useLoading() {
 // ----------------------------------------------------------------------
 
 const { appendLoading, removeLoading } = useLoading();
-domReady().then(appendLoading);
+void domReady().then(appendLoading);
 
 window.onmessage = (ev) => {
   ev.data.payload === 'removeLoading' && removeLoading();
 };
 
 setTimeout(removeLoading, 4999);
-
-// ----------------------------------------------------------------------
-const { ipcRenderer } = require('electron');
-
-ipcRenderer.on('close-kinect', (event, message) => {
-  if (window.kinect) {
-    // properly close the kinect and send a message back to the renderer
-    console.log('close the kinect');
-    window.kinect
-      .stopListening()
-      .then(() => {
-        console.log('kinect closed');
-      })
-      .catch((e) => {
-        console.error(e);
-      })
-      .then(() => {
-        window.kinect.destroyTracker();
-        window.kinect.stopCameras();
-        window.kinect.close();
-        event.sender.send('kinect closed');
-      });
-  } else {
-    console.log('no kinect exposed');
-    event.sender.send('kinect closed');
-  }
-});

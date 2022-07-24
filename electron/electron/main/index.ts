@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/require-await */
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { release } from 'os';
 import { join } from 'path';
@@ -13,9 +17,9 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0);
 }
 
-process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
 
-export const ROOT_PATH = {
+const ROOT_PATH = {
   // /dist
   dist: join(__dirname, '../..'),
   // /dist or /public
@@ -26,7 +30,7 @@ let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = join(__dirname, '../preload/index.js');
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin
-const url = `http://${process.env['VITE_DEV_SERVER_HOST']}:${process.env['VITE_DEV_SERVER_PORT']}`;
+const url = `http://${process.env.VITE_DEV_SERVER_HOST}:${process.env.VITE_DEV_SERVER_PORT}`;
 const indexHtml = join(ROOT_PATH.dist, 'index.html');
 
 async function createWindow() {
@@ -40,10 +44,11 @@ async function createWindow() {
     },
   });
 
+  win.webContents.openDevTools({ mode: 'detach' });
   if (app.isPackaged) {
-    win.loadFile(indexHtml);
+    void win.loadFile(indexHtml);
   } else {
-    win.loadURL(url);
+    void win.loadURL(url);
     // win.webContents.openDevTools()
   }
 
@@ -54,12 +59,13 @@ async function createWindow() {
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https:')) shell.openExternal(url);
+    if (url.startsWith('https:')) void shell.openExternal(url);
+
     return { action: 'deny' };
   });
 }
 
-app.whenReady().then(createWindow);
+void app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   win = null;
@@ -79,7 +85,7 @@ app.on('activate', () => {
   if (allWindows.length) {
     allWindows[0].focus();
   } else {
-    createWindow();
+    void createWindow();
   }
 });
 
@@ -92,9 +98,11 @@ ipcMain.handle('open-win', (event, arg) => {
   });
 
   if (app.isPackaged) {
-    childWindow.loadFile(indexHtml, { hash: arg });
+    void childWindow.loadFile(indexHtml, { hash: arg });
   } else {
-    childWindow.loadURL(`${url}/#${arg}`);
+    void childWindow.loadURL(`${url}/#${arg}`);
     // childWindow.webContents.openDevTools({ mode: "undocked", activate: true })
   }
 });
+
+export default ROOT_PATH;

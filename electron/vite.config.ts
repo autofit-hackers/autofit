@@ -15,6 +15,9 @@ export default defineConfig({
       styles: join(__dirname, 'src/assets/styles'),
     },
   },
+  optimizeDeps: {
+    exclude: ['kinect-azure'],
+  },
   plugins: [
     react(),
     electron({
