@@ -36,7 +36,7 @@ export default function BodyTrack2d() {
       }
       if (outputImageData === null && data.colorImageFrame.width > 0) {
         canvasRef.current.height = data.colorImageFrame.height;
-        outputImageData = canvasCtx.createImageData(canvasRef.current.width, canvasRef.current.height);
+        outputImageData = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       }
       if (outputImageData !== null) {
         renderBGRA32ColorFrame(canvasCtx, outputImageData, data.colorImageFrame);
@@ -78,6 +78,8 @@ export default function BodyTrack2d() {
       });
 
       kinect.createTracker({
+        // TODO: use GPU if available otherwise use CPU
+        // processing_mode: KinectAzure.K4ABT_TRACKER_PROCESSING_MODE_CPU,
         processing_mode: KinectAzure.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA,
       });
 
@@ -102,8 +104,8 @@ export default function BodyTrack2d() {
           right: 0,
           textAlign: 'center',
           zIndex: 2,
-          width: 1200,
-          height: 720,
+          width: 'auto',
+          height: 'auto',
         }}
       />
     </>
