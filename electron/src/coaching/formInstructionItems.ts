@@ -1,10 +1,10 @@
 import {
   angleInYZ,
   angleInZX,
-  distanceBetweenX,
-  distanceBetweenXYZ,
-  distanceBetweenZ,
-  distanceBetweenZX,
+  distanceInX,
+  distanceInXYZ,
+  distanceInZ,
+  distanceInZX,
   midpointBetween,
 } from '../training/pose';
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
@@ -35,19 +35,10 @@ const barbellOnFootCenter: FormInstructionItem = {
     const topPoseFootCenter = midpointBetween(topPose.landmark[21], topPose.landmark[25]);
     // 誤差の許容値を得るために使用
     // TODO 動作中，一定に近い値をとる場所を特定
-    const topDistanceRightFoot = distanceBetweenXYZ(topPose.landmark[24], topPose.landmark[25]);
-
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      topPoseWristCenter === undefined ||
-      topPoseAnkleCenter === undefined ||
-      topPoseFootCenter === undefined ||
-      topDistanceRightFoot === undefined
-    ) {
-      return true;
-    }
+    const topDistanceRightFoot = distanceInXYZ(topPose.landmark[24], topPose.landmark[25]);
     // TODO: acceptableErrorについて検証
     // TODO: 足の中心を表せているかについて検証
+    // TODO: 関数を分ける
     const acceptableError = 0.1;
     if (
       topPoseWristCenter.x >=
@@ -92,10 +83,6 @@ const squatDepth: FormInstructionItem = {
       throw new Error('bottomPose is undefined');
     }
     const bottomPoseKnee = midpointBetween(bottomPose.landmark[19], bottomPose.landmark[23]);
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (bottomPoseKnee === undefined) {
-      return true;
-    }
     // TODO: 十分に腰が下がっているかを判定可能か?
     const isCleared = bottomPose.landmark[0].y <= bottomPoseKnee.y;
 
@@ -116,29 +103,34 @@ const kneeOut: FormInstructionItem = {
     const bottomPoseRightThighAngleZX = angleInZX(bottomPose.landmark[22], bottomPose.landmark[23]);
     const bottomPoseLeftFootAngleZX = angleInZX(bottomPose.landmark[20], bottomPose.landmark[21]);
     const bottomPoseRightFootAngleZX = angleInZX(bottomPose.landmark[24], bottomPose.landmark[25]);
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      bottomPoseLeftThighAngleZX === undefined ||
-      bottomPoseRightThighAngleZX === undefined ||
-      bottomPoseLeftFootAngleZX === undefined ||
-      bottomPoseRightFootAngleZX === undefined
-    ) {
-      return true;
-    }
 
     // TODO: acceptableErrorについて検証
     const acceptableError = 0.1;
-    // 左右の足がどのようにずれているのか，関数を分けてもよい
+    // TODO: 左右の足がどのようにずれているのか，関数を分ける
     if (
-      Math.abs(bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX) >=
+      bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX >=
       acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
     ) {
       // 左太ももと左足が同じ方向を向いていない
       return false;
     }
     if (
-      Math.abs(bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX) >=
+      bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX <=
+      -acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
+    ) {
+      // 左太ももと左足が同じ方向を向いていない
+      return false;
+    }
+    if (
+      bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX >=
       acceptableError * Math.abs(bottomPoseRightFootAngleZX)
+    ) {
+      // 右太ももと右足が同じ方向を向いていない
+      return false;
+    }
+    if (
+      bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX <=
+      -acceptableError * Math.abs(bottomPoseRightFootAngleZX)
     ) {
       // 右太ももと右足が同じ方向を向いていない
       return false;
@@ -164,25 +156,12 @@ const backBent: FormInstructionItem = {
     }
     const topPosePelvisNavalAngleYZ = angleInYZ(topPose.landmark[0], topPose.landmark[1]);
     const topPoseNavalChestAngleYZ = angleInYZ(topPose.landmark[1], topPose.landmark[2]);
-    const topPoseChestNeckAngleYZ = angleInYZ(topPose.landmark[2], topPose.landmark[3]);
-    const topPosePelvisNeckAngleYZ = angleInYZ(topPose.landmark[0], topPose.landmark[3]);
-    const bottomPosePelvisNavalAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[1]);
-    const bottomPoseNavalChestAngleYZ = angleInYZ(bottomPose.landmark[1], bottomPose.landmark[2]);
-    const bottomPoseChestNeckAngleYZ = angleInYZ(bottomPose.landmark[2], bottomPose.landmark[3]);
-    const bottomPosePelvisNeckAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[3]);
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      topPosePelvisNavalAngleYZ === undefined ||
-      topPoseNavalChestAngleYZ === undefined ||
-      topPoseChestNeckAngleYZ === undefined ||
-      topPosePelvisNeckAngleYZ === undefined ||
-      bottomPosePelvisNavalAngleYZ === undefined ||
-      bottomPoseNavalChestAngleYZ === undefined ||
-      bottomPoseChestNeckAngleYZ === undefined ||
-      bottomPosePelvisNeckAngleYZ === undefined
-    ) {
-      return true;
-    }
+    // const topPoseChestNeckAngleYZ = angleInYZ(topPose.landmark[2], topPose.landmark[3]);
+    // const topPosePelvisNeckAngleYZ = angleInYZ(topPose.landmark[0], topPose.landmark[3]);
+    // const bottomPosePelvisNavalAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[1]);
+    // const bottomPoseNavalChestAngleYZ = angleInYZ(bottomPose.landmark[1], bottomPose.landmark[2]);
+    // const bottomPoseChestNeckAngleYZ = angleInYZ(bottomPose.landmark[2], bottomPose.landmark[3]);
+    // const bottomPosePelvisNeckAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[3]);
 
     // TODO: acceptableErrorについて検証
     // TODO: 一つずつ書く
@@ -199,8 +178,7 @@ const backBent: FormInstructionItem = {
   },
 };
 
-// 背中の傾き
-// bottomで判定
+// bottomでの背中全体の傾き
 const backSlant: FormInstructionItem = {
   text: 'Back slant',
   // bottomで判定する
@@ -210,18 +188,9 @@ const backSlant: FormInstructionItem = {
       throw new Error('bottomPose is undefined');
     }
     const bottomPosePelvisNavalAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[1]);
-    const bottomPoseNavalChestAngleYZ = angleInYZ(bottomPose.landmark[1], bottomPose.landmark[2]);
-    const bottomPoseChestNeckAngleYZ = angleInYZ(bottomPose.landmark[2], bottomPose.landmark[3]);
-    const bottomPosePelvisNeckAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[3]);
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      bottomPosePelvisNavalAngleYZ === undefined ||
-      bottomPoseNavalChestAngleYZ === undefined ||
-      bottomPoseChestNeckAngleYZ === undefined ||
-      bottomPosePelvisNeckAngleYZ === undefined
-    ) {
-      return true;
-    }
+    // const bottomPoseNavalChestAngleYZ = angleInYZ(bottomPose.landmark[1], bottomPose.landmark[2]);
+    // const bottomPoseChestNeckAngleYZ = angleInYZ(bottomPose.landmark[2], bottomPose.landmark[3]);
+    // const bottomPosePelvisNeckAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[3]);
 
     // TODO: acceptableErrorについて検証
     // TODO: 一つずつ書く
@@ -251,11 +220,6 @@ const feetAngle: FormInstructionItem = {
     }
     const topPoseLeftFootAngleZX = angleInZX(topPose.landmark[20], topPose.landmark[21]);
     const topPoseRightFootAngleZX = angleInZX(topPose.landmark[24], topPose.landmark[25]);
-
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (topPoseLeftFootAngleZX === undefined || topPoseRightFootAngleZX === undefined) {
-      return true;
-    }
 
     // TODO: acceptableErrorについて検証
     // TODO: 体の前後を見分けるために，absでなく，正負を残しても良い
@@ -295,39 +259,29 @@ const feetGround: FormInstructionItem = {
     if (bottomPose === undefined) {
       throw new Error('bottomPose is undefined');
     }
-    const LeftAnkleChange = distanceBetweenXYZ(topPose.landmark[20], bottomPose.landmark[20]);
-    const RightAnkleChange = distanceBetweenXYZ(topPose.landmark[24], bottomPose.landmark[24]);
-    const LeftFootChange = distanceBetweenXYZ(topPose.landmark[21], bottomPose.landmark[21]);
-    const RightFootChange = distanceBetweenXYZ(topPose.landmark[21], bottomPose.landmark[21]);
+    const LeftAnkleMovedDistance = Math.abs(distanceInZ(topPose.landmark[20], bottomPose.landmark[20]));
+    const RightAnkleMovedDistance = Math.abs(distanceInZ(topPose.landmark[24], bottomPose.landmark[24]));
+    const LeftFootMovedDistance = Math.abs(distanceInZ(topPose.landmark[21], bottomPose.landmark[21]));
+    const RightFootMovedDistance = Math.abs(distanceInZ(topPose.landmark[21], bottomPose.landmark[21]));
     // 判定に使用
-    const topPoseRightFoot = distanceBetweenXYZ(topPose.landmark[24], topPose.landmark[25]);
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      LeftAnkleChange === undefined ||
-      RightAnkleChange === undefined ||
-      LeftFootChange === undefined ||
-      RightFootChange === undefined ||
-      topPoseRightFoot === undefined
-    ) {
-      return true;
-    }
+    const topPoseRightFootLength = distanceInXYZ(topPose.landmark[24], topPose.landmark[25]);
 
     // TODO: acceptableErrorについて検証
     // topPoseは足がべったりと地面についていると想定しているが，良いのか
     const acceptableError = 0.1;
-    if (LeftAnkleChange >= acceptableError * topPoseRightFoot) {
+    if (LeftAnkleMovedDistance >= acceptableError * topPoseRightFootLength) {
       // 左足首の位置が変化した
       return false;
     }
-    if (RightAnkleChange >= acceptableError * topPoseRightFoot) {
+    if (RightAnkleMovedDistance >= acceptableError * topPoseRightFootLength) {
       // 右足首の位置が変化した
       return false;
     }
-    if (LeftFootChange >= acceptableError * topPoseRightFoot) {
+    if (LeftFootMovedDistance >= acceptableError * topPoseRightFootLength) {
       // 左足先の位置が変化した
       return false;
     }
-    if (RightFootChange >= acceptableError * topPoseRightFoot) {
+    if (RightFootMovedDistance >= acceptableError * topPoseRightFootLength) {
       // 右足先の位置が変化した
       return false;
     }
@@ -348,11 +302,8 @@ const gazeDirection: FormInstructionItem = {
     }
     const bottomPoseNeckHeadAngleYZ = angleInYZ(bottomPose.landmark[3], bottomPose.landmark[26]);
     const bottomPoseEyes = midpointBetween(bottomPose.landmark[28], bottomPose.landmark[30]);
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (bottomPoseNeckHeadAngleYZ === undefined || bottomPoseEyes === undefined) {
-      return true;
-    }
     // TODO: 視線の向きが適当かについて検証
+    // 顔の向きと視線が直行すると仮定して，視線の先を求めている．顎を引くので，この仮定は成り立たないかもしれない
     const gazeTarget = bottomPoseEyes.y * Math.abs(Math.tan(bottomPoseNeckHeadAngleYZ));
     if (gazeTarget <= 120) {
       // 視線が1.2mより手前を向いている
@@ -377,18 +328,10 @@ const feetWidth: FormInstructionItem = {
     if (topPose === undefined) {
       throw new Error('topPose is undefined');
     }
-    const topPoseLeftShoulderAnkle = Math.abs(distanceBetweenX(topPose.landmark[5], topPose.landmark[20]));
-    const topPoseRightShoulderAnkle = Math.abs(distanceBetweenX(topPose.landmark[12], topPose.landmark[24]));
+    const topPoseLeftShoulderAnkle = Math.abs(distanceInX(topPose.landmark[5], topPose.landmark[20]));
+    const topPoseRightShoulderAnkle = Math.abs(distanceInX(topPose.landmark[12], topPose.landmark[24]));
     // 判定に使用
-    const topPoseShoulder = distanceBetweenXYZ(topPose.landmark[5], topPose.landmark[12]);
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      topPoseLeftShoulderAnkle === undefined ||
-      topPoseRightShoulderAnkle === undefined ||
-      topPoseShoulder === undefined
-    ) {
-      return true;
-    }
+    const topPoseShoulder = distanceInXYZ(topPose.landmark[5], topPose.landmark[12]);
 
     // TODO: acceptableErrorについて検証
     const acceptableError = 0.1;
@@ -418,12 +361,7 @@ const barbellPosition: FormInstructionItem = {
 
     // 誤差の許容値を得るために使用
     // TODO 動作中，一定に近い値をとる場所を特定
-    const topDistanceRightFoot = distanceBetweenXYZ(topPose.landmark[24], topPose.landmark[25]);
-
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (topPoseWristCenter === undefined || topPose.landmark[2] === undefined || topDistanceRightFoot === undefined) {
-      return true;
-    }
+    const topDistanceRightFoot = distanceInXYZ(topPose.landmark[24], topPose.landmark[25]);
     // TODO: acceptableErrorについて検証
     const acceptableErrorUnder = 0.1;
     const acceptableErrorUp = 0.1;
@@ -449,23 +387,10 @@ const kneePosition: FormInstructionItem = {
     if (bottomPose === undefined) {
       throw new Error('bottomPose is undefined');
     }
-    const bottomPoseLeftKneeFootZX = distanceBetweenZX(bottomPose.landmark[21], bottomPose.landmark[19]);
-    const bottomPoseRightKneeFootZX = distanceBetweenZX(bottomPose.landmark[25], bottomPose.landmark[23]);
-    const bottomPoseLeftKneeFootDirection = Math.sign(
-      distanceBetweenZ(bottomPose.landmark[21], bottomPose.landmark[19]),
-    );
-    const bottomPoseRightKneeFootDirection = Math.sign(
-      distanceBetweenZ(bottomPose.landmark[25], bottomPose.landmark[23]),
-    );
-    // キーフレーム検出ができていなかった場合はクリアとする
-    if (
-      bottomPoseLeftKneeFootZX === undefined ||
-      bottomPoseRightKneeFootZX === undefined ||
-      bottomPoseLeftKneeFootDirection === undefined ||
-      bottomPoseRightKneeFootDirection === undefined
-    ) {
-      return true;
-    }
+    const bottomPoseLeftKneeFootZX = distanceInZX(bottomPose.landmark[21], bottomPose.landmark[19]);
+    const bottomPoseRightKneeFootZX = distanceInZX(bottomPose.landmark[25], bottomPose.landmark[23]);
+    const bottomPoseLeftKneeFootDirection = Math.sign(distanceInZ(bottomPose.landmark[21], bottomPose.landmark[19]));
+    const bottomPoseRightKneeFootDirection = Math.sign(distanceInZ(bottomPose.landmark[25], bottomPose.landmark[23]));
 
     // TODO: 膝の位置を検討
     // TODO: 許容されるずれについて検討．将来的には骨格から値を得たい

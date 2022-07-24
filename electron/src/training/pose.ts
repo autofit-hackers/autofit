@@ -55,27 +55,27 @@ export type Pose = {
 };
 
 // 正負あり
-export const distanceBetweenX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+export const distanceInX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   p2.x - p1.x;
 
 // 正負あり
-export const distanceBetweenY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+export const distanceInY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   p2.y - p1.y;
 
 // 正負あり
-export const distanceBetweenZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+export const distanceInZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   p2.z - p1.z;
 
-export const distanceBetweenXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+export const distanceInXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
 
-export const distanceBetweenYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+export const distanceInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.sqrt((p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
 
-export const distanceBetweenZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+export const distanceInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.sqrt((p1.z - p2.z) ** 2 + (p1.x - p2.x) ** 2);
 
-export const distanceBetweenXYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+export const distanceInXYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
 
 export const midpointBetween = (
@@ -91,19 +91,19 @@ export const heightInFrame = (pose: Pose): number => {
   // TODO: デバッグ用に目と肩のラインで代替しているので、プロダクションではコメントアウトされている処理に戻す
   // const nose = pose.landmark[11];
   // const ankle = midpointBetween(pose.landmark[20], pose.landmark[24]);
-  // return distanceBetweenXY(nose, ankle);
+  // return distanceInXY(nose, ankle);
 
   const nose = pose.landmark[27];
   const neck = pose.landmark[3];
 
-  return distanceBetweenXY(nose, neck);
+  return distanceInXY(nose, neck);
 };
 
 export const heightInWorld = (pose: Pose): number => {
   const neckWorld = pose.worldLandmark[27];
   const noseWorld = pose.worldLandmark[3];
 
-  return distanceBetweenXY(neckWorld, noseWorld);
+  return distanceInXY(neckWorld, noseWorld);
 };
 
 // XY座標に投影した際のX軸の正の方向となす角
