@@ -1,7 +1,7 @@
 import { Button, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
+import BodyTrack2d from '../BodyTrack2d';
 import { phaseAtom } from './atoms';
-import Realtime from './Realtime';
 import IntervalReport from './Report';
 
 export default function TrainingMain() {
@@ -15,7 +15,7 @@ export default function TrainingMain() {
           <Button variant="contained" onClick={() => setPhase(1)}>
             Phase Ahead
           </Button>
-          <Realtime doPlaySound={false} />
+          <BodyTrack2d />
         </>
       )}
       {phase === 1 && (
