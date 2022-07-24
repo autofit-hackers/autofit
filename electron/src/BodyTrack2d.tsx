@@ -44,6 +44,8 @@ export default function BodyTrack2d() {
       }
       if (data.bodyFrame.bodies.length > 0) {
         // render the skeleton joints on top of the depth feed
+        // eslint-disable-next-line no-console
+        console.log(data);
         canvasCtx.save();
         data.bodyFrame.bodies.forEach((body) => {
           canvasCtx.fillStyle = 'red';
@@ -91,23 +93,20 @@ export default function BodyTrack2d() {
   // animate();
 
   return (
-    <>
-      <p>aaaaa</p>
-      <canvas
-        ref={canvasRef}
-        className="output_canvas"
-        style={{
-          position: 'absolute',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          zIndex: 2,
-          width: 'auto',
-          height: 'auto',
-        }}
-      />
-    </>
+    <canvas
+      ref={canvasRef}
+      className="output_canvas"
+      style={{
+        position: 'absolute',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        zIndex: 2,
+        width: 'auto',
+        height: 'auto',
+      }}
+    />
   );
 }
