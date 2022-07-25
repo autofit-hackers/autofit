@@ -49,9 +49,37 @@ export const KINECT_POSE_CONNECTIONS: LandmarkConnectionArray = [
   [30, 31],
 ];
 
+export const kinectToMediapipe = (
+  kinectPoses: Array<{
+    cameraX: number;
+    cameraY: number;
+    cameraZ: number;
+    colorX: number;
+    colorY: number;
+    confidence: number;
+    depthX: number;
+    depthY: number;
+    index: number;
+    orientationW: number;
+    orientationX: number;
+    orientationY: number;
+    orientationZ: number;
+  }>,
+  canvas: HTMLCanvasElement,
+): { landmarks: NormalizedLandmarkList; worldLandmarks: LandmarkList } => {
+  const mediapipePose: NormalizedLandmarkList = [];
+  const mediapipePoseWorld: LandmarkList = [];
+  for (let i = 0; i < kinectPoses.length; i += 1) {
+    mediapipePose[i] = { x: kinectPoses[i].colorX / canvas.width, y: kinectPoses[i].colorY / canvas.height, z: 0 };
+    mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
+  }
+
+  return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld };
+};
+
 export type Pose = {
-  landmark: NormalizedLandmarkList;
-  worldLandmark: LandmarkList;
+  landmarks: NormalizedLandmarkList;
+  worldLandmarks: LandmarkList;
 };
 
 // 正負あり
@@ -93,15 +121,15 @@ export const heightInFrame = (pose: Pose): number => {
   // const ankle = midpointBetween(pose.landmark[20], pose.landmark[24]);
   // return distanceInXY(nose, ankle);
 
-  const nose = pose.landmark[27];
-  const neck = pose.landmark[3];
+  const nose = pose.landmarks[27];
+  const neck = pose.landmarks[3];
 
   return distanceInXY(nose, neck);
 };
 
 export const heightInWorld = (pose: Pose): number => {
-  const neckWorld = pose.worldLandmark[27];
-  const noseWorld = pose.worldLandmark[3];
+  const neckWorld = pose.worldLandmarks[27];
+  const noseWorld = pose.worldLandmarks[3];
 
   return distanceInXY(neckWorld, noseWorld);
 };

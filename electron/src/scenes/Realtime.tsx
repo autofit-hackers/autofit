@@ -85,13 +85,13 @@ function Realtime(props: { doPlaySound: boolean }) {
     }
   }, [mediaRecorderRef]);
 
+  const formInstructionSettings: FormInstructionSettings = {
+    items: formInstructionItems,
+  };
   /*
    * 毎フレームまわっている関数
    */
   const onResults = useCallback((results: Results) => {
-    const formInstructionSettings: FormInstructionSettings = {
-      items: formInstructionItems,
-    };
     if (canvasRef.current === null || webcamRef.current === null || webcamRef.current.video === null) {
       return;
     }
@@ -115,7 +115,7 @@ function Realtime(props: { doPlaySound: boolean }) {
     /* ここにprocessor.recv()の内容を書いていく */
     if ('poseLandmarks' in results) {
       // mediapipeの推論結果を自作のPose型に代入
-      const currentPose: Pose = { landmark: results.poseLandmarks, worldLandmark: results.poseWorldLandmarks };
+      const currentPose: Pose = { landmarks: results.poseLandmarks, worldLandmarks: results.poseWorldLandmarks };
 
       // レップの最初のフレームの場合
       if (repState.current.isFirstFrameInRep) {
