@@ -25,6 +25,7 @@
     "christian-kohler.path-intellisense",
     "stylelint.vscode-stylelint",
     "tabnine.tabnine-vscode",
-    "gruntfuggly.todo-tree"
+    "gruntfuggly.todo-tree",
+    "steoates.autoimport"
   ]
 }
