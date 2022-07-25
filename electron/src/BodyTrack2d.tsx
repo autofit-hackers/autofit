@@ -3,14 +3,20 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
+import { NormalizedLandmark } from '@mediapipe/pose';
 import { useCallback, useEffect, useRef } from 'react';
+import { drawBarsWithAcceptableError } from './drawing_utils/thresholdBar';
+import { KINECT_POSE_CONNECTIONS, Pose } from './training/pose';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const KinectAzure = require('kinect-azure');
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sideCanvasRef = useRef<HTMLCanvasElement>(null);
   let outputImageData: ImageData | null = null;
+  // let sideOutputImageData: ImageData | null = null;
 
   const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImageData: ImageData, imageFrame: any) => {
     const newPixelData = Buffer.from(imageFrame.imageData);
@@ -21,53 +27,150 @@ export default function BodyTrack2d() {
       pixelArray[i + 2] = newPixelData[i];
       pixelArray[i + 3] = 0xff;
     }
-    // console.log('imagedata', canvasImageData.width, canvasImageData.height);
+    ctx.putImageData(canvasImageData, 0, 0);
+  };
+
+  // sideを描画する
+  const sideRenderFrame = (ctx: CanvasRenderingContext2D, canvasImageData: ImageData) => {
+    // const newPixelData = Buffer.from(imageFrame.imageData);
+    const pixelArray = canvasImageData.data;
+    for (let i = 0; i < canvasImageData.data.length; i += 4) {
+      pixelArray[i] = 0;
+      pixelArray[i + 1] = 0xff;
+      pixelArray[i + 2] = 0xff;
+      pixelArray[i + 3] = 0xff;
+    }
     ctx.putImageData(canvasImageData, 0, 0);
   };
 
   // 毎kinect更新時に回っている関数
   const onResults = useCallback(
-    (data: {
-      colorImageFrame: { imageData: ImageData; width: number; height: number };
-      bodyFrame: { bodies: any[] };
-    }) => {
+    (data: { colorImageFrame: { width: number; height: number }; bodyFrame: { bodies: any[] } }) => {
       if (canvasRef.current === null) {
         throw new Error('canvasRef is null');
       }
+      if (sideCanvasRef.current === null) {
+        throw new Error('sideCanvasRef is null');
+      }
       const canvasCtx = canvasRef.current.getContext('2d');
+      const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
       if (canvasCtx === null) {
         throw new Error('canvasCtx is null');
       }
-      // console.log('canvas', canvasRef.current.width, canvasRef.current.height);
+      if (sideCanvasCtx === null) {
+        throw new Error('sideCanvasCtx is null');
+      }
       if (outputImageData === null && data.colorImageFrame.width > 0) {
         canvasRef.current.height = data.colorImageFrame.height;
+        sideCanvasRef.current.height = data.colorImageFrame.height;
         outputImageData = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       }
       if (outputImageData !== null) {
         renderBGRA32ColorFrame(canvasCtx, outputImageData, data.colorImageFrame);
-        // canvasCtx.putImageData(data.colorImageFrame.imageData, 0, 0);
+        // canvasCtx.putImageData(outputImageData, 0, 0);
+        sideRenderFrame(sideCanvasCtx, outputImageData);
       }
       if (data.bodyFrame.bodies.length > 0) {
         // render the skeleton joints on top of the depth feed
+        // eslint-disable-next-line no-console
+        // console.log(data);
         canvasCtx.save();
         data.bodyFrame.bodies.forEach((body) => {
-          canvasCtx.fillStyle = 'red';
-          canvasCtx.strokeStyle = 'white';
-          canvasCtx.lineWidth = 3;
-          body.skeleton.joints.forEach((joint: { colorX: number; colorY: number }) => {
-            canvasCtx.beginPath();
-            canvasCtx.arc(joint.colorX, joint.colorY, 10, 0, 2 * Math.PI, false);
-            canvasCtx.fill();
-            canvasCtx.beginPath();
-            canvasCtx.arc(joint.colorX, joint.colorY, 10, 0, 2 * Math.PI, false);
-            canvasCtx.stroke();
+          const landmarks: NormalizedLandmark[] = [];
+          const worldLandmarks: NormalizedLandmark[] = [];
+          body.skeleton.joints.forEach(
+            (joint: { colorX: number; colorY: number; cameraX: number; cameraY: number; cameraZ: number }) => {
+              // TODO: 関数化したいですな
+              const cameraJoint = {
+                x: joint.colorX / data.colorImageFrame.width,
+                y: joint.colorY / data.colorImageFrame.height,
+                z: 0,
+              } as NormalizedLandmark;
+              const worldJoint = { x: joint.cameraX, y: joint.cameraY, z: joint.cameraZ } as NormalizedLandmark;
+              landmarks.push(cameraJoint);
+              worldLandmarks.push(worldJoint);
+            },
+          );
+          const currentPose: Pose = { landmark: landmarks, worldLandmark: worldLandmarks };
+          drawLandmarks(canvasCtx, currentPose.landmark, {
+            color: 'white',
+            lineWidth: 4,
+            radius: 8,
+            fillColor: 'lightgreen',
           });
-          // draw the pelvis as a green square
-          const pelvis = body.skeleton.joints[KinectAzure.K4ABT_JOINT_PELVIS];
-          canvasCtx.fillStyle = 'green';
-          canvasCtx.fillRect(pelvis.colorX, pelvis.colorY, 10, 10);
+          drawConnectors(canvasCtx, currentPose.landmark, KINECT_POSE_CONNECTIONS, {
+            color: 'white',
+            lineWidth: 4,
+          });
+          drawBarsWithAcceptableError(
+            canvasCtx,
+            landmarks[10].x * data.colorImageFrame.width,
+            landmarks[10].y * data.colorImageFrame.height,
+            landmarks[17].x * data.colorImageFrame.width,
+            landmarks[17].y * data.colorImageFrame.height,
+            data.colorImageFrame.width,
+            30,
+          );
         });
         canvasCtx.restore();
+
+        // sideからの描画を行う．colorX,colorYの情報は消去
+        sideCanvasCtx.save();
+        data.bodyFrame.bodies.forEach((body) => {
+          const landmarks: NormalizedLandmark[] = [];
+          const worldLandmarks: NormalizedLandmark[] = [];
+          body.skeleton.joints.forEach(
+            (joint: { colorX: number; colorY: number; cameraX: number; cameraY: number; cameraZ: number }) => {
+              // TODO: 関数化したいですな
+              const cameraJoint = {
+                x: joint.colorX / data.colorImageFrame.width,
+                y: joint.colorY / data.colorImageFrame.height,
+                z: 0,
+              } as NormalizedLandmark;
+              const worldJoint = { x: joint.cameraX, y: joint.cameraY, z: joint.cameraZ } as NormalizedLandmark;
+              landmarks.push(cameraJoint);
+              worldLandmarks.push(worldJoint);
+            },
+          );
+          // つま先の中心を描画する際の目安に使用
+          const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
+          const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
+          const highCenterY = worldLandmarks[27].y; // よりマイナス
+          // console.log(lowCenterY, highCenterY);
+          const heightOfBody = Math.abs(lowCenterY - highCenterY);
+          const sideWorldLandmarks: NormalizedLandmark[] = [];
+          body.skeleton.joints.forEach((joint: { cameraX: number; cameraY: number; cameraZ: number }) => {
+            // TODO: 関数化したいですな
+            const sideWorldJoint = {
+              x: (((joint.cameraZ - lowCenterZ) * 640) / heightOfBody + 640) / data.colorImageFrame.width,
+              y: (((joint.cameraY - lowCenterY) * 640) / heightOfBody + 680) / data.colorImageFrame.height,
+              z: 0,
+            } as NormalizedLandmark;
+            sideWorldLandmarks.push(sideWorldJoint);
+          });
+
+          const currentPose: Pose = { landmark: landmarks, worldLandmark: sideWorldLandmarks };
+          drawLandmarks(sideCanvasCtx, currentPose.worldLandmark, {
+            color: 'white',
+            lineWidth: 4,
+            radius: 8,
+            fillColor: 'lightgreen',
+          });
+          drawConnectors(sideCanvasCtx, currentPose.worldLandmark, KINECT_POSE_CONNECTIONS, {
+            color: 'white',
+            lineWidth: 4,
+          });
+          drawBarsWithAcceptableError(
+            sideCanvasCtx,
+            sideWorldLandmarks[10].x * data.colorImageFrame.width,
+            sideWorldLandmarks[10].y * data.colorImageFrame.height,
+            sideWorldLandmarks[17].x * data.colorImageFrame.width,
+            sideWorldLandmarks[17].y * data.colorImageFrame.height,
+            data.colorImageFrame.width,
+            30,
+          );
+        });
+        sideCanvasCtx.restore();
       }
     },
     [],
@@ -97,7 +200,6 @@ export default function BodyTrack2d() {
 
   return (
     <>
-      <p>aaaaa</p>
       <canvas
         ref={canvasRef}
         className="output_canvas"
@@ -107,6 +209,24 @@ export default function BodyTrack2d() {
           position: 'absolute',
           marginLeft: 'auto',
           marginRight: 'auto',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 2,
+          width: 1280,
+          height: 720,
+        }}
+      />
+      <canvas
+        ref={sideCanvasRef}
+        className="output_canvas"
+        width="1280"
+        height="720"
+        style={{
+          position: 'absolute',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          top: 1300,
           left: 0,
           right: 0,
           textAlign: 'center',
