@@ -156,7 +156,6 @@ export default function BodyTrack2d() {
             lineWidth: 4,
           },
         );
-        console.log(currentPose.worldLandmarks);
       }
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
