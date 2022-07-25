@@ -21,7 +21,7 @@ export default function BodyTrack2d() {
       pixelArray[i + 2] = newPixelData[i];
       pixelArray[i + 3] = 0xff;
     }
-    console.log('imagedata', canvasImageData.width, canvasImageData.height);
+    // console.log('imagedata', canvasImageData.width, canvasImageData.height);
     ctx.putImageData(canvasImageData, 0, 0);
   };
 
@@ -38,7 +38,7 @@ export default function BodyTrack2d() {
       if (canvasCtx === null) {
         throw new Error('canvasCtx is null');
       }
-      console.log('canvas', canvasRef.current.width, canvasRef.current.height);
+      // console.log('canvas', canvasRef.current.width, canvasRef.current.height);
       if (outputImageData === null && data.colorImageFrame.width > 0) {
         canvasRef.current.height = data.colorImageFrame.height;
         outputImageData = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
