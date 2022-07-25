@@ -1,7 +1,7 @@
 import { Button, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
-import BodyTrack2d from './BodyTrack2d';
+import BodyTrack2d from './BodyTracking';
 import IntervalReport from './Report';
 
 export default function TrainingMain() {
