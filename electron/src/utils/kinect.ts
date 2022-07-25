@@ -5,7 +5,8 @@
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const KinectAzure = require('kinect-azure');
 
-const startKinect = (
+export const startKinect = (
+  kinect: typeof KinectAzure,
   onResults: (data: {
     colorImageFrame: {
       imageData: ImageData;
@@ -17,7 +18,6 @@ const startKinect = (
     };
   }) => void,
 ) => {
-  const kinect = new KinectAzure();
   if (kinect.open()) {
     /*
      * KinectAzureの初期設定
@@ -36,4 +36,24 @@ const startKinect = (
   }
 };
 
-export default startKinect;
+export const stopKinect = (kinect: typeof KinectAzure): void => {
+  if (kinect) {
+    console.log('closing the kinect');
+    kinect
+      .stopListening()
+      .then(() => {
+        console.log('kinect stopped listening');
+      })
+      .catch((e: any) => {
+        console.error(e);
+      })
+      .then(() => {
+        kinect.destroyTracker();
+        kinect.stopCameras();
+        kinect.close();
+        console.log('kinect closed');
+      });
+  } else {
+    console.log('no kinect exposed');
+  }
+};
