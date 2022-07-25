@@ -1,9 +1,10 @@
-import { drawLandmarks } from '@mediapipe/drawing_utils';
+import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { heightInFrame, kinectToMediapipe, Pose } from '../training/pose';
+import { drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
+import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
@@ -121,6 +122,19 @@ export default function BodyTrack2d() {
           radius: 8,
           fillColor: 'lightgreen',
         });
+        drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
+          color: 'white',
+          lineWidth: 4,
+        });
+        drawBarsWithAcceptableError(
+          canvasCtx,
+          currentPose.landmarks[10].x * 1280,
+          currentPose.landmarks[10].y * 720,
+          currentPose.landmarks[17].x * 1280,
+          currentPose.landmarks[17].y * 720,
+          canvasRef.current.width,
+          100,
+        );
       }
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
