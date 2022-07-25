@@ -17,14 +17,9 @@ export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
 
-  /*
-   *Phase
-   */
+  // Phase
   const [, setPhase] = useAtom(phaseAtom);
-
-  /*
-   *セット・レップ・RepState変数
-   */
+  // セット・レップ・RepState変数
   const [, setSetRecord] = useAtom(setRecordAtom);
   const set = useRef<Set>({ reps: [] });
   const rep = useRef<Rep>(resetRep());
@@ -128,12 +123,12 @@ export default function BodyTrack2d() {
         });
         drawBarsWithAcceptableError(
           canvasCtx,
-          currentPose.landmarks[10].x * 1280,
-          currentPose.landmarks[10].y * 720,
-          currentPose.landmarks[17].x * 1280,
-          currentPose.landmarks[17].y * 720,
+          currentPose.landmarks[10].x * canvasRef.current.width,
+          currentPose.landmarks[10].y * canvasRef.current.height,
+          currentPose.landmarks[17].x * canvasRef.current.width,
+          currentPose.landmarks[17].y * canvasRef.current.height,
           canvasRef.current.width,
-          100,
+          100, // TODO: this is magic number, change value to evaluate form instruction function
         );
       }
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
@@ -166,6 +161,7 @@ export default function BodyTrack2d() {
         position: 'absolute',
         marginLeft: 'auto',
         marginRight: 'auto',
+        top: 320,
         left: 0,
         right: 0,
         textAlign: 'center',

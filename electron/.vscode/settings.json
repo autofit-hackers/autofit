@@ -23,7 +23,7 @@
   "files.trimTrailingWhitespace": true,
   "npm.packageManager": "yarn",
 
-  "files.autoSave": "off",
+  "files.autoSave": "onFocusChange",
 
   // to reduce cpu usage of code helper
   "files.watcherExclude": {
