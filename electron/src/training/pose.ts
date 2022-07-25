@@ -145,3 +145,23 @@ export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandm
 // ZX座標に投影した際のZ軸の正の方向となす角
 export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.atan2(p2.x - p1.x, p2.z - p1.z);
+
+export const normalizeWorldLandmarks = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+): NormalizedLandmarkList => {
+  const normalizedLandmarks: NormalizedLandmarkList = [];
+  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
+  const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
+  const heightOfBody = 1500;
+
+  for (let i = 0; i < worldLandmarks.length; i += 1) {
+    normalizedLandmarks[i] = {
+      x: ((worldLandmarks[i].z - lowCenterZ) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
+      y: ((worldLandmarks[i].y - lowCenterY) * 0.8) / heightOfBody + 0.9,
+      z: 0,
+    };
+  }
+
+  return normalizedLandmarks;
+};

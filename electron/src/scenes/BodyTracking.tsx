@@ -4,17 +4,25 @@ import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
 import { drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
-import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
+import {
+  heightInFrame,
+  kinectToMediapipe,
+  KINECT_POSE_CONNECTIONS,
+  normalizeWorldLandmarks,
+  Pose,
+} from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
 import { startCaptureWebcam } from '../utils/capture';
-import renderBGRA32ColorFrame from '../utils/drawing';
+import { renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
 import startKinect from '../utils/startKinect';
 import { phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sideCanvasRef = useRef<HTMLCanvasElement>(null);
+
   const canvasImageData = useRef<ImageData | null>(null);
 
   // Phase
@@ -44,11 +52,12 @@ export default function BodyTrack2d() {
       colorImageFrame: { imageData: ImageData; width: number; height: number };
       bodyFrame: { bodies: any[] };
     }) => {
-      if (canvasRef.current === null) {
+      if (canvasRef.current === null || sideCanvasRef.current === null) {
         throw new Error('canvasRef is null');
       }
       const canvasCtx = canvasRef.current.getContext('2d');
-      if (canvasCtx === null) {
+      const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
+      if (canvasCtx === null || sideCanvasCtx === null) {
         throw new Error('canvasCtx is null');
       }
       canvasCtx.save();
@@ -60,6 +69,7 @@ export default function BodyTrack2d() {
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
+        sideRenderFrame(sideCanvasCtx, canvasImageData.current);
       }
 
       if (data.bodyFrame.bodies) {
@@ -130,6 +140,23 @@ export default function BodyTrack2d() {
           canvasRef.current.width,
           100, // TODO: this is magic number, change value to evaluate form instruction function
         );
+        // Side座標を描画
+        drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
+          color: 'white',
+          lineWidth: 4,
+          radius: 8,
+          fillColor: 'lightgreen',
+        });
+        drawConnectors(
+          sideCanvasCtx,
+          normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current),
+          KINECT_POSE_CONNECTIONS,
+          {
+            color: 'white',
+            lineWidth: 4,
+          },
+        );
+        console.log(currentPose.worldLandmarks);
       }
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
@@ -154,21 +181,40 @@ export default function BodyTrack2d() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="output_canvas"
-      style={{
-        position: 'absolute',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        top: 320,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        zIndex: 2,
-        width: 1280,
-        height: 720,
-      }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        className="main_canvas"
+        style={{
+          position: 'absolute',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 1,
+          width: 1280,
+          height: 720,
+        }}
+      />
+      <canvas
+        ref={sideCanvasRef}
+        className="side_canvas"
+        width="1280"
+        height="720"
+        style={{
+          position: 'absolute',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          top: 720,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 1,
+          width: 1280,
+          height: 720,
+        }}
+      />
+    </>
   );
 }

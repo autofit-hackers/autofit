@@ -27,7 +27,6 @@ const barbellOnFootCenter: FormInstructionItem = {
     // TODO: マイフレームごとに書き換えること
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('topPose is undefined');
 
       return true;
@@ -48,6 +47,8 @@ const barbellOnFootCenter: FormInstructionItem = {
       (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 + topDistanceRightFoot * acceptableError
     ) {
       // バーベルが左に寄っている
+      // console.log('バーベルが左に寄っている');
+
       return false;
     }
     if (
@@ -83,7 +84,6 @@ const squatDepth: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('bottomPose is undefined');
 
       return true;
@@ -91,6 +91,13 @@ const squatDepth: FormInstructionItem = {
     const bottomPoseKnee = midpointBetween(bottomPose.landmarks[19], bottomPose.landmarks[23]);
     // TODO: 十分に腰が下がっているかを判定可能か?
     const isCleared = bottomPose.landmarks[0].y <= bottomPoseKnee.y;
+
+    // TODO: デバック用
+    if (isCleared) {
+      console.log('十分に腰を落とした');
+    } else {
+      console.log('腰の下げ方が足りない');
+    }
 
     return isCleared;
   },
@@ -103,7 +110,6 @@ const kneeOut: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('bottomPose is undefined');
 
       return true;
@@ -158,13 +164,11 @@ const backBent: FormInstructionItem = {
     const topPose = getTopPose(rep);
     const bottomPose = getBottomPose(rep);
     if (topPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('topPose is undefined');
 
       return true;
     }
     if (bottomPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('bottomPose is undefined');
 
       return true;
@@ -200,7 +204,6 @@ const backSlant: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('bottomPose is undefined');
 
       return true;
@@ -234,7 +237,6 @@ const feetAngle: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('topPose is undefined');
 
       return true;
@@ -275,13 +277,11 @@ const feetGround: FormInstructionItem = {
     const topPose = getTopPose(rep);
     const bottomPose = getBottomPose(rep);
     if (topPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('topPose is undefined');
 
       return true;
     }
     if (bottomPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('bottomPose is undefined');
 
       return true;
@@ -325,7 +325,6 @@ const gazeDirection: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('bottomPose is undefined');
 
       return true;
@@ -356,7 +355,6 @@ const feetWidth: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('topPose is undefined');
 
       return true;
@@ -388,7 +386,6 @@ const barbellPosition: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('topPose is undefined');
 
       return true;
@@ -421,7 +418,6 @@ const kneePosition: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      // eslint-disable-next-line no-console
       console.log('bottomPose is undefined');
 
       return true;
