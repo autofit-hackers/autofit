@@ -8,6 +8,7 @@ export const phaseAtom = atom<number>(0);
 
 export const repVideoUrlsAtom = atom<string[]>([]);
 export const setRecordAtom = atom<Set>({ reps: [] });
+export const acceptedErrorAtom = atom<number>(20);
 
 // KinectAzure
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call

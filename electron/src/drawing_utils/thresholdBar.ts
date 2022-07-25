@@ -37,7 +37,7 @@ export const drawBarsWithAcceptableError = (
     const a = (y2 - y1) / (x2 - x1);
     // cos = 1 / sqrt( 1 + tan^2 )
     // tan = -1/a
-    const xError = acceptableError / Math.sqrt(1 + 1 / (a * a));
+    const xError = acceptableError * Math.sqrt(1 + 1 / (a * a));
     drawBarsFromTwoPoints(ctx, x1, y1, x2, y2, w);
     drawBarsFromTwoPoints(ctx, x1 + xError, y1, x2 + xError, y2, w);
     drawBarsFromTwoPoints(ctx, x1 - xError, y1, x2 - xError, y2, w);
