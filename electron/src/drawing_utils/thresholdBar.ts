@@ -6,6 +6,7 @@ export const drawBarsFromTwoPoints = (
   y2: number,
   w: number,
 ): void => {
+  ctx.strokeStyle = 'red';
   if (x1 !== x2) {
     const a = (y2 - y1) / (x2 - x1);
     const yFrom = -x1 * a + y1;
