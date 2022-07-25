@@ -6,7 +6,7 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { NormalizedLandmark } from '@mediapipe/pose';
 import { useCallback, useEffect, useRef } from 'react';
-import { drawBarsFromTwoPoints } from './drawing_utils/thresholdBar';
+import { drawBarsWithAcceptableError } from './drawing_utils/thresholdBar';
 import { KINECT_POSE_CONNECTIONS, Pose } from './training/pose';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
@@ -78,13 +78,14 @@ export default function BodyTrack2d() {
             color: 'white',
             lineWidth: 4,
           });
-          drawBarsFromTwoPoints(
+          drawBarsWithAcceptableError(
             canvasCtx,
             landmarks[10].x * data.colorImageFrame.width,
             landmarks[10].y * data.colorImageFrame.height,
             landmarks[17].x * data.colorImageFrame.width,
             landmarks[17].y * data.colorImageFrame.height,
             data.colorImageFrame.width,
+            30,
           );
         });
         canvasCtx.restore();
