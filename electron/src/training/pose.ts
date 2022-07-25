@@ -1,61 +1,119 @@
-import { NormalizedLandmark, NormalizedLandmarkList, Results } from '@mediapipe/pose';
+import {
+  Landmark,
+  LandmarkConnectionArray,
+  LandmarkList,
+  NormalizedLandmark,
+  NormalizedLandmarkList,
+} from '@mediapipe/pose';
 
-class Pose {
+// REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
+
+export const KINECT_POSE_CONNECTIONS: LandmarkConnectionArray = [
+  // 胴体
+  [0, 1],
+  [1, 2],
+  // 左腕
+  [2, 3],
+  [3, 4],
+  [4, 5],
+  [5, 6],
+  [6, 7],
+  [7, 8],
+  [8, 9],
+  [7, 10],
+  // 右腕
+  [2, 11],
+  [11, 12],
+  [12, 13],
+  [13, 14],
+  [14, 15],
+  [15, 16],
+  [14, 17],
+  // 左脚
+  [0, 18],
+  [18, 19],
+  [19, 20],
+  [20, 21],
+  // 右脚
+  [0, 22],
+  [22, 23],
+  [23, 24],
+  [24, 25],
+  // 首から顔
+  [2, 3],
+  [3, 26],
+  [26, 27],
+  [27, 28],
+  [28, 29],
+  [27, 30],
+  [30, 31],
+];
+
+export type Pose = {
   landmark: NormalizedLandmarkList;
+  worldLandmark: LandmarkList;
+};
 
-  constructor(result: Results) {
-    this.landmark = result.poseLandmarks;
-  }
+// 正負あり
+export const distanceInX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  p2.x - p1.x;
 
-  neckCenter = (): NormalizedLandmark => ({
-    x: (this.landmark[11].x + this.landmark[12].x) / 2,
-    y: (this.landmark[11].y + this.landmark[12].y) / 2,
-    z: (this.landmark[11].z + this.landmark[12].z) / 2,
-  });
+// 正負あり
+export const distanceInY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  p2.y - p1.y;
 
-  hipCenter = (): NormalizedLandmark => ({
-    x: (this.landmark[23].x + this.landmark[24].x) / 2,
-    y: (this.landmark[23].y + this.landmark[24].y) / 2,
-    z: (this.landmark[23].z + this.landmark[24].z) / 2,
-  });
+// 正負あり
+export const distanceInZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  p2.z - p1.z;
 
-  kneeCenter = (): NormalizedLandmark => ({
-    x: (this.landmark[25].x + this.landmark[26].x) / 2,
-    y: (this.landmark[25].y + this.landmark[26].y) / 2,
-    z: (this.landmark[25].z + this.landmark[26].z) / 2,
-  });
+export const distanceInXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
 
-  footCenter = (): NormalizedLandmark => ({
-    x: (this.landmark[27].x + this.landmark[28].x) / 2,
-    y: (this.landmark[27].y + this.landmark[28].y) / 2,
-    z: (this.landmark[27].z + this.landmark[28].z) / 2,
-  });
+export const distanceInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  Math.sqrt((p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
 
-  kneesDistance = (): number => {
-    const kneeLeft = this.landmark[25];
-    const kneeRight = this.landmark[26];
+export const distanceInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  Math.sqrt((p1.z - p2.z) ** 2 + (p1.x - p2.x) ** 2);
 
-    return Math.sqrt((kneeLeft.x - kneeRight.x) ** 2 + (kneeLeft.y - kneeRight.y) ** 2);
-  };
+export const distanceInXYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
 
-  handsDistance = (): number => {
-    const handLeft = this.landmark[15];
-    const handRight = this.landmark[16];
+export const midpointBetween = (
+  p1: NormalizedLandmark | Landmark,
+  p2: NormalizedLandmark | Landmark,
+): NormalizedLandmark | Landmark => ({
+  x: (p1.x + p2.x) / 2,
+  y: (p1.y + p2.y) / 2,
+  z: (p1.z + p2.z) / 2,
+});
 
-    return Math.sqrt((handLeft.x - handRight.x) ** 2 + (handLeft.y - handRight.y) ** 2);
-  };
+export const heightInFrame = (pose: Pose): number => {
+  // TODO: デバッグ用に目と肩のラインで代替しているので、プロダクションではコメントアウトされている処理に戻す
+  // const nose = pose.landmark[11];
+  // const ankle = midpointBetween(pose.landmark[20], pose.landmark[24]);
+  // return distanceInXY(nose, ankle);
 
-  height = (): number => {
-    // TODO: デバッグ用に目と肩のラインで代替しているので、プロダクションではコメントアウトされている処理に戻す
-    // const neck = this.neckCenter();
-    // const foot = this.footCenter();
+  const nose = pose.landmark[27];
+  const neck = pose.landmark[3];
 
-    // return Math.sqrt((neck.x - foot.x) ** 2 + (neck.y - foot.y) ** 2);
-    const neck = this.neckCenter();
-    const nose = this.landmark[0];
+  return distanceInXY(nose, neck);
+};
 
-    return Math.sqrt((neck.x - nose.x) ** 2 + (neck.y - nose.y) ** 2);
-  };
-}
+export const heightInWorld = (pose: Pose): number => {
+  const neckWorld = pose.worldLandmark[27];
+  const noseWorld = pose.worldLandmark[3];
 
-export default Pose;
+  return distanceInXY(neckWorld, noseWorld);
+};
+
+// XY座標に投影した際のX軸の正の方向となす角
+export const angleInXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+// YZ座標に投影した際のY軸の正の方向となす角
+export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  Math.atan2(p2.z - p1.z, p2.y - p1.y);
+
+// ZX座標に投影した際のZ軸の正の方向となす角
+export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
+  Math.atan2(p2.x - p1.x, p2.z - p1.z);

@@ -7,12 +7,25 @@
     "rbbit.typescript-hero",
     "syler.sass-indented",
     "dbaeumer.vscode-eslint",
-    "EditorConfig.EditorConfig",
     "vscode-icons-team.vscode-icons",
     "esbenp.prettier-vscode",
     "visualstudioexptteam.vscodeintellicode",
     "dsznajder.es7-react-js-snippets",
     "formulahendry.auto-rename-tag",
-    "formulahendry.auto-close-tag"
+    "formulahendry.auto-close-tag",
+    "streetsidesoftware.code-spell-checker",
+    "janisdd.vscode-edit-csv",
+    "mhutchie.git-graph",
+    "github.copilot-labs",
+    "github.copilot-nightly",
+    "eamodio.gitlens",
+    "oderwat.indent-rainbow",
+    "christian-kohler.npm-intellisense",
+    "ibm.output-colorizer",
+    "christian-kohler.path-intellisense",
+    "stylelint.vscode-stylelint",
+    "tabnine.tabnine-vscode",
+    "gruntfuggly.todo-tree",
+    "steoates.autoimport"
   ]
 }
