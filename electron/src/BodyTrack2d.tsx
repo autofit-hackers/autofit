@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { useCallback, useEffect, useRef } from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
@@ -10,6 +11,7 @@ const KinectAzure = require('kinect-azure');
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sideCanvasRef = useRef<HTMLCanvasElement>(null);
   let outputImageData: ImageData | null = null;
 
   const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImageData: ImageData, imageFrame: any) => {
@@ -21,26 +23,32 @@ export default function BodyTrack2d() {
       pixelArray[i + 2] = newPixelData[i];
       pixelArray[i + 3] = 0xff;
     }
+    console.log('imagedata', canvasImageData.width, canvasImageData.height);
     ctx.putImageData(canvasImageData, 0, 0);
   };
 
   // 毎kinect更新時に回っている関数
   const onResults = useCallback(
-    (data: { colorImageFrame: { width: number; height: number }; bodyFrame: { bodies: any[] } }) => {
+    (data: {
+      colorImageFrame: { imageData: ImageData; width: number; height: number };
+      bodyFrame: { bodies: any[] };
+    }) => {
       if (canvasRef.current === null) {
         throw new Error('canvasRef is null');
       }
       const canvasCtx = canvasRef.current.getContext('2d');
+      const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
       if (canvasCtx === null) {
         throw new Error('canvasCtx is null');
       }
+      console.log('canvas', canvasRef.current.width, canvasRef.current.height);
       if (outputImageData === null && data.colorImageFrame.width > 0) {
         canvasRef.current.height = data.colorImageFrame.height;
         outputImageData = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       }
       if (outputImageData !== null) {
         renderBGRA32ColorFrame(canvasCtx, outputImageData, data.colorImageFrame);
-        // canvasCtx.putImageData(outputImageData, 0, 0);
+        // canvasCtx.putImageData(data.colorImageFrame.imageData, 0, 0);
       }
       if (data.bodyFrame.bodies.length > 0) {
         // render the skeleton joints on top of the depth feed
@@ -51,6 +59,9 @@ export default function BodyTrack2d() {
           canvasCtx.fillStyle = 'red';
           canvasCtx.strokeStyle = 'white';
           canvasCtx.lineWidth = 3;
+          drawLandmarks(canvasCtx, land);
+          drawConnectors();
+          drawLandmarks(sideCanvasCtx, land);
           body.skeleton.joints.forEach((joint: { colorX: number; colorY: number }) => {
             canvasCtx.beginPath();
             canvasCtx.arc(joint.colorX, joint.colorY, 10, 0, 2 * Math.PI, false);
@@ -63,6 +74,7 @@ export default function BodyTrack2d() {
           const pelvis = body.skeleton.joints[KinectAzure.K4ABT_JOINT_PELVIS];
           canvasCtx.fillStyle = 'green';
           canvasCtx.fillRect(pelvis.colorX, pelvis.colorY, 10, 10);
+          sideCanvasCtx?.fillRect();
         });
         canvasCtx.restore();
       }
@@ -93,20 +105,42 @@ export default function BodyTrack2d() {
   // animate();
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="output_canvas"
-      style={{
-        position: 'absolute',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        zIndex: 2,
-        width: 'auto',
-        height: 'auto',
-      }}
-    />
+    <>
+      <p>aaaaa</p>
+      <canvas
+        ref={canvasRef}
+        className="output_canvas"
+        width="1280"
+        height="720"
+        style={{
+          position: 'absolute',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 2,
+          width: 1280,
+          height: 720,
+        }}
+      />
+      <canvas
+        ref={sideCanvasRef}
+        className="output_canvas"
+        width="1280"
+        height="720"
+        style={{
+          position: 'absolute',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 2,
+          width: 1280,
+          height: 720,
+        }}
+      />
+    </>
   );
 }
