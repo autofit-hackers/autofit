@@ -73,6 +73,7 @@ export default function BodyTrack2d() {
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         sideRenderFrame(sideCanvasCtx, canvasImageData.current);
       }
 
@@ -188,7 +189,7 @@ export default function BodyTrack2d() {
           position: 'absolute',
           marginLeft: 'auto',
           marginRight: 'auto',
-          top: 720,
+          top: 950,
           left: 0,
           right: 0,
           textAlign: 'center',

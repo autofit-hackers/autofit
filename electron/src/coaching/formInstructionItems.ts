@@ -90,7 +90,7 @@ const squatDepth: FormInstructionItem = {
     }
     const bottomPoseKnee = midpointBetween(bottomPose.landmarks[19], bottomPose.landmarks[23]);
     // TODO: 十分に腰が下がっているかを判定可能か?
-    const isCleared = bottomPose.landmarks[0].y <= bottomPoseKnee.y;
+    const isCleared = bottomPose.landmarks[0].y >= bottomPoseKnee.y;
 
     // TODO: デバック用
     if (isCleared) {
