@@ -1,14 +1,25 @@
 import { Box, CssBaseline, Grid, Slider } from '@mui/material';
 import { Container } from '@mui/system';
 import { useAtom } from 'jotai';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import { repVideoUrlsAtom } from './atoms';
+import { stopKinect } from '../utils/kinect';
+import { kinectAtom, repVideoUrlsAtom } from './atoms';
 import { BadPoint, GoodPoint, TimerCard, TrainingResultChart, TrainingStats, VideoReplayer } from './ReportComponents';
 
 function IntervalReport() {
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
   const [repIndexToShow, setValue] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [kinect] = useAtom(kinectAtom);
+
+  /*
+   * Kinectの終了
+   */
+  useEffect(() => {
+    stopKinect(kinect);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box sx={{ display: 'flex' }}>

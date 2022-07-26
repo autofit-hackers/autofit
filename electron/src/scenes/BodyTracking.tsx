@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
+import { drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
 import {
   heightInFrame,
   kinectToMediapipe,
@@ -15,8 +16,8 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { Set } from '../training/set';
 import { startCaptureWebcam } from '../utils/capture';
 import { renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
-import startKinect from '../utils/startKinect';
-import { phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
+import { startKinect } from '../utils/kinect';
+import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,10 +25,10 @@ export default function BodyTrack2d() {
 
   const canvasImageData = useRef<ImageData | null>(null);
 
-  /*
-   *Phase
-   */
+  // Phase
   const [, setPhase] = useAtom(phaseAtom);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [kinect] = useAtom(kinectAtom);
 
   /*
    *セット・レップ・RepState変数
@@ -132,6 +133,19 @@ export default function BodyTrack2d() {
           radius: 8,
           fillColor: 'lightgreen',
         });
+        drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
+          color: 'white',
+          lineWidth: 4,
+        });
+        drawBarsWithAcceptableError(
+          canvasCtx,
+          currentPose.landmarks[10].x * canvasRef.current.width,
+          currentPose.landmarks[10].y * canvasRef.current.height,
+          currentPose.landmarks[17].x * canvasRef.current.width,
+          currentPose.landmarks[17].y * canvasRef.current.height,
+          canvasRef.current.width,
+          100, // TODO: this is magic number, change value to evaluate form instruction function
+        );
         // Side座標を描画
         drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
           color: 'white',
@@ -139,7 +153,15 @@ export default function BodyTrack2d() {
           radius: 8,
           fillColor: 'lightgreen',
         });
-        drawConnectors(sideCanvasCtx, currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
+        drawConnectors(
+          sideCanvasCtx,
+          normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current),
+          KINECT_POSE_CONNECTIONS,
+          {
+            color: 'white',
+            lineWidth: 4,
+          },
+        );
       }
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
@@ -159,7 +181,7 @@ export default function BodyTrack2d() {
    * Kinectの開始
    */
   useEffect(() => {
-    startKinect(onResults);
+    startKinect(kinect, onResults);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
