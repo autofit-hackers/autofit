@@ -22,7 +22,6 @@ import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms'
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sideCanvasRef = useRef<HTMLCanvasElement>(null);
-
   const canvasImageData = useRef<ImageData | null>(null);
 
   // Phase
@@ -108,6 +107,7 @@ export default function BodyTrack2d() {
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
+          console.log('rep end');
           // 動画撮影を停止し、配列に保存する
           if (canvasRecorderRef.current) {
             canvasRecorderRef.current.stop();
@@ -122,6 +122,7 @@ export default function BodyTrack2d() {
           rep.current = resetRep();
 
           // TODO: レップカウントを読み上げる
+
           // RepStateの初期化
           repState.current = resetRepState();
         }
@@ -163,6 +164,7 @@ export default function BodyTrack2d() {
           },
         );
       }
+
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
         setSetRecord(set.current);
