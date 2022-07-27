@@ -5,6 +5,7 @@ export type FormInstructionSettings = {
   items: FormInstructionItem[];
 };
 
+// フォーム指導項目のリストの全要素に関して、判定関数を実行する
 export const evaluateForm = (prevRep: Rep, settings: FormInstructionSettings): Rep => {
   const rep: Rep = prevRep;
 

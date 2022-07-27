@@ -17,6 +17,7 @@ export type FormInstructionItem = {
   readonly recommendMenu?: string[];
 };
 
+
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
 // バーベルは足の中心の真上を移動
