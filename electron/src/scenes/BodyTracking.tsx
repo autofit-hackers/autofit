@@ -133,12 +133,21 @@ export default function BodyTrack2d() {
         });
         drawBarsWithAcceptableError(
           canvasCtx,
-          currentPose.landmarks[10].x * canvasRef.current.width,
-          currentPose.landmarks[10].y * canvasRef.current.height,
-          currentPose.landmarks[17].x * canvasRef.current.width,
-          currentPose.landmarks[17].y * canvasRef.current.height,
+          currentPose.landmarks[19].x * canvasRef.current.width,
+          currentPose.landmarks[19].y * canvasRef.current.height,
+          currentPose.landmarks[23].x * canvasRef.current.width,
+          currentPose.landmarks[23].y * canvasRef.current.height,
           canvasRef.current.width,
-          100, // TODO: this is magic number, change value to evaluate form instruction function
+          20, // TODO: this is magic number, change value to evaluate form instruction function
+        );
+        drawBarsWithAcceptableError(
+          sideCanvasCtx,
+          currentPose.landmarks[19].x * sideCanvasRef.current.width,
+          currentPose.landmarks[19].y * sideCanvasRef.current.height,
+          currentPose.landmarks[23].x * sideCanvasRef.current.width,
+          currentPose.landmarks[23].y * sideCanvasRef.current.height,
+          canvasRef.current.width,
+          20, // TODO: this is magic number, change value to evaluate form instruction function
         );
         // Side座標を描画
         drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
@@ -205,7 +214,7 @@ export default function BodyTrack2d() {
           position: 'absolute',
           marginLeft: 'auto',
           marginRight: 'auto',
-          top: 720,
+          top: 960,
           left: 0,
           right: 0,
           textAlign: 'center',
