@@ -116,22 +116,17 @@ export const midpointBetween = (
 });
 
 export const heightInFrame = (pose: Pose): number => {
-  // TODO: デバッグ用に目と肩のラインで代替しているので、プロダクションではコメントアウトされている処理に戻す
-  // const nose = pose.landmark[11];
-  // const ankle = midpointBetween(pose.landmark[20], pose.landmark[24]);
-  // return distanceInXY(nose, ankle);
+  const nose = pose.landmarks[11];
+  const ankle = midpointBetween(pose.landmarks[20], pose.landmarks[24]);
 
-  const nose = pose.landmarks[27];
-  const neck = pose.landmarks[3];
-
-  return distanceInXY(nose, neck);
+  return distanceInXY(nose, ankle);
 };
 
 export const heightInWorld = (pose: Pose): number => {
-  const neckWorld = pose.worldLandmarks[27];
-  const noseWorld = pose.worldLandmarks[3];
+  const noseWorld = pose.worldLandmarks[11];
+  const ankleWorld = midpointBetween(pose.worldLandmarks[20], pose.worldLandmarks[24]);
 
-  return distanceInXY(neckWorld, noseWorld);
+  return distanceInXY(noseWorld, ankleWorld);
 };
 
 // XY座標に投影した際のX軸の正の方向となす角

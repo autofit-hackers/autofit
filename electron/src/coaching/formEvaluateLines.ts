@@ -1,3 +1,4 @@
+import { KJ } from '../utils/kinect_joints';
 import { drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
 import { Pose } from '../training/pose';
 
@@ -14,14 +15,12 @@ export type FormEvaluationDrawer = {
 const barbellOnFootCenter: FormEvaluationDrawer = {
   name: 'Barbel on foot center',
   showEvaluationLines: (ctx: CanvasRenderingContext2D, pose: Pose, canvasWidth: number, acceptableErr: number) => {
-    const KNEE_LEFT = 19;
-    const KNEE_RIGHT = 23;
     drawBarsWithAcceptableError(
       ctx,
-      pose.landmarks[KNEE_LEFT].x,
-      pose.landmarks[KNEE_LEFT].y,
-      pose.landmarks[KNEE_RIGHT].x,
-      pose.landmarks[KNEE_RIGHT].y,
+      (pose.landmarks[KJ.WRIST_LEFT].x + pose.landmarks[KJ.WRIST_RIGHT].x) / 2,
+      (pose.landmarks[KJ.WRIST_LEFT].y + pose.landmarks[KJ.WRIST_RIGHT].y) / 2,
+      pose.landmarks[KJ.KNEE_RIGHT].x,
+      pose.landmarks[KJ.KNEE_RIGHT].y,
       canvasWidth,
       acceptableErr,
     );
@@ -31,14 +30,12 @@ const barbellOnFootCenter: FormEvaluationDrawer = {
 const squatDepth: FormEvaluationDrawer = {
   name: 'Squat Depth',
   showEvaluationLines: (ctx: CanvasRenderingContext2D, pose: Pose, canvasWidth: number, acceptableErr: number) => {
-    const KNEE_LEFT = 19;
-    const KNEE_RIGHT = 23;
     drawBarsWithAcceptableError(
       ctx,
-      pose.landmarks[KNEE_LEFT].x,
-      pose.landmarks[KNEE_LEFT].y,
-      pose.landmarks[KNEE_RIGHT].x,
-      pose.landmarks[KNEE_RIGHT].y,
+      pose.landmarks[KJ.KNEE_LEFT].x,
+      pose.landmarks[KJ.KNEE_LEFT].y,
+      pose.landmarks[KJ.KNEE_RIGHT].x,
+      pose.landmarks[KJ.KNEE_RIGHT].y,
       canvasWidth,
       acceptableErr,
     );
