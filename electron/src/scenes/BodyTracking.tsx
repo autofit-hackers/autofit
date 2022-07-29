@@ -38,7 +38,7 @@ export default function BodyTrack2d() {
   const repState = useRef<RepState>(resetRepState());
 
   // settings
-  const lowerThreshold = 0.7; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
+  const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
   const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
   const formInstructionSettings: FormInstructionSettings = {
     items: formInstructionItems,
@@ -108,14 +108,23 @@ export default function BodyTrack2d() {
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           console.log('rep end');
+
+          console.log('aaaaaaaaa');
+
+          // エラーが発生するため，以下をコメントアウト
           // 動画撮影を停止し、配列に保存する
-          if (canvasRecorderRef.current) {
-            canvasRecorderRef.current.stop();
-          }
+          // if (canvasRecorderRef.current) {
+          //   canvasRecorderRef.current.stop();
+          //   console.log('recorder stop');
+          // }
+
+          console.log('bbbbbbbbb');
 
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
           rep.current = evaluateForm(rep.current, formInstructionSettings);
+
+          console.log(rep.current.formEvaluationScores);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           set.current.reps = [...set.current.reps, rep.current];
@@ -140,10 +149,10 @@ export default function BodyTrack2d() {
         });
         drawBarsWithAcceptableError(
           canvasCtx,
-          currentPose.landmarks[10].x * canvasRef.current.width,
-          currentPose.landmarks[10].y * canvasRef.current.height,
-          currentPose.landmarks[17].x * canvasRef.current.width,
-          currentPose.landmarks[17].y * canvasRef.current.height,
+          currentPose.landmarks[19].x * canvasRef.current.width,
+          currentPose.landmarks[19].y * canvasRef.current.height,
+          currentPose.landmarks[23].x * canvasRef.current.width,
+          currentPose.landmarks[23].y * canvasRef.current.height,
           canvasRef.current.width,
           100, // TODO: this is magic number, change value to evaluate form instruction function
         );
