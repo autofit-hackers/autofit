@@ -92,19 +92,26 @@ const squatDepth: FormInstructionItem = {
     const bottomPoseKnee = midpointBetween(bottomPose.worldLandmarks[19], bottomPose.worldLandmarks[23]);
     // TODO: 十分に腰が下がっているかを判定可能か?
     // TODO: 桂以外の人でも判定できるようにする
-    const numKTR = 50.0;
-    const squatDepthCheck = bottomPose.worldLandmarks[0].y - bottomPoseKnee.y + numKTR;
+    const upKTR = 50.0;
+    const downKTR = -50.0;
+    const squatDepthUpCheck = bottomPose.worldLandmarks[0].y - bottomPoseKnee.y + upKTR;
+    const squatDepthDownCheck = -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - downKTR;
+
+    console.log(squatDepthUpCheck);
+    console.log(squatDepthDownCheck);
 
     // TODO: デバック用
-    if (squatDepthCheck <= 0.0) {
+    if (squatDepthUpCheck <= 0.0) {
       console.log('腰の下げ方が足りない');
-      console.log(squatDepthCheck);
 
       return false;
     }
+    if (squatDepthDownCheck <= 0.0) {
+      console.log('腰を下げすぎ');
 
+      return false;
+    }
     console.log('十分に腰を落とした');
-    console.log(squatDepthCheck);
 
     return true;
   },

@@ -141,6 +141,7 @@ export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandm
 export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.atan2(p2.x - p1.x, p2.z - p1.z);
 
+// normalizeWorldLandmarksを変更する際は，normalizeWorldLandmarkPointも変更すること
 export const normalizeWorldLandmarks = (
   worldLandmarks: LandmarkList,
   canvas: HTMLCanvasElement,
@@ -159,4 +160,22 @@ export const normalizeWorldLandmarks = (
   }
 
   return normalizedLandmarks;
+};
+
+// normalizeWorldLandmarkPointを変更する際は，normalizeWorldLandmarksも変更すること
+export const normalizeWorldLandmarkPoint = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+  LandmarkPoint: Landmark,
+): NormalizedLandmark => {
+  // const normalizedLandmarks: NormalizedLandmarkList = [];
+  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
+  const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
+  const heightOfBody = 1500;
+
+  return {
+    x: ((LandmarkPoint.z - lowCenterZ) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
+    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
+    z: 0,
+  };
 };

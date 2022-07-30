@@ -1,4 +1,5 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
+import { Landmark } from '@mediapipe/pose';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
@@ -8,6 +9,8 @@ import {
   heightInFrame,
   kinectToMediapipe,
   KINECT_POSE_CONNECTIONS,
+  midpointBetween,
+  normalizeWorldLandmarkPoint,
   normalizeWorldLandmarks,
   Pose,
 } from '../training/pose';
@@ -57,12 +60,12 @@ export default function BodyTrack2d() {
       bodyFrame: { bodies: any[] };
     }) => {
       if (canvasRef.current === null || sideCanvasRef.current === null) {
-        throw new Error('canvasRef is null');
+        throw new Error('Either canvasRef or sideCanvasRef is null');
       }
       const canvasCtx = canvasRef.current.getContext('2d');
       const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
       if (canvasCtx === null || sideCanvasCtx === null) {
-        throw new Error('canvasCtx is null');
+        throw new Error('Either canvasCtx or sideCanvasCtx is null');
       }
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
@@ -111,6 +114,7 @@ export default function BodyTrack2d() {
 
           console.log('aaaaaaaaa');
 
+          // TODO: 以下を修正
           // エラーが発生するため，以下をコメントアウト
           // 動画撮影を停止し、配列に保存する
           // if (canvasRecorderRef.current) {
@@ -155,6 +159,7 @@ export default function BodyTrack2d() {
           currentPose.landmarks[23].y * canvasRef.current.height,
           canvasRef.current.width,
           100, // TODO: this is magic number, change value to evaluate form instruction function
+          200,
         );
         // Side座標を描画
         drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
@@ -171,6 +176,35 @@ export default function BodyTrack2d() {
             color: 'white',
             lineWidth: 4,
           },
+        );
+        // スクワット検証時
+        const KneesMidpoint: Landmark = midpointBetween(
+          currentPose.worldLandmarks[19],
+          currentPose.worldLandmarks[23],
+        );
+        const squatDepthPoint: Landmark = {
+          x: KneesMidpoint.x,
+          y: KneesMidpoint.y - 50.0,
+          z: KneesMidpoint.z,
+        };
+        drawBarsWithAcceptableError(
+          sideCanvasCtx,
+          0.0,
+          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
+            sideCanvasRef.current.height,
+          10.0,
+          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
+            sideCanvasRef.current.height,
+          sideCanvasRef.current.width,
+          0.0, // TODO: this is magic number, change value to evaluate form instruction function
+          0.0,
+        );
+        // データを描画する
+        canvasCtx.font = '100px Times New Roman';
+        canvasCtx.fillText(
+          'Intoaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          0.5 * canvasRef.current.width,
+          0.1 * canvasRef.current.height,
         );
       }
 
@@ -201,6 +235,8 @@ export default function BodyTrack2d() {
       <canvas
         ref={canvasRef}
         className="main_canvas"
+        width="1280"
+        height="720"
         style={{
           position: 'absolute',
           marginLeft: 'auto',

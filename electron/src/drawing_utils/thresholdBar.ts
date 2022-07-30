@@ -30,20 +30,22 @@ export const drawBarsWithAcceptableError = (
   x2: number,
   y2: number,
   w: number,
-  acceptableError: number,
+  acceptableErrorUp: number,
+  acceptableErrorDown: number,
 ) => {
   drawBarsFromTwoPoints(ctx, x1, y1, x2, y2, w);
   if (x1 !== x2) {
     const a = (y2 - y1) / (x2 - x1);
     // cos = 1 / sqrt( 1 + tan^2 )
     // tan = -1/a
-    const xError = acceptableError * Math.sqrt(1 + 1 / (a * a));
+    const xErrorUp = acceptableErrorUp * Math.sqrt(1 + 1 / (a * a));
+    const xErrorDown = acceptableErrorDown * Math.sqrt(1 + 1 / (a * a));
     drawBarsFromTwoPoints(ctx, x1, y1, x2, y2, w);
-    drawBarsFromTwoPoints(ctx, x1 + xError, y1, x2 + xError, y2, w);
-    drawBarsFromTwoPoints(ctx, x1 - xError, y1, x2 - xError, y2, w);
+    drawBarsFromTwoPoints(ctx, x1 + xErrorUp, y1, x2 + xErrorUp, y2, w);
+    drawBarsFromTwoPoints(ctx, x1 - xErrorDown, y1, x2 - xErrorDown, y2, w);
   } else {
     drawBarsFromTwoPoints(ctx, x1, y1, x2, y2, w);
-    drawBarsFromTwoPoints(ctx, x1 + acceptableError, y1, x2 + acceptableError, y2, w);
-    drawBarsFromTwoPoints(ctx, x1 - acceptableError, y1, x2 - acceptableError, y2, w);
+    drawBarsFromTwoPoints(ctx, x1 + acceptableErrorUp, y1, x2 + acceptableErrorUp, y2, w);
+    drawBarsFromTwoPoints(ctx, x1 - acceptableErrorDown, y1, x2 - acceptableErrorDown, y2, w);
   }
 };
