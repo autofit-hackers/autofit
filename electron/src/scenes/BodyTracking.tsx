@@ -196,6 +196,7 @@ export default function BodyTrack2d() {
           normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
             sideCanvasRef.current.height,
           sideCanvasRef.current.width,
+          'red',
         );
         // drawBarsWithAcceptableError(
         //   sideCanvasCtx,
