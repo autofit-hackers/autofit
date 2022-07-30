@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
+import { drawBarsFromTwoPoints, drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
 import {
   heightInFrame,
   kinectToMediapipe,
@@ -187,7 +187,7 @@ export default function BodyTrack2d() {
           y: KneesMidpoint.y - 50.0,
           z: KneesMidpoint.z,
         };
-        drawBarsWithAcceptableError(
+        drawBarsFromTwoPoints(
           sideCanvasCtx,
           0.0,
           normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
@@ -196,9 +196,19 @@ export default function BodyTrack2d() {
           normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
             sideCanvasRef.current.height,
           sideCanvasRef.current.width,
-          0.0, // TODO: this is magic number, change value to evaluate form instruction function
-          0.0,
         );
+        // drawBarsWithAcceptableError(
+        //   sideCanvasCtx,
+        //   0.0,
+        //   normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
+        //     sideCanvasRef.current.height,
+        //   10.0,
+        //   normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
+        //     sideCanvasRef.current.height,
+        //   sideCanvasRef.current.width,
+        //   0.0, // TODO: this is magic number, change value to evaluate form instruction function
+        //   0.0,
+        // );
         // データを描画する
         canvasCtx.font = '100px Times New Roman';
         canvasCtx.fillText(
