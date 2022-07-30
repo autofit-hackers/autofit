@@ -3,7 +3,6 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
 import {
   heightInFrame,
   kinectToMediapipe,
@@ -15,7 +14,7 @@ import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
 import { startCaptureWebcam } from '../utils/capture';
-import { renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
+import { drawBarsWithAcceptableError, renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
