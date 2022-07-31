@@ -66,12 +66,24 @@ export const kinectToMediapipe = (
     orientationZ: number;
   }>,
   canvas: HTMLCanvasElement,
+  rotation: boolean,
 ): { landmarks: NormalizedLandmarkList; worldLandmarks: LandmarkList } => {
   const mediapipePose: NormalizedLandmarkList = [];
   const mediapipePoseWorld: LandmarkList = [];
+  const depthToRDB = (Math.PI * 6) / 180.0;
   for (let i = 0; i < kinectPoses.length; i += 1) {
     mediapipePose[i] = { x: kinectPoses[i].colorX / canvas.width, y: kinectPoses[i].colorY / canvas.height, z: 0 };
-    mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
+
+    // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
+    if (rotation) {
+      mediapipePoseWorld[i] = {
+        x: kinectPoses[i].cameraX,
+        y: kinectPoses[i].cameraY * Math.cos(depthToRDB) + kinectPoses[i].cameraZ * Math.sin(depthToRDB),
+        z: kinectPoses[i].cameraY * Math.sin(-depthToRDB) + kinectPoses[i].cameraZ * Math.cos(depthToRDB),
+      };
+    } else {
+      mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
+    }
   }
 
   return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld };
