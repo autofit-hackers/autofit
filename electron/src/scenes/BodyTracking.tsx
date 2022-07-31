@@ -4,8 +4,10 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { drawBarsFromTwoPoints, drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
+import { drawBarsFromTwoPoints } from '../drawing_utils/thresholdBar';
 import {
+  angleInYZ,
+  distanceInYZ,
   heightInFrame,
   kinectToMediapipe,
   KINECT_POSE_CONNECTIONS,
@@ -151,16 +153,17 @@ export default function BodyTrack2d() {
           color: 'white',
           lineWidth: 4,
         });
-        drawBarsWithAcceptableError(
-          canvasCtx,
-          currentPose.landmarks[19].x * canvasRef.current.width,
-          currentPose.landmarks[19].y * canvasRef.current.height,
-          currentPose.landmarks[23].x * canvasRef.current.width,
-          currentPose.landmarks[23].y * canvasRef.current.height,
-          canvasRef.current.width,
-          100, // TODO: this is magic number, change value to evaluate form instruction function
-          200,
-        );
+        // drawBarsWithAcceptableError(
+        //   canvasCtx,
+        //   currentPose.landmarks[19].x * canvasRef.current.width,
+        //   currentPose.landmarks[19].y * canvasRef.current.height,
+        //   currentPose.landmarks[23].x * canvasRef.current.width,
+        //   currentPose.landmarks[23].y * canvasRef.current.height,
+        //   canvasRef.current.width,
+        //   100, // TODO: this is magic number, change value to evaluate form instruction function
+        //   200,
+        // );
+
         // Side座標を描画
         drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
           color: 'white',
@@ -182,21 +185,51 @@ export default function BodyTrack2d() {
           currentPose.worldLandmarks[19],
           currentPose.worldLandmarks[23],
         );
-        const squatDepthPoint: Landmark = {
+        const currentPoseKnee = midpointBetween(currentPose.worldLandmarks[19], currentPose.worldLandmarks[23]);
+        const currentPosePelvisKneeDistanceYZ = distanceInYZ(currentPose.worldLandmarks[0], currentPoseKnee);
+        const upAngleKTR = (Math.PI * 9.0) / 180.0; // 9度は桂が指定
+        const downAngleKTR = -(Math.PI * 9.0) / 180.0; // 9度は桂が指定;
+        const squatDepthUpPoint: Landmark = {
           x: KneesMidpoint.x,
-          y: KneesMidpoint.y - 50.0,
+          y: KneesMidpoint.y - Math.sin(upAngleKTR) * currentPosePelvisKneeDistanceYZ,
           z: KneesMidpoint.z,
         };
+        const squatDepthDownPoint: Landmark = {
+          x: KneesMidpoint.x,
+          y: KneesMidpoint.y - Math.sin(downAngleKTR) * currentPosePelvisKneeDistanceYZ,
+          z: KneesMidpoint.z,
+        };
+        // 判定基準を表示
+        // drawBarsFromTwoPoints(
+        //   canvasCtx,
+        //   0.0 * canvasRef.current.width,
+        //   currentPose.landmarks[23].y * canvasRef.current.height,
+        //   0.1 * canvasRef.current.width,
+        //   currentPose.landmarks[23].y * canvasRef.current.height,
+        //   sideCanvasRef.current.width,
+        //   'red',
+        // );
         drawBarsFromTwoPoints(
           sideCanvasCtx,
           0.0,
-          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
+          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthUpPoint).y *
             sideCanvasRef.current.height,
           10.0,
-          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
+          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthUpPoint).y *
             sideCanvasRef.current.height,
           sideCanvasRef.current.width,
           'red',
+        );
+        drawBarsFromTwoPoints(
+          sideCanvasCtx,
+          0.0,
+          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthDownPoint).y *
+            sideCanvasRef.current.height,
+          10.0,
+          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthDownPoint).y *
+            sideCanvasRef.current.height,
+          sideCanvasRef.current.width,
+          'green',
         );
         // drawBarsWithAcceptableError(
         //   sideCanvasCtx,
@@ -211,12 +244,34 @@ export default function BodyTrack2d() {
         //   0.0,
         // );
         // データを描画する
-        canvasCtx.font = '100px Times New Roman';
+        canvasCtx.font = '30px Times New Roman';
+        canvasCtx.fillStyle = 'red';
+        canvasCtx.fillText(`Squat`, 0.1 * canvasRef.current.width, 0.05 * canvasRef.current.height);
+
+        const textKnee = `Knee: [${currentPoseKnee.x.toFixed(1).toString()},${currentPoseKnee.y
+          .toFixed(1)
+          .toString()},${currentPoseKnee.z.toFixed(1).toString()}]`;
+        canvasCtx.fillText(`${textKnee}`, 0.1 * canvasRef.current.width, 0.1 * canvasRef.current.height);
+
+        const textPelvis = `Pelvis: [${currentPose.worldLandmarks[0].x
+          .toFixed(1)
+          .toString()},${currentPose.worldLandmarks[0].y.toFixed(1).toString()},${currentPose.worldLandmarks[0].z
+          .toFixed(1)
+          .toString()}]`;
+        canvasCtx.fillText(`${textPelvis}`, 0.1 * canvasRef.current.width, 0.2 * canvasRef.current.height);
+
+        const textPelvisKneeDistanceYZ = `PelvisKneeDistanceYZ: ${currentPosePelvisKneeDistanceYZ
+          .toFixed(1)
+          .toString()}`;
         canvasCtx.fillText(
-          'Intoaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          0.5 * canvasRef.current.width,
-          0.1 * canvasRef.current.height,
+          `${textPelvisKneeDistanceYZ}`,
+          0.1 * canvasRef.current.width,
+          0.3 * canvasRef.current.height,
         );
+
+        const thighAngle = (angleInYZ(currentPose.worldLandmarks[0], currentPoseKnee) * 180.0) / Math.PI;
+        const textThighAngle = `thighAngle: ${thighAngle.toFixed(1).toString()}`;
+        canvasCtx.fillText(`${textThighAngle}`, 0.1 * canvasRef.current.width, 0.4 * canvasRef.current.height);
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する

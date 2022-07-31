@@ -91,18 +91,18 @@ const squatDepth: FormInstructionItem = {
       return true;
     }
     const bottomPoseKnee = midpointBetween(bottomPose.worldLandmarks[19], bottomPose.worldLandmarks[23]);
-    const bottomPosePelvisKneeYZ = distanceInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    const bottomPosePelvisKneeAngleYZ = angleInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    console.log('bottomPosePelvisKneeYZ: ', bottomPosePelvisKneeYZ);
-    console.log('bottomPosePelvisKneeAngleYZ: ', bottomPosePelvisKneeAngleYZ);
+    const bottomPosePelvisKneeDistanceYZ = distanceInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
+    // const bottomPosePelvisKneeAngleYZ = angleInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
+    // console.log('bottomPosePelvisKneeYZ: ', bottomPosePelvisKneeYZ);
+    // console.log('bottomPosePelvisKneeAngleYZ: ', bottomPosePelvisKneeAngleYZ);
     // TODO: 十分に腰が下がっているかを判定可能か?
     // TODO: 桂以外の人でも判定できるようにする
     const upAngleKTR = (Math.PI * 9.0) / 180.0; // 9度は桂が指定
     const downAngleKTR = -(Math.PI * 9.0) / 180.0; // 9度は桂が指定;
     const squatDepthUpCheck =
-      bottomPose.worldLandmarks[0].y - bottomPoseKnee.y + Math.sin(upAngleKTR) * bottomPosePelvisKneeYZ;
+      bottomPose.worldLandmarks[0].y - bottomPoseKnee.y + Math.sin(upAngleKTR) * bottomPosePelvisKneeDistanceYZ;
     const squatDepthDownCheck =
-      -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - Math.sin(downAngleKTR) * bottomPosePelvisKneeYZ;
+      -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - Math.sin(downAngleKTR) * bottomPosePelvisKneeDistanceYZ;
 
     console.log(squatDepthUpCheck);
     console.log(squatDepthDownCheck);
