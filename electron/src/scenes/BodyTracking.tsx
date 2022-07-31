@@ -14,8 +14,8 @@ import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
 import { startCaptureWebcam } from '../utils/capture';
-import { drawBarsWithAcceptableError, renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
 import { startKinect } from '../utils/kinect';
+import { drawBarsWithAcceptableError, renderBGRA32ColorFrame, sideRenderFrame } from '../utils/render/drawing';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {

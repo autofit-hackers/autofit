@@ -160,3 +160,10 @@ export const normalizeWorldLandmarks = (
 
   return normalizedLandmarks;
 };
+
+export const copyLandmark = (normalizedLandmark: NormalizedLandmark): NormalizedLandmark => ({
+  x: normalizedLandmark.x,
+  y: normalizedLandmark.y,
+  z: normalizedLandmark.z,
+  visibility: normalizedLandmark.visibility,
+});
