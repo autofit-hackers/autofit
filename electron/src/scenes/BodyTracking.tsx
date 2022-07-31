@@ -21,7 +21,6 @@ import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms'
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sideCanvasRef = useRef<HTMLCanvasElement>(null);
-
   const canvasImageData = useRef<ImageData | null>(null);
 
   // Phase
