@@ -37,7 +37,8 @@ export const startKinect = (
 };
 
 export const stopKinect = (kinect: typeof KinectAzure): void => {
-  if (kinect && kinect.open() && kinect.isListening()) {
+  console.log('Stopping', kinect);
+  if (kinect) {
     console.log('closing the kinect');
     kinect
       .stopListening()

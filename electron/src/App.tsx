@@ -1,14 +1,7 @@
-import MiniDrawer from './ui_component/SideBar';
+import TrainingMain from './scenes/Main';
 
 function App() {
-  return (
-    <>
-      <div>
-        <p>Hello Electron + Vite + React!</p>
-      </div>
-      <MiniDrawer />
-    </>
-  );
+  return <TrainingMain />;
 }
 
 export default App;

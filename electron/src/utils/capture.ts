@@ -15,8 +15,9 @@ export const startCaptureWebcam = (
   };
   recorder.onstart = () => {
     setTimeout(() => {
+      console.log('time out');
       recorder.stop();
-    }, 10000);
+    }, 100000); // FIXME: タイムアウト時間を適切に設定すること
   };
   recorder.onstop = () => {
     const blob = new Blob(rec.data, { type: rec.type });

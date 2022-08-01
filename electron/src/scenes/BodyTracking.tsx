@@ -69,7 +69,7 @@ export default function BodyTrack2d() {
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
 
       if (canvasImageData.current === null) {
-        canvasRef.current.width = data.colorImageFrame.width;
+        canvasRef.current.width = (data.colorImageFrame.height * 9) / 16;
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       } else {
@@ -193,12 +193,13 @@ export default function BodyTrack2d() {
           position: 'absolute',
           marginLeft: 'auto',
           marginRight: 'auto',
+          top: 0,
           left: 0,
           right: 0,
           textAlign: 'center',
           zIndex: 1,
-          width: 1280,
-          height: 720,
+          width: 1080,
+          height: 1920,
         }}
       />
       <canvas
@@ -210,7 +211,7 @@ export default function BodyTrack2d() {
           position: 'absolute',
           marginLeft: 'auto',
           marginRight: 'auto',
-          top: 960,
+          top: 1920,
           left: 0,
           right: 0,
           textAlign: 'center',
