@@ -1,24 +1,19 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
-import { Landmark } from '@mediapipe/pose';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { drawBarsFromTwoPoints } from '../drawing_utils/thresholdBar';
 import {
-  angleInYZ,
-  distanceInYZ,
   heightInFrame,
   kinectToMediapipe,
   KINECT_POSE_CONNECTIONS,
-  midpointBetween,
-  normalizeWorldLandmarkPoint,
   normalizeWorldLandmarks,
   Pose,
 } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
+import { squatDepthCheckLine, squatDepthCheckText } from '../training/squatDebugging';
 import { startCaptureWebcam } from '../utils/capture';
 import { renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
 import { startKinect } from '../utils/kinect';
@@ -44,7 +39,7 @@ export default function BodyTrack2d() {
 
   // settings
   const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
-  const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
+  const upperThreshold = 0.9; // TODO: temporarily hard coded => useContext(RepCountSettingContext).upperThreshold;
   const formInstructionSettings: FormInstructionSettings = {
     items: formInstructionItems,
   };
@@ -153,16 +148,6 @@ export default function BodyTrack2d() {
           color: 'white',
           lineWidth: 4,
         });
-        // drawBarsWithAcceptableError(
-        //   canvasCtx,
-        //   currentPose.landmarks[19].x * canvasRef.current.width,
-        //   currentPose.landmarks[19].y * canvasRef.current.height,
-        //   currentPose.landmarks[23].x * canvasRef.current.width,
-        //   currentPose.landmarks[23].y * canvasRef.current.height,
-        //   canvasRef.current.width,
-        //   100, // TODO: this is magic number, change value to evaluate form instruction function
-        //   200,
-        // );
 
         // Side座標を描画
         drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
@@ -180,98 +165,21 @@ export default function BodyTrack2d() {
             lineWidth: 4,
           },
         );
-        // スクワット検証時
-        const KneesMidpoint: Landmark = midpointBetween(
-          currentPose.worldLandmarks[19],
-          currentPose.worldLandmarks[23],
-        );
-        const currentPoseKnee = midpointBetween(currentPose.worldLandmarks[19], currentPose.worldLandmarks[23]);
-        const currentPosePelvisKneeDistanceYZ = distanceInYZ(currentPose.worldLandmarks[0], currentPoseKnee);
-        const upAngleKTR = (Math.PI * 9.0) / 180.0; // 9度は桂が指定
-        const downAngleKTR = -(Math.PI * 9.0) / 180.0; // 9度は桂が指定;
-        const squatDepthUpPoint: Landmark = {
-          x: KneesMidpoint.x,
-          y: KneesMidpoint.y - Math.sin(upAngleKTR) * currentPosePelvisKneeDistanceYZ,
-          z: KneesMidpoint.z,
-        };
-        const squatDepthDownPoint: Landmark = {
-          x: KneesMidpoint.x,
-          y: KneesMidpoint.y - Math.sin(downAngleKTR) * currentPosePelvisKneeDistanceYZ,
-          z: KneesMidpoint.z,
-        };
-        // 判定基準を表示
-        // drawBarsFromTwoPoints(
-        //   canvasCtx,
-        //   0.0 * canvasRef.current.width,
-        //   currentPose.landmarks[23].y * canvasRef.current.height,
-        //   0.1 * canvasRef.current.width,
-        //   currentPose.landmarks[23].y * canvasRef.current.height,
-        //   sideCanvasRef.current.width,
-        //   'red',
-        // );
-        drawBarsFromTwoPoints(
+
+        // デバック用
+        // TODO デバック用の表示させるコードを増やす
+        // スクワットの腰の高さの検証用判定基準を表示
+        squatDepthCheckLine(
           sideCanvasCtx,
-          0.0,
-          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthUpPoint).y *
-            sideCanvasRef.current.height,
-          10.0,
-          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthUpPoint).y *
-            sideCanvasRef.current.height,
+          sideCanvasRef.current,
           sideCanvasRef.current.width,
-          'red',
+          sideCanvasRef.current.height,
+          currentPose.worldLandmarks,
         );
-        drawBarsFromTwoPoints(
-          sideCanvasCtx,
-          0.0,
-          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthDownPoint).y *
-            sideCanvasRef.current.height,
-          10.0,
-          normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthDownPoint).y *
-            sideCanvasRef.current.height,
-          sideCanvasRef.current.width,
-          'green',
-        );
-        // drawBarsWithAcceptableError(
-        //   sideCanvasCtx,
-        //   0.0,
-        //   normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
-        //     sideCanvasRef.current.height,
-        //   10.0,
-        //   normalizeWorldLandmarkPoint(currentPose.worldLandmarks, sideCanvasRef.current, squatDepthPoint).y *
-        //     sideCanvasRef.current.height,
-        //   sideCanvasRef.current.width,
-        //   0.0, // TODO: this is magic number, change value to evaluate form instruction function
-        //   0.0,
-        // );
+
         // データを描画する
-        canvasCtx.font = '30px Times New Roman';
-        canvasCtx.fillStyle = 'red';
-        canvasCtx.fillText(`Squat`, 0.1 * canvasRef.current.width, 0.05 * canvasRef.current.height);
-
-        const textKnee = `Knee: [${currentPoseKnee.x.toFixed(1).toString()},${currentPoseKnee.y
-          .toFixed(1)
-          .toString()},${currentPoseKnee.z.toFixed(1).toString()}]`;
-        canvasCtx.fillText(`${textKnee}`, 0.1 * canvasRef.current.width, 0.1 * canvasRef.current.height);
-
-        const textPelvis = `Pelvis: [${currentPose.worldLandmarks[0].x
-          .toFixed(1)
-          .toString()},${currentPose.worldLandmarks[0].y.toFixed(1).toString()},${currentPose.worldLandmarks[0].z
-          .toFixed(1)
-          .toString()}]`;
-        canvasCtx.fillText(`${textPelvis}`, 0.1 * canvasRef.current.width, 0.2 * canvasRef.current.height);
-
-        const textPelvisKneeDistanceYZ = `PelvisKneeDistanceYZ: ${currentPosePelvisKneeDistanceYZ
-          .toFixed(1)
-          .toString()}`;
-        canvasCtx.fillText(
-          `${textPelvisKneeDistanceYZ}`,
-          0.1 * canvasRef.current.width,
-          0.3 * canvasRef.current.height,
-        );
-
-        const thighAngle = (angleInYZ(currentPose.worldLandmarks[0], currentPoseKnee) * 180.0) / Math.PI;
-        const textThighAngle = `thighAngle: ${thighAngle.toFixed(1).toString()}`;
-        canvasCtx.fillText(`${textThighAngle}`, 0.1 * canvasRef.current.width, 0.4 * canvasRef.current.height);
+        // スクワットの腰の高さを判定するためのデータを描画する
+        squatDepthCheckText(canvasCtx, canvasRef.current.width, canvasRef.current.height, currentPose.worldLandmarks);
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
