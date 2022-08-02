@@ -167,7 +167,7 @@ export default function BodyTrack2d() {
         );
 
         // デバック用
-        // TODO デバック用の表示させるコードを増やす
+        // TODO デバック用コードを削除
         // スクワットの腰の高さの検証用判定基準を表示
         squatDepthCheckLine(
           sideCanvasCtx,

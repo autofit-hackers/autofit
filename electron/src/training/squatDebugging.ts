@@ -1,6 +1,6 @@
 import { Landmark, LandmarkList } from '@mediapipe/pose';
 import { drawBarsFromTwoPoints } from '../drawing_utils/thresholdBar';
-import { angleInYZ, distanceInYZ, midpointBetween, normalizeWorldLandmarkPoint } from './pose';
+import { angleInYZ, distanceInY, distanceInYZ, midpointBetween, normalizeWorldLandmarkPoint } from './pose';
 
 // スクワットのお尻が十分に下がっているかチェックする用のラインを表示する
 export const squatDepthCheckLine = (
@@ -55,6 +55,7 @@ export const squatDepthCheckText = (
   const currentPoseKnee = midpointBetween(worldLandmarks[19], worldLandmarks[23]);
   const currentPosePelvisKneeDistanceYZ = distanceInYZ(worldLandmarks[0], currentPoseKnee);
   const thighAngle = (angleInYZ(worldLandmarks[0], currentPoseKnee) * 180.0) / Math.PI;
+  const currentPosePelvisKneeDistanceY = Math.abs(distanceInY(worldLandmarks[0], currentPoseKnee));
 
   ctx.font = '30px Times New Roman';
   ctx.fillStyle = 'red';
@@ -70,9 +71,15 @@ export const squatDepthCheckText = (
     .toString()},${worldLandmarks[0].z.toFixed(1).toString()}]`;
   ctx.fillText(`${textPelvis}`, 0.1 * width, 0.2 * height);
 
-  const textPelvisKneeDistanceYZ = `PelvisKneeDistanceYZ: ${currentPosePelvisKneeDistanceYZ.toFixed(1).toString()}`;
+  const textPelvisKneeDistanceYZ = `YZ平面での骨盤と膝の間の距離: ${currentPosePelvisKneeDistanceYZ
+    .toFixed(1)
+    .toString()}`;
   ctx.fillText(`${textPelvisKneeDistanceYZ}`, 0.1 * width, 0.3 * height);
 
-  const textThighAngle = `thighAngle: ${thighAngle.toFixed(1).toString()}`;
-  ctx.fillText(`${textThighAngle}`, 0.1 * width, 0.4 * height);
+  const textPelvisKneeDistanceY = `骨盤と膝のY座標の差: ${currentPosePelvisKneeDistanceY.toFixed(1).toString()}`;
+  ctx.fillText(`${textPelvisKneeDistanceY}`, 0.1 * width, 0.4 * height);
+
+  // const textThighAngle = `thighAngle: ${thighAngle.toFixed(1).toString()}`;
+  const textThighAngle = `骨盤と膝を結ぶ直線がYZ平面上でY軸となす角: ${thighAngle.toFixed(1).toString()}`;
+  ctx.fillText(`${textThighAngle}`, 0.1 * width, 0.5 * height);
 };
