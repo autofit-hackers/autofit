@@ -190,10 +190,8 @@ export const normalizeFrontWorldLandmarkPoint = (
   canvas: HTMLCanvasElement,
   LandmarkPoint: Landmark,
 ): NormalizedLandmark => {
-  // const normalizedLandmarks: NormalizedLandmarkList = [];
   const lowCenterX = (worldLandmarks[20].x + worldLandmarks[24].x) / 2;
   const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
-  // const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
   const heightOfBody = 1500;
 
   return {
