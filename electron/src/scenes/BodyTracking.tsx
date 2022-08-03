@@ -204,6 +204,26 @@ export default function BodyTrack2d() {
         // データを描画する
         // スクワットの腰の高さを判定するためのデータを描画する
         squatDepthCheckText(canvasCtx, canvasRef.current.width, canvasRef.current.height, currentPose.worldLandmarks);
+        squatDepthCheckText(
+          sideCanvasCtx,
+          canvasRef.current.width,
+          canvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
+
+        // スクワットの踵とつま先の高さを判定するためのデータを描画する
+        // squatFeetGroundCheckText(
+        //   canvasCtx,
+        //   canvasRef.current.width,
+        //   canvasRef.current.height,
+        //   currentPose.worldLandmarks,
+        // );
+        // squatFeetGroundCheckText(
+        //   frontCanvasCtx,
+        //   canvasRef.current.width,
+        //   canvasRef.current.height,
+        //   currentPose.worldLandmarks,
+        // );
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
@@ -274,7 +294,7 @@ export default function BodyTrack2d() {
           position: 'absolute',
           marginLeft: 'auto',
           marginRight: 'auto',
-          top: 1800,
+          top: 1690,
           left: 0,
           right: 0,
           textAlign: 'center',

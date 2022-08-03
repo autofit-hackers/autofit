@@ -104,8 +104,8 @@ const squatDepth: FormInstructionItem = {
     const squatDepthDownCheck =
       -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - Math.sin(downAngleKTR) * bottomPosePelvisKneeDistanceYZ;
 
-    console.log(squatDepthUpCheck);
-    console.log(squatDepthDownCheck);
+    // console.log(squatDepthUpCheck);
+    // console.log(squatDepthDownCheck);
 
     // TODO: デバック用
     if (squatDepthUpCheck <= 0.0) {
@@ -268,12 +268,12 @@ const feetAngle: FormInstructionItem = {
     const topPoseRightFootAngleZX = angleInZX(topPose.worldLandmarks[24], topPose.worldLandmarks[25]);
     const topPoseFeetGapAngleZX = Math.abs(topPoseLeftFootAngleZX + topPoseRightFootAngleZX);
 
-    const test1 = (topPoseLeftFootAngleZX * 180.0) / Math.PI;
-    const test2 = (topPoseRightFootAngleZX * 180.0) / Math.PI;
+    // const test1 = (topPoseLeftFootAngleZX * 180.0) / Math.PI;
+    // const test2 = (topPoseRightFootAngleZX * 180.0) / Math.PI;
     // console.log('topPoseLeftFootAngleZX', topPoseLeftFootAngleZX);
     // console.log('topPoseRightFootAngleZX', topPoseRightFootAngleZX);
-    console.log('topPoseLeftFootAngleZX', test1);
-    console.log('topPoseRightFootAngleZX', test2);
+    // console.log('topPoseLeftFootAngleZX', test1);
+    // console.log('topPoseRightFootAngleZX', test2);
 
     // TODO: acceptableErrorについて検証
     const acceptableError = 0.05;
@@ -281,19 +281,19 @@ const feetAngle: FormInstructionItem = {
     const numKTR = 0.8;
     const highFeetAngleCheck = ((1 + acceptableError) * Math.PI * 60) / 180 - topPoseFeetGapAngleZX + numKTR;
     const lowFeetAngleCheck = topPoseFeetGapAngleZX - ((1 - acceptableError) * Math.PI * 60) / 180 + numKTR;
-    console.log((topPoseFeetGapAngleZX * 180.0) / Math.PI);
+    // console.log((topPoseFeetGapAngleZX * 180.0) / Math.PI);
 
     if (highFeetAngleCheck <= 0.0) {
       // つま先の角度が60度を大きく超えている
-      console.log('つま先が開きすぎです');
-      console.log(highFeetAngleCheck);
+      // console.log('つま先が開きすぎです');
+      // console.log(highFeetAngleCheck);
 
       return false;
     }
     if (lowFeetAngleCheck <= 0.0) {
       // つま先の角度が60度を大きく下回っている
-      console.log('つま先を外に向けましょう');
-      console.log(lowFeetAngleCheck);
+      // console.log('つま先を外に向けましょう');
+      // console.log(lowFeetAngleCheck);
 
       return false;
     }

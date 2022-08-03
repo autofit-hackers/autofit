@@ -1,6 +1,13 @@
 import { Landmark, LandmarkList } from '@mediapipe/pose';
 import { drawBarsFromTwoPoints } from '../drawing_utils/thresholdBar';
-import { angleInYZ, distanceInY, distanceInYZ, midpointBetween, normalizeSideWorldLandmarkPoint } from './pose';
+import {
+  angleInYZ,
+  distanceInXYZ,
+  distanceInY,
+  distanceInYZ,
+  midpointBetween,
+  normalizeSideWorldLandmarkPoint,
+} from './pose';
 
 // スクワットのお尻が十分に下がっているかチェックする用のラインを表示する
 export const squatDepthCheckLine = (
@@ -59,7 +66,7 @@ export const squatDepthCheckText = (
 
   ctx.font = '30px Times New Roman';
   ctx.fillStyle = 'red';
-  ctx.fillText(`Squat`, 0.1 * width, 0.05 * height);
+  ctx.fillText(`Squat Depth`, 0.1 * width, 0.05 * height);
 
   const textKnee = `Knee: [${currentPoseKnee.x.toFixed(1).toString()},${currentPoseKnee.y
     .toFixed(1)
@@ -82,4 +89,34 @@ export const squatDepthCheckText = (
   // const textThighAngle = `thighAngle: ${thighAngle.toFixed(1).toString()}`;
   const textThighAngle = `骨盤と膝を結ぶ直線がYZ平面上でY軸となす角: ${thighAngle.toFixed(1).toString()}`;
   ctx.fillText(`${textThighAngle}`, 0.1 * width, 0.5 * height);
+};
+
+// スクワットの足が浮いていないかをチェックする用のデータを表示する
+export const squatFeetGroundCheckText = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  const FootAnkleDistance =
+    (distanceInXYZ(worldLandmarks[20], worldLandmarks[21]) + distanceInXYZ(worldLandmarks[24], worldLandmarks[25])) /
+    2;
+  ctx.font = '30px Times New Roman';
+  ctx.fillStyle = 'red';
+  ctx.fillText(`Squat Feet Ground`, 0.1 * width, 0.05 * height);
+
+  const textLeftFoot = `Foot_Left: [${worldLandmarks[21].y.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftFoot}`, 0.1 * width, 0.1 * height);
+
+  const textRightFoot = `Foot_Right: [${worldLandmarks[25].y.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightFoot}`, 0.1 * width, 0.2 * height);
+
+  const textLeftAnkle = `Ankle_Left: [${worldLandmarks[20].y.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftAnkle}`, 0.1 * width, 0.3 * height);
+
+  const textRightAnkle = `Ankle_Right: [${worldLandmarks[24].y.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightAnkle}`, 0.1 * width, 0.4 * height);
+
+  const textFootAnkleDistance = `つま先と踵の距離: [${FootAnkleDistance.toFixed(1).toString()}]`;
+  ctx.fillText(`${textFootAnkleDistance}`, 0.1 * width, 0.5 * height);
 };

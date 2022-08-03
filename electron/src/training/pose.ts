@@ -153,7 +153,7 @@ export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandm
 export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.atan2(p2.x - p1.x, p2.z - p1.z);
 
-// Sideを描画するために行う座標返還
+// Sideを描画するために行う座標変換
 export const normalizeSideWorldLandmarkPoint = (
   worldLandmarks: LandmarkList,
   canvas: HTMLCanvasElement,
