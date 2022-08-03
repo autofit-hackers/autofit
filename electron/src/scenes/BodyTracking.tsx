@@ -14,9 +14,9 @@ import {
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
-import { squatDepthCheckLine, squatDepthCheckText } from '../training/squatDebugging';
+import { showLineToCheckSquatDepth, showTextToCheckSquatDepth } from '../training/squatDebugging';
 import { startCaptureWebcam } from '../utils/capture';
-import { frontRenderFrame, renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
+import { renderBGRA32ColorFrame, renderFrontFrame, renderSideFrame } from '../utils/drawing';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
@@ -58,13 +58,13 @@ export default function BodyTrack2d() {
       colorImageFrame: { imageData: ImageData; width: number; height: number };
       bodyFrame: { bodies: any[] };
     }) => {
-      if (canvasRef.current === null || sideCanvasRef.current === null || frontCanvasRef.current === null) {
+      if (canvasRef.current == null || sideCanvasRef.current == null || frontCanvasRef.current == null) {
         throw new Error('Either canvasRef or sideCanvasRef or frontCanvasRef is null');
       }
       const canvasCtx = canvasRef.current.getContext('2d');
       const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
       const frontCanvasCtx = frontCanvasRef.current.getContext('2d');
-      if (canvasCtx === null || sideCanvasCtx === null || frontCanvasCtx === null) {
+      if (canvasCtx == null || sideCanvasCtx == null || frontCanvasCtx == null) {
         throw new Error('Either canvasCtx or sideCanvasCtx or frontCanvasCtx is null');
       }
       canvasCtx.save();
@@ -77,8 +77,8 @@ export default function BodyTrack2d() {
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        sideRenderFrame(sideCanvasCtx, canvasImageData.current);
-        frontRenderFrame(frontCanvasCtx, canvasImageData.current);
+        renderSideFrame(sideCanvasCtx, canvasImageData.current);
+        renderFrontFrame(frontCanvasCtx, canvasImageData.current);
       }
 
       if (data.bodyFrame.bodies) {
@@ -113,17 +113,7 @@ export default function BodyTrack2d() {
         if (repState.current.isRepEnd) {
           console.log('rep end');
 
-          console.log('aaaaaaaaa');
-
-          // TODO: 以下を修正
-          // エラーが発生するため，以下をコメントアウト
-          // 動画撮影を停止し、配列に保存する
-          // if (canvasRecorderRef.current) {
-          //   canvasRecorderRef.current.stop();
-          //   console.log('recorder stop');
-          // }
-
-          console.log('bbbbbbbbb');
+          // TODO: 動画撮影を停止し、配列に保存する
 
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
@@ -193,7 +183,7 @@ export default function BodyTrack2d() {
         // デバック用
         // TODO デバック用コードを削除
         // スクワットの腰の高さの検証用判定基準を表示
-        squatDepthCheckLine(
+        showLineToCheckSquatDepth(
           sideCanvasCtx,
           sideCanvasRef.current,
           sideCanvasRef.current.width,
@@ -203,15 +193,20 @@ export default function BodyTrack2d() {
 
         // データを描画する
         // スクワットの腰の高さを判定するためのデータを描画する
-        squatDepthCheckText(canvasCtx, canvasRef.current.width, canvasRef.current.height, currentPose.worldLandmarks);
-        squatDepthCheckText(
+        showTextToCheckSquatDepth(
+          canvasCtx,
+          canvasRef.current.width,
+          canvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
+        showTextToCheckSquatDepth(
           sideCanvasCtx,
           canvasRef.current.width,
           canvasRef.current.height,
           currentPose.worldLandmarks,
         );
 
-        // スクワットの踵とつま先の高さを判定するためのデータを描画する
+        // TODO スクワットの踵とつま先の高さを判定するためのデータを描画する
         // squatFeetGroundCheckText(
         //   canvasCtx,
         //   canvasRef.current.width,

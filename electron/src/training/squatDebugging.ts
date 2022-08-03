@@ -10,7 +10,7 @@ import {
 } from './pose';
 
 // スクワットのお尻が十分に下がっているかチェックする用のラインを表示する
-export const squatDepthCheckLine = (
+export const showLineToCheckSquatDepth = (
   ctx: CanvasRenderingContext2D,
   current: HTMLCanvasElement,
   width: number,
@@ -53,7 +53,7 @@ export const squatDepthCheckLine = (
 };
 
 // スクワットのお尻が十分に下がっているかチェックする用のデータを表示する
-export const squatDepthCheckText = (
+export const showTextToCheckSquatDepth = (
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
@@ -92,7 +92,7 @@ export const squatDepthCheckText = (
 };
 
 // スクワットの足が浮いていないかをチェックする用のデータを表示する
-export const squatFeetGroundCheckText = (
+export const showTextToCheckSquatFeetGround = (
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
@@ -119,4 +119,37 @@ export const squatFeetGroundCheckText = (
 
   const textFootAnkleDistance = `つま先と踵の距離: [${FootAnkleDistance.toFixed(1).toString()}]`;
   ctx.fillText(`${textFootAnkleDistance}`, 0.1 * width, 0.5 * height);
+};
+
+// スクワットの足の幅をチェックする用のデータを表示する
+export const showTextToCheckSquatFeetWidth = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  const currentPoseAnkleCenter = midpointBetween(worldLandmarks[20], worldLandmarks[24]);
+  const currentPoseShoulderCenter = midpointBetween(worldLandmarks[5], worldLandmarks[12]);
+
+  ctx.font = '30px Times New Roman';
+  ctx.fillStyle = 'red';
+  ctx.fillText(`Squat Feet Width`, 0.1 * width, 0.05 * height);
+
+  const textLeftShoulder = `Shoulder_LeftのX座標: [${worldLandmarks[5].x.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftShoulder}`, 0.1 * width, 0.1 * height);
+
+  const textRightShoulder = `Shoulder_RightのX座標: [${worldLandmarks[12].y.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightShoulder}`, 0.1 * width, 0.2 * height);
+
+  const textLeftAnkle = `Ankle_LeftのX座標: [${worldLandmarks[20].y.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftAnkle}`, 0.1 * width, 0.3 * height);
+
+  const textRightAnkle = `Ankle_RightのX座標: [${worldLandmarks[24].y.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightAnkle}`, 0.1 * width, 0.4 * height);
+
+  const textShoulderCenter = `肩の中心のX座標: [${currentPoseShoulderCenter.x.toFixed(1).toString()}]`;
+  ctx.fillText(`${textShoulderCenter}`, 0.1 * width, 0.5 * height);
+
+  const textAnkleCenter = `足首の中心のX座標: [${currentPoseAnkleCenter.x.toFixed(1).toString()}]`;
+  ctx.fillText(`${textAnkleCenter}`, 0.1 * width, 0.6 * height);
 };
