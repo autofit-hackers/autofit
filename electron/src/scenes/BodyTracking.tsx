@@ -7,7 +7,8 @@ import {
   heightInFrame,
   kinectToMediapipe,
   KINECT_POSE_CONNECTIONS,
-  normalizeWorldLandmarks,
+  normalizeFrontWorldLandmarks,
+  normalizeSideWorldLandmarks,
   Pose,
 } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
@@ -15,13 +16,14 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { Set } from '../training/set';
 import { squatDepthCheckLine, squatDepthCheckText } from '../training/squatDebugging';
 import { startCaptureWebcam } from '../utils/capture';
-import { renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
+import { frontRenderFrame, renderBGRA32ColorFrame, sideRenderFrame } from '../utils/drawing';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sideCanvasRef = useRef<HTMLCanvasElement>(null);
+  const frontCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
 
   // Phase
@@ -56,13 +58,14 @@ export default function BodyTrack2d() {
       colorImageFrame: { imageData: ImageData; width: number; height: number };
       bodyFrame: { bodies: any[] };
     }) => {
-      if (canvasRef.current === null || sideCanvasRef.current === null) {
-        throw new Error('Either canvasRef or sideCanvasRef is null');
+      if (canvasRef.current === null || sideCanvasRef.current === null || frontCanvasRef.current === null) {
+        throw new Error('Either canvasRef or sideCanvasRef or frontCanvasRef is null');
       }
       const canvasCtx = canvasRef.current.getContext('2d');
       const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
-      if (canvasCtx === null || sideCanvasCtx === null) {
-        throw new Error('Either canvasCtx or sideCanvasCtx is null');
+      const frontCanvasCtx = frontCanvasRef.current.getContext('2d');
+      if (canvasCtx === null || sideCanvasCtx === null || frontCanvasCtx === null) {
+        throw new Error('Either canvasCtx or sideCanvasCtx or frontCanvasCtx is null');
       }
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
@@ -75,6 +78,7 @@ export default function BodyTrack2d() {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         sideRenderFrame(sideCanvasCtx, canvasImageData.current);
+        frontRenderFrame(frontCanvasCtx, canvasImageData.current);
       }
 
       if (data.bodyFrame.bodies) {
@@ -150,7 +154,7 @@ export default function BodyTrack2d() {
         });
 
         // Side座標を描画
-        drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
+        drawLandmarks(sideCanvasCtx, normalizeSideWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
           color: 'white',
           lineWidth: 4,
           radius: 8,
@@ -158,7 +162,27 @@ export default function BodyTrack2d() {
         });
         drawConnectors(
           sideCanvasCtx,
-          normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current),
+          normalizeSideWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current),
+          KINECT_POSE_CONNECTIONS,
+          {
+            color: 'white',
+            lineWidth: 4,
+          },
+        );
+        // Front座標を描画
+        drawLandmarks(
+          frontCanvasCtx,
+          normalizeFrontWorldLandmarks(currentPose.worldLandmarks, frontCanvasRef.current),
+          {
+            color: 'white',
+            lineWidth: 4,
+            radius: 8,
+            fillColor: 'lightgreen',
+          },
+        );
+        drawConnectors(
+          frontCanvasCtx,
+          normalizeFrontWorldLandmarks(currentPose.worldLandmarks, frontCanvasRef.current),
           KINECT_POSE_CONNECTIONS,
           {
             color: 'white',
@@ -233,6 +257,24 @@ export default function BodyTrack2d() {
           marginLeft: 'auto',
           marginRight: 'auto',
           top: 950,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 1,
+          width: 1280,
+          height: 720,
+        }}
+      />
+      <canvas
+        ref={frontCanvasRef}
+        className="front_canvas"
+        width="1280"
+        height="720"
+        style={{
+          position: 'absolute',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          top: 1800,
           left: 0,
           right: 0,
           textAlign: 'center',

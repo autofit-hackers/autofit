@@ -153,29 +153,8 @@ export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandm
 export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.atan2(p2.x - p1.x, p2.z - p1.z);
 
-// normalizeWorldLandmarksを変更する際は，normalizeWorldLandmarkPointも変更すること
-export const normalizeWorldLandmarks = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-): NormalizedLandmarkList => {
-  const normalizedLandmarks: NormalizedLandmarkList = [];
-  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
-  const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
-  const heightOfBody = 1500;
-
-  for (let i = 0; i < worldLandmarks.length; i += 1) {
-    normalizedLandmarks[i] = {
-      x: ((worldLandmarks[i].z - lowCenterZ) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
-      y: ((worldLandmarks[i].y - lowCenterY) * 0.8) / heightOfBody + 0.9,
-      z: 0,
-    };
-  }
-
-  return normalizedLandmarks;
-};
-
-// normalizeWorldLandmarkPointを変更する際は，normalizeWorldLandmarksも変更すること
-export const normalizeWorldLandmarkPoint = (
+// Sideを描画するために行う座標返還
+export const normalizeSideWorldLandmarkPoint = (
   worldLandmarks: LandmarkList,
   canvas: HTMLCanvasElement,
   LandmarkPoint: Landmark,
@@ -190,4 +169,49 @@ export const normalizeWorldLandmarkPoint = (
     y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
     z: 0,
   };
+};
+
+export const normalizeSideWorldLandmarks = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+): NormalizedLandmarkList => {
+  const normalizedLandmarks: NormalizedLandmarkList = [];
+
+  for (let i = 0; i < worldLandmarks.length; i += 1) {
+    normalizedLandmarks[i] = normalizeSideWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
+  }
+
+  return normalizedLandmarks;
+};
+
+// Frontを描画するために行う座標返還
+export const normalizeFrontWorldLandmarkPoint = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+  LandmarkPoint: Landmark,
+): NormalizedLandmark => {
+  // const normalizedLandmarks: NormalizedLandmarkList = [];
+  const lowCenterX = (worldLandmarks[20].x + worldLandmarks[24].x) / 2;
+  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
+  // const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
+  const heightOfBody = 1500;
+
+  return {
+    x: ((LandmarkPoint.x - lowCenterX) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
+    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
+    z: 0,
+  };
+};
+
+export const normalizeFrontWorldLandmarks = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+): NormalizedLandmarkList => {
+  const normalizedLandmarks: NormalizedLandmarkList = [];
+
+  for (let i = 0; i < worldLandmarks.length; i += 1) {
+    normalizedLandmarks[i] = normalizeFrontWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
+  }
+
+  return normalizedLandmarks;
 };

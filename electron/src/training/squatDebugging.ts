@@ -1,6 +1,6 @@
 import { Landmark, LandmarkList } from '@mediapipe/pose';
 import { drawBarsFromTwoPoints } from '../drawing_utils/thresholdBar';
-import { angleInYZ, distanceInY, distanceInYZ, midpointBetween, normalizeWorldLandmarkPoint } from './pose';
+import { angleInYZ, distanceInY, distanceInYZ, midpointBetween, normalizeSideWorldLandmarkPoint } from './pose';
 
 // スクワットのお尻が十分に下がっているかチェックする用のラインを表示する
 export const squatDepthCheckLine = (
@@ -28,18 +28,18 @@ export const squatDepthCheckLine = (
   drawBarsFromTwoPoints(
     ctx,
     0.0,
-    normalizeWorldLandmarkPoint(worldLandmarks, current, squatDepthUpPoint).y * height,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, squatDepthUpPoint).y * height,
     10.0,
-    normalizeWorldLandmarkPoint(worldLandmarks, current, squatDepthUpPoint).y * height,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, squatDepthUpPoint).y * height,
     width,
     'red',
   );
   drawBarsFromTwoPoints(
     ctx,
     0.0,
-    normalizeWorldLandmarkPoint(worldLandmarks, current, squatDepthDownPoint).y * height,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, squatDepthDownPoint).y * height,
     10.0,
-    normalizeWorldLandmarkPoint(worldLandmarks, current, squatDepthDownPoint).y * height,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, squatDepthDownPoint).y * height,
     width,
     'green',
   );
