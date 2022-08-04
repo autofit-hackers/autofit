@@ -3,25 +3,21 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import {
-  heightInFrame,
-  kinectToMediapipe,
-  KINECT_POSE_CONNECTIONS,
-  normalizeWorldLandmarks,
-  Pose,
-} from '../training/pose';
+import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
 import { startCaptureWebcam } from '../utils/capture';
 import { startKinect } from '../utils/kinect';
-import { drawBarsWithAcceptableError, renderBGRA32ColorFrame, sideRenderFrame } from '../utils/render/drawing';
+import { drawBarsWithAcceptableError, renderBGRA32ColorFrame } from '../utils/render/drawing';
+import { LandmarkGrid } from '../utils/render/landmarkGrid';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const sideCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
+  const gridDivRef = useRef<HTMLDivElement | null>(null);
+  let landmarkGrid: LandmarkGrid;
 
   // Phase
   const [, setPhase] = useAtom(phaseAtom);
@@ -48,19 +44,18 @@ export default function BodyTrack2d() {
   const canvasRecorderRef = useRef<MediaRecorder | null>(null);
 
   /*
-   * 毎kinect更新時に回っている関数
+   * 毎kinect更新時に実行される
    */
   const onResults = useCallback(
     (data: {
       colorImageFrame: { imageData: ImageData; width: number; height: number };
       bodyFrame: { bodies: any[] };
     }) => {
-      if (canvasRef.current === null || sideCanvasRef.current === null) {
+      if (canvasRef.current === null) {
         throw new Error('canvasRef is null');
       }
       const canvasCtx = canvasRef.current.getContext('2d');
-      const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
-      if (canvasCtx === null || sideCanvasCtx === null) {
+      if (canvasCtx === null) {
         throw new Error('canvasCtx is null');
       }
       canvasCtx.save();
@@ -72,7 +67,6 @@ export default function BodyTrack2d() {
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
-        sideRenderFrame(sideCanvasCtx, canvasImageData.current);
       }
 
       if (data.bodyFrame.bodies) {
@@ -143,22 +137,11 @@ export default function BodyTrack2d() {
           canvasRef.current.width,
           100, // TODO: this is magic number, change value to evaluate form instruction function
         );
-        // Side座標を描画
-        drawLandmarks(sideCanvasCtx, normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current), {
-          color: 'white',
-          lineWidth: 4,
-          radius: 8,
-          fillColor: 'lightgreen',
-        });
-        drawConnectors(
-          sideCanvasCtx,
-          normalizeWorldLandmarks(currentPose.worldLandmarks, sideCanvasRef.current),
-          KINECT_POSE_CONNECTIONS,
-          {
-            color: 'white',
-            lineWidth: 4,
-          },
-        );
+
+        // LandmarkGridの描画
+        if (landmarkGrid) {
+          landmarkGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
+        }
       }
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
@@ -168,6 +151,7 @@ export default function BodyTrack2d() {
 
       // レップカウントを表示
       canvasCtx.fillText(set.current.reps.length.toString(), 50, 50);
+      canvasCtx.scale(0.5, 0.5);
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,10 +159,14 @@ export default function BodyTrack2d() {
   );
 
   /*
-   * Kinectの開始
+   * Kinectの開始とLandmarkGridのセットアップ
    */
   useEffect(() => {
     startKinect(kinect, onResults);
+    if (!landmarkGrid && gridDivRef.current !== null) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      landmarkGrid = new LandmarkGrid(gridDivRef.current);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -195,28 +183,34 @@ export default function BodyTrack2d() {
           right: 0,
           textAlign: 'center',
           zIndex: 1,
-          width: 1280,
-          height: 720,
+          width: 'auto',
+          height: 'auto',
         }}
       />
-      <canvas
-        ref={sideCanvasRef}
-        className="side_canvas"
-        width="1280"
-        height="720"
+      <div
+        className="square-box"
         style={{
-          position: 'absolute',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          top: 720,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          zIndex: 1,
-          width: 1280,
-          height: 720,
+          zIndex: 2,
+          position: 'relative',
+          width: '40%',
+          paddingTop: '40%',
+          right: '20px',
+          top: '20px',
         }}
-      />
+      >
+        <div
+          className="landmark-grid-container"
+          ref={gridDivRef}
+          style={{
+            position: 'absolute',
+            height: '100%',
+            width: '100%',
+            top: 0,
+            left: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        />
+      </div>
     </>
   );
 }

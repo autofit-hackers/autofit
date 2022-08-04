@@ -21,13 +21,6 @@ import {
 } from 'three';
 import { copyLandmark } from '../../training/pose';
 
-const PAUSE_SRC = 'https://fonts.gstatic.com/s/i/googlematerialicons/pause/v14/white-24dp/1x/gm_pause_white_24dp.png';
-const PLAY_SRC =
-  'https://fonts.gstatic.com/s/i/googlematerialicons/play_arrow/v14/white-24dp/1x/gm_play_arrow_white_24dp.png';
-
-const HIDDEN_MATERIAL = new Material();
-HIDDEN_MATERIAL.visible = false;
-
 /**
  * ViewerWidget configuration and its default value.
  */
@@ -41,8 +34,8 @@ export type ViewerWidgetConfig = {
 const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
   backgroundColor: 0,
   fovInDegrees: 75,
-  isRotating: true,
-  rotationSpeed: 0.1,
+  isRotating: false,
+  rotationSpeed: 0.0,
 };
 
 /**
@@ -87,13 +80,13 @@ const DEFAULT_LANDMARK_GRID_CONFIG: LandmarkGridConfig = {
   connectionColor: 0x00ffff,
   connectionWidth: 3,
   definedColors: [],
-  fitToGrid: false,
+  fitToGrid: true,
   labelPrefix: '',
   labelSuffix: '',
   landmarkSize: 3,
   landmarkColor: 0xaaaaaa,
   margin: 0,
-  minVisibility: 0.65,
+  minVisibility: 0,
   nonvisibleLandmarkColor: 0xff7777,
   numCellsPerAxis: 3,
   range: 1,
@@ -211,12 +204,12 @@ export class LandmarkGrid {
     this.nonvisibleMaterial = new MeshBasicMaterial({ color: this.landmarkGridConfig.nonvisibleLandmarkColor });
     this.axesMaterial = new LineBasicMaterial({
       color: this.landmarkGridConfig.axesColor,
-      lineWidth: this.landmarkGridConfig.axesWidth,
+      linewidth: this.landmarkGridConfig.axesWidth,
     });
     this.gridMaterial = new LineBasicMaterial({ color: 0x999999 });
     this.connectionMaterial = new LineBasicMaterial({
       color: this.landmarkGridConfig.connectionColor,
-      lineWidth: this.landmarkGridConfig.connectionWidth,
+      linewidth: this.landmarkGridConfig.connectionWidth,
     });
     this.isVisible = (normalizedLandmark: NormalizedLandmark): boolean =>
       normalizedLandmark.visibility === undefined ||
@@ -225,13 +218,13 @@ export class LandmarkGrid {
     this.landmarkGridConfig.definedColors.forEach((color) => {
       this.definedColors[color.name] = new LineBasicMaterial({
         color: color.value,
-        lineWidth: this.landmarkGridConfig.connectionWidth,
+        linewidth: this.landmarkGridConfig.connectionWidth,
       });
     });
     this.landmarkGridConfig.definedColors.forEach((color) => {
       this.definedColors[color.name] = new LineBasicMaterial({
         color: color.value,
-        lineWidth: this.landmarkGridConfig.connectionWidth,
+        linewidth: this.landmarkGridConfig.connectionWidth,
       });
     });
     this.sizeWhenFitted = 1 - 2 * this.landmarkGridConfig.margin;
@@ -247,14 +240,7 @@ export class LandmarkGrid {
     this.scene.add(this.connectionGroup);
     this.origin = new Vector3();
     this.requestFrame();
-  }
-
-  /**
-   * @private:
-   */
-  render(): void {
-    this.renderer.render(this.scene, this.camera);
-    this.setLabels();
+    console.log('constructor');
   }
 
   /**
@@ -273,7 +259,85 @@ export class LandmarkGrid {
   }
 
   /**
-   * @private: Sets the mouse drag event.
+   * @private:(in requestFrame)
+   */
+  render(): void {
+    this.renderer.render(this.scene, this.camera);
+    this.setLabels();
+  }
+
+  /**
+   * @private: Sets the label of a given element to a given value. (in render)
+   */
+  setLabels(): void {
+    this.labels.x.forEach((pair: NumberLabel) => {
+      const position: Vector3 = this.getCanvasPosition(pair.position);
+      // eslint-disable-next-line no-param-reassign
+      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+    });
+    this.labels.y.forEach((pair: NumberLabel) => {
+      const position: Vector3 = this.getCanvasPosition(pair.position);
+      // eslint-disable-next-line no-param-reassign
+      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+    });
+    this.labels.z.forEach((pair: NumberLabel) => {
+      const position: Vector3 = this.getCanvasPosition(pair.position);
+      // eslint-disable-next-line no-param-reassign
+      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+    });
+  }
+
+  /**
+   * @private:(in setLabels)
+   */
+  getCanvasPosition(position: Vector3): Vector3 {
+    const size: DOMRect = this.renderer.domElement.getBoundingClientRect();
+    const canvasPosition: Vector3 = position.clone().project(this.camera);
+    // Converts from normalized device coordinates ([-1, 1]) to canvas space ([0, canvas.width])
+    canvasPosition.x = Math.round((0.5 + canvasPosition.x * 0.5) * size.width);
+    // Converts from normalized device coordinates ([-1, 1]) to canvas space ([0, canvas.height])
+    canvasPosition.y = Math.round((0.5 - canvasPosition.y * 0.5) * size.height);
+    canvasPosition.z = 0;
+
+    return canvasPosition;
+  }
+
+  /**
+   * @public
+   */
+  setDistance(distance: number): void {
+    this.distance = distance;
+    this.camera.position.x = Math.sin(this.rotation) * this.distance;
+    this.camera.position.z = Math.cos(this.rotation) * this.distance;
+    this.camera.lookAt(new Vector3());
+  }
+
+  /**
+   * @private: (in constructor)
+   */
+  addPausePlay(parent: HTMLElement): void {
+    const PAUSE_SRC =
+      'https://fonts.gstatic.com/s/i/googlematerialicons/pause/v14/white-24dp/1x/gm_pause_white_24dp.png';
+    const PLAY_SRC =
+      'https://fonts.gstatic.com/s/i/googlematerialicons/play_arrow/v14/white-24dp/1x/gm_play_arrow_white_24dp.png';
+
+    const button: HTMLImageElement = document.createElement('img');
+    button.classList.add('controls');
+    button.src = this.viewerWidgetConfig.isRotating ? PAUSE_SRC : PLAY_SRC;
+    button.onclick = (): void => {
+      if (this.viewerWidgetConfig.isRotating) {
+        button.src = PLAY_SRC;
+        this.viewerWidgetConfig.isRotating = false;
+      } else {
+        button.src = PAUSE_SRC;
+        this.viewerWidgetConfig.isRotating = true;
+      }
+    };
+    parent.appendChild(button);
+  }
+
+  /**
+   * @private: Sets the mouse drag event.(in constructor)
    */
   setMouseDrag(): void {
     const canvas: HTMLCanvasElement = this.renderer.domElement;
@@ -304,72 +368,63 @@ export class LandmarkGrid {
   }
 
   /**
-   * @private:
+   * @private: Draw axes of the grid.(in constructor)
    */
-  addPausePlay(parent: HTMLElement): void {
-    const button: HTMLImageElement = document.createElement('img');
-    button.classList.add('controls');
-    button.src = this.viewerWidgetConfig.isRotating ? PAUSE_SRC : PLAY_SRC;
-    button.onclick = (): void => {
-      if (this.viewerWidgetConfig.isRotating) {
-        button.src = PLAY_SRC;
-        this.viewerWidgetConfig.isRotating = false;
-      } else {
-        button.src = PAUSE_SRC;
-        this.viewerWidgetConfig.isRotating = true;
+  drawAxes(): void {
+    const axes: Group = new Group();
+    const HALF_SIZE: number = this.size / 2;
+    const grid: Group = this.makeGrid(this.size, this.landmarkGridConfig.numCellsPerAxis);
+    const xGrid: Group = grid;
+    const yGrid: Object3D = grid.clone();
+    const zGrid: Object3D = grid.clone();
+    xGrid.translateX(-HALF_SIZE);
+    xGrid.rotateY(Math.PI / 2);
+    axes.add(xGrid);
+    yGrid.translateY(-HALF_SIZE);
+    yGrid.rotateX(Math.PI / 2);
+    axes.add(yGrid);
+    zGrid.translateZ(-HALF_SIZE);
+    axes.add(zGrid);
+    const border: BufferGeometry = new BufferGeometry().setFromPoints([
+      new Vector3(-HALF_SIZE, HALF_SIZE, HALF_SIZE),
+      new Vector3(-HALF_SIZE, -HALF_SIZE, HALF_SIZE),
+      new Vector3(HALF_SIZE, -HALF_SIZE, HALF_SIZE),
+      new Vector3(HALF_SIZE, -HALF_SIZE, -HALF_SIZE),
+      new Vector3(HALF_SIZE, HALF_SIZE, -HALF_SIZE),
+      new Vector3(-HALF_SIZE, HALF_SIZE, -HALF_SIZE),
+      new Vector3(-HALF_SIZE, HALF_SIZE, HALF_SIZE),
+    ]);
+    axes.add(new Line(border, this.axesMaterial));
+    this.scene.add(axes);
+  }
+
+  /**
+   * @private: Generate Grid.(in drawAxis in constructor)
+   */
+  makeGrid(size: number, numSteps: number): Group {
+    const grid: Group = new Group();
+    const plane: PlaneBufferGeometry = new PlaneGeometry(size, size);
+    const edges: EdgesGeometry = new EdgesGeometry(plane);
+    const wireFrame: LineSegments = new LineSegments(edges, this.gridMaterial);
+    grid.add(wireFrame);
+    const stepPlaneSize: number = size / numSteps;
+    const stepPlane: PlaneBufferGeometry = new PlaneGeometry(stepPlaneSize, stepPlaneSize);
+    const stepEdges: EdgesGeometry = new EdgesGeometry(stepPlane);
+    const corner: number = -size / 2 + stepPlaneSize / 2;
+    for (let i = 0; i < numSteps; i += 1) {
+      for (let j = 0; j < numSteps; j += 1) {
+        const stepFrame: LineSegments = new LineSegments(stepEdges, this.gridMaterial);
+        stepFrame.translateX(corner + i * stepPlaneSize);
+        stepFrame.translateY(corner + j * stepPlaneSize);
+        grid.add(stepFrame);
       }
-    };
-    parent.appendChild(button);
+    }
+
+    return grid;
   }
 
   /**
-   * @private
-   */
-  clearResources(): void {
-    this.removeQueue.forEach((object3D): void => {
-      if (object3D.parent) object3D.parent.remove(object3D);
-    });
-    this.removeQueue = [];
-    this.disposeQueue.forEach((bufferGeometry): void => {
-      bufferGeometry.dispose();
-    });
-    this.disposeQueue = [];
-  }
-
-  /**
-   * @private
-   */
-  getDistance(): number {
-    return this.distance;
-  }
-
-  /**
-   * @public
-   */
-  setDistance(distance: number): void {
-    this.distance = distance;
-    this.camera.position.x = Math.sin(this.rotation) * this.distance;
-    this.camera.position.z = Math.cos(this.rotation) * this.distance;
-    this.camera.lookAt(new Vector3());
-  }
-
-  /**
-   * @private:
-   */
-  getCanvasPosition(position: Vector3): Vector3 {
-    const size: DOMRect = this.renderer.domElement.getBoundingClientRect();
-    const canvasPosition: Vector3 = position.clone().project(this.camera);
-    // Converts from normalized device coordinates ([-1, 1]) to canvas space ([0, canvas.width])
-    canvasPosition.x = Math.round((0.5 + canvasPosition.x * 0.5) * size.width);
-    // Converts from normalized device coordinates ([-1, 1]) to canvas space ([0, canvas.height])
-    canvasPosition.y = Math.round((0.5 - canvasPosition.y * 0.5) * size.height);
-    canvasPosition.z = 0;
-
-    return canvasPosition;
-  }
-
-  /**
-   * @private: Creates a label for the axes.
+   * @private: Creates a label for the axes.(in constructor)
    */
   createAxesLabels(): { x: Array<NumberLabel>; y: Array<NumberLabel>; z: Array<NumberLabel> } {
     const labels: { x: Array<NumberLabel>; y: Array<NumberLabel>; z: Array<NumberLabel> } = {
@@ -416,7 +471,7 @@ export class LandmarkGrid {
   }
 
   /**
-   * @private: Creates a label for the axes.
+   * @private: Creates a label for the axes.(in createAxesLabels in constructor)
    */
   createLabel(value: number): HTMLSpanElement {
     const span: HTMLSpanElement = document.createElement('span');
@@ -425,66 +480,6 @@ export class LandmarkGrid {
     this.container.appendChild(span);
 
     return span;
-  }
-
-  /**
-   * @private: Sets the label text.
-   */
-  setLabel(span: HTMLSpanElement, value: number): void {
-    // eslint-disable-next-line no-param-reassign
-    span.textContent =
-      this.landmarkGridConfig.labelPrefix + value.toPrecision(2).toString() + this.landmarkGridConfig.labelSuffix;
-  }
-
-  /**
-   * @private: Draw axes of the grid.
-   */
-  drawAxes(): void {
-    const axes: Group = new Group();
-    const HALF_SIZE: number = this.size / 2;
-    const grid: Group = this.makeGrid(this.size, this.landmarkGridConfig.numCellsPerAxis);
-    const xGrid: Group = grid;
-    const yGrid: Object3D = grid.clone();
-    const zGrid: Object3D = grid.clone();
-    xGrid.translateX(-HALF_SIZE);
-    xGrid.rotateY(Math.PI / 2);
-    axes.add(xGrid);
-    yGrid.translateY(-HALF_SIZE);
-    yGrid.rotateX(Math.PI / 2);
-    axes.add(yGrid);
-    zGrid.translateZ(-HALF_SIZE);
-    axes.add(zGrid);
-    const border: BufferGeometry = new BufferGeometry().setFromPoints([
-      new Vector3(-HALF_SIZE, HALF_SIZE, HALF_SIZE),
-      new Vector3(-HALF_SIZE, -HALF_SIZE, HALF_SIZE),
-      new Vector3(HALF_SIZE, -HALF_SIZE, HALF_SIZE),
-      new Vector3(HALF_SIZE, -HALF_SIZE, -HALF_SIZE),
-      new Vector3(HALF_SIZE, HALF_SIZE, -HALF_SIZE),
-      new Vector3(-HALF_SIZE, HALF_SIZE, -HALF_SIZE),
-      new Vector3(-HALF_SIZE, HALF_SIZE, HALF_SIZE),
-    ]);
-    axes.add(new Line(border, this.axesMaterial));
-    this.scene.add(axes);
-  }
-
-  /**
-   * @private: Colors the landmarks based on their type.
-   */
-  colorLandmarks(
-    landmarks: (undefined | Array<number>) | undefined,
-    colorName: (undefined | string) | undefined,
-  ): void {
-    const color: Material = colorName ? this.definedColors.colorName : this.connectionMaterial;
-    const meshList: Array<Mesh> = this.landmarkGroup.children as Array<Mesh>;
-    if (landmarks) {
-      landmarks.forEach((landmarkIndex: number) => {
-        if (this.isVisible(this.landmarks[landmarkIndex])) meshList[landmarkIndex].material = color;
-      });
-    } else {
-      for (let i = 0; i < this.landmarks.length; i += 1) {
-        if (this.isVisible(this.landmarks[i])) meshList[i].material = color;
-      }
-    }
   }
 
   /**
@@ -571,7 +566,8 @@ export class LandmarkGrid {
       const visible: boolean = this.isVisible(this.landmarks[i]);
       let { nonvisibleMaterial } = this;
       if (!this.landmarkGridConfig.showHidden && !visible) {
-        nonvisibleMaterial = HIDDEN_MATERIAL;
+        nonvisibleMaterial = new Material();
+        nonvisibleMaterial.visible = false;
       }
       const sphere: Mesh = this.landmarkGroup.children[i] as Mesh;
       sphere.material = visible ? this.landmarkMaterial : nonvisibleMaterial;
@@ -587,7 +583,57 @@ export class LandmarkGrid {
   }
 
   /**
-   * @private: Draws connections between landmarks.
+   * @private (in Update)
+   */
+  clearResources(): void {
+    this.removeQueue.forEach((object3D): void => {
+      if (object3D.parent) object3D.parent.remove(object3D);
+    });
+    this.removeQueue = [];
+    this.disposeQueue.forEach((bufferGeometry): void => {
+      bufferGeometry.dispose();
+    });
+    this.disposeQueue = [];
+  }
+
+  /**
+   * @private
+   */
+  getDistance(): number {
+    return this.distance;
+  }
+
+  /**
+   * @private: Sets the label text.
+   */
+  setLabel(span: HTMLSpanElement, value: number): void {
+    // eslint-disable-next-line no-param-reassign
+    span.textContent =
+      this.landmarkGridConfig.labelPrefix + value.toPrecision(2).toString() + this.landmarkGridConfig.labelSuffix;
+  }
+
+  /**
+   * @private: Colors the landmarks based on their type. (in Update)
+   */
+  colorLandmarks(
+    landmarks: (undefined | Array<number>) | undefined,
+    colorName: (undefined | string) | undefined,
+  ): void {
+    const color: Material = colorName ? this.definedColors.colorName : this.connectionMaterial;
+    const meshList: Array<Mesh> = this.landmarkGroup.children as Array<Mesh>;
+    if (landmarks) {
+      landmarks.forEach((landmarkIndex: number) => {
+        if (this.isVisible(this.landmarks[landmarkIndex])) meshList[landmarkIndex].material = color;
+      });
+    } else {
+      for (let i = 0; i < this.landmarks.length; i += 1) {
+        if (this.isVisible(this.landmarks[i])) meshList[i].material = color;
+      }
+    }
+  }
+
+  /**
+   * @private: Draws connections between landmarks.(in Update)
    */
   drawConnections(
     landmarks: Array<Vector3>,
@@ -613,39 +659,14 @@ export class LandmarkGrid {
   }
 
   /**
-   * @private: Converts a landmark to a vector.
+   * @private: Converts a landmark to a vector.(in Update)
    */
   landmarkToVector(point: NormalizedLandmark): Vector3 {
     return new Vector3(point.x, -point.y, -point.z).multiplyScalar(this.size / this.landmarkGridConfig.range);
   }
 
   /**
-   * @private: Generate Grid.
-   */
-  makeGrid(size: number, numSteps: number): Group {
-    const grid: Group = new Group();
-    const plane: PlaneBufferGeometry = new PlaneGeometry(size, size);
-    const edges: EdgesGeometry = new EdgesGeometry(plane);
-    const wireFrame: LineSegments = new LineSegments(edges, this.gridMaterial);
-    grid.add(wireFrame);
-    const stepPlaneSize: number = size / numSteps;
-    const stepPlane: PlaneBufferGeometry = new PlaneGeometry(stepPlaneSize, stepPlaneSize);
-    const stepEdges: EdgesGeometry = new EdgesGeometry(stepPlane);
-    const corner: number = -size / 2 + stepPlaneSize / 2;
-    for (let i = 0; i < numSteps; i += 1) {
-      for (let j = 0; j < numSteps; j += 1) {
-        const stepFrame: LineSegments = new LineSegments(stepEdges, this.gridMaterial);
-        stepFrame.translateX(corner + i * stepPlaneSize);
-        stepFrame.translateY(corner + j * stepPlaneSize);
-        grid.add(stepFrame);
-      }
-    }
-
-    return grid;
-  }
-
-  /**
-   * @private: Returns the scaling factor for the landmarks to fit to the grid.
+   * @private: Returns the scaling factor for the landmarks to fit to the grid.(in Update)
    */
   getFitToGridFactor(landmarks: (undefined | Array<NormalizedLandmark>) | undefined): number {
     if (!landmarks) {
@@ -665,28 +686,7 @@ export class LandmarkGrid {
   }
 
   /**
-   * @private: Sets the label of a given element to a given value.
-   */
-  setLabels(): void {
-    this.labels.x.forEach((pair: NumberLabel) => {
-      const position: Vector3 = this.getCanvasPosition(pair.position);
-      // eslint-disable-next-line no-param-reassign
-      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-    });
-    this.labels.y.forEach((pair: NumberLabel) => {
-      const position: Vector3 = this.getCanvasPosition(pair.position);
-      // eslint-disable-next-line no-param-reassign
-      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-    });
-    this.labels.z.forEach((pair: NumberLabel) => {
-      const position: Vector3 = this.getCanvasPosition(pair.position);
-      // eslint-disable-next-line no-param-reassign
-      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-    });
-  }
-
-  /**
-   * @private:Relocate landmarks to the grid origin.
+   * @private:Relocate landmarks to the grid origin. (in Update)
    *  1. We firstly get the max and min values of the landmarks.
    *  2. We then get the center of the landmarks.
    *  3. We then subtract the center from the landmarks.
