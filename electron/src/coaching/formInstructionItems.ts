@@ -13,7 +13,7 @@ import { getBottomPose, getTopPose, Rep } from '../training/rep';
 
 export type FormInstructionItem = {
   readonly text: string;
-  readonly evaluate: (rep: Rep) => boolean;
+  readonly evaluate: (rep: Rep) => number;
   readonly showGuideline?: (rep: Rep) => void;
   readonly reason?: string;
   readonly recommendMenu?: string[];
@@ -31,7 +31,7 @@ const barbellOnFootCenter: FormInstructionItem = {
     if (topPose === undefined) {
       console.log('topPose is undefined');
 
-      return true;
+      return 1.0;
     }
     // 手首の中心をバーベルと推定して実行
     const topPoseWristCenter = midpointBetween(topPose.worldLandmarks[7], topPose.worldLandmarks[14]);
@@ -51,31 +51,31 @@ const barbellOnFootCenter: FormInstructionItem = {
       // バーベルが左に寄っている
       // console.log('バーベルが左に寄っている');
 
-      return false;
+      return 0.0;
     }
     if (
       topPoseWristCenter.x <=
       (topPoseAnkleCenter.x + topPoseFootCenter.x) / 2 - topDistanceRightFoot * acceptableError
     ) {
       // バーベルが右に寄っている
-      return false;
+      return 0.0;
     }
     if (
       topPoseWristCenter.z <=
       (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 - topDistanceRightFoot * acceptableError
     ) {
       // バーベルが前すぎる
-      return false;
+      return 0.0;
     }
     if (
       topPoseWristCenter.z >=
       (topPoseAnkleCenter.z + topPoseFootCenter.z) / 2 + topDistanceRightFoot * acceptableError
     ) {
       // バーベルが後ろすぎる
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -88,7 +88,7 @@ const squatDepth: FormInstructionItem = {
     if (bottomPose === undefined) {
       console.log('bottomPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const bottomPoseKnee = midpointBetween(bottomPose.worldLandmarks[19], bottomPose.worldLandmarks[23]);
     const bottomPosePelvisKneeDistanceYZ = distanceInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
@@ -111,16 +111,16 @@ const squatDepth: FormInstructionItem = {
     if (squatDepthUpCheck <= 0.0) {
       console.log('腰の下げ方が足りない');
 
-      return false;
+      return 0.0;
     }
     if (squatDepthDownCheck <= 0.0) {
       console.log('腰を下げすぎ');
 
-      return false;
+      return 0.0;
     }
     console.log('十分に腰を落とした');
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -133,7 +133,7 @@ const kneeOut: FormInstructionItem = {
     if (bottomPose === undefined) {
       console.log('bottomPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const bottomPoseLeftThighAngleZX = angleInZX(bottomPose.worldLandmarks[18], bottomPose.worldLandmarks[19]);
     const bottomPoseRightThighAngleZX = angleInZX(bottomPose.worldLandmarks[22], bottomPose.worldLandmarks[23]);
@@ -148,31 +148,31 @@ const kneeOut: FormInstructionItem = {
       acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
     ) {
       // 左太ももと左足が同じ方向を向いていない
-      return false;
+      return 0.0;
     }
     if (
       bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX <=
       -acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
     ) {
       // 左太ももと左足が同じ方向を向いていない
-      return false;
+      return 0.0;
     }
     if (
       bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX >=
       acceptableError * Math.abs(bottomPoseRightFootAngleZX)
     ) {
       // 右太ももと右足が同じ方向を向いていない
-      return false;
+      return 0.0;
     }
     if (
       bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX <=
       -acceptableError * Math.abs(bottomPoseRightFootAngleZX)
     ) {
       // 右太ももと右足が同じ方向を向いていない
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -187,12 +187,12 @@ const backBent: FormInstructionItem = {
     if (topPose === undefined) {
       console.log('topPose is undefined');
 
-      return true;
+      return 1.0;
     }
     if (bottomPose === undefined) {
       console.log('bottomPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const topPosePelvisNavalAngleYZ = angleInYZ(topPose.worldLandmarks[0], topPose.worldLandmarks[1]);
     const topPoseNavalChestAngleYZ = angleInYZ(topPose.worldLandmarks[1], topPose.worldLandmarks[2]);
@@ -211,10 +211,10 @@ const backBent: FormInstructionItem = {
       Math.abs(topPosePelvisNavalAngleYZ - topPoseNavalChestAngleYZ) >=
       acceptableError * Math.abs(topPosePelvisNavalAngleYZ)
     ) {
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -227,7 +227,7 @@ const backSlant: FormInstructionItem = {
     if (bottomPose === undefined) {
       console.log('bottomPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const bottomPosePelvisNavalAngleYZ = angleInYZ(bottomPose.worldLandmarks[0], bottomPose.worldLandmarks[1]);
     // const bottomPoseNavalChestAngleYZ = angleInYZ(bottomPose.landmark[1], bottomPose.landmark[2]);
@@ -240,14 +240,14 @@ const backSlant: FormInstructionItem = {
     const acceptableError = 0.1;
     if (bottomPosePelvisNavalAngleYZ >= ((1 + acceptableError) * Math.PI * 45) / 180) {
       // 傾きすぎ
-      return false;
+      return 0.0;
     }
     if (bottomPosePelvisNavalAngleYZ <= ((1 - acceptableError) * Math.PI * 45) / 180) {
       // 傾かなさすぎ
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -260,7 +260,7 @@ const feetAngle: FormInstructionItem = {
     if (topPose === undefined) {
       console.log('topPose is undefined');
 
-      return true;
+      return 1.0;
     }
     // TODO 普遍的な設定を可能にする
     // とりあえず，桂の体で適切なように設定
@@ -288,17 +288,17 @@ const feetAngle: FormInstructionItem = {
       // console.log('つま先が開きすぎです');
       // console.log(highFeetAngleCheck);
 
-      return false;
+      return 0.0;
     }
     if (lowFeetAngleCheck <= 0.0) {
       // つま先の角度が60度を大きく下回っている
       // console.log('つま先を外に向けましょう');
       // console.log(lowFeetAngleCheck);
 
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -313,12 +313,12 @@ const feetGround: FormInstructionItem = {
     if (topPose === undefined) {
       console.log('topPose is undefined');
 
-      return true;
+      return 1.0;
     }
     if (bottomPose === undefined) {
       console.log('bottomPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const LeftAnkleMovedDistance = distanceInY(topPose.worldLandmarks[20], bottomPose.worldLandmarks[20]);
     const RightAnkleMovedDistance = distanceInY(topPose.worldLandmarks[24], bottomPose.worldLandmarks[24]);
@@ -353,31 +353,31 @@ const feetGround: FormInstructionItem = {
       console.log('左足首が浮いた');
       console.log(LeftAnkleMovedDistanceCheck);
 
-      // return false;
+      // return 0.0;
     }
     if (RightAnkleMovedDistanceCheck <= 0.0) {
       // 右足首の位置が変化した
       console.log('右足首が浮いた');
       console.log(RightAnkleMovedDistanceCheck);
 
-      // return false;
+      // return 0.0;
     }
     if (LeftFootMovedDistanceCheck <= 0.0) {
       // 左足先の位置が変化した
       console.log('左足先が浮いた');
       console.log(LeftFootMovedDistanceCheck);
 
-      // return false;
+      // return 0.0;
     }
     if (RightFootMovedDistanceCheck <= 0.0) {
       // 右足先の位置が変化した
       console.log('右足先が浮いた');
       console.log(RightFootMovedDistanceCheck);
 
-      // return false;
+      // return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -391,7 +391,7 @@ const gazeDirection: FormInstructionItem = {
     if (bottomPose === undefined) {
       console.log('bottomPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const bottomPoseNeckHeadAngleYZ = angleInYZ(bottomPose.worldLandmarks[3], bottomPose.worldLandmarks[26]);
     const bottomPoseEyes = midpointBetween(bottomPose.worldLandmarks[28], bottomPose.worldLandmarks[30]);
@@ -400,14 +400,14 @@ const gazeDirection: FormInstructionItem = {
     const gazeTarget = bottomPoseEyes.y * Math.abs(Math.tan(bottomPoseNeckHeadAngleYZ));
     if (gazeTarget <= 120) {
       // 視線が1.2mより手前を向いている
-      return false;
+      return 0.0;
     }
     if (gazeTarget >= 150) {
       // 視線が1.5mより置くを向いている．顎を引き，視線を1.2m~1.5mにする
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -421,7 +421,7 @@ const feetWidth: FormInstructionItem = {
     if (topPose === undefined) {
       console.log('topPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const topPoseLeftShoulderAnkle = Math.abs(distanceInX(topPose.worldLandmarks[5], topPose.worldLandmarks[20]));
     const topPoseRightShoulderAnkle = Math.abs(distanceInX(topPose.worldLandmarks[12], topPose.worldLandmarks[24]));
@@ -432,14 +432,14 @@ const feetWidth: FormInstructionItem = {
     const acceptableError = 0.1;
     if (topPoseLeftShoulderAnkle >= acceptableError * topPoseShoulder) {
       // 左肩と左足の相対位置がおかしい
-      return false;
+      return 0.0;
     }
     if (topPoseRightShoulderAnkle >= acceptableError * topPoseShoulder) {
       // 右肩と右足の相対位置がおかしい
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -452,7 +452,7 @@ const barbellPosition: FormInstructionItem = {
     if (topPose === undefined) {
       console.log('topPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const topPoseWristCenter = midpointBetween(topPose.worldLandmarks[7], topPose.worldLandmarks[14]);
 
@@ -464,14 +464,14 @@ const barbellPosition: FormInstructionItem = {
     const acceptableErrorUp = 0.1;
     if (topPoseWristCenter.y <= topPose.worldLandmarks[2].y + topDistanceRightFoot * acceptableErrorUnder) {
       // バーベルが肩甲棘と比べ，下すぎる
-      return false;
+      return 0.0;
     }
     if (topPoseWristCenter.y >= topPose.worldLandmarks[2].y + topDistanceRightFoot * acceptableErrorUp) {
       // バーベルが肩甲棘と比べ，上すぎる
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
@@ -484,7 +484,7 @@ const kneePosition: FormInstructionItem = {
     if (bottomPose === undefined) {
       console.log('bottomPose is undefined');
 
-      return true;
+      return 1.0;
     }
     const bottomPoseLeftKneeFootZX = distanceInZX(bottomPose.worldLandmarks[21], bottomPose.worldLandmarks[19]);
     const bottomPoseRightKneeFootZX = distanceInZX(bottomPose.worldLandmarks[25], bottomPose.worldLandmarks[23]);
@@ -501,22 +501,22 @@ const kneePosition: FormInstructionItem = {
     const acceptableKneeBack = 10;
     if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection <= acceptableKneeAhead) {
       // 左膝が前に出すぎ
-      return false;
+      return 0.0;
     }
     if (bottomPoseRightKneeFootZX * bottomPoseRightKneeFootDirection <= acceptableKneeAhead) {
       // 右膝が前に出すぎ
-      return false;
+      return 0.0;
     }
     if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection >= acceptableKneeBack) {
       // 左膝が後すぎる
-      return false;
+      return 0.0;
     }
     if (bottomPoseRightKneeFootZX * bottomPoseRightKneeFootDirection >= acceptableKneeBack) {
       // 左膝が後ろすぎる
-      return false;
+      return 0.0;
     }
 
-    return true;
+    return 1.0;
   },
 };
 
