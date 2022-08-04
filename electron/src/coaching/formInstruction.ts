@@ -11,8 +11,8 @@ export const evaluateForm = (prevRep: Rep, settings: FormInstructionSettings): R
 
   // settingsで指定した全ての指導項目に関してフォームを評価する
   settings.items.forEach((item) => {
-    const isClearedHistory = item.evaluate(prevRep);
-    rep.formEvaluationScores = [...prevRep.formEvaluationScores, isClearedHistory];
+    const evaluationScore = item.evaluate(prevRep);
+    rep.formEvaluationScores = [...prevRep.formEvaluationScores, evaluationScore];
   });
 
   return rep;
