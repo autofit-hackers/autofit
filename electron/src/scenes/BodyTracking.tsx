@@ -69,7 +69,7 @@ export default function BodyTrack2d() {
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
 
       if (canvasImageData.current === null) {
-        canvasRef.current.width = (data.colorImageFrame.height * 9) / 16;
+        canvasRef.current.width = data.colorImageFrame.width;
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       } else {
@@ -123,6 +123,9 @@ export default function BodyTrack2d() {
           // TODO: レップカウントを読み上げる
           // RepStateの初期化
           repState.current = resetRepState();
+
+          // setRecordを更新する
+          setSetRecord(set.current);
         }
 
         // pose estimationの結果を描画
@@ -164,7 +167,6 @@ export default function BodyTrack2d() {
       }
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
-        setSetRecord(set.current);
         setPhase(1);
       }
 
@@ -190,7 +192,7 @@ export default function BodyTrack2d() {
         ref={canvasRef}
         className="main_canvas"
         style={{
-          position: 'absolute',
+          position: 'relative',
           marginLeft: 'auto',
           marginRight: 'auto',
           top: 0,
@@ -198,8 +200,8 @@ export default function BodyTrack2d() {
           right: 0,
           textAlign: 'center',
           zIndex: 1,
-          width: 1080,
-          height: 1920,
+          width: 1000,
+          // height: 750,
         }}
       />
       <canvas
@@ -208,7 +210,7 @@ export default function BodyTrack2d() {
         width="1280"
         height="720"
         style={{
-          position: 'absolute',
+          position: 'relative',
           marginLeft: 'auto',
           marginRight: 'auto',
           top: 1920,

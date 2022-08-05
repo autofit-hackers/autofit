@@ -80,17 +80,17 @@ export function VideoReplayer() {
   }
 
   return (
-    <Grid item xs={6}>
+    <Grid item xs={12}>
       <Paper
         sx={{
           p: 2,
           display: 'flex',
           flexDirection: 'column',
-          height: '51vh',
+          height: '65vw',
           justifyContent: 'center',
         }}
       >
-        <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop width="27vh" height="48vh" />
+        <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop width="80vw" height="60vw" />
         <Slider
           aria-label="Rep Index"
           size="small"
