@@ -19,8 +19,8 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { copyLandmark } from '../../training/pose';
-
 /**
  * ViewerWidget configuration and its default value.
  */
@@ -186,12 +186,17 @@ export class LandmarkGrid {
       /**
        * @return {void}
        */ (): void => {
-        const box: DOMRect = this.container.getBoundingClientRect();
+        const box: DOMRect = parent.getBoundingClientRect();
         this.renderer.setSize(Math.floor(box.width), Math.floor(box.height));
       },
     );
     this.scene = new Scene();
-    this.setMouseDrag();
+    // カメラコントローラーを作成
+    const controls = new OrbitControls(this.camera, canvas);
+    // 滑らかにカメラコントローラーを制御する
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.2;
+
     this.landmarkGridConfig = landmarkGridConfig;
     this.size = 100;
     this.landmarks = [];
@@ -240,7 +245,6 @@ export class LandmarkGrid {
     this.scene.add(this.connectionGroup);
     this.origin = new Vector3();
     this.requestFrame();
-    console.log('constructor');
   }
 
   /**
@@ -334,37 +338,6 @@ export class LandmarkGrid {
       }
     };
     parent.appendChild(button);
-  }
-
-  /**
-   * @private: Sets the mouse drag event.(in constructor)
-   */
-  setMouseDrag(): void {
-    const canvas: HTMLCanvasElement = this.renderer.domElement;
-    const elWidth: number = canvas.getBoundingClientRect().width;
-    canvas.onmousedown = (event: MouseEvent): void => {
-      event.preventDefault();
-      const speed: number = this.viewerWidgetConfig.rotationSpeed;
-      const origRotation: number = this.rotation;
-      this.viewerWidgetConfig.rotationSpeed = 0;
-      const mouseMove: (arg0: MouseEvent) => void = (e: MouseEvent): void => {
-        e.preventDefault();
-        const rotation: number = (2 * Math.PI * (event.offsetX - e.offsetX)) / elWidth;
-        const distance: number = Math.hypot(this.camera.position.x, this.camera.position.z);
-        this.rotation = origRotation + rotation;
-        this.camera.position.x = Math.sin(this.rotation) * distance;
-        this.camera.position.z = Math.cos(this.rotation) * distance;
-        this.camera.lookAt(new Vector3());
-      };
-      const mouseUp: (arg0: MouseEvent) => void = (e: MouseEvent): void => {
-        e.preventDefault();
-        canvas.removeEventListener('mousemove', mouseMove);
-        this.viewerWidgetConfig.rotationSpeed = speed;
-        canvas.removeEventListener('mouseup', mouseUp);
-      };
-      canvas.addEventListener('mousemove', mouseMove);
-      document.addEventListener('mouseup', mouseUp);
-    };
   }
 
   /**

@@ -192,10 +192,9 @@ export default function BodyTrack2d() {
         style={{
           zIndex: 2,
           position: 'relative',
-          width: '40%',
+          width: '20vw',
+          height: '20vw',
           paddingTop: '40%',
-          right: '20px',
-          top: '20px',
         }}
       >
         <div
