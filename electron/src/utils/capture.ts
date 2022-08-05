@@ -16,7 +16,7 @@ export const startCaptureWebcam = (
   recorder.onstart = () => {
     setTimeout(() => {
       recorder.stop();
-    }, 10000);
+    });
   };
   recorder.onstop = () => {
     const blob = new Blob(rec.data, { type: rec.type });
