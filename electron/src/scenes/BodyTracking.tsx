@@ -73,6 +73,10 @@ export default function BodyTrack2d() {
       if (canvasImageData.current === null) {
         canvasRef.current.width = data.colorImageFrame.width;
         canvasRef.current.height = data.colorImageFrame.height;
+        sideCanvasRef.current.width = data.colorImageFrame.width;
+        sideCanvasRef.current.height = data.colorImageFrame.height;
+        frontCanvasRef.current.width = data.colorImageFrame.width;
+        frontCanvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
@@ -248,54 +252,48 @@ export default function BodyTrack2d() {
       <canvas
         ref={canvasRef}
         className="main_canvas"
-        width="1280"
-        height="720"
         style={{
           position: 'absolute',
-          marginLeft: 'auto',
+          marginLeft: 0,
           marginRight: 'auto',
           left: 0,
           right: 0,
           textAlign: 'center',
           zIndex: 1,
-          width: 1280,
-          height: 720,
+          width: '64vw',
+          height: '36vw',
         }}
       />
       <canvas
         ref={sideCanvasRef}
         className="side_canvas"
-        width="1280"
-        height="720"
         style={{
           position: 'absolute',
           marginLeft: 'auto',
-          marginRight: 'auto',
-          top: 950,
+          marginRight: 0,
+          top: 0,
           left: 0,
           right: 0,
           textAlign: 'center',
           zIndex: 1,
-          width: 1280,
-          height: 720,
+          width: '72vh',
+          height: '45vh',
         }}
       />
       <canvas
         ref={frontCanvasRef}
         className="front_canvas"
-        width="1280"
-        height="720"
         style={{
           position: 'absolute',
           marginLeft: 'auto',
-          marginRight: 'auto',
-          top: 1690,
+          marginRight: 0,
+          top: '50vh',
           left: 0,
           right: 0,
           textAlign: 'center',
           zIndex: 1,
-          width: 1280,
-          height: 720,
+          width: '72vh',
+          height: '45vh',
         }}
       />
     </>

@@ -14,6 +14,7 @@ export const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImag
 // sideを描画する
 export const renderSideFrame = (ctx: CanvasRenderingContext2D, canvasImageData: ImageData) => {
   const pixelArray = canvasImageData.data;
+  console.log(`pixelArray: `, canvasImageData);
   for (let i = 0; i < canvasImageData.data.length; i += 4) {
     // NOTE: 背景を水色にする
     pixelArray[i] = 0;
