@@ -163,7 +163,7 @@ export class LandmarkGrid {
     /*
      * Set viewerWidgetConfig
      */
-    this.distance = 150;
+    this.distance = 100;
     this.rotation = 0;
     this.disposeQueue = [];
     this.removeQueue = [];
@@ -258,36 +258,23 @@ export class LandmarkGrid {
         this.camera.position.z = Math.cos(this.rotation) * this.distance;
         this.camera.lookAt(new Vector3());
       }
-      this.render();
-    });
-  }
-
-  /**
-   * @private:(in requestFrame)
-   */
-  render(): void {
-    this.renderer.render(this.scene, this.camera);
-    this.setLabels();
-  }
-
-  /**
-   * @private: Sets the label of a given element to a given value. (in render)
-   */
-  setLabels(): void {
-    this.labels.x.forEach((pair: NumberLabel) => {
-      const position: Vector3 = this.getCanvasPosition(pair.position);
-      // eslint-disable-next-line no-param-reassign
-      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-    });
-    this.labels.y.forEach((pair: NumberLabel) => {
-      const position: Vector3 = this.getCanvasPosition(pair.position);
-      // eslint-disable-next-line no-param-reassign
-      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-    });
-    this.labels.z.forEach((pair: NumberLabel) => {
-      const position: Vector3 = this.getCanvasPosition(pair.position);
-      // eslint-disable-next-line no-param-reassign
-      pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      this.renderer.render(this.scene, this.camera);
+      // Set labels
+      this.labels.x.forEach((pair: NumberLabel) => {
+        const position: Vector3 = this.getCanvasPosition(pair.position);
+        // eslint-disable-next-line no-param-reassign
+        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      });
+      this.labels.y.forEach((pair: NumberLabel) => {
+        const position: Vector3 = this.getCanvasPosition(pair.position);
+        // eslint-disable-next-line no-param-reassign
+        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      });
+      this.labels.z.forEach((pair: NumberLabel) => {
+        const position: Vector3 = this.getCanvasPosition(pair.position);
+        // eslint-disable-next-line no-param-reassign
+        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      });
     });
   }
 
@@ -307,12 +294,14 @@ export class LandmarkGrid {
   }
 
   /**
-   * @public
+   * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
-  setDistance(distance: number): void {
-    this.distance = distance;
-    this.camera.position.x = Math.sin(this.rotation) * this.distance;
-    this.camera.position.z = Math.cos(this.rotation) * this.distance;
+  setCamera(theta: number, phi: number, distance = 100): void {
+    const thetaRad = (theta * Math.PI) / 180;
+    const phiRad = (phi * Math.PI) / 180;
+    this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * distance;
+    this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * distance;
+    this.camera.position.y = Math.cos(thetaRad) * distance;
     this.camera.lookAt(new Vector3());
   }
 
