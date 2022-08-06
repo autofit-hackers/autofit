@@ -27,8 +27,8 @@ export type FormInstructionItem = {
 // バーベルは足の中心の真上を移動
 const barbellOnFootCenter: FormInstructionItem = {
   itemName: 'Barbel on foot center',
-  instructionTitle: 'まんあか',
-  instructionText: 'まんあかテスト',
+  instructionTitle: 'まんなか',
+  instructionText: 'まんなかテスト',
   importance: 0.5,
   evaluate: (rep: Rep) => {
     // 毎フレーム(サンプリングしても良い)
@@ -550,19 +550,20 @@ const kneePosition: FormInstructionItem = {
 };
 
 // ラックの高さ
-// TopとButtomだけでは厳しい
+// TopとBottomだけでは厳しい
 
 // 指導項目を追加したらここにもかく
-export const formInstructionItems: FormInstructionItem[] = [
-  barbellOnFootCenter,
-  squatDepth,
-  kneeOut,
-  backBent,
-  backSlant,
-  feetAngle,
-  gazeDirection,
-  feetWidth,
-  feetGround,
-  barbellPosition,
-  kneePosition,
-];
+export const formInstructionItems: { [key: string]: FormInstructionItem } = {
+  [barbellOnFootCenter.itemName]: barbellOnFootCenter,
+  [squatDepth.itemName]: squatDepth,
+  [kneeOut.itemName]: kneeOut,
+  [backBent.itemName]: backBent,
+  [backSlant.itemName]: backSlant,
+  [feetAngle.itemName]: feetAngle,
+  [barbellPosition.itemName]: barbellPosition,
+  [gazeDirection.itemName]: gazeDirection,
+  [feetWidth.itemName]: feetWidth,
+  [feetGround.itemName]: feetGround,
+  [barbellOnFootCenter.itemName]: barbellOnFootCenter,
+  [kneePosition.itemName]: kneePosition,
+};

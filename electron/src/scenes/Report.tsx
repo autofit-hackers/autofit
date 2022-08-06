@@ -4,63 +4,12 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import { BottomNavigation, BottomNavigationAction, Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { formInstructionItems } from '../coaching/formInstructionItems';
-import { stopKinect } from '../utils/kinect';
-import { kinectAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
-import { BadPoint, GoodPoint, TimerCard, TrainingResultChart, TrainingStats, VideoReplayer } from './ReportComponents';
+import { repVideoUrlsAtom, setRecordAtom } from './atoms';
+import { GoodPoint, VideoReplayer } from './ReportComponents';
 
-export function IntervalReport() {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const [kinect] = useAtom(kinectAtom);
-
-  /*
-   * Kinectの終了
-   */
-  useEffect(() => {
-    stopKinect(kinect);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-
-      <Box
-        component="main"
-        sx={{
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
-          flexGrow: 1,
-          height: 1920,
-          width: 1080,
-          overflow: 'auto',
-        }}
-      >
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Grid container spacing="1vh">
-            <TrainingStats text="スクワット10回" />
-            {/* video */}
-            <VideoReplayer />
-            <Grid item xs={6}>
-              <Grid container spacing="1vh">
-                {/* Chart */}
-                <TrainingResultChart text="Chart Here" />
-                <TimerCard time={60} />
-              </Grid>
-            </Grid>
-            {/* text instruction */}
-            <GoodPoint text="いい姿勢でスクワットができています。背骨の角度はバランスに関わります。この調子でいきましょう。" />
-            {/* text instruction */}
-            <BadPoint text="少ししゃがみ込みが甘かったですね。太ももが水平になるまで腰を落とすと脚全体筋肉を効果的に鍛えることができます。" />
-          </Grid>
-        </Container>
-      </Box>
-    </Box>
-  );
-}
-
-export function FuturisticReport() {
+export default function FuturisticReport() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -68,34 +17,15 @@ export function FuturisticReport() {
   const [set] = useAtom(setRecordAtom);
   const [displayingInstructionIdx, setIdx] = useState(0);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const repScore: number[] = new Array(set.reps[0].formEvaluationScores.length).fill(0); // FIXME
+  const repScore: { [key: string]: number } = {};
+  const instructionKeys: string[] = [];
+  console.log(set);
   set.reps.forEach((rep) => {
-    for (let index = 0; index < rep.formEvaluationScores.length; index += 1) {
-      repScore[index] += +rep.formEvaluationScores[index] / set.reps.length;
-    }
-  });
-
-  const getMaxIdxs = (arr: number[]) => {
-    const max = Math.max(...arr);
-    const indexes = [];
-
-    for (let index = 0; index < arr.length; index += 1) {
-      if (arr[index] === max) {
-        if (formInstructionItems[displayingInstructionIdx].instructionText !== undefined) {
-          indexes.push(index);
-        }
-      }
-    }
-    console.log(indexes);
-
-    return indexes;
-  };
-
-  const outIdxs = getMaxIdxs(repScore);
-
-  outIdxs.forEach((outIdx) => {
-    console.log(formInstructionItems[outIdx].itemName);
+    Object.keys(rep.formErrors).forEach((key) => {
+      repScore[key] = rep.formErrors[key];
+      instructionKeys.push(key);
+      console.log('pushed: ', key);
+    });
   });
 
   const futuristicTheme = createTheme({
@@ -141,7 +71,9 @@ export function FuturisticReport() {
                 }}
               />
             </Grid>
-            {/* <GoodPoint text={formInstructionItems[displayingInstructionIdx].instructionText} /> */}
+            <GoodPoint
+              text={formInstructionItems[instructionKeys[displayingInstructionIdx]].instructionText ?? 'null'}
+            />
             <BottomNavigation
               showLabels
               value={displayingInstructionIdx}
@@ -155,7 +87,7 @@ export function FuturisticReport() {
               }}
             >
               <BottomNavigationAction
-                label={formInstructionItems[outIdxs[0]].instructionTitle}
+                label={formInstructionItems[instructionKeys[0]].instructionTitle}
                 icon={<RestoreIcon />}
                 sx={{
                   backgroundColor: 'grey.900',
@@ -171,7 +103,7 @@ export function FuturisticReport() {
                 }}
               />
               <BottomNavigationAction
-                label={formInstructionItems[outIdxs[1]].instructionTitle}
+                label={formInstructionItems[instructionKeys[1]].instructionTitle}
                 icon={<FavoriteIcon />}
                 sx={{
                   backgroundColor: 'grey.900',
@@ -187,7 +119,7 @@ export function FuturisticReport() {
                 }}
               />
               <BottomNavigationAction
-                label={formInstructionItems[outIdxs[2]].instructionTitle}
+                label={formInstructionItems[instructionKeys[2]].instructionTitle}
                 icon={<LocationOnIcon />}
                 sx={{
                   backgroundColor: 'grey.900',
@@ -203,7 +135,7 @@ export function FuturisticReport() {
                 }}
               />
               <BottomNavigationAction
-                label={formInstructionItems[outIdxs[1]].instructionTitle}
+                label={formInstructionItems[instructionKeys[3]].instructionTitle}
                 icon={<FavoriteIcon />}
                 sx={{
                   backgroundColor: 'grey.900',
@@ -219,7 +151,7 @@ export function FuturisticReport() {
                 }}
               />
               <BottomNavigationAction
-                label={formInstructionItems[outIdxs[2]].instructionTitle}
+                label={formInstructionItems[instructionKeys[4]].instructionTitle}
                 icon={<LocationOnIcon />}
                 sx={{
                   backgroundColor: 'grey.900',
@@ -242,5 +174,3 @@ export function FuturisticReport() {
     </ThemeProvider>
   );
 }
-
-export default FuturisticReport;

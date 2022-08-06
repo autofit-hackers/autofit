@@ -1,6 +1,6 @@
-import { KJ } from '../utils/kinect_joints';
-import { drawBarsWithAcceptableError } from '../drawing_utils/thresholdBar';
 import { Pose } from '../training/pose';
+import { KJ } from '../utils/kinect_joints';
+import { drawBarsWithAcceptableError } from '../utils/render/drawing';
 
 export type FormEvaluationDrawer = {
   readonly name: string;
@@ -23,6 +23,7 @@ const barbellOnFootCenter: FormEvaluationDrawer = {
       pose.landmarks[KJ.KNEE_RIGHT].y,
       canvasWidth,
       acceptableErr,
+      acceptableErr,
     );
   },
 };
@@ -37,6 +38,7 @@ const squatDepth: FormEvaluationDrawer = {
       pose.landmarks[KJ.KNEE_RIGHT].x,
       pose.landmarks[KJ.KNEE_RIGHT].y,
       canvasWidth,
+      acceptableErr,
       acceptableErr,
     );
   },

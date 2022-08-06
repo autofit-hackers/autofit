@@ -3,7 +3,7 @@ import { useAtom } from 'jotai';
 import { stopKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom } from './atoms';
 import BodyTrack2d from './BodyTracking';
-import { FuturisticReport } from './Report';
+import FuturisticReport from './Report';
 
 export default function TrainingMain() {
   const [phase, setPhase] = useAtom(phaseAtom);
