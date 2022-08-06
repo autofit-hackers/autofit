@@ -14,10 +14,11 @@ export const startCaptureWebcam = (
     rec.data.push(e.data);
   };
   recorder.onstart = () => {
+    // 開始一分でレコーダーを自動停止
     setTimeout(() => {
       console.log('time out');
       recorder.stop();
-    }, 100000); // FIXME: タイムアウト時間を適切に設定すること
+    }, 60000);
   };
   recorder.onstop = () => {
     const blob = new Blob(rec.data, { type: rec.type });

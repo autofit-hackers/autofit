@@ -66,12 +66,24 @@ export const kinectToMediapipe = (
     orientationZ: number;
   }>,
   canvas: HTMLCanvasElement,
+  rotation: boolean,
 ): { landmarks: NormalizedLandmarkList; worldLandmarks: LandmarkList } => {
   const mediapipePose: NormalizedLandmarkList = [];
   const mediapipePoseWorld: LandmarkList = [];
+  const depthToRGB = (Math.PI * 6) / 180.0;
   for (let i = 0; i < kinectPoses.length; i += 1) {
     mediapipePose[i] = { x: kinectPoses[i].colorX / canvas.width, y: kinectPoses[i].colorY / canvas.height, z: 0 };
-    mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
+
+    // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
+    if (rotation) {
+      mediapipePoseWorld[i] = {
+        x: kinectPoses[i].cameraX,
+        y: kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB),
+        z: kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB),
+      };
+    } else {
+      mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
+    }
   }
 
   return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld };
@@ -141,22 +153,70 @@ export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandm
 export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.atan2(p2.x - p1.x, p2.z - p1.z);
 
-export const normalizeWorldLandmarks = (
+// Sideを描画するために行う座標変換
+export const normalizeSideWorldLandmarkPoint = (
   worldLandmarks: LandmarkList,
   canvas: HTMLCanvasElement,
-): NormalizedLandmarkList => {
-  const normalizedLandmarks: NormalizedLandmarkList = [];
+  LandmarkPoint: Landmark,
+): NormalizedLandmark => {
+  // const normalizedLandmarks: NormalizedLandmarkList = [];
   const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
   const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
   const heightOfBody = 1500;
 
+  return {
+    x: ((LandmarkPoint.z - lowCenterZ) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
+    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
+    z: 0,
+  };
+};
+
+export const normalizeSideSideWorldLandmarks = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+): NormalizedLandmarkList => {
+  const normalizedLandmarks: NormalizedLandmarkList = [];
+
   for (let i = 0; i < worldLandmarks.length; i += 1) {
-    normalizedLandmarks[i] = {
-      x: ((worldLandmarks[i].z - lowCenterZ) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
-      y: ((worldLandmarks[i].y - lowCenterY) * 0.8) / heightOfBody + 0.9,
-      z: 0,
-    };
+    normalizedLandmarks[i] = normalizeSideWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
   }
 
   return normalizedLandmarks;
 };
+
+// Frontを描画するために行う座標返還
+export const normalizeFrontWorldLandmarkPoint = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+  LandmarkPoint: Landmark,
+): NormalizedLandmark => {
+  const lowCenterX = (worldLandmarks[20].x + worldLandmarks[24].x) / 2;
+  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
+  const heightOfBody = 1500;
+
+  return {
+    x: ((LandmarkPoint.x - lowCenterX) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
+    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
+    z: 0,
+  };
+};
+
+export const normalizeFrontWorldLandmarks = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+): NormalizedLandmarkList => {
+  const normalizedLandmarks: NormalizedLandmarkList = [];
+
+  for (let i = 0; i < worldLandmarks.length; i += 1) {
+    normalizedLandmarks[i] = normalizeFrontWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
+  }
+
+  return normalizedLandmarks;
+};
+
+export const copyLandmark = (normalizedLandmark: NormalizedLandmark): NormalizedLandmark => ({
+  x: normalizedLandmark.x,
+  y: normalizedLandmark.y,
+  z: normalizedLandmark.z,
+  visibility: normalizedLandmark.visibility,
+});
