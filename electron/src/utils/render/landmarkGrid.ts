@@ -260,21 +260,21 @@ export class LandmarkGrid {
       }
       this.renderer.render(this.scene, this.camera);
       // Set labels
-      this.labels.x.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
-      this.labels.y.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
-      this.labels.z.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
+      // this.labels.x.forEach((pair: NumberLabel) => {
+      //   const position: Vector3 = this.getCanvasPosition(pair.position);
+      //   // eslint-disable-next-line no-param-reassign
+      //   pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      // });
+      // this.labels.y.forEach((pair: NumberLabel) => {
+      //   const position: Vector3 = this.getCanvasPosition(pair.position);
+      //   // eslint-disable-next-line no-param-reassign
+      //   pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      // });
+      // this.labels.z.forEach((pair: NumberLabel) => {
+      //   const position: Vector3 = this.getCanvasPosition(pair.position);
+      //   // eslint-disable-next-line no-param-reassign
+      //   pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      // });
     });
   }
 
@@ -433,7 +433,7 @@ export class LandmarkGrid {
   }
 
   /**
-   * @private: Creates a label for the axes.(in createAxesLabels in constructor)
+   * @private:
    */
   createLabel(value: number): HTMLSpanElement {
     const span: HTMLSpanElement = document.createElement('span');
@@ -556,13 +556,6 @@ export class LandmarkGrid {
       bufferGeometry.dispose();
     });
     this.disposeQueue = [];
-  }
-
-  /**
-   * @private
-   */
-  getDistance(): number {
-    return this.distance;
   }
 
   /**
