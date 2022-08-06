@@ -105,7 +105,10 @@ export default function BodyTrack2d() {
         if (repState.current.isRepEnd) {
           console.log('rep end');
 
-          // TODO: 動画撮影を停止し、配列に保存する
+          // 動画撮影を停止し、配列に保存する
+          if (canvasRecorderRef.current) {
+            canvasRecorderRef.current.stop();
+          }
 
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
