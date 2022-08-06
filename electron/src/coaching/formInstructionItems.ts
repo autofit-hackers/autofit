@@ -25,6 +25,9 @@ export type FormInstructionItem = {
 // バーベルは足の中心の真上を移動
 const barbellOnFootCenter: FormInstructionItem = {
   itemName: 'Barbel on foot center',
+  instructionTitle: 'まんあか',
+  instructionText: 'まんあかテスト',
+  importance: 0.5,
   evaluate: (rep: Rep) => {
     // 毎フレーム(サンプリングしても良い)
     // TODO: マイフレームごとに書き換えること
@@ -83,7 +86,7 @@ const barbellOnFootCenter: FormInstructionItem = {
 // スクワットの深さ
 const squatDepth: FormInstructionItem = {
   itemName: 'Squat depth',
-  instructionTitle: 'スクワットの深さ',
+  instructionTitle: '腰の深さ',
   instructionText: '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
   importance: 0.5,
   // bottomで判定
@@ -214,6 +217,9 @@ const backBent: FormInstructionItem = {
 // bottomでの背中全体の傾き
 const backSlant: FormInstructionItem = {
   itemName: 'Back slant',
+  instructionTitle: '背中の傾き',
+  instructionText: '背中の傾きテスト',
+  importance: 0.5,
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -247,6 +253,9 @@ const backSlant: FormInstructionItem = {
 // つま先の角度
 const feetAngle: FormInstructionItem = {
   itemName: 'Feet angle',
+  instructionTitle: 'つま先の角度',
+  instructionText: 'つまさきテスト',
+  importance: 0.5,
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -286,6 +295,9 @@ const feetAngle: FormInstructionItem = {
 // TODO: 角度で比較するか，位置で比較するかを検討
 const feetGround: FormInstructionItem = {
   itemName: 'Feet ground',
+  instructionTitle: 'べったり',
+  instructionText: 'べったりテスト',
+  importance: 0.5,
   // topとbottomを比較
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -335,6 +347,9 @@ const feetGround: FormInstructionItem = {
 // 首と顔から顔の傾きをとっているが，首と両耳の中心でもよいかもしれない
 const gazeDirection: FormInstructionItem = {
   itemName: 'Gaze direction',
+  instructionTitle: '視線',
+  instructionText: '視線テスト',
+  importance: 0.5,
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);

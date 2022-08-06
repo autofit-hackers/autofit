@@ -86,12 +86,13 @@ export function VideoReplayer() {
           p: 2,
           display: 'flex',
           flexDirection: 'column',
-          height: '65vw',
+          height: '57vw',
           justifyContent: 'center',
         }}
       >
-        <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop width="80vw" height="60vw" />
+        <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop width="100%" height="100%" />
         <Slider
+          // sx={{ position: 'absolute', marginLeft: '5%', width: '90%', alignSelf: 'center' }}
           aria-label="Rep Index"
           size="small"
           valueLabelDisplay="auto"
@@ -118,15 +119,16 @@ export function GoodPoint(props: { text: string }) {
           p: 2,
           display: 'flex',
           flexDirection: 'column',
-          height: '10vh',
+          height: '5vh',
+          backgroundColor: '#005555',
+          border: 1,
+          borderColor: 'grey.500',
+          borderRadius: 5,
+          boxShadow: 0,
+          color: '#00ffff',
         }}
       >
-        <Typography variant="h4" fontWeight={600}>
-          【よかったポイント】
-        </Typography>
-        <Typography variant="h4" fontWeight={600}>
-          {text}
-        </Typography>
+        <Typography variant="h5">{text}</Typography>
       </Paper>
     </Grid>
   );

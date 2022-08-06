@@ -1,4 +1,7 @@
-import { Box, Button, createTheme, CssBaseline, Grid, Paper, Typography } from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import RestoreIcon from '@mui/icons-material/Restore';
+import { BottomNavigation, BottomNavigationAction, Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
@@ -79,30 +82,32 @@ export function FuturisticReport() {
 
     for (let index = 0; index < arr.length; index += 1) {
       if (arr[index] === max) {
-        indexes.push(index);
+        if (formInstructionItems[displayingInstructionIdx].instructionText !== undefined) {
+          indexes.push(index);
+        }
       }
     }
+    console.log(indexes);
 
     return indexes;
   };
 
-  console.log('');
-  getMaxIdxs(repScore).forEach((outIdx) => {
+  const outIdxs = getMaxIdxs(repScore);
+
+  outIdxs.forEach((outIdx) => {
     console.log(formInstructionItems[outIdx].itemName);
   });
-
-  console.log();
 
   const futuristicTheme = createTheme({
     palette: {
       mode: 'dark',
       primary: {
-        main: '#002884',
-        dark: '#002884',
+        main: '#00ffff',
+        dark: '#00ffff',
         contrastText: '#fff',
       },
       secondary: {
-        main: '#002884',
+        main: '#00ffff',
         dark: '#ba000d',
         contrastText: '#000',
       },
@@ -132,30 +137,107 @@ export function FuturisticReport() {
                   p: 2,
                   display: 'flex',
                   flexDirection: 'column',
-                  height: '100vw',
+                  height: '98vw',
                 }}
-              >
-                <Typography>{formInstructionItems[displayingInstructionIdx].instructionText}</Typography>
-              </Paper>
+              />
             </Grid>
+            {/* <GoodPoint text={formInstructionItems[displayingInstructionIdx].instructionText} /> */}
+            <BottomNavigation
+              showLabels
+              value={displayingInstructionIdx}
+              onChange={(event, newValue: number) => {
+                setIdx(newValue);
+              }}
+              sx={{
+                mx: 'auto',
+                width: '90%',
+                '& .Mui-selected': { backgroundColor: '#005555' },
+              }}
+            >
+              <BottomNavigationAction
+                label={formInstructionItems[outIdxs[0]].instructionTitle}
+                icon={<RestoreIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: '#006666',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[outIdxs[1]].instructionTitle}
+                icon={<FavoriteIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[outIdxs[2]].instructionTitle}
+                icon={<LocationOnIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[outIdxs[1]].instructionTitle}
+                icon={<FavoriteIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[outIdxs[2]].instructionTitle}
+                icon={<LocationOnIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                }}
+              />
+            </BottomNavigation>
+
+            {/* 詳細表示する指導の切り替えボタン類 */}
           </Grid>
         </Container>
-
-        {/* 詳細表示する指導の切り替えボタン類 */}
-        <Button
-          onClick={() => {
-            setIdx(0);
-          }}
-        >
-          {formInstructionItems[0].instructionTitle}
-        </Button>
-        <Button
-          onClick={() => {
-            setIdx(1);
-          }}
-        >
-          {formInstructionItems[1].instructionTitle}
-        </Button>
       </Box>
     </ThemeProvider>
   );
