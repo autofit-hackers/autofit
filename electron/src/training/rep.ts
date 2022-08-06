@@ -10,7 +10,7 @@ type KeyframesIndex = {
 export type Rep = {
   form: Pose[];
   keyframesIndex: KeyframesIndex;
-  formEvaluationScores: number[];
+  formErrors: { [instruction: string]: number };
 };
 
 export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
@@ -26,7 +26,7 @@ export const resetRep = (): Rep => ({
     ascendingMiddle: undefined,
     descendingMiddle: undefined,
   },
-  formEvaluationScores: [],
+  formErrors: {},
 });
 
 export const calculateKeyframes = (prevRep: Rep): Rep => {

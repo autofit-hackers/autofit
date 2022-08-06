@@ -1,14 +1,14 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
-import { evaluateForm, FormInstructionSettings } from '../coaching/formInstruction';
+import { evaluateRepForm, FormInstructionSettings } from '../coaching/formInstruction';
 import { formInstructionItems } from '../coaching/formInstructionItems';
 import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
-import { Set } from '../training/set';
-import { startCaptureWebcam } from '../utils/record';
+import { resetSet, Set } from '../training/set';
 import { startKinect } from '../utils/kinect';
+import { startCaptureWebcam } from '../utils/record';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { LandmarkGrid } from '../utils/render/landmarkGrid';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
@@ -28,7 +28,7 @@ export default function BodyTrack2d() {
    *セット・レップ・RepState変数
    */
   const [, setSetRecord] = useAtom(setRecordAtom);
-  const set = useRef<Set>({ reps: [] });
+  const set = useRef<Set>(resetSet());
   const rep = useRef<Rep>(resetRep());
   const repState = useRef<RepState>(resetRepState());
 
@@ -112,11 +112,9 @@ export default function BodyTrack2d() {
 
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
-          rep.current = evaluateForm(rep.current, formInstructionSettings);
+          rep.current = evaluateRepForm(rep.current, formInstructionSettings);
 
-          console.log(rep.current.formEvaluationScores);
-
-          console.log(rep.current.formEvaluationScores);
+          console.log(rep.current.formErrors);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           set.current.reps = [...set.current.reps, rep.current];
