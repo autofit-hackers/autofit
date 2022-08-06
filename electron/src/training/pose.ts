@@ -70,7 +70,7 @@ export const kinectToMediapipe = (
 ): { landmarks: NormalizedLandmarkList; worldLandmarks: LandmarkList } => {
   const mediapipePose: NormalizedLandmarkList = [];
   const mediapipePoseWorld: LandmarkList = [];
-  const depthToRDB = (Math.PI * 6) / 180.0;
+  const depthToRGB = (Math.PI * 6) / 180.0;
   for (let i = 0; i < kinectPoses.length; i += 1) {
     mediapipePose[i] = { x: kinectPoses[i].colorX / canvas.width, y: kinectPoses[i].colorY / canvas.height, z: 0 };
 
@@ -78,8 +78,8 @@ export const kinectToMediapipe = (
     if (rotation) {
       mediapipePoseWorld[i] = {
         x: kinectPoses[i].cameraX,
-        y: kinectPoses[i].cameraY * Math.cos(depthToRDB) + kinectPoses[i].cameraZ * Math.sin(depthToRDB),
-        z: kinectPoses[i].cameraY * Math.sin(-depthToRDB) + kinectPoses[i].cameraZ * Math.cos(depthToRDB),
+        y: kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB),
+        z: kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB),
       };
     } else {
       mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
@@ -171,7 +171,7 @@ export const normalizeSideWorldLandmarkPoint = (
   };
 };
 
-export const normalizeSideWorldLandmarks = (
+export const normalizeSideSideWorldLandmarks = (
   worldLandmarks: LandmarkList,
   canvas: HTMLCanvasElement,
 ): NormalizedLandmarkList => {
@@ -213,3 +213,10 @@ export const normalizeFrontWorldLandmarks = (
 
   return normalizedLandmarks;
 };
+
+export const copyLandmark = (normalizedLandmark: NormalizedLandmark): NormalizedLandmark => ({
+  x: normalizedLandmark.x,
+  y: normalizedLandmark.y,
+  z: normalizedLandmark.z,
+  visibility: normalizedLandmark.visibility,
+});

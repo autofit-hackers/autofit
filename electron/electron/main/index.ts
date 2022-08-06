@@ -5,7 +5,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { release } from 'os';
 import { join } from 'path';
-
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration();
 
@@ -44,6 +44,8 @@ async function createWindow() {
     },
   });
 
+  win.maximize();
+
   win.webContents.openDevTools({ mode: 'detach' });
   if (app.isPackaged) {
     void win.loadFile(indexHtml);
@@ -65,7 +67,12 @@ async function createWindow() {
   });
 }
 
-void app.whenReady().then(createWindow);
+void app.whenReady().then(() => {
+  void createWindow();
+  installExtension(REACT_DEVELOPER_TOOLS)
+    .then((name) => console.log(`Added Extension:  ${name}`))
+    .catch((err) => console.log('An error occurred: ', err));
+});
 
 app.on('window-all-closed', () => {
   win = null;
