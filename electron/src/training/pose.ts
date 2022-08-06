@@ -171,7 +171,7 @@ export const normalizeSideWorldLandmarkPoint = (
   };
 };
 
-export const normalizeSideWorldLandmarks = (
+export const normalizeSideSideWorldLandmarks = (
   worldLandmarks: LandmarkList,
   canvas: HTMLCanvasElement,
 ): NormalizedLandmarkList => {

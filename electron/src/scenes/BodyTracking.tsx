@@ -71,8 +71,12 @@ export default function BodyTrack2d() {
 
       if (data.bodyFrame.bodies) {
         // Kinectの姿勢推定結果を自作のPose型に代入
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        const currentPose: Pose = kinectToMediapipe(data.bodyFrame.bodies[0].skeleton.joints, canvasRef.current, true);
+        const currentPose: Pose = kinectToMediapipe(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          data.bodyFrame.bodies[0].skeleton.joints,
+          canvasRef.current,
+          true,
+        );
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
@@ -106,6 +110,8 @@ export default function BodyTrack2d() {
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
           rep.current = evaluateForm(rep.current, formInstructionSettings);
+
+          console.log(rep.current.formEvaluationScores);
 
           console.log(rep.current.formEvaluationScores);
 
