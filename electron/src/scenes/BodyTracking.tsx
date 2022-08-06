@@ -107,7 +107,7 @@ export default function BodyTrack2d() {
           rep.current = calculateKeyframes(rep.current);
           rep.current = evaluateRepForm(rep.current, formInstructionSettings);
 
-          console.log(rep.current.formScores);
+          console.log(rep.current.formErrors);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           set.current.reps = [...set.current.reps, rep.current];

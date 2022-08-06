@@ -12,25 +12,25 @@ export const evaluateRepForm = (prevRep: Rep, settings: FormInstructionSettings)
 
   // settingsで指定した全ての指導項目に関してフォームを評価する
   settings.items.forEach((instruction) => {
-    const evaluationScore = instruction.evaluate(prevRep);
-    rep.formScores[`${instruction.text}`] = evaluationScore;
+    const formError = instruction.evaluate(prevRep);
+    rep.formErrors[`${instruction.text}`] = formError;
   });
 
   return rep;
 };
 
 // 各指導項目で表示すべきレップ番号を決定する
-export const decideDisplayedRep = (prevSet: Set, settings: FormInstructionSettings): Set => {
+export const decideRepToBeShowed = (prevSet: Set, settings: FormInstructionSettings): Set => {
   const set: Set = prevSet;
 
   // settingsで指定した全ての指導項目に関してレップ番号を決定する
   settings.items.forEach((instruction) => {
-    let LowestFormScore = 0;
+    let FormHighestError = 0;
     set.reps.forEach((rep, repIndex) => {
-      const FormScore = rep.formScores[`${instruction.text}`];
-      if (FormScore <= LowestFormScore) {
-        LowestFormScore = FormScore;
-        set.displayedRepNumbers[`${instruction.text}`] = repIndex;
+      const absoluteFormScore = Math.abs(rep.formErrors[`${instruction.text}`]);
+      if (absoluteFormScore > FormHighestError) {
+        FormHighestError = absoluteFormScore;
+        set.RepNumbersToBeShowed[`${instruction.text}`] = repIndex;
       }
     });
   });
