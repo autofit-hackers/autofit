@@ -16,8 +16,10 @@ import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
 import {
+  showLineToCheckBackBent,
   showLineToCheckKneeInOut,
   showLineToCheckSquatDepth,
+  showTextToCheckBackBent,
   showTextToCheckKneeInOut,
 } from '../training/squatDebugging';
 import { startCaptureWebcam } from '../utils/capture';
@@ -229,16 +231,6 @@ export default function BodyTrack2d() {
           sideCanvasRef.current.height,
           currentPose.worldLandmarks,
         );
-        // スクワットのニーイン，ニーアウトの検証用判定基準を表示
-        showLineToCheckKneeInOut(
-          aboveCanvasCtx,
-          aboveCanvasRef.current,
-          aboveCanvasRef.current.width,
-          aboveCanvasRef.current.height,
-          currentPose.worldLandmarks,
-        );
-
-        // データを描画する
         // スクワットの腰の高さを判定するためのデータを描画する
         // showTextToCheckSquatDepth(
         //   canvasCtx,
@@ -252,9 +244,31 @@ export default function BodyTrack2d() {
         //   canvasRef.current.height,
         //   currentPose.worldLandmarks,
         // );
-
+        // スクワットのニーイン，ニーアウトの検証用判定基準を表示
+        showLineToCheckKneeInOut(
+          aboveCanvasCtx,
+          aboveCanvasRef.current,
+          aboveCanvasRef.current.width,
+          aboveCanvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
         // ニーイン，ニーアウトを判定するためのデータを描画する
         showTextToCheckKneeInOut(
+          canvasCtx,
+          canvasRef.current.width,
+          canvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
+        // スクワットの背中が曲がっていないかの検証用判定基準を表示
+        showLineToCheckBackBent(
+          sideCanvasCtx,
+          sideCanvasRef.current,
+          sideCanvasRef.current.width,
+          sideCanvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
+        // スクワットの背中が曲がっていないか判定するためのデータを表示
+        showTextToCheckBackBent(
           canvasCtx,
           canvasRef.current.width,
           canvasRef.current.height,

@@ -1,6 +1,7 @@
 import { Landmark, LandmarkList } from '@mediapipe/pose';
 import { drawBarsFromTwoPoints } from '../drawing_utils/thresholdBar';
 import {
+  angleInXY,
   angleInYZ,
   angleInZX,
   distanceInXYZ,
@@ -261,6 +262,102 @@ export const showTextToCheckKneeInOut = (
     .toFixed(1)
     .toString()}], [${rightThighFootAngleDistanceZX.toFixed(1).toString()}]`;
   ctx.fillText(`${textAnkleToFootAngleDistanceZX}`, 0.1 * width, 0.7 * height);
+};
+
+// スクワットの背中が曲がっていないかをチェックする用のラインを表示する
+export const showLineToCheckBackBent = (
+  ctx: CanvasRenderingContext2D,
+  current: HTMLCanvasElement,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[0]).x * width,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[0]).y * height,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[1]).x * width,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[1]).y * height,
+    width,
+    'red',
+  );
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[1]).x * width,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[1]).y * height,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[2]).x * width,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[2]).y * height,
+    width,
+    'red',
+  );
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[2]).x * width,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[2]).y * height,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[3]).x * width,
+    normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[3]).y * height,
+    width,
+    'red',
+  );
+};
+// スクワットの背中が曲がっていないかをチェックする用のデータを表示する
+export const showTextToCheckBackBent = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  const pelvisToSpineNavalAngleYZ = (angleInYZ(worldLandmarks[0], worldLandmarks[1]) * 180.0) / Math.PI;
+  const pelvisToSpineNavalAngleXY = (angleInXY(worldLandmarks[0], worldLandmarks[1]) * 180.0) / Math.PI;
+  const spineNavalToSpineChestAngleYZ = (angleInYZ(worldLandmarks[1], worldLandmarks[2]) * 180.0) / Math.PI;
+  const spineNavalToSpineChestAngleXY = (angleInXY(worldLandmarks[1], worldLandmarks[2]) * 180.0) / Math.PI;
+  const spineChestToNeckAngleYZ = (angleInYZ(worldLandmarks[2], worldLandmarks[3]) * 180.0) / Math.PI;
+  const spineChestToNeckAngleXY = (angleInXY(worldLandmarks[2], worldLandmarks[3]) * 180.0) / Math.PI;
+
+  // const backSlopeSquareAverageAngleXY =
+  //   (pelvisToSpineNavalAngleXY - spineNavalToSpineChestAngleXY) ** 2 +
+  //   (spineNavalToSpineChestAngleXY - spineChestToNeckAngleXY) ** 2;
+  // const backSlopeSquareAverageAngleYZ =
+  //   (pelvisToSpineNavalAngleYZ - spineNavalToSpineChestAngleYZ) ** 2 +
+  //   (spineNavalToSpineChestAngleYZ - spineChestToNeckAngleYZ) ** 2;
+  // const backSlopeSquareAverageAngleXY = (backSlopeSquareAverageAngleXY + backSlopeSquareAverageAngleYZ) / 2;
+
+  ctx.font = '20px Times New Roman';
+  ctx.fillStyle = 'red';
+  ctx.fillText(`Squat Knee in or out`, 0.6 * width, 0.05 * height);
+
+  const textPelvisToSpineNavalAngle = `下背部のXY・YZ座標角度: [${pelvisToSpineNavalAngleXY
+    .toFixed(1)
+    .toString()}], [${pelvisToSpineNavalAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textPelvisToSpineNavalAngle}`, 0.6 * width, 0.1 * height);
+
+  const textSpineNavalToSpineChestAngle = `中背部のXY・YZ座標角度: [${spineNavalToSpineChestAngleXY
+    .toFixed(1)
+    .toString()}], [${spineNavalToSpineChestAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textSpineNavalToSpineChestAngle}`, 0.6 * width, 0.2 * height);
+
+  const textSpineChestToNeckAngle = `上背部のXY・YZ座標角度: [${spineChestToNeckAngleXY
+    .toFixed(1)
+    .toString()}], [${spineChestToNeckAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textSpineChestToNeckAngle}`, 0.6 * width, 0.3 * height);
+
+  // const textLeftHipToKneeAngleZX = `下背部のXY座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
+  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.1 * height);
+
+  // const textLeftHipToKneeAngleZX = `中背部のXY座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
+  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.2 * height);
+
+  // const textLeftHipToKneeAngleZX = `上背部のXY座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
+  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.3 * height);
+
+  // const textLeftHipToKneeAngleZX = `下背部のYZ座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
+  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.4 * height);
+
+  // const textLeftHipToKneeAngleZX = `中背部のYZ座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
+  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.5 * height);
+
+  // const textLeftHipToKneeAngleZX = `上背部のYZ座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
+  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.6 * height);
 };
 
 // スクワットの足が浮いていないかをチェックする用のデータを表示する
