@@ -4,7 +4,6 @@ import {
   Color,
   EdgesGeometry,
   Group,
-  Line,
   LineBasicMaterial,
   LineSegments,
   Material,
@@ -346,22 +345,10 @@ export class LandmarkGrid {
     const zGrid: Object3D = grid.clone();
     xGrid.translateX(-HALF_SIZE);
     xGrid.rotateY(Math.PI / 2);
-    axes.add(xGrid);
     yGrid.translateY(-HALF_SIZE);
     yGrid.rotateX(Math.PI / 2);
     axes.add(yGrid);
     zGrid.translateZ(-HALF_SIZE);
-    axes.add(zGrid);
-    const border: BufferGeometry = new BufferGeometry().setFromPoints([
-      new Vector3(-HALF_SIZE, HALF_SIZE, HALF_SIZE),
-      new Vector3(-HALF_SIZE, -HALF_SIZE, HALF_SIZE),
-      new Vector3(HALF_SIZE, -HALF_SIZE, HALF_SIZE),
-      new Vector3(HALF_SIZE, -HALF_SIZE, -HALF_SIZE),
-      new Vector3(HALF_SIZE, HALF_SIZE, -HALF_SIZE),
-      new Vector3(-HALF_SIZE, HALF_SIZE, -HALF_SIZE),
-      new Vector3(-HALF_SIZE, HALF_SIZE, HALF_SIZE),
-    ]);
-    axes.add(new Line(border, this.axesMaterial));
     this.scene.add(axes);
   }
 
@@ -532,18 +519,7 @@ export class LandmarkGrid {
         this.landmarkGroup.remove(this.landmarkGroup.children[i]);
       }
     }
-    // Landmarks
-    for (let i = 0; i < this.landmarks.length; i += 1) {
-      const visible: boolean = this.isVisible(this.landmarks[i]);
-      let { nonvisibleMaterial } = this;
-      if (!this.landmarkGridConfig.showHidden && !visible) {
-        nonvisibleMaterial = new Material();
-        nonvisibleMaterial.visible = false;
-      }
-      const sphere: Mesh = this.landmarkGroup.children[i] as Mesh;
-      sphere.material = visible ? this.landmarkMaterial : nonvisibleMaterial;
-      sphere.position.copy(landmarkVectors[i]);
-    }
+    this.drawLandmarks(landmarkVectors);
     // Color special landmarks
     if (colorLandmarks) {
       colorLandmarks.forEach((colorDef) => {
@@ -574,6 +550,20 @@ export class LandmarkGrid {
     // eslint-disable-next-line no-param-reassign
     span.textContent =
       this.landmarkGridConfig.labelPrefix + value.toPrecision(2).toString() + this.landmarkGridConfig.labelSuffix;
+  }
+
+  drawLandmarks(landmarkVectors: Vector3[]): void {
+    for (let i = 0; i < this.landmarks.length; i += 1) {
+      const visible: boolean = this.isVisible(this.landmarks[i]);
+      let { nonvisibleMaterial } = this;
+      if (!this.landmarkGridConfig.showHidden && !visible) {
+        nonvisibleMaterial = new Material();
+        nonvisibleMaterial.visible = false;
+      }
+      const sphere: Mesh = this.landmarkGroup.children[i] as Mesh;
+      sphere.material = visible ? this.landmarkMaterial : nonvisibleMaterial;
+      sphere.position.copy(landmarkVectors[i]);
+    }
   }
 
   /**
