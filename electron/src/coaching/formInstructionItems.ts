@@ -126,7 +126,7 @@ const squatDepth: FormInstructionItem = {
 
 // 真上から見た太ももの角度と踵の角度が等しい
 const kneeOut: FormInstructionItem = {
-  text: 'Knee out',
+  text: 'Knee in or out',
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -140,35 +140,36 @@ const kneeOut: FormInstructionItem = {
     const bottomPoseLeftFootAngleZX = angleInZX(bottomPose.worldLandmarks[20], bottomPose.worldLandmarks[21]);
     const bottomPoseRightFootAngleZX = angleInZX(bottomPose.worldLandmarks[24], bottomPose.worldLandmarks[25]);
 
-    // TODO: acceptableErrorについて検証
-    const acceptableError = 0.1;
-    // TODO: 左右の足がどのようにずれているのか，関数を分ける
-    if (
-      bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX >=
-      acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
-    ) {
+    // TODO: ニーイン，ニーアウトを判定可能か?
+    // TODO: 桂以外の人でも判定できるようにする
+    const upAngleKTR = (Math.PI * 12.0) / 180.0; // 12度は桂が指定
+    const downAngleKTR = -(Math.PI * 12.0) / 180.0; // 12度は桂が指定;
+    const checkSquatLeftKneeInOut = bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX;
+    const checkSquatRightKneeInOut = -(bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX);
+
+    // TODO: 上体がねじれているに対応可能なようにする
+    if (checkSquatLeftKneeInOut >= upAngleKTR) {
       // 左太ももと左足が同じ方向を向いていない
+      console.log('左ニーアウト');
+
       return 0.0;
     }
-    if (
-      bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX <=
-      -acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
-    ) {
+    if (checkSquatLeftKneeInOut <= downAngleKTR) {
       // 左太ももと左足が同じ方向を向いていない
+      console.log('左ニーイン');
+
       return 0.0;
     }
-    if (
-      bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX >=
-      acceptableError * Math.abs(bottomPoseRightFootAngleZX)
-    ) {
+    if (checkSquatRightKneeInOut >= upAngleKTR) {
       // 右太ももと右足が同じ方向を向いていない
+      console.log('右ニーアウト');
+
       return 0.0;
     }
-    if (
-      bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX <=
-      -acceptableError * Math.abs(bottomPoseRightFootAngleZX)
-    ) {
+    if (checkSquatRightKneeInOut <= downAngleKTR) {
       // 右太ももと右足が同じ方向を向いていない
+      console.log('右ニーイン');
+
       return 0.0;
     }
 

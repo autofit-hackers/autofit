@@ -37,3 +37,16 @@ export const renderFrontFrame = (ctx: CanvasRenderingContext2D, canvasImageData:
   }
   ctx.putImageData(canvasImageData, 0, 0);
 };
+
+// 上から見た図aboveを描画する
+export const renderAboveFrame = (ctx: CanvasRenderingContext2D, canvasImageData: ImageData) => {
+  const pixelArray = canvasImageData.data;
+  for (let i = 0; i < canvasImageData.data.length; i += 4) {
+    // NOTE: 背景を水色にする
+    pixelArray[i] = 0;
+    pixelArray[i + 1] = 0xff;
+    pixelArray[i + 2] = 0xff;
+    pixelArray[i + 3] = 0xff;
+  }
+  ctx.putImageData(canvasImageData, 0, 0);
+};

@@ -2,10 +2,12 @@ import { Landmark, LandmarkList } from '@mediapipe/pose';
 import { drawBarsFromTwoPoints } from '../drawing_utils/thresholdBar';
 import {
   angleInYZ,
+  angleInZX,
   distanceInXYZ,
   distanceInY,
   distanceInYZ,
   midpointBetween,
+  normalizeAboveWorldLandmarkPoint,
   normalizeSideWorldLandmarkPoint,
 } from './pose';
 
@@ -89,6 +91,176 @@ export const showTextToCheckSquatDepth = (
   // const textThighAngle = `thighAngle: ${thighAngle.toFixed(1).toString()}`;
   const textThighAngle = `骨盤と膝を結ぶ直線がYZ平面上でY軸となす角: ${thighAngle.toFixed(1).toString()}`;
   ctx.fillText(`${textThighAngle}`, 0.1 * width, 0.5 * height);
+};
+
+// スクワットのニーイン，ニーアウトをチェックする用のデータを表示する
+export const showLineToCheckKneeInOut = (
+  ctx: CanvasRenderingContext2D,
+  current: HTMLCanvasElement,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  // const bottomPoseLeftThighAngleZX = angleInZX(worldLandmarks[18], worldLandmarks[19]);
+  // const bottomPoseRightThighAngleZX = angleInZX(worldLandmarks[22], worldLandmarks[23]);
+  const bottomPoseLeftFootAngleZX = angleInZX(worldLandmarks[20], worldLandmarks[21]);
+  const bottomPoseRightFootAngleZX = angleInZX(worldLandmarks[24], worldLandmarks[25]);
+
+  // TODO: 桂以外の人でも判定できるようにする
+  const inAngleKTR = (Math.PI * 12.0) / 180.0; // 12度は桂が指定
+  const outAngleKTR = -(Math.PI * 12.0) / 180.0; // 12度は桂が指定;
+  const squatLeftKneeIn: Landmark = {
+    x: worldLandmarks[18].x + 10.0 * Math.sin(inAngleKTR + bottomPoseLeftFootAngleZX),
+    y: worldLandmarks[18].y,
+    z: worldLandmarks[18].z + 10.0 * Math.cos(inAngleKTR + bottomPoseLeftFootAngleZX),
+  };
+  const squatLeftKneeOut: Landmark = {
+    x: worldLandmarks[18].x + 10.0 * Math.sin(outAngleKTR + bottomPoseLeftFootAngleZX),
+    y: worldLandmarks[18].y,
+    z: worldLandmarks[18].z + 10.0 * Math.cos(outAngleKTR + bottomPoseLeftFootAngleZX),
+  };
+  const squatRightKneeIn: Landmark = {
+    x: worldLandmarks[22].x + 10.0 * Math.sin(-inAngleKTR + bottomPoseRightFootAngleZX),
+    y: worldLandmarks[22].y,
+    z: worldLandmarks[22].z + 10.0 * Math.cos(-inAngleKTR + bottomPoseRightFootAngleZX),
+  };
+  const squatRightKneeOut: Landmark = {
+    x: worldLandmarks[22].x + 10.0 * Math.sin(-outAngleKTR + bottomPoseRightFootAngleZX),
+    y: worldLandmarks[22].y,
+    z: worldLandmarks[22].z + 10.0 * Math.cos(-outAngleKTR + bottomPoseRightFootAngleZX),
+  };
+
+  // 左太股
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[18]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[18]).y * height,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[19]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[19]).y * height,
+    width,
+    'red',
+  );
+  // // 左つま先
+  // drawBarsFromTwoPoints(
+  //   ctx,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[20]).x * width,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[20]).y * height,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[21]).x * width,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[21]).y * height,
+  //   width,
+  //   'purple',
+  // );
+  // 左ニーイン
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[18]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[18]).y * height,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatLeftKneeIn).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatLeftKneeIn).y * height,
+    width,
+    'green',
+  );
+  // 左ニーアウト
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[18]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[18]).y * height,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatLeftKneeOut).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatLeftKneeOut).y * height,
+    width,
+    'green',
+  );
+  // 右太股
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[22]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[22]).y * height,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[23]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[23]).y * height,
+    width,
+    'red',
+  );
+  // // 右つま先
+  // drawBarsFromTwoPoints(
+  //   ctx,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[24]).x * width,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[24]).y * height,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[25]).x * width,
+  //   normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[25]).y * height,
+  //   width,
+  //   'purple',
+  // );
+  // 右ニーイン
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[22]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[22]).y * height,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatRightKneeIn).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatRightKneeIn).y * height,
+    width,
+    'green',
+  );
+  // 右ニーアウト
+  drawBarsFromTwoPoints(
+    ctx,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[22]).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[22]).y * height,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatRightKneeOut).x * width,
+    normalizeAboveWorldLandmarkPoint(worldLandmarks, current, squatRightKneeOut).y * height,
+    width,
+    'green',
+  );
+};
+
+// スクワットのニーイン，ニーアウトをチェックする用のデータを表示する
+export const showTextToCheckKneeInOut = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  const leftHipToKneeAngleZX = (angleInZX(worldLandmarks[18], worldLandmarks[19]) * 180.0) / Math.PI;
+  const rightHipToKneeAngleZX = (angleInZX(worldLandmarks[22], worldLandmarks[23]) * 180.0) / Math.PI;
+  const leftPelvisToKneeAngleZX = (angleInZX(worldLandmarks[0], worldLandmarks[19]) * 180.0) / Math.PI;
+  const rightPelvisToKneeAngleZX = (angleInZX(worldLandmarks[0], worldLandmarks[23]) * 180.0) / Math.PI;
+  const leftAnkleToFootAngleZX = (angleInZX(worldLandmarks[20], worldLandmarks[21]) * 180.0) / Math.PI;
+  const rightAnkleToFootAngleZX = (angleInZX(worldLandmarks[24], worldLandmarks[25]) * 180.0) / Math.PI;
+
+  const leftThighFootAngleDistanceZX = leftHipToKneeAngleZX - leftAnkleToFootAngleZX;
+  const rightThighFootAngleDistanceZX = rightHipToKneeAngleZX - rightAnkleToFootAngleZX;
+
+  ctx.font = '30px Times New Roman';
+  ctx.fillStyle = 'red';
+  ctx.fillText(`Squat Knee in or out`, 0.1 * width, 0.05 * height);
+
+  const textLeftHipToKneeAngleZX = `左の太股の付け根から膝のZX座標角度: [${leftHipToKneeAngleZX
+    .toFixed(1)
+    .toString()}]`;
+  ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.1 * width, 0.1 * height);
+
+  const textRightHipToKneeAngleZX = `右の太股の付け根から膝のZX座標角度: [${rightHipToKneeAngleZX
+    .toFixed(1)
+    .toString()}]`;
+  ctx.fillText(`${textRightHipToKneeAngleZX}`, 0.1 * width, 0.2 * height);
+
+  const textLeftPelvisToKneeAngleZX = `左の骨盤から膝のZX座標角度: [${leftPelvisToKneeAngleZX.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftPelvisToKneeAngleZX}`, 0.1 * width, 0.3 * height);
+
+  const textRightPelvisToKneeAngleZX = `右の骨盤から膝のZX座標角度: [${rightPelvisToKneeAngleZX
+    .toFixed(1)
+    .toString()}]`;
+  ctx.fillText(`${textRightPelvisToKneeAngleZX}`, 0.1 * width, 0.4 * height);
+
+  const textLeftAnkleToFootAngleZX = `左のつま先のZX座標角度: [${leftAnkleToFootAngleZX.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftAnkleToFootAngleZX}`, 0.1 * width, 0.5 * height);
+
+  const textRightAnkleToFootAngleZX = `右のつま先のZX座標角度: [${rightAnkleToFootAngleZX.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightAnkleToFootAngleZX}`, 0.1 * width, 0.6 * height);
+
+  const textAnkleToFootAngleDistanceZX = `左右それぞれの太股とつま先のZX平面の角度差: [${leftThighFootAngleDistanceZX
+    .toFixed(1)
+    .toString()}], [${rightThighFootAngleDistanceZX.toFixed(1).toString()}]`;
+  ctx.fillText(`${textAnkleToFootAngleDistanceZX}`, 0.1 * width, 0.7 * height);
 };
 
 // スクワットの足が浮いていないかをチェックする用のデータを表示する

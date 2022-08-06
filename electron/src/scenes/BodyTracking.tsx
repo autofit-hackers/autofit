@@ -7,6 +7,7 @@ import {
   heightInFrame,
   kinectToMediapipe,
   KINECT_POSE_CONNECTIONS,
+  normalizeAboveWorldLandmarks,
   normalizeFrontWorldLandmarks,
   normalizeSideWorldLandmarks,
   Pose,
@@ -14,9 +15,13 @@ import {
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
-import { showLineToCheckSquatDepth, showTextToCheckSquatDepth } from '../training/squatDebugging';
+import {
+  showLineToCheckKneeInOut,
+  showLineToCheckSquatDepth,
+  showTextToCheckKneeInOut,
+} from '../training/squatDebugging';
 import { startCaptureWebcam } from '../utils/capture';
-import { renderBGRA32ColorFrame, renderFrontFrame, renderSideFrame } from '../utils/drawing';
+import { renderAboveFrame, renderBGRA32ColorFrame, renderFrontFrame, renderSideFrame } from '../utils/drawing';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
@@ -24,6 +29,7 @@ export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sideCanvasRef = useRef<HTMLCanvasElement>(null);
   const frontCanvasRef = useRef<HTMLCanvasElement>(null);
+  const aboveCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
 
   // Phase
@@ -58,14 +64,20 @@ export default function BodyTrack2d() {
       colorImageFrame: { imageData: ImageData; width: number; height: number };
       bodyFrame: { bodies: any[] };
     }) => {
-      if (canvasRef.current == null || sideCanvasRef.current == null || frontCanvasRef.current == null) {
-        throw new Error('Either canvasRef or sideCanvasRef or frontCanvasRef is null');
+      if (
+        canvasRef.current == null ||
+        sideCanvasRef.current == null ||
+        frontCanvasRef.current == null ||
+        aboveCanvasRef.current == null
+      ) {
+        throw new Error('Either canvasRef or sideCanvasRef or frontCanvasRef or aboveCanvasRef is null');
       }
       const canvasCtx = canvasRef.current.getContext('2d');
       const sideCanvasCtx = sideCanvasRef.current.getContext('2d');
       const frontCanvasCtx = frontCanvasRef.current.getContext('2d');
-      if (canvasCtx == null || sideCanvasCtx == null || frontCanvasCtx == null) {
-        throw new Error('Either canvasCtx or sideCanvasCtx or frontCanvasCtx is null');
+      const aboveCanvasCtx = aboveCanvasRef.current.getContext('2d');
+      if (canvasCtx == null || sideCanvasCtx == null || frontCanvasCtx == null || aboveCanvasCtx == null) {
+        throw new Error('Either canvasCtx or sideCanvasCtx or frontCanvasCtx or aboveCanvasRef is null');
       }
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
@@ -77,12 +89,15 @@ export default function BodyTrack2d() {
         sideCanvasRef.current.height = data.colorImageFrame.height;
         frontCanvasRef.current.width = data.colorImageFrame.width;
         frontCanvasRef.current.height = data.colorImageFrame.height;
+        aboveCanvasRef.current.width = data.colorImageFrame.width;
+        aboveCanvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         renderSideFrame(sideCanvasCtx, canvasImageData.current);
         renderFrontFrame(frontCanvasCtx, canvasImageData.current);
+        renderAboveFrame(aboveCanvasCtx, canvasImageData.current);
       }
 
       if (data.bodyFrame.bodies) {
@@ -183,6 +198,26 @@ export default function BodyTrack2d() {
             lineWidth: 4,
           },
         );
+        // Above座標を描画
+        drawLandmarks(
+          aboveCanvasCtx,
+          normalizeAboveWorldLandmarks(currentPose.worldLandmarks, aboveCanvasRef.current),
+          {
+            color: 'white',
+            lineWidth: 4,
+            radius: 8,
+            fillColor: 'lightgreen',
+          },
+        );
+        drawConnectors(
+          aboveCanvasCtx,
+          normalizeAboveWorldLandmarks(currentPose.worldLandmarks, aboveCanvasRef.current),
+          KINECT_POSE_CONNECTIONS,
+          {
+            color: 'white',
+            lineWidth: 4,
+          },
+        );
 
         // デバック用
         // TODO デバック用コードを削除
@@ -194,17 +229,33 @@ export default function BodyTrack2d() {
           sideCanvasRef.current.height,
           currentPose.worldLandmarks,
         );
+        // スクワットのニーイン，ニーアウトの検証用判定基準を表示
+        showLineToCheckKneeInOut(
+          aboveCanvasCtx,
+          aboveCanvasRef.current,
+          aboveCanvasRef.current.width,
+          aboveCanvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
 
         // データを描画する
         // スクワットの腰の高さを判定するためのデータを描画する
-        showTextToCheckSquatDepth(
+        // showTextToCheckSquatDepth(
+        //   canvasCtx,
+        //   canvasRef.current.width,
+        //   canvasRef.current.height,
+        //   currentPose.worldLandmarks,
+        // );
+        // showTextToCheckSquatDepth(
+        //   sideCanvasCtx,
+        //   canvasRef.current.width,
+        //   canvasRef.current.height,
+        //   currentPose.worldLandmarks,
+        // );
+
+        // ニーイン，ニーアウトを判定するためのデータを描画する
+        showTextToCheckKneeInOut(
           canvasCtx,
-          canvasRef.current.width,
-          canvasRef.current.height,
-          currentPose.worldLandmarks,
-        );
-        showTextToCheckSquatDepth(
-          sideCanvasCtx,
           canvasRef.current.width,
           canvasRef.current.height,
           currentPose.worldLandmarks,
@@ -247,6 +298,8 @@ export default function BodyTrack2d() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // TODO: front映像の上にabove映像をかぶせているので，かぶらないように配置する
+
   return (
     <>
       <canvas
@@ -283,6 +336,22 @@ export default function BodyTrack2d() {
       <canvas
         ref={frontCanvasRef}
         className="front_canvas"
+        style={{
+          position: 'absolute',
+          marginLeft: 'auto',
+          marginRight: 0,
+          top: '50vh',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 1,
+          width: '72vh',
+          height: '45vh',
+        }}
+      />
+      <canvas
+        ref={aboveCanvasRef}
+        className="above_canvas"
         style={{
           position: 'absolute',
           marginLeft: 'auto',

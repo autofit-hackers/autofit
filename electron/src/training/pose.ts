@@ -213,3 +213,34 @@ export const normalizeFrontWorldLandmarks = (
 
   return normalizedLandmarks;
 };
+
+// 上から見た図aboveを描画するために行う座標返還
+export const normalizeAboveWorldLandmarkPoint = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+  LandmarkPoint: Landmark,
+): NormalizedLandmark => {
+  // const normalizedLandmarks: NormalizedLandmarkList = [];
+  const lowCenterX = (worldLandmarks[20].x + worldLandmarks[24].x) / 2;
+  const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
+  const heightOfBody = 1500;
+
+  return {
+    x: (-(LandmarkPoint.x - lowCenterX) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
+    y: ((LandmarkPoint.z - lowCenterZ) * 0.8) / heightOfBody + 0.5,
+    z: 0,
+  };
+};
+
+export const normalizeAboveWorldLandmarks = (
+  worldLandmarks: LandmarkList,
+  canvas: HTMLCanvasElement,
+): NormalizedLandmarkList => {
+  const normalizedLandmarks: NormalizedLandmarkList = [];
+
+  for (let i = 0; i < worldLandmarks.length; i += 1) {
+    normalizedLandmarks[i] = normalizeAboveWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
+  }
+
+  return normalizedLandmarks;
+};
