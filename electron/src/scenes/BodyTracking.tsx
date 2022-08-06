@@ -7,7 +7,7 @@ import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from 
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { Set } from '../training/set';
-import { startCaptureWebcam } from '../utils/capture';
+import { startCaptureWebcam } from '../utils/record';
 import { startKinect } from '../utils/kinect';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { LandmarkGrid } from '../utils/render/landmarkGrid';
