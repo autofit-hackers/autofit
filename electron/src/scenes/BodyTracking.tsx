@@ -9,7 +9,7 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { Set } from '../training/set';
 import { startCaptureWebcam } from '../utils/capture';
 import { startKinect } from '../utils/kinect';
-import { drawBarsWithAcceptableError, renderBGRA32ColorFrame } from '../utils/render/drawing';
+import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { LandmarkGrid } from '../utils/render/landmarkGrid';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
@@ -33,8 +33,8 @@ export default function BodyTrack2d() {
   const repState = useRef<RepState>(resetRepState());
 
   // settings
-  const lowerThreshold = 0.7; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
-  const upperThreshold = 0.9; // TODO: temporarily hard coded =>  useContext(RepCountSettingContext).upperThreshold;
+  const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
+  const upperThreshold = 0.9; // TODO: temporarily hard coded => useContext(RepCountSettingContext).upperThreshold;
   const formInstructionSettings: FormInstructionSettings = {
     items: formInstructionItems,
   };
@@ -72,7 +72,7 @@ export default function BodyTrack2d() {
       if (data.bodyFrame.bodies) {
         // Kinectの姿勢推定結果を自作のPose型に代入
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        const currentPose: Pose = kinectToMediapipe(data.bodyFrame.bodies[0].skeleton.joints, canvasRef.current);
+        const currentPose: Pose = kinectToMediapipe(data.bodyFrame.bodies[0].skeleton.joints, canvasRef.current, true);
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
@@ -99,20 +99,22 @@ export default function BodyTrack2d() {
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
-          // 動画撮影を停止し、配列に保存する
-          if (canvasRecorderRef.current) {
-            canvasRecorderRef.current.stop();
-          }
+          console.log('rep end');
+
+          // TODO: 動画撮影を停止し、配列に保存する
 
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
           rep.current = evaluateForm(rep.current, formInstructionSettings);
+
+          console.log(rep.current.formEvaluationScores);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           set.current.reps = [...set.current.reps, rep.current];
           rep.current = resetRep();
 
           // TODO: レップカウントを読み上げる
+
           // RepStateの初期化
           repState.current = resetRepState();
         }
@@ -128,21 +130,13 @@ export default function BodyTrack2d() {
           color: 'white',
           lineWidth: 4,
         });
-        drawBarsWithAcceptableError(
-          canvasCtx,
-          currentPose.landmarks[10].x * canvasRef.current.width,
-          currentPose.landmarks[10].y * canvasRef.current.height,
-          currentPose.landmarks[17].x * canvasRef.current.width,
-          currentPose.landmarks[17].y * canvasRef.current.height,
-          canvasRef.current.width,
-          100, // TODO: this is magic number, change value to evaluate form instruction function
-        );
 
         // LandmarkGridの描画
         if (landmarkGrid) {
           landmarkGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
       }
+
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
         setSetRecord(set.current);
@@ -178,7 +172,7 @@ export default function BodyTrack2d() {
         className="main_canvas"
         style={{
           position: 'absolute',
-          marginLeft: 'auto',
+          marginLeft: 0,
           marginRight: 'auto',
           left: 0,
           right: 0,
