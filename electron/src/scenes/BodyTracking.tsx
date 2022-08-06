@@ -166,7 +166,7 @@ export default function BodyTrack2d() {
     if (!landmarkGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       landmarkGrid = new LandmarkGrid(gridDivRef.current);
-      landmarkGrid.setCamera(90, 0);
+      landmarkGrid.setCamera(90, 0, 150);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -193,8 +193,8 @@ export default function BodyTrack2d() {
         style={{
           zIndex: 2,
           position: 'absolute',
-          width: '20vw',
-          height: '20vw',
+          width: '30vw',
+          height: '30vw',
         }}
       >
         <div

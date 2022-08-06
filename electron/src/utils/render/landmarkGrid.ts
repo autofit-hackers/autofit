@@ -29,6 +29,7 @@ export type ViewerWidgetConfig = {
   fovInDegrees: number;
   isRotating: boolean;
   rotationSpeed: number;
+  shouldAddPausePlay: boolean;
 };
 
 const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
@@ -36,6 +37,7 @@ const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
   fovInDegrees: 75,
   isRotating: false,
   rotationSpeed: 0.0,
+  shouldAddPausePlay: false,
 };
 
 /**
@@ -44,6 +46,7 @@ const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
 export type LandmarkGridConfig = {
   axesColor: number;
   axesWidth: number;
+  shouldSetLabels: boolean;
   /**
    * The "centered" attribute describes whether the grid should use the center
    * of the bounding box of the landmarks as the origin.
@@ -76,14 +79,15 @@ export type LandmarkGridConfig = {
 const DEFAULT_LANDMARK_GRID_CONFIG: LandmarkGridConfig = {
   axesColor: 0xffffff,
   axesWidth: 2,
+  shouldSetLabels: false,
   centered: false,
   connectionColor: 0x00ffff,
-  connectionWidth: 3,
+  connectionWidth: 4,
   definedColors: [],
   fitToGrid: true,
   labelPrefix: '',
   labelSuffix: '',
-  landmarkSize: 3,
+  landmarkSize: 2,
   landmarkColor: 0xaaaaaa,
   margin: 0,
   minVisibility: 0,
@@ -174,7 +178,9 @@ export class LandmarkGrid {
     this.container.appendChild(canvas);
     parent.appendChild(this.container);
     const parentBox: DOMRect = parent.getBoundingClientRect();
-    this.addPausePlay(this.container);
+    if (this.viewerWidgetConfig.shouldAddPausePlay) {
+      this.addPausePlay(this.container);
+    }
     this.camera = new PerspectiveCamera(this.viewerWidgetConfig.fovInDegrees, parentBox.width / parentBox.height, 1);
     this.camera.position.z = this.distance;
     this.camera.lookAt(new Vector3());
@@ -197,13 +203,12 @@ export class LandmarkGrid {
     controls.enableDamping = true;
     controls.dampingFactor = 0.2;
 
-    this.landmarkGridConfig = landmarkGridConfig;
-    this.size = 100;
-    this.landmarks = [];
-
     /*
      * Set landmarkGridConfig
      */
+    this.landmarkGridConfig = landmarkGridConfig;
+    this.size = 100;
+    this.landmarks = [];
     this.landmarkMaterial = new MeshBasicMaterial({ color: this.landmarkGridConfig.landmarkColor });
     this.landmarkGeometry = new SphereGeometry(this.landmarkGridConfig.landmarkSize);
     this.nonvisibleMaterial = new MeshBasicMaterial({ color: this.landmarkGridConfig.nonvisibleLandmarkColor });
@@ -260,21 +265,21 @@ export class LandmarkGrid {
       }
       this.renderer.render(this.scene, this.camera);
       // Set labels
-      // this.labels.x.forEach((pair: NumberLabel) => {
-      //   const position: Vector3 = this.getCanvasPosition(pair.position);
-      //   // eslint-disable-next-line no-param-reassign
-      //   pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      // });
-      // this.labels.y.forEach((pair: NumberLabel) => {
-      //   const position: Vector3 = this.getCanvasPosition(pair.position);
-      //   // eslint-disable-next-line no-param-reassign
-      //   pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      // });
-      // this.labels.z.forEach((pair: NumberLabel) => {
-      //   const position: Vector3 = this.getCanvasPosition(pair.position);
-      //   // eslint-disable-next-line no-param-reassign
-      //   pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      // });
+      this.labels.x.forEach((pair: NumberLabel) => {
+        const position: Vector3 = this.getCanvasPosition(pair.position);
+        // eslint-disable-next-line no-param-reassign
+        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      });
+      this.labels.y.forEach((pair: NumberLabel) => {
+        const position: Vector3 = this.getCanvasPosition(pair.position);
+        // eslint-disable-next-line no-param-reassign
+        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      });
+      this.labels.z.forEach((pair: NumberLabel) => {
+        const position: Vector3 = this.getCanvasPosition(pair.position);
+        // eslint-disable-next-line no-param-reassign
+        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
+      });
     });
   }
 
@@ -296,7 +301,7 @@ export class LandmarkGrid {
   /**
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
-  setCamera(theta: number, phi: number, distance = 100): void {
+  setCamera(theta: number, phi: number, distance = 150): void {
     const thetaRad = (theta * Math.PI) / 180;
     const phiRad = (phi * Math.PI) / 180;
     this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * distance;
@@ -438,7 +443,9 @@ export class LandmarkGrid {
   createLabel(value: number): HTMLSpanElement {
     const span: HTMLSpanElement = document.createElement('span');
     span.classList.add('landmark-label-js');
-    this.setLabel(span, value);
+    if (this.landmarkGridConfig.shouldSetLabels) {
+      this.setLabel(span, value);
+    }
     this.container.appendChild(span);
 
     return span;
@@ -495,15 +502,17 @@ export class LandmarkGrid {
         landmark.z *= scalingFactor;
       });
     }
-    this.labels.x.forEach((label: NumberLabel) => {
-      this.setLabel(label.element, (label.value - this.origin.x) / scalingFactor);
-    });
-    this.labels.y.forEach((label: NumberLabel) => {
-      this.setLabel(label.element, (label.value - this.origin.y) / scalingFactor);
-    });
-    this.labels.z.forEach((label: NumberLabel) => {
-      this.setLabel(label.element, (label.value - this.origin.z) / scalingFactor);
-    });
+    if (this.landmarkGridConfig.shouldSetLabels) {
+      this.labels.x.forEach((label: NumberLabel) => {
+        this.setLabel(label.element, (label.value - this.origin.x) / scalingFactor);
+      });
+      this.labels.y.forEach((label: NumberLabel) => {
+        this.setLabel(label.element, (label.value - this.origin.y) / scalingFactor);
+      });
+      this.labels.z.forEach((label: NumberLabel) => {
+        this.setLabel(label.element, (label.value - this.origin.z) / scalingFactor);
+      });
+    }
     const landmarkVectors: Array<Vector3> = this.landmarks.map(
       (normalizedLandmark: NormalizedLandmark): Vector3 => this.landmarkToVector(normalizedLandmark),
     );
@@ -642,10 +651,6 @@ export class LandmarkGrid {
 
   /**
    * @private:Relocate landmarks to the grid origin. (in Update)
-   *  1. We firstly get the max and min values of the landmarks.
-   *  2. We then get the center of the landmarks.
-   *  3. We then subtract the center from the landmarks.
-   *  4. We then set the origin to the center.
    */
   centralizeLandmarks(landmarks: Array<NormalizedLandmark>): void {
     if (landmarks.length === 0) {
