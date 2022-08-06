@@ -13,7 +13,8 @@ export const evaluateRepForm = (prevRep: Rep, settings: FormInstructionSettings)
   // settingsで指定した全ての指導項目に関してフォームを評価する
   settings.items.forEach((instruction) => {
     const formError = instruction.evaluate(prevRep);
-    rep.formErrors[`${instruction.text}`] = formError;
+    const instructionName = instruction.text;
+    rep.formErrors[`${instructionName}`] = formError;
   });
 
   return rep;
@@ -30,7 +31,8 @@ export const decideRepToBeShowed = (prevSet: Set, settings: FormInstructionSetti
       const absoluteFormScore = Math.abs(rep.formErrors[`${instruction.text}`]);
       if (absoluteFormScore > FormHighestError) {
         FormHighestError = absoluteFormScore;
-        set.RepNumbersToBeShowed[`${instruction.text}`] = repIndex;
+        const instructionName = instruction.text;
+        set.RepNumbersToBeShowed[`${instructionName}`] = repIndex;
       }
     });
   });

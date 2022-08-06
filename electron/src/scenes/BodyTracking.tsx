@@ -7,8 +7,8 @@ import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from 
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { resetSet, Set } from '../training/set';
-import { startCaptureWebcam } from '../utils/capture';
 import { startKinect } from '../utils/kinect';
+import { startCaptureWebcam } from '../utils/record';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { LandmarkGrid } from '../utils/render/landmarkGrid';
 import { kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
@@ -71,8 +71,12 @@ export default function BodyTrack2d() {
 
       if (data.bodyFrame.bodies) {
         // Kinectの姿勢推定結果を自作のPose型に代入
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        const currentPose: Pose = kinectToMediapipe(data.bodyFrame.bodies[0].skeleton.joints, canvasRef.current, true);
+        const currentPose: Pose = kinectToMediapipe(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          data.bodyFrame.bodies[0].skeleton.joints,
+          canvasRef.current,
+          true,
+        );
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
@@ -101,7 +105,10 @@ export default function BodyTrack2d() {
         if (repState.current.isRepEnd) {
           console.log('rep end');
 
-          // TODO: 動画撮影を停止し、配列に保存する
+          // 動画撮影を停止し、配列に保存する
+          if (canvasRecorderRef.current) {
+            canvasRecorderRef.current.stop();
+          }
 
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
