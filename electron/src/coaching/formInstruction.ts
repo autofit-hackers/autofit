@@ -1,4 +1,5 @@
 import { Rep } from '../training/rep';
+import { Set } from '../training/set';
 import { FormInstructionItem } from './formInstructionItems';
 
 export type FormInstructionSettings = {
@@ -6,14 +7,33 @@ export type FormInstructionSettings = {
 };
 
 // フォーム指導項目のリストの全要素に関して、判定関数を実行する
-export const evaluateForm = (prevRep: Rep, settings: FormInstructionSettings): Rep => {
+export const evaluateRepForm = (prevRep: Rep, settings: FormInstructionSettings): Rep => {
   const rep: Rep = prevRep;
 
   // settingsで指定した全ての指導項目に関してフォームを評価する
-  settings.items.forEach((item) => {
-    const evaluationScore = item.evaluate(prevRep);
-    rep.formEvaluationScores = [...prevRep.formEvaluationScores, evaluationScore];
+  settings.items.forEach((instruction) => {
+    const evaluationScore = instruction.evaluate(prevRep);
+    rep.formScores[`${instruction.text}`] = evaluationScore;
   });
 
   return rep;
+};
+
+// 各指導項目で表示すべきレップ番号を決定する
+export const decideDisplayedRep = (prevSet: Set, settings: FormInstructionSettings): Set => {
+  const set: Set = prevSet;
+
+  // settingsで指定した全ての指導項目に関してレップ番号を決定する
+  settings.items.forEach((instruction) => {
+    let LowestFormScore = 0;
+    set.reps.forEach((rep, repIndex) => {
+      const FormScore = rep.formScores[`${instruction.text}`];
+      if (FormScore <= LowestFormScore) {
+        LowestFormScore = FormScore;
+        set.displayedRepNumbers[`${instruction.text}`] = repIndex;
+      }
+    });
+  });
+
+  return set;
 };
