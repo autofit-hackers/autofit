@@ -124,6 +124,9 @@ export default function BodyTrack2d() {
 
           // RepStateの初期化
           repState.current = resetRepState();
+
+          // setRecordを更新する
+          setSetRecord(set.current);
         }
 
         // pose estimationの結果を描画
@@ -146,7 +149,6 @@ export default function BodyTrack2d() {
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (set.current.reps.length === 100) {
-        setSetRecord(set.current);
         setPhase(1);
       }
 
@@ -181,6 +183,7 @@ export default function BodyTrack2d() {
           position: 'absolute',
           marginLeft: 0,
           marginRight: 'auto',
+          top: 0,
           left: 0,
           right: 0,
           textAlign: 'center',

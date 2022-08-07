@@ -1,76 +1,177 @@
-import { Box, CssBaseline, Grid, Slider } from '@mui/material';
-import { Container } from '@mui/system';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import RestoreIcon from '@mui/icons-material/Restore';
+import { BottomNavigation, BottomNavigationAction, Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
+import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
-import ReactPlayer from 'react-player';
-import { stopKinect } from '../utils/kinect';
-import { kinectAtom, repVideoUrlsAtom } from './atoms';
-import { BadPoint, GoodPoint, TimerCard, TrainingResultChart, TrainingStats, VideoReplayer } from './ReportComponents';
+import { useState } from 'react';
+import { formInstructionItems } from '../coaching/formInstructionItems';
+import { repVideoUrlsAtom, setRecordAtom } from './atoms';
+import { GoodPoint, VideoReplayer } from './ReportComponents';
 
-function IntervalReport() {
+export default function IntervalReport() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [repIndexToShow, setValue] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const [kinect] = useAtom(kinectAtom);
+  const [set] = useAtom(setRecordAtom);
+  const [displayingInstructionIdx, setIdx] = useState(0);
 
-  /*
-   * Kinectの終了
-   */
-  useEffect(() => {
-    stopKinect(kinect);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const repScore: { [key: string]: number } = {};
+  const instructionKeys: string[] = [];
+  console.log(set);
+  set.reps.forEach((rep) => {
+    Object.keys(rep.formErrors).forEach((key) => {
+      repScore[key] = rep.formErrors[key];
+      instructionKeys.push(key);
+      console.log('pushed: ', key);
+    });
+  });
+
+  const futuristicTheme = createTheme({
+    palette: {
+      mode: 'dark',
+      primary: {
+        main: '#00ffff',
+        dark: '#00ffff',
+        contrastText: '#fff',
+      },
+      secondary: {
+        main: '#00ffff',
+        dark: '#ba000d',
+        contrastText: '#000',
+      },
+    },
+  });
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
-
       <Box
         component="main"
         sx={{
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
           flexGrow: 1,
-          height: '100vh',
-          width: '100vw',
+          height: 1920,
+          width: 1080,
           overflow: 'auto',
         }}
       >
-        <Container>
-          <Slider
-            aria-label="Rep Index"
-            size="small"
-            valueLabelDisplay="auto"
-            value={repIndexToShow}
-            marks
-            step={1}
-            min={1}
-            max={repVideoUrls.length}
-            onChange={(event, value) => (typeof value === 'number' ? setValue(value) : null)}
-          />
-          <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop controls />
-        </Container>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Grid container spacing={3}>
-            <TrainingStats text="スクワット10回" />
-            {/* video */}
-            <VideoReplayer videoPath="./video_test.webm" />
-            <Grid item xs={6}>
-              <Grid container spacing={3}>
-                {/* Chart */}
-                <TrainingResultChart text="Chart Here" />
-                <TimerCard time={60} />
-              </Grid>
+          <Grid container spacing="1vh">
+            {/* 撮影した16:9の動画 */}
+            <VideoReplayer />
+            {/* トレーニングの3D表示 */}
+            <Grid item xs={12}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '98vw',
+                }}
+              />
             </Grid>
-            {/* text instruction */}
-            <GoodPoint text="いい姿勢でスクワットができています。背骨の角度はバランスに関わります。この調子でいきましょう。" />
-            {/* text instruction */}
-            <BadPoint text="少ししゃがみ込みが甘かったですね。太ももが水平になるまで腰を落とすと脚全体筋肉を効果的に鍛えることができます。" />
+            <GoodPoint
+              text={formInstructionItems[instructionKeys[displayingInstructionIdx]].instructionText ?? 'null'}
+            />
+            <BottomNavigation
+              showLabels
+              value={displayingInstructionIdx}
+              onChange={(event, newValue: number) => {
+                setIdx(newValue);
+              }}
+              sx={{
+                mx: 'auto',
+                width: '90%',
+                '& .Mui-selected': { backgroundColor: '#005555' },
+              }}
+            >
+              {/* TODO: ループ処理にまとめる */}
+              <BottomNavigationAction
+                label={formInstructionItems[instructionKeys[0]].instructionTitle}
+                icon={<RestoreIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: '#006666',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[instructionKeys[1]].instructionTitle}
+                icon={<FavoriteIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[instructionKeys[2]].instructionTitle}
+                icon={<LocationOnIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[instructionKeys[3]].instructionTitle}
+                icon={<FavoriteIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                  mr: 5,
+                }}
+              />
+              <BottomNavigationAction
+                label={formInstructionItems[instructionKeys[4]].instructionTitle}
+                icon={<LocationOnIcon />}
+                sx={{
+                  backgroundColor: 'grey.900',
+                  borderRadius: 0,
+                  border: 1,
+                  borderColor: 'grey.500',
+                  borderTop: 0,
+                  borderTopColor: 'grey.900',
+                  borderBottomRightRadius: 20,
+                  borderBottomLeftRadius: 20,
+                  boxShadow: 0,
+                }}
+              />
+            </BottomNavigation>
+
+            {/* 詳細表示する指導の切り替えボタン類 */}
           </Grid>
         </Container>
       </Box>
-    </Box>
+    </ThemeProvider>
   );
 }
-
-export default IntervalReport;

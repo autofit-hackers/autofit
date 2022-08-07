@@ -1,7 +1,7 @@
-import MiniDrawer from './ui_component/SideBar';
+import TrainingMain from './scenes/Main';
 
 function App() {
-  return <MiniDrawer />;
+  return <TrainingMain />;
 }
 
 export default App;

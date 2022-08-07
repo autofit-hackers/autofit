@@ -16,6 +16,7 @@ export const startCaptureWebcam = (
   recorder.onstart = () => {
     // 開始一分でレコーダーを自動停止
     setTimeout(() => {
+      console.log('time out');
       recorder.stop();
     }, 60000);
   };

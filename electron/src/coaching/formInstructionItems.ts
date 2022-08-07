@@ -12,18 +12,24 @@ import {
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
 
 export type FormInstructionItem = {
-  readonly text: string;
+  readonly itemName: string;
   readonly evaluate: (rep: Rep) => number;
   readonly showGuideline?: (rep: Rep) => void;
   readonly reason?: string;
   readonly recommendMenu?: string[];
+  readonly instructionTitle?: string;
+  readonly instructionText?: string;
+  readonly importance?: number;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
 // バーベルは足の中心の真上を移動
 const barbellOnFootCenter: FormInstructionItem = {
-  text: 'Barbel on foot center',
+  itemName: 'Barbel on foot center',
+  instructionTitle: 'まんなか',
+  instructionText: 'まんなかテスト',
+  importance: 0.5,
   evaluate: (rep: Rep) => {
     // 毎フレーム(サンプリングしても良い)
     // TODO: マイフレームごとに書き換えること
@@ -81,7 +87,10 @@ const barbellOnFootCenter: FormInstructionItem = {
 
 // スクワットの深さ
 const squatDepth: FormInstructionItem = {
-  text: 'Squat depth',
+  itemName: 'Squat depth',
+  instructionTitle: '腰の深さ',
+  instructionText: '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
+  importance: 0.5,
   // bottomで判定
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -126,7 +135,11 @@ const squatDepth: FormInstructionItem = {
 
 // 真上から見た太ももの角度と踵の角度が等しい
 const kneeOut: FormInstructionItem = {
-  text: 'Knee out',
+  itemName: 'Knee out',
+  instructionTitle: '膝が内側に入る',
+  instructionText:
+    '膝が内側に入らないように注意しましょう。どうしても内に入ってしまう場合は足幅を狭くしてみましょう。',
+  importance: 0.7,
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -179,7 +192,11 @@ const kneeOut: FormInstructionItem = {
 // 背中が反っていない
 // とりあえず，topとbottomだけで実装する．（今後，前後のフレームを追加する可能性あり）
 const backBent: FormInstructionItem = {
-  text: 'Back bent',
+  itemName: 'Back bent',
+  instructionTitle: '背中の曲がり',
+  instructionText:
+    '背中が曲がってしまっており、腰を痛める危険性があります。背中に力をいれ、胸をはりながらしゃがみましょう',
+  importance: 0.5,
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -220,7 +237,10 @@ const backBent: FormInstructionItem = {
 
 // bottomでの背中全体の傾き
 const backSlant: FormInstructionItem = {
-  text: 'Back slant',
+  itemName: 'Back slant',
+  instructionTitle: '背中の傾き',
+  instructionText: '背中の傾きテスト',
+  importance: 0.5,
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -253,7 +273,10 @@ const backSlant: FormInstructionItem = {
 
 // つま先の角度
 const feetAngle: FormInstructionItem = {
-  text: 'Feet angle',
+  itemName: 'Feet angle',
+  instructionTitle: 'つま先の角度',
+  instructionText: 'つまさきテスト',
+  importance: 0.5,
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -305,7 +328,10 @@ const feetAngle: FormInstructionItem = {
 // 足のうらがべったり地面につく
 // TODO: 角度で比較するか，位置で比較するかを検討
 const feetGround: FormInstructionItem = {
-  text: 'Feet ground',
+  itemName: 'Feet ground',
+  instructionTitle: 'べったり',
+  instructionText: 'べったりテスト',
+  importance: 0.5,
   // topとbottomを比較
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -384,7 +410,10 @@ const feetGround: FormInstructionItem = {
 // 視線
 // 首と顔から顔の傾きをとっているが，首と両耳の中心でもよいかもしれない
 const gazeDirection: FormInstructionItem = {
-  text: 'Gaze direction',
+  itemName: 'Gaze direction',
+  instructionTitle: '視線',
+  instructionText: '視線テスト',
+  importance: 0.5,
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -414,7 +443,7 @@ const gazeDirection: FormInstructionItem = {
 // スタンス
 // 踵の幅と肩幅が同じ
 const feetWidth: FormInstructionItem = {
-  text: 'Feet width',
+  itemName: 'Feet width',
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -445,7 +474,7 @@ const feetWidth: FormInstructionItem = {
 
 // バーベルを担ぐ上下の位置（肩甲棘の真下に担げているか）
 const barbellPosition: FormInstructionItem = {
-  text: 'Barbel position',
+  itemName: 'Barbel position',
   // 手首の中心をバーベルと推定して実行
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -477,7 +506,7 @@ const barbellPosition: FormInstructionItem = {
 
 // 膝先がつま先から見てどれだけ前方or後方にあるか
 const kneePosition: FormInstructionItem = {
-  text: 'Knee position',
+  itemName: 'Knee position',
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -521,19 +550,20 @@ const kneePosition: FormInstructionItem = {
 };
 
 // ラックの高さ
-// TopとButtomだけでは厳しい
+// TopとBottomだけでは厳しい
 
 // 指導項目を追加したらここにもかく
-export const formInstructionItems: FormInstructionItem[] = [
-  barbellOnFootCenter,
-  squatDepth,
-  kneeOut,
-  backBent,
-  backSlant,
-  feetAngle,
-  gazeDirection,
-  feetWidth,
-  feetGround,
-  barbellPosition,
-  kneePosition,
-];
+export const formInstructionItems: { [key: string]: FormInstructionItem } = {
+  [barbellOnFootCenter.itemName]: barbellOnFootCenter,
+  [squatDepth.itemName]: squatDepth,
+  [kneeOut.itemName]: kneeOut,
+  [backBent.itemName]: backBent,
+  [backSlant.itemName]: backSlant,
+  [feetAngle.itemName]: feetAngle,
+  [barbellPosition.itemName]: barbellPosition,
+  [gazeDirection.itemName]: gazeDirection,
+  [feetWidth.itemName]: feetWidth,
+  [feetGround.itemName]: feetGround,
+  [barbellOnFootCenter.itemName]: barbellOnFootCenter,
+  [kneePosition.itemName]: kneePosition,
+};

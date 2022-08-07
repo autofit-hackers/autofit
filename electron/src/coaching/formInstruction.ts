@@ -3,7 +3,7 @@ import { Set } from '../training/set';
 import { FormInstructionItem } from './formInstructionItems';
 
 export type FormInstructionSettings = {
-  items: FormInstructionItem[];
+  items: { [key: string]: FormInstructionItem };
 };
 
 // フォーム指導項目のリストの全要素に関して、判定関数を実行する
@@ -11,9 +11,10 @@ export const evaluateRepForm = (prevRep: Rep, settings: FormInstructionSettings)
   const rep: Rep = prevRep;
 
   // settingsで指定した全ての指導項目に関してフォームを評価する
-  settings.items.forEach((instruction) => {
+  Object.keys(settings.items).forEach((key) => {
+    const instruction = settings.items[key];
     const formError = instruction.evaluate(prevRep);
-    const instructionName = instruction.text;
+    const instructionName = instruction.itemName;
     rep.formErrors[`${instructionName}`] = formError;
   });
 
@@ -25,13 +26,14 @@ export const decideRepToBeShowed = (prevSet: Set, settings: FormInstructionSetti
   const set: Set = prevSet;
 
   // settingsで指定した全ての指導項目に関してレップ番号を決定する
-  settings.items.forEach((instruction) => {
+  Object.keys(settings.items).forEach((key) => {
+    const instruction = settings.items[key];
     let FormHighestError = 0;
     set.reps.forEach((rep, repIndex) => {
-      const absoluteFormScore = Math.abs(rep.formErrors[`${instruction.text}`]);
+      const absoluteFormScore = Math.abs(rep.formErrors[`${instruction.itemName}`]);
       if (absoluteFormScore > FormHighestError) {
         FormHighestError = absoluteFormScore;
-        const instructionName = instruction.text;
+        const instructionName = instruction.itemName;
         set.RepNumbersToBeShowed[`${instructionName}`] = repIndex;
       }
     });
