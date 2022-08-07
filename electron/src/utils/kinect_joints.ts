@@ -36,3 +36,4 @@ export const enum KJ {
 }
 
 export const hoge = 0;
+// TODO: named export のために配置。ほかのjoint情報も配置予定

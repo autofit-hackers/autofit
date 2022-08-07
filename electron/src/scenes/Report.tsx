@@ -86,6 +86,7 @@ export default function IntervalReport() {
                 '& .Mui-selected': { backgroundColor: '#005555' },
               }}
             >
+              {/* TODO: ループ処理にまとめる */}
               <BottomNavigationAction
                 label={formInstructionItems[instructionKeys[0]].instructionTitle}
                 icon={<RestoreIcon />}
