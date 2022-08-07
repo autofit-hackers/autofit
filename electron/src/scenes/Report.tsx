@@ -4,8 +4,10 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import { BottomNavigation, BottomNavigationAction, Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { formInstructionItems } from '../coaching/formInstructionItems';
+import { KINECT_POSE_CONNECTIONS } from '../training/pose';
+import { GridCameraAngle, LandmarkGrid } from '../utils/render/landmarkGrid';
 import { repVideoUrlsAtom, setRecordAtom } from './atoms';
 import { GoodPoint, VideoReplayer } from './ReportComponents';
 
@@ -17,14 +19,30 @@ export default function IntervalReport() {
   const [set] = useAtom(setRecordAtom);
   const [displayingInstructionIdx, setIdx] = useState(0);
 
+  // ぐりぐりの準備
+  const gridDivRef = useRef<HTMLDivElement | null>(null);
+  const landmarkGrid = useRef<LandmarkGrid | null>(null);
+  const cameraAngle = useRef<GridCameraAngle>({ theta: 90, phi: 0, distance: 150 });
+
+  useEffect(() => {
+    if (!landmarkGrid.current && gridDivRef.current !== null) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      landmarkGrid.current = new LandmarkGrid(gridDivRef.current);
+    }
+    if (landmarkGrid.current) {
+      landmarkGrid.current.setCamera(cameraAngle.current.theta, cameraAngle.current.phi, cameraAngle.current.distance);
+      landmarkGrid.current.updateLandmarks(set.reps[0].form[0].worldLandmarks, KINECT_POSE_CONNECTIONS);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraAngle.current]);
+
+  // セットを通したスコアの算出
   const repScore: { [key: string]: number } = {};
   const instructionKeys: string[] = [];
-  console.log(set);
   set.reps.forEach((rep) => {
     Object.keys(rep.formErrors).forEach((key) => {
       repScore[key] = rep.formErrors[key];
       instructionKeys.push(key);
-      console.log('pushed: ', key);
     });
   });
 
@@ -69,7 +87,20 @@ export default function IntervalReport() {
                   flexDirection: 'column',
                   height: '98vw',
                 }}
-              />
+              >
+                <div
+                  className="landmark-grid-container"
+                  ref={gridDivRef}
+                  style={{
+                    position: 'relative',
+                    height: '90vw',
+                    width: '90vw',
+                    top: 0,
+                    left: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  }}
+                />
+              </Paper>
             </Grid>
             <GoodPoint
               text={formInstructionItems[instructionKeys[displayingInstructionIdx]].instructionText ?? 'null'}
@@ -79,6 +110,7 @@ export default function IntervalReport() {
               value={displayingInstructionIdx}
               onChange={(event, newValue: number) => {
                 setIdx(newValue);
+                cameraAngle.current = formInstructionItems[instructionKeys[newValue]].gridCameraAngle;
               }}
               sx={{
                 mx: 'auto',

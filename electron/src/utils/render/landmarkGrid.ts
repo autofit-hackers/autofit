@@ -75,6 +75,12 @@ export type LandmarkGridConfig = {
   showHidden: boolean;
 };
 
+export type GridCameraAngle = {
+  theta: number;
+  phi: number;
+  distance: number;
+};
+
 const DEFAULT_LANDMARK_GRID_CONFIG: LandmarkGridConfig = {
   axesColor: 0xffffff,
   axesWidth: 2,

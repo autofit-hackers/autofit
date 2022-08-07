@@ -10,6 +10,7 @@ import {
   midpointBetween,
 } from '../training/pose';
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
+import { GridCameraAngle } from '../utils/render/landmarkGrid';
 
 export type FormInstructionItem = {
   readonly itemName: string;
@@ -17,9 +18,10 @@ export type FormInstructionItem = {
   readonly showGuideline?: (rep: Rep) => void;
   readonly reason?: string;
   readonly recommendMenu?: string[];
-  readonly instructionTitle?: string;
-  readonly instructionText?: string;
-  readonly importance?: number;
+  readonly instructionTitle: string;
+  readonly instructionText: string;
+  readonly importance: number;
+  readonly gridCameraAngle: GridCameraAngle;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -30,6 +32,7 @@ const barbellOnFootCenter: FormInstructionItem = {
   instructionTitle: 'まんなか',
   instructionText: 'まんなかテスト',
   importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 90, distance: 150 },
   evaluate: (rep: Rep) => {
     // 毎フレーム(サンプリングしても良い)
     // TODO: マイフレームごとに書き換えること
@@ -91,6 +94,7 @@ const squatDepth: FormInstructionItem = {
   instructionTitle: '腰の深さ',
   instructionText: '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
   importance: 0.5,
+  gridCameraAngle: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -140,6 +144,7 @@ const kneeOut: FormInstructionItem = {
   instructionText:
     '膝が内側に入らないように注意しましょう。どうしても内に入ってしまう場合は足幅を狭くしてみましょう。',
   importance: 0.7,
+  gridCameraAngle: { theta: 180, phi: 0, distance: 150 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -197,6 +202,7 @@ const backBent: FormInstructionItem = {
   instructionText:
     '背中が曲がってしまっており、腰を痛める危険性があります。背中に力をいれ、胸をはりながらしゃがみましょう',
   importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 180, distance: 150 },
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -241,6 +247,7 @@ const backSlant: FormInstructionItem = {
   instructionTitle: '背中の傾き',
   instructionText: '背中の傾きテスト',
   importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 0, distance: 1500 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -277,6 +284,7 @@ const feetAngle: FormInstructionItem = {
   instructionTitle: 'つま先の角度',
   instructionText: 'つまさきテスト',
   importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 0, distance: 150 },
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -332,6 +340,7 @@ const feetGround: FormInstructionItem = {
   instructionTitle: 'べったり',
   instructionText: 'べったりテスト',
   importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 0, distance: 150 },
   // topとbottomを比較
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -414,6 +423,7 @@ const gazeDirection: FormInstructionItem = {
   instructionTitle: '視線',
   instructionText: '視線テスト',
   importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 0, distance: 150 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -444,6 +454,10 @@ const gazeDirection: FormInstructionItem = {
 // 踵の幅と肩幅が同じ
 const feetWidth: FormInstructionItem = {
   itemName: 'Feet width',
+  instructionTitle: '足幅',
+  instructionText: '足幅テスト',
+  importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 0, distance: 150 },
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -475,6 +489,10 @@ const feetWidth: FormInstructionItem = {
 // バーベルを担ぐ上下の位置（肩甲棘の真下に担げているか）
 const barbellPosition: FormInstructionItem = {
   itemName: 'Barbel position',
+  instructionTitle: 'バーの上下位置',
+  instructionText: 'バーの上下位置テスト',
+  importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 0, distance: 150 },
   // 手首の中心をバーベルと推定して実行
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -507,6 +525,10 @@ const barbellPosition: FormInstructionItem = {
 // 膝先がつま先から見てどれだけ前方or後方にあるか
 const kneePosition: FormInstructionItem = {
   itemName: 'Knee position',
+  instructionTitle: 'ひざの前後位置',
+  instructionText: 'ひざの前後位置テスト',
+  importance: 0.5,
+  gridCameraAngle: { theta: 90, phi: 0, distance: 150 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
