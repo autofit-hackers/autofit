@@ -14,19 +14,9 @@ $ git commit -m 'hoge'
 $ dvc push
 ```
 
-### Pyaudio: 音声認識ライブラリ
-```
-$ brew install portaudio
-$ conda install -c anaconda portaudio
-$ python3 -m pip install pyaudio --global-option="build_ext" --global-option="-I/opt/homebrew/include" --global-option="-L/opt/homebrew/lib"
-```
-
-## キーイベント検出
-Mac: 「環境設定」→「セキュリティとプライバシー」→「入力監視」→「VScode or terminal」を許可し、実行環境を再起動
 
 ## 開発規約
 ### Coding
-* [Python: pep8](https://pep8-ja.readthedocs.io/ja/latest/)
 
 ### Commit message rules
 #### Prefix
@@ -53,5 +43,4 @@ Mac: 「環境設定」→「セキュリティとプライバシー」→「入
 
 
 ## Project management
-* [Jira](https://www.atlassian.com/software/jira)
-  * ブランチを切るときは jira のチケットから切りましょう
+
