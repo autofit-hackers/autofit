@@ -289,7 +289,7 @@ export const showLineToCheckBackBent = (
     normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[2]).x * width,
     normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[2]).y * height,
     width,
-    'red',
+    'black',
   );
   drawBarsFromTwoPoints(
     ctx,
@@ -298,7 +298,7 @@ export const showLineToCheckBackBent = (
     normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[3]).x * width,
     normalizeSideWorldLandmarkPoint(worldLandmarks, current, worldLandmarks[3]).y * height,
     width,
-    'red',
+    'orange',
   );
 };
 // スクワットの背中が曲がっていないかをチェックする用のデータを表示する
