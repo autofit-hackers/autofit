@@ -3,8 +3,6 @@ import {
   angleInZX,
   distanceInX,
   distanceInXYZ,
-  distanceInY,
-  distanceInYZ,
   distanceInZ,
   distanceInZX,
   midpointBetween,
@@ -91,36 +89,26 @@ const squatDepth: FormInstructionItem = {
       return 1.0;
     }
     const bottomPoseKnee = midpointBetween(bottomPose.worldLandmarks[19], bottomPose.worldLandmarks[23]);
-    const bottomPosePelvisKneeDistanceYZ = distanceInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    // const bottomPosePelvisKneeAngleYZ = angleInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    // console.log('bottomPosePelvisKneeYZ: ', bottomPosePelvisKneeYZ);
-    // console.log('bottomPosePelvisKneeAngleYZ: ', bottomPosePelvisKneeAngleYZ);
-    // TODO: 十分に腰が下がっているかを判定可能か?
-    // TODO: 桂以外の人でも判定できるようにする
-    const upAngleKTR = (Math.PI * 9.0) / 180.0; // 9度は桂が指定
-    const downAngleKTR = -(Math.PI * 9.0) / 180.0; // 9度は桂が指定;
-    const squatDepthUpCheck =
-      bottomPose.worldLandmarks[0].y - bottomPoseKnee.y + Math.sin(upAngleKTR) * bottomPosePelvisKneeDistanceYZ;
-    const squatDepthDownCheck =
-      -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - Math.sin(downAngleKTR) * bottomPosePelvisKneeDistanceYZ;
 
-    // console.log(squatDepthUpCheck);
-    // console.log(squatDepthDownCheck);
+    // 骨盤と膝をYZ平面に投影した際のY軸から見た角度
+    const upperThighAngleYZ = -(Math.PI * 70.0) / 180.0; // 15度は実験により得た
+    const bestThighAngleYZ = -(Math.PI * 81.0) / 180.0; // 9度を実験により得た
+    const lowerThighAngleYZ = -(Math.PI * 90.0) / 180.0; // 9度を実験により得た
 
-    // TODO: デバック用
-    if (squatDepthUpCheck <= 0.0) {
+    const bottomPoseThighAngleYZ = angleInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
+    if (bottomPoseThighAngleYZ > bestThighAngleYZ) {
       console.log('腰の下げ方が足りない');
+      const a = (bottomPoseThighAngleYZ - bestThighAngleYZ) / (upperThighAngleYZ - bestThighAngleYZ);
+      console.log(a);
 
-      return 0.0;
+      return (bottomPoseThighAngleYZ - bestThighAngleYZ) / (upperThighAngleYZ - bestThighAngleYZ);
     }
-    if (squatDepthDownCheck <= 0.0) {
-      console.log('腰を下げすぎ');
 
-      return 0.0;
-    }
-    console.log('十分に腰を落とした');
+    console.log('腰を下げすぎ');
+    const b = (bottomPoseThighAngleYZ - lowerThighAngleYZ) / (bestThighAngleYZ - lowerThighAngleYZ);
+    console.log(b);
 
-    return 1.0;
+    return (bottomPoseThighAngleYZ - lowerThighAngleYZ) / (bestThighAngleYZ - lowerThighAngleYZ);
   },
 };
 
@@ -321,10 +309,10 @@ const feetGround: FormInstructionItem = {
 
       return 1.0;
     }
-    const LeftAnkleMovedDistance = distanceInY(topPose.worldLandmarks[20], bottomPose.worldLandmarks[20]);
-    const RightAnkleMovedDistance = distanceInY(topPose.worldLandmarks[24], bottomPose.worldLandmarks[24]);
-    const LeftFootMovedDistance = distanceInY(topPose.worldLandmarks[21], bottomPose.worldLandmarks[21]);
-    const RightFootMovedDistance = distanceInY(topPose.worldLandmarks[21], bottomPose.worldLandmarks[21]);
+    // const LeftAnkleMovedDistance = distanceInY(topPose.worldLandmarks[20], bottomPose.worldLandmarks[20]);
+    // const RightAnkleMovedDistance = distanceInY(topPose.worldLandmarks[24], bottomPose.worldLandmarks[24]);
+    // const LeftFootMovedDistance = distanceInY(topPose.worldLandmarks[21], bottomPose.worldLandmarks[21]);
+    // const RightFootMovedDistance = distanceInY(topPose.worldLandmarks[21], bottomPose.worldLandmarks[21]);
     // 判定に使用
     // const topPoseRightFootLength = distanceInXYZ(topPose.worldLandmarks[24], topPose.worldLandmarks[25]);
 
@@ -332,51 +320,51 @@ const feetGround: FormInstructionItem = {
     // topPoseは足がべったりと地面についていると想定しているが，良いのか
     // const acceptableError = 0.1;
     // TODO: 桂以外でも適応可能なように変更する
-    const ankleKTR = 50.0;
-    const footKTR = 5.0;
-    const LeftAnkleMovedDistanceCheck = ankleKTR + LeftAnkleMovedDistance;
-    const RightAnkleMovedDistanceCheck = ankleKTR + RightAnkleMovedDistance;
-    const LeftFootMovedDistanceCheck = footKTR + LeftFootMovedDistance;
-    const RightFootMovedDistanceCheck = footKTR + RightFootMovedDistance;
+    // const ankleKTR = 50.0;
+    // const footKTR = 5.0;
+    // const LeftAnkleMovedDistanceCheck = ankleKTR + LeftAnkleMovedDistance;
+    // const RightAnkleMovedDistanceCheck = ankleKTR + RightAnkleMovedDistance;
+    // const LeftFootMovedDistanceCheck = footKTR + LeftFootMovedDistance;
+    // const RightFootMovedDistanceCheck = footKTR + RightFootMovedDistance;
 
     // console.log('topPose.worldLandmarks[20]', topPose.worldLandmarks[20].y);
     // console.log('bottomPose.worldLandmarks[20]', bottomPose.worldLandmarks[20].y);
     // console.log('topPose.worldLandmarks[21]', topPose.worldLandmarks[21].y);
     // console.log('bottomPose.worldLandmarks[21]', bottomPose.worldLandmarks[21].y);
 
-    console.log(LeftAnkleMovedDistanceCheck);
-    console.log(RightAnkleMovedDistanceCheck);
-    console.log(LeftFootMovedDistanceCheck);
-    console.log(RightFootMovedDistanceCheck);
+    // console.log(LeftAnkleMovedDistanceCheck);
+    // console.log(RightAnkleMovedDistanceCheck);
+    // console.log(LeftFootMovedDistanceCheck);
+    // console.log(RightFootMovedDistanceCheck);
 
-    if (LeftAnkleMovedDistanceCheck <= 0.0) {
-      // 左足首の位置が変化した
-      console.log('左足首が浮いた');
-      console.log(LeftAnkleMovedDistanceCheck);
+    // if (LeftAnkleMovedDistanceCheck <= 0.0) {
+    //   // 左足首の位置が変化した
+    //   console.log('左足首が浮いた');
+    //   console.log(LeftAnkleMovedDistanceCheck);
 
-      // return 0.0;
-    }
-    if (RightAnkleMovedDistanceCheck <= 0.0) {
-      // 右足首の位置が変化した
-      console.log('右足首が浮いた');
-      console.log(RightAnkleMovedDistanceCheck);
+    //   // return 0.0;
+    // }
+    // if (RightAnkleMovedDistanceCheck <= 0.0) {
+    //   // 右足首の位置が変化した
+    //   console.log('右足首が浮いた');
+    //   console.log(RightAnkleMovedDistanceCheck);
 
-      // return 0.0;
-    }
-    if (LeftFootMovedDistanceCheck <= 0.0) {
-      // 左足先の位置が変化した
-      console.log('左足先が浮いた');
-      console.log(LeftFootMovedDistanceCheck);
+    //   // return 0.0;
+    // }
+    // if (LeftFootMovedDistanceCheck <= 0.0) {
+    //   // 左足先の位置が変化した
+    //   console.log('左足先が浮いた');
+    //   console.log(LeftFootMovedDistanceCheck);
 
-      // return 0.0;
-    }
-    if (RightFootMovedDistanceCheck <= 0.0) {
-      // 右足先の位置が変化した
-      console.log('右足先が浮いた');
-      console.log(RightFootMovedDistanceCheck);
+    //   // return 0.0;
+    // }
+    // if (RightFootMovedDistanceCheck <= 0.0) {
+    //   // 右足先の位置が変化した
+    //   console.log('右足先が浮いた');
+    //   console.log(RightFootMovedDistanceCheck);
 
-      // return 0.0;
-    }
+    //   // return 0.0;
+    // }
 
     return 1.0;
   },
@@ -522,7 +510,7 @@ const kneePosition: FormInstructionItem = {
 };
 
 // ラックの高さ
-// TopとButtomだけでは厳しい
+// TopとBottomだけでは厳しい
 
 // 指導項目を追加したらここにもかく
 export const formInstructionItems: FormInstructionItem[] = [

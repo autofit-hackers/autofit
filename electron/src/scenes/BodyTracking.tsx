@@ -19,8 +19,11 @@ import {
   showLineToCheckBackBent,
   showLineToCheckKneeInOut,
   showLineToCheckSquatDepth,
+  showTextKneePosition,
   showTextToCheckBackBent,
+  showTextToCheckBarbellPosition,
   showTextToCheckKneeInOut,
+  showTextToCheckSquatDepth,
 } from '../training/squatDebugging';
 import { startCaptureWebcam } from '../utils/capture';
 import { renderAboveFrame, renderBGRA32ColorFrame, renderFrontFrame, renderSideFrame } from '../utils/drawing';
@@ -140,7 +143,7 @@ export default function BodyTrack2d() {
           rep.current = calculateKeyframes(rep.current);
           rep.current = evaluateForm(rep.current, formInstructionSettings);
 
-          console.log(rep.current.formEvaluationScores);
+          console.log(rep.current.formEvaluationErrors);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           set.current.reps = [...set.current.reps, rep.current];
@@ -232,12 +235,12 @@ export default function BodyTrack2d() {
           currentPose.worldLandmarks,
         );
         // スクワットの腰の高さを判定するためのデータを描画する
-        // showTextToCheckSquatDepth(
-        //   canvasCtx,
-        //   canvasRef.current.width,
-        //   canvasRef.current.height,
-        //   currentPose.worldLandmarks,
-        // );
+        showTextToCheckSquatDepth(
+          canvasCtx,
+          canvasRef.current.width,
+          canvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
         // showTextToCheckSquatDepth(
         //   sideCanvasCtx,
         //   canvasRef.current.width,
@@ -272,6 +275,20 @@ export default function BodyTrack2d() {
           canvasCtx,
           canvasRef.current.width,
           canvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
+        // スクワットの膝の位置を判定するためのデータを表示
+        showTextKneePosition(
+          sideCanvasCtx,
+          sideCanvasRef.current.width,
+          sideCanvasRef.current.height,
+          currentPose.worldLandmarks,
+        );
+        // スクワットのバーベル中心の位置を判定するためのデータを表示
+        showTextToCheckBarbellPosition(
+          sideCanvasCtx,
+          sideCanvasRef.current.width,
+          sideCanvasRef.current.height,
           currentPose.worldLandmarks,
         );
 

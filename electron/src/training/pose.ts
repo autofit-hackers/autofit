@@ -127,6 +127,15 @@ export const midpointBetween = (
   z: (p1.z + p2.z) / 2,
 });
 
+export const vector = (
+  p1: NormalizedLandmark | Landmark,
+  p2: NormalizedLandmark | Landmark,
+): NormalizedLandmark | Landmark => ({
+  x: p2.x - p1.x,
+  y: p2.y - p1.y,
+  z: p2.z - p1.z,
+});
+
 export const heightInFrame = (pose: Pose): number => {
   const nose = pose.landmarks[11];
   const ankle = midpointBetween(pose.landmarks[20], pose.landmarks[24]);

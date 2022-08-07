@@ -10,6 +10,7 @@ import {
   midpointBetween,
   normalizeAboveWorldLandmarkPoint,
   normalizeSideWorldLandmarkPoint,
+  vector,
 } from './pose';
 
 // スクワットのお尻が十分に下がっているかチェックする用のラインを表示する
@@ -64,34 +65,34 @@ export const showTextToCheckSquatDepth = (
 ): void => {
   const currentPoseKnee = midpointBetween(worldLandmarks[19], worldLandmarks[23]);
   const currentPosePelvisKneeDistanceYZ = distanceInYZ(worldLandmarks[0], currentPoseKnee);
-  const thighAngle = (angleInYZ(worldLandmarks[0], currentPoseKnee) * 180.0) / Math.PI;
+  const thighAngleYZ = (angleInYZ(worldLandmarks[0], currentPoseKnee) * 180.0) / Math.PI;
   const currentPosePelvisKneeDistanceY = Math.abs(distanceInY(worldLandmarks[0], currentPoseKnee));
 
-  ctx.font = '30px Times New Roman';
+  ctx.font = '20px Times New Roman';
   ctx.fillStyle = 'red';
-  ctx.fillText(`Squat Depth`, 0.1 * width, 0.05 * height);
+  ctx.fillText(`Squat Depth`, 0.01 * width, 0.7 * height);
 
   const textKnee = `Knee: [${currentPoseKnee.x.toFixed(1).toString()},${currentPoseKnee.y
     .toFixed(1)
     .toString()},${currentPoseKnee.z.toFixed(1).toString()}]`;
-  ctx.fillText(`${textKnee}`, 0.1 * width, 0.1 * height);
+  ctx.fillText(`${textKnee}`, 0.01 * width, 0.75 * height);
 
   const textPelvis = `Pelvis: [${worldLandmarks[0].x.toFixed(1).toString()},${worldLandmarks[0].y
     .toFixed(1)
     .toString()},${worldLandmarks[0].z.toFixed(1).toString()}]`;
-  ctx.fillText(`${textPelvis}`, 0.1 * width, 0.2 * height);
+  ctx.fillText(`${textPelvis}`, 0.01 * width, 0.8 * height);
 
   const textPelvisKneeDistanceYZ = `YZ平面での骨盤と膝の間の距離: ${currentPosePelvisKneeDistanceYZ
     .toFixed(1)
     .toString()}`;
-  ctx.fillText(`${textPelvisKneeDistanceYZ}`, 0.1 * width, 0.3 * height);
+  ctx.fillText(`${textPelvisKneeDistanceYZ}`, 0.01 * width, 0.85 * height);
 
   const textPelvisKneeDistanceY = `骨盤と膝のY座標の差: ${currentPosePelvisKneeDistanceY.toFixed(1).toString()}`;
-  ctx.fillText(`${textPelvisKneeDistanceY}`, 0.1 * width, 0.4 * height);
+  ctx.fillText(`${textPelvisKneeDistanceY}`, 0.01 * width, 0.9 * height);
 
   // const textThighAngle = `thighAngle: ${thighAngle.toFixed(1).toString()}`;
-  const textThighAngle = `骨盤と膝を結ぶ直線がYZ平面上でY軸となす角: ${thighAngle.toFixed(1).toString()}`;
-  ctx.fillText(`${textThighAngle}`, 0.1 * width, 0.5 * height);
+  const textThighAngleYZ = `骨盤と膝を結ぶ直線がYZ平面上でY軸となす角: ${thighAngleYZ.toFixed(1).toString()}`;
+  ctx.fillText(`${textThighAngleYZ}`, 0.01 * width, 0.95 * height);
 };
 
 // スクワットのニーイン，ニーアウトをチェックする用のデータを表示する
@@ -230,38 +231,38 @@ export const showTextToCheckKneeInOut = (
   const leftThighFootAngleDistanceZX = leftHipToKneeAngleZX - leftAnkleToFootAngleZX;
   const rightThighFootAngleDistanceZX = rightHipToKneeAngleZX - rightAnkleToFootAngleZX;
 
-  ctx.font = '30px Times New Roman';
+  ctx.font = '20px Times New Roman';
   ctx.fillStyle = 'red';
-  ctx.fillText(`Squat Knee in or out`, 0.1 * width, 0.05 * height);
+  ctx.fillText(`Squat Knee in or out`, 0.06 * width, 0.05 * height);
 
   const textLeftHipToKneeAngleZX = `左の太股の付け根から膝のZX座標角度: [${leftHipToKneeAngleZX
     .toFixed(1)
     .toString()}]`;
-  ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.1 * width, 0.1 * height);
+  ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.06 * width, 0.1 * height);
 
   const textRightHipToKneeAngleZX = `右の太股の付け根から膝のZX座標角度: [${rightHipToKneeAngleZX
     .toFixed(1)
     .toString()}]`;
-  ctx.fillText(`${textRightHipToKneeAngleZX}`, 0.1 * width, 0.2 * height);
+  ctx.fillText(`${textRightHipToKneeAngleZX}`, 0.06 * width, 0.15 * height);
 
   const textLeftPelvisToKneeAngleZX = `左の骨盤から膝のZX座標角度: [${leftPelvisToKneeAngleZX.toFixed(1).toString()}]`;
-  ctx.fillText(`${textLeftPelvisToKneeAngleZX}`, 0.1 * width, 0.3 * height);
+  ctx.fillText(`${textLeftPelvisToKneeAngleZX}`, 0.06 * width, 0.2 * height);
 
   const textRightPelvisToKneeAngleZX = `右の骨盤から膝のZX座標角度: [${rightPelvisToKneeAngleZX
     .toFixed(1)
     .toString()}]`;
-  ctx.fillText(`${textRightPelvisToKneeAngleZX}`, 0.1 * width, 0.4 * height);
+  ctx.fillText(`${textRightPelvisToKneeAngleZX}`, 0.06 * width, 0.25 * height);
 
   const textLeftAnkleToFootAngleZX = `左のつま先のZX座標角度: [${leftAnkleToFootAngleZX.toFixed(1).toString()}]`;
-  ctx.fillText(`${textLeftAnkleToFootAngleZX}`, 0.1 * width, 0.5 * height);
+  ctx.fillText(`${textLeftAnkleToFootAngleZX}`, 0.06 * width, 0.3 * height);
 
   const textRightAnkleToFootAngleZX = `右のつま先のZX座標角度: [${rightAnkleToFootAngleZX.toFixed(1).toString()}]`;
-  ctx.fillText(`${textRightAnkleToFootAngleZX}`, 0.1 * width, 0.6 * height);
+  ctx.fillText(`${textRightAnkleToFootAngleZX}`, 0.06 * width, 0.35 * height);
 
   const textAnkleToFootAngleDistanceZX = `左右それぞれの太股とつま先のZX平面の角度差: [${leftThighFootAngleDistanceZX
     .toFixed(1)
     .toString()}], [${rightThighFootAngleDistanceZX.toFixed(1).toString()}]`;
-  ctx.fillText(`${textAnkleToFootAngleDistanceZX}`, 0.1 * width, 0.7 * height);
+  ctx.fillText(`${textAnkleToFootAngleDistanceZX}`, 0.06 * width, 0.4 * height);
 };
 
 // スクワットの背中が曲がっていないかをチェックする用のラインを表示する
@@ -324,7 +325,7 @@ export const showTextToCheckBackBent = (
 
   ctx.font = '20px Times New Roman';
   ctx.fillStyle = 'red';
-  ctx.fillText(`Squat Knee in or out`, 0.6 * width, 0.05 * height);
+  ctx.fillText(`Squat bent back`, 0.6 * width, 0.05 * height);
 
   const textPelvisToSpineNavalAngle = `下背部のXY・YZ座標角度: [${pelvisToSpineNavalAngleXY
     .toFixed(1)
@@ -334,30 +335,164 @@ export const showTextToCheckBackBent = (
   const textSpineNavalToSpineChestAngle = `中背部のXY・YZ座標角度: [${spineNavalToSpineChestAngleXY
     .toFixed(1)
     .toString()}], [${spineNavalToSpineChestAngleYZ.toFixed(1).toString()}]`;
-  ctx.fillText(`${textSpineNavalToSpineChestAngle}`, 0.6 * width, 0.2 * height);
+  ctx.fillText(`${textSpineNavalToSpineChestAngle}`, 0.6 * width, 0.15 * height);
 
   const textSpineChestToNeckAngle = `上背部のXY・YZ座標角度: [${spineChestToNeckAngleXY
     .toFixed(1)
     .toString()}], [${spineChestToNeckAngleYZ.toFixed(1).toString()}]`;
-  ctx.fillText(`${textSpineChestToNeckAngle}`, 0.6 * width, 0.3 * height);
+  ctx.fillText(`${textSpineChestToNeckAngle}`, 0.6 * width, 0.2 * height);
+};
 
-  // const textLeftHipToKneeAngleZX = `下背部のXY座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
-  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.1 * height);
+// スクワットのつま先と比較した膝の位置をチェックする用のデータを表示する
+export const showTextKneePosition = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  const leftAnkleToFootDistance = distanceInXYZ(worldLandmarks[20], worldLandmarks[21]);
+  const rightAnkleToFootDistance = distanceInXYZ(worldLandmarks[24], worldLandmarks[25]);
+  const leftKneeToAnkleDistance = distanceInXYZ(worldLandmarks[19], worldLandmarks[20]);
+  const rightKneeToAnkleDistance = distanceInXYZ(worldLandmarks[23], worldLandmarks[24]);
+  const leftHiptoKneeDistance = distanceInXYZ(worldLandmarks[18], worldLandmarks[19]);
+  const rightHiptoKneeDistance = distanceInXYZ(worldLandmarks[22], worldLandmarks[23]);
+  const neckToPelvisDistance = distanceInXYZ(worldLandmarks[0], worldLandmarks[3]);
 
-  // const textLeftHipToKneeAngleZX = `中背部のXY座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
-  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.2 * height);
+  const leftAnkleToFootDistanceYZ = distanceInYZ(worldLandmarks[20], worldLandmarks[21]);
+  const rightAnkleToFootDistanceYZ = distanceInYZ(worldLandmarks[24], worldLandmarks[25]);
+  const leftKneeToAnkleDistanceYZ = distanceInYZ(worldLandmarks[19], worldLandmarks[20]);
+  const rightKneeToAnkleDistanceYZ = distanceInYZ(worldLandmarks[23], worldLandmarks[24]);
+  const leftHiptoKneeDistanceYZ = distanceInYZ(worldLandmarks[18], worldLandmarks[19]);
+  const rightHiptoKneeDistanceYZ = distanceInYZ(worldLandmarks[22], worldLandmarks[23]);
 
-  // const textLeftHipToKneeAngleZX = `上背部のXY座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
-  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.3 * height);
+  const leftFootToAnkle = vector(worldLandmarks[21], worldLandmarks[20]);
+  const rightFootToAnkle = vector(worldLandmarks[25], worldLandmarks[24]);
+  const leftFootToKnee = vector(worldLandmarks[21], worldLandmarks[19]);
+  const rightFootToKnee = vector(worldLandmarks[25], worldLandmarks[23]);
 
-  // const textLeftHipToKneeAngleZX = `下背部のYZ座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
-  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.4 * height);
+  const leftAnkleToFootAngleYZ = angleInYZ(worldLandmarks[20], worldLandmarks[21]);
+  const rightAnkleToFootAngleYZ = angleInYZ(worldLandmarks[24], worldLandmarks[25]);
+  const leftKneeToAnkleAngleYZ = angleInYZ(worldLandmarks[19], worldLandmarks[20]);
+  const rightKneeToAnkleAngleYZ = angleInYZ(worldLandmarks[23], worldLandmarks[24]);
+  const leftHiptoKneeAngleYZ = angleInYZ(worldLandmarks[18], worldLandmarks[19]);
+  const rightHiptoKneeAngleYZ = angleInYZ(worldLandmarks[22], worldLandmarks[23]);
 
-  // const textLeftHipToKneeAngleZX = `中背部のYZ座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
-  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.5 * height);
+  ctx.font = '20px Times New Roman';
+  ctx.fillStyle = 'red';
+  ctx.fillText(`Squat Knee position`, 0.01 * width, 0.05 * height);
 
-  // const textLeftHipToKneeAngleZX = `上背部のYZ座標角度: [${leftHipToKneeAngleZX.toFixed(1).toString()}]`;
-  // ctx.fillText(`${textLeftHipToKneeAngleZX}`, 0.6 * width, 0.6 * height);
+  const textLeftAnkleToFootDistance = `左のつま先長さとYZ距離: [${leftAnkleToFootDistance
+    .toFixed(1)
+    .toString()}][${leftAnkleToFootDistanceYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftAnkleToFootDistance}`, 0.01 * width, 0.1 * height);
+
+  const textRightAnkleToFootDistance = `右のつま先長さとYZ距離: [${rightAnkleToFootDistance
+    .toFixed(1)
+    .toString()}][${rightAnkleToFootDistanceYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightAnkleToFootDistance}`, 0.01 * width, 0.15 * height);
+
+  const textLeftKneeToAnkleDistance = `左の脛長さとYZ距離: [${leftKneeToAnkleDistance
+    .toFixed(1)
+    .toString()}][${leftKneeToAnkleDistanceYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftKneeToAnkleDistance}`, 0.01 * width, 0.2 * height);
+
+  const textRightKneeToAnkleDistance = `右の脛長さとYZ距離: [${rightKneeToAnkleDistance
+    .toFixed(1)
+    .toString()}][${rightKneeToAnkleDistanceYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightKneeToAnkleDistance}`, 0.01 * width, 0.25 * height);
+
+  const textLeftHipToKneeDistance = `左の太股長さとYZ距離: [${leftHiptoKneeDistance
+    .toFixed(1)
+    .toString()}][${leftHiptoKneeDistanceYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftHipToKneeDistance}`, 0.01 * width, 0.3 * height);
+
+  const textRightHipToKneeDistance = `右の太股長さとYZ距離: [${rightHiptoKneeDistance
+    .toFixed(1)
+    .toString()}][${rightHiptoKneeDistanceYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightHipToKneeDistance}`, 0.01 * width, 0.35 * height);
+
+  const textNeckToPelvisDistance = `背中の長さ: [${neckToPelvisDistance.toFixed(1).toString()}]`;
+  ctx.fillText(`${textNeckToPelvisDistance}`, 0.01 * width, 0.4 * height);
+
+  const textLeftFoot = `FOOT_LEFT: [${worldLandmarks[21].x.toFixed(1).toString()},${worldLandmarks[21].y
+    .toFixed(1)
+    .toString()},${worldLandmarks[21].z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftFoot}`, 0.01 * width, 0.45 * height);
+
+  const textRightFoot = `FOOT_RIGHT: [${worldLandmarks[25].x.toFixed(1).toString()},${worldLandmarks[25].y
+    .toFixed(1)
+    .toString()},${worldLandmarks[25].z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightFoot}`, 0.01 * width, 0.5 * height);
+
+  const textLeftKnee = `左のつま先から見た膝: [${leftFootToKnee.x.toFixed(1).toString()},${leftFootToKnee.y
+    .toFixed(1)
+    .toString()},${leftFootToKnee.z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftKnee}`, 0.01 * width, 0.55 * height);
+
+  const textRightKnee = `右のつま先から見た膝: [${rightFootToKnee.x.toFixed(1).toString()},${rightFootToKnee.y
+    .toFixed(1)
+    .toString()},${rightFootToKnee.z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightKnee}`, 0.01 * width, 0.6 * height);
+
+  const textLeftAnkle = `左のつま先から見た足首: [${leftFootToAnkle.x.toFixed(1).toString()},${leftFootToAnkle.y
+    .toFixed(1)
+    .toString()},${leftFootToAnkle.z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftAnkle}`, 0.01 * width, 0.65 * height);
+
+  const textRightAnkle = `右のつま先から見た足首: [${rightFootToAnkle.x.toFixed(1).toString()},${rightFootToAnkle.y
+    .toFixed(1)
+    .toString()},${rightFootToAnkle.z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightAnkle}`, 0.01 * width, 0.7 * height);
+
+  const textLeftAnkleToFootAngleYZ = `左のつま先と足首間のYZ角度: [${leftAnkleToFootAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftAnkleToFootAngleYZ}`, 0.01 * width, 0.75 * height);
+
+  const textRightAnkleToFootAngleYZ = `右のつま先と足首間のYZ角度: [${rightAnkleToFootAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightAnkleToFootAngleYZ}`, 0.01 * width, 0.79 * height);
+
+  const textLeftKneeToAnkleAngleYZ = `左の膝と足首間のYZ角度: [${leftKneeToAnkleAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftKneeToAnkleAngleYZ}`, 0.01 * width, 0.83 * height);
+
+  const textRightKneeToAnkleAngleYZ = `右の膝と足首間のYZ角度: [${rightKneeToAnkleAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightKneeToAnkleAngleYZ}`, 0.01 * width, 0.87 * height);
+
+  const textLeftHiptoKneeAngleYZ = `左の尻と膝間のYZ角度: [${leftHiptoKneeAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftHiptoKneeAngleYZ}`, 0.01 * width, 0.91 * height);
+
+  const textRightHiptoKneeAngleYZ = `右の尻と膝間のYZ角度: [${rightHiptoKneeAngleYZ.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightHiptoKneeAngleYZ}`, 0.01 * width, 0.95 * height);
+};
+
+// 手首の位置からバーベルを検出し，チェックする用のデータを表示する
+export const showTextToCheckBarbellPosition = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  worldLandmarks: LandmarkList,
+): void => {
+  const leftFootToWrist = vector(worldLandmarks[21], worldLandmarks[7]);
+  const rightFootToWrist = vector(worldLandmarks[25], worldLandmarks[14]);
+
+  const wristMidpoint = midpointBetween(worldLandmarks[7], worldLandmarks[14]);
+
+  ctx.font = '20px Times New Roman';
+  ctx.fillStyle = 'red';
+  ctx.fillText(`Squat Barbell position`, 0.6 * width, 0.05 * height);
+
+  const textLeftFootToWrist = `左つま先から見た左手首:[${leftFootToWrist.x.toFixed(1).toString()},${leftFootToWrist.y
+    .toFixed(1)
+    .toString()},${leftFootToWrist.z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textLeftFootToWrist}`, 0.6 * width, 0.1 * height);
+
+  const textRightFootToWrist = `右つま先から見た右手首:[${rightFootToWrist.x
+    .toFixed(1)
+    .toString()},${rightFootToWrist.y.toFixed(1).toString()},${rightFootToWrist.z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textRightFootToWrist}`, 0.6 * width, 0.15 * height);
+
+  const textWristMidpoint = `手首の中点:[${wristMidpoint.x.toFixed(1).toString()},${wristMidpoint.y
+    .toFixed(1)
+    .toString()},${wristMidpoint.z.toFixed(1).toString()}]`;
+  ctx.fillText(`${textWristMidpoint}`, 0.6 * width, 0.2 * height);
 };
 
 // スクワットの足が浮いていないかをチェックする用のデータを表示する
@@ -370,7 +505,7 @@ export const showTextToCheckSquatFeetGround = (
   const FootAnkleDistance =
     (distanceInXYZ(worldLandmarks[20], worldLandmarks[21]) + distanceInXYZ(worldLandmarks[24], worldLandmarks[25])) /
     2;
-  ctx.font = '30px Times New Roman';
+  ctx.font = '20px Times New Roman';
   ctx.fillStyle = 'red';
   ctx.fillText(`Squat Feet Ground`, 0.1 * width, 0.05 * height);
 
