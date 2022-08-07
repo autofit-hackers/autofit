@@ -9,7 +9,7 @@ import { formInstructionItems } from '../coaching/formInstructionItems';
 import { repVideoUrlsAtom, setRecordAtom } from './atoms';
 import { GoodPoint, VideoReplayer } from './ReportComponents';
 
-export default function FuturisticReport() {
+export default function IntervalReport() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,7 +58,7 @@ export default function FuturisticReport() {
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing="1vh">
-            {/* 撮影した3:4の動画 */}
+            {/* 撮影した16:9の動画 */}
             <VideoReplayer />
             {/* トレーニングの3D表示 */}
             <Grid item xs={12}>
