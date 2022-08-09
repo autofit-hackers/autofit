@@ -3,20 +3,25 @@ import { BottomNavigation, BottomNavigationAction, Box, createTheme, CssBaseline
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
-import { recordFromEvaluationResult } from '../coaching/formInstruction';
-import { formInstructionItemsAtom, setRecordAtom } from './atoms';
+import { stopKinect } from '../utils/kinect';
+import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import { GoodPoint, VideoReplayer } from './ReportComponents';
 
 export default function IntervalReport() {
-  const [setRecord, setSetRecord] = useAtom(setRecordAtom);
+  const [setRecord] = useAtom(setRecordAtom);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
-  const displayedRepIndex = setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex;
+  const [displayedRepIndex, setDisplayedRepIndex] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [kinect] = useAtom(kinectAtom);
+
+  console.log('Set Record', setRecord);
 
   // Reportコンポーネントマウント時にセット変数にフォーム分析結果を記録する
   useEffect(() => {
-    setSetRecord(recordFromEvaluationResult(setRecord, formInstructionItems));
-  }, [formInstructionItems, setRecord, setSetRecord]);
+    stopKinect(kinect);
+    setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
+  }, [formInstructionItems, kinect, selectedInstructionIndex, setRecord]);
 
   const futuristicTheme = createTheme({
     palette: {
@@ -74,11 +79,12 @@ export default function IntervalReport() {
                 '& .Mui-selected': { backgroundColor: '#005555' },
               }}
             >
-              {/* TODO: コンポーネントのマウント時にタブが表示されない問題を解決する。おそらくselectedをindex0でtrueに設定すればよい。 */}
               {formInstructionItems.map((instructionItem) => (
                 <BottomNavigationAction
+                  key={instructionItem.id}
                   label={instructionItem.label}
                   icon={<RestoreIcon />}
+                  value={instructionItem.id}
                   sx={{
                     backgroundColor: 'grey.900',
                     borderRadius: 0,

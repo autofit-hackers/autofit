@@ -2,7 +2,7 @@ import { Grid, Paper, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import ReactPlayer from 'react-player';
 import RestTimer from '../ui_component/RestTimer';
-import { setRecordAtom } from './atoms';
+import { repVideoUrlsAtom } from './atoms';
 
 export function TrainingStats(props: { text: string }) {
   const { text } = props;
@@ -68,7 +68,7 @@ export function TimerCard(props: { time: number }) {
 
 export function VideoReplayer(props: { displayedRepIndex: number }) {
   const { displayedRepIndex } = props;
-  const [setRecord] = useAtom(setRecordAtom);
+  const [repVideoUrls] = useAtom(repVideoUrlsAtom);
 
   return (
     <Grid item xs={12}>
@@ -81,14 +81,7 @@ export function VideoReplayer(props: { displayedRepIndex: number }) {
           justifyContent: 'center',
         }}
       >
-        <ReactPlayer
-          url={setRecord.reps[displayedRepIndex].videoUrl}
-          id="RepVideo"
-          playing
-          loop
-          width="100%"
-          height="100%"
-        />
+        <ReactPlayer url={repVideoUrls[displayedRepIndex]} id="RepVideo" playing loop width="100%" height="100%" />
         {/* <CardMedia sx={{ borderRadius: 3, height: '50vh' }} component="video" autoPlay image={videoPath} loop /> */}
       </Paper>
     </Grid>

@@ -7,7 +7,7 @@ export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionI
   const rep: Rep = prevRep;
 
   instructionItems.forEach((instructionItem) => {
-    rep.formEvaluationErrors = [...rep.formEvaluationErrors, instructionItem.evaluate(rep)];
+    rep.formEvaluationErrors[instructionItem.id] = instructionItem.evaluate(rep);
   });
 
   return rep;
@@ -17,7 +17,7 @@ export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionI
 export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormInstructionItem[]): Set => {
   const set: Set = prevSet;
 
-  instructionItems.forEach((instructionItem, instructionIndex) => {
+  instructionItems.forEach((instructionItem) => {
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
       text: '',
@@ -29,7 +29,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
 
     // レップ変数に格納されている各指導項目のエラーを参照して、Resultオブジェクトに追加する
     set.reps.forEach((rep) => {
-      evaluationResult.eachRepErrors.push(rep.formEvaluationErrors[instructionIndex]);
+      evaluationResult.eachRepErrors[rep.index] = rep.formEvaluationErrors[instructionItem.id];
     });
 
     // エラーの絶対値が最大/最小となるレップのインデックスを記録する
@@ -40,7 +40,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     // TODO: 各評価項目のエラーの正負を参照して適切にテキストを設定する
     // TODO: Scoreの計算
 
-    set.formEvaluationResults = [...set.formEvaluationResults, evaluationResult];
+    set.formEvaluationResults[instructionItem.id] = evaluationResult;
   });
 
   return set;
