@@ -1,42 +1,46 @@
 import { Rep } from '../training/rep';
-import { Set } from '../training/set';
+import { FormEvaluationResult, Set } from '../training/set';
 import { FormInstructionItem } from './formInstructionItems';
 
-export type FormInstructionSettings = {
-  items: { [key: string]: FormInstructionItem };
-};
-
-// フォーム指導項目のリストの全要素に関して、判定関数を実行する
-export const evaluateRepForm = (prevRep: Rep, settings: FormInstructionSettings): Rep => {
+// フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
+export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
   const rep: Rep = prevRep;
 
-  // settingsで指定した全ての指導項目に関してフォームを評価する
-  Object.keys(settings.items).forEach((key) => {
-    const instruction = settings.items[key];
-    const formError = instruction.evaluate(prevRep);
-    const instructionName = instruction.itemName;
-    rep.formErrors[`${instructionName}`] = formError;
+  instructionItems.forEach((instructionItem) => {
+    rep.formEvaluationErrors = [...rep.formEvaluationErrors, instructionItem.evaluate(rep)];
   });
 
   return rep;
 };
 
-// 各指導項目で表示すべきレップ番号を決定する
-export const decideRepToBeShowed = (prevSet: Set, settings: FormInstructionSettings): Set => {
+// セット変数に各指導項目の評価結果を追加する
+export const recordFromEvaluationResult = (prevSet: Set, instructionItems: FormInstructionItem[]): Set => {
   const set: Set = prevSet;
 
-  // settingsで指定した全ての指導項目に関してレップ番号を決定する
-  Object.keys(settings.items).forEach((key) => {
-    const instruction = settings.items[key];
-    let FormHighestError = 0;
-    set.reps.forEach((rep, repIndex) => {
-      const absoluteFormScore = Math.abs(rep.formErrors[`${instruction.itemName}`]);
-      if (absoluteFormScore > FormHighestError) {
-        FormHighestError = absoluteFormScore;
-        const instructionName = instruction.itemName;
-        set.RepNumbersToBeShowed[`${instructionName}`] = repIndex;
-      }
+  instructionItems.forEach((instructionItem, instructionIndex) => {
+    const evaluationResult: FormEvaluationResult = {
+      name: instructionItem.name,
+      text: '',
+      eachRepErrors: [],
+      score: 0,
+      bestRepIndex: 0,
+      worstRepIndex: 0,
+    };
+
+    // レップ変数に格納されている各指導項目のエラーを参照して、Resultオブジェクトに追加する
+    set.reps.forEach((rep) => {
+      evaluationResult.eachRepErrors.push(rep.formEvaluationErrors[instructionIndex]);
     });
+
+    // エラーの絶対値が最大/最小となるレップのインデックスを記録する
+    const eachRepErrorsAbs = evaluationResult.eachRepErrors.map((error) => Math.abs(error));
+    evaluationResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
+    evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
+
+    // TODO: 各評価項目のエラーの正負を参照して適切にテキストを設定する
+    // TODO: Scoreの計算
+
+    set.formEvaluationResults = [...set.formEvaluationResults, evaluationResult];
   });
 
   return set;

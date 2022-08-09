@@ -1,8 +1,20 @@
 import { Rep } from './rep';
 
-export type Set = { reps: Rep[]; RepNumbersToBeShown: { [instructionName: string]: number }; weight?: number };
+export type FormEvaluationResult = {
+  name: string;
+  text?: string;
+  eachRepErrors: number[];
+  score: number;
+  bestRepIndex: number;
+  worstRepIndex: number;
+};
 
-export const resetSet = (): Set => ({ reps: [], RepNumbersToBeShown: {} });
+export type Set = { reps: Rep[]; formEvaluationResults: FormEvaluationResult[]; weight?: number };
+
+export const resetSet = (): Set => ({
+  reps: [],
+  formEvaluationResults: [],
+});
 
 export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
   ...prevSet,
