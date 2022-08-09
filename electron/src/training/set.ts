@@ -1,8 +1,8 @@
 import { Rep } from './rep';
 
-export type Set = { reps: Rep[]; RepNumbersToBeShowed: { [instruction: string]: number }; weight?: number };
+export type Set = { reps: Rep[]; RepNumbersToBeShown: { [instructionName: string]: number }; weight?: number };
 
-export const resetSet = (): Set => ({ reps: [], RepNumbersToBeShowed: {} });
+export const resetSet = (): Set => ({ reps: [], RepNumbersToBeShown: {} });
 
 export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
   ...prevSet,
