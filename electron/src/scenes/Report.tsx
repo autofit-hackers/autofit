@@ -1,5 +1,3 @@
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import RestoreIcon from '@mui/icons-material/Restore';
 import { BottomNavigation, BottomNavigationAction, Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
@@ -119,85 +117,25 @@ export default function IntervalReport() {
               }}
             >
               {/* TODO: ループ処理にまとめる */}
-              <BottomNavigationAction
-                label={formInstructionItems[instructionKeys[0]].instructionTitle}
-                icon={<RestoreIcon />}
-                sx={{
-                  backgroundColor: 'grey.900',
-                  borderRadius: 0,
-                  border: 1,
-                  borderColor: 'grey.500',
-                  borderTop: 0,
-                  borderTopColor: '#006666',
-                  borderBottomRightRadius: 20,
-                  borderBottomLeftRadius: 20,
-                  boxShadow: 0,
-                  mr: 5,
-                }}
-              />
-              <BottomNavigationAction
-                label={formInstructionItems[instructionKeys[1]].instructionTitle}
-                icon={<FavoriteIcon />}
-                sx={{
-                  backgroundColor: 'grey.900',
-                  borderRadius: 0,
-                  border: 1,
-                  borderColor: 'grey.500',
-                  borderTop: 0,
-                  borderTopColor: 'grey.900',
-                  borderBottomRightRadius: 20,
-                  borderBottomLeftRadius: 20,
-                  boxShadow: 0,
-                  mr: 5,
-                }}
-              />
-              <BottomNavigationAction
-                label={formInstructionItems[instructionKeys[2]].instructionTitle}
-                icon={<LocationOnIcon />}
-                sx={{
-                  backgroundColor: 'grey.900',
-                  borderRadius: 0,
-                  border: 1,
-                  borderColor: 'grey.500',
-                  borderTop: 0,
-                  borderTopColor: 'grey.900',
-                  borderBottomRightRadius: 20,
-                  borderBottomLeftRadius: 20,
-                  boxShadow: 0,
-                  mr: 5,
-                }}
-              />
-              <BottomNavigationAction
-                label={formInstructionItems[instructionKeys[3]].instructionTitle}
-                icon={<FavoriteIcon />}
-                sx={{
-                  backgroundColor: 'grey.900',
-                  borderRadius: 0,
-                  border: 1,
-                  borderColor: 'grey.500',
-                  borderTop: 0,
-                  borderTopColor: 'grey.900',
-                  borderBottomRightRadius: 20,
-                  borderBottomLeftRadius: 20,
-                  boxShadow: 0,
-                  mr: 5,
-                }}
-              />
-              <BottomNavigationAction
-                label={formInstructionItems[instructionKeys[4]].instructionTitle}
-                icon={<LocationOnIcon />}
-                sx={{
-                  backgroundColor: 'grey.900',
-                  borderRadius: 0,
-                  border: 1,
-                  borderColor: 'grey.500',
-                  borderTop: 0,
-                  borderTopColor: 'grey.900',
-                  borderBottomRightRadius: 20,
-                  borderBottomLeftRadius: 20,
-                  boxShadow: 0,
-                }}
-              />
+              {instructionKeys.map((instruction) => (
+                <BottomNavigationAction
+                  label={formInstructionItems[instruction].instructionTitle}
+                  icon={<RestoreIcon />}
+                  sx={{
+                    backgroundColor: 'grey.900',
+                    borderRadius: 0,
+                    border: 1,
+                    borderColor: 'grey.500',
+                    borderTop: 0,
+                    borderTopColor: '#006666',
+                    borderBottomRightRadius: 20,
+                    borderBottomLeftRadius: 20,
+                    boxShadow: 0,
+                    mr: 0,
+                  }}
+                  key={instruction}
+                />
+              ))}
             </BottomNavigation>
 
             {/* 詳細表示する指導の切り替えボタン類 */}
