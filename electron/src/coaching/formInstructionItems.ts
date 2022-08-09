@@ -1,17 +1,6 @@
 import { angleInYZ, angleInZX, distanceInYZ, distanceInZ, distanceInZX, midpointBetween } from '../training/pose';
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
-
-export type FormInstructionItem = {
-  readonly id: number;
-  readonly name: string;
-  readonly reason?: string;
-  readonly recommendMenu?: string[];
-  readonly label?: string;
-  readonly text?: string;
-  readonly importance?: number;
-  readonly evaluate: (rep: Rep) => number;
-  readonly showGuideline?: (rep: Rep) => void;
-};
+import { FormInstructionItem } from './formInstruction';
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
@@ -214,3 +203,4 @@ const kneePosition: FormInstructionItem = {
 
 // 指導項目を追加したらここにもかく
 export const formInstructionItemsQWS = [squatDepth, kneeOut, backBent, kneePosition];
+export const formInstructionItemsEmpty = [];

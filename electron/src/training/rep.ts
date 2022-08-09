@@ -1,3 +1,4 @@
+import { FormInstructionItem } from '../coaching/formInstruction';
 import { heightInFrame, Pose } from './pose';
 
 type KeyframesIndex = {
@@ -103,4 +104,15 @@ export const getDescendingMiddlePose = (rep: Rep): Pose | undefined => {
   }
 
   return undefined;
+};
+
+// フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
+export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
+  const rep: Rep = prevRep;
+
+  instructionItems.forEach((instructionItem) => {
+    rep.formEvaluationErrors[instructionItem.id] = instructionItem.evaluate(rep);
+  });
+
+  return rep;
 };
