@@ -26,16 +26,12 @@ import { copyLandmark } from '../../training/pose';
 export type ViewerWidgetConfig = {
   backgroundColor: number;
   fovInDegrees: number;
-  isRotating: boolean;
-  rotationSpeed: number;
   shouldAddPausePlay: boolean;
 };
 
 const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
   backgroundColor: 0,
   fovInDegrees: 75,
-  isRotating: false,
-  rotationSpeed: 0.0,
   shouldAddPausePlay: false,
 };
 
@@ -142,6 +138,7 @@ export class LandmarkGrid {
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   scene: Scene;
+  controls: OrbitControls;
 
   // Original properties
   size: number;
@@ -184,7 +181,7 @@ export class LandmarkGrid {
     parent.appendChild(this.container);
     const parentBox: DOMRect = parent.getBoundingClientRect();
     if (this.viewerWidgetConfig.shouldAddPausePlay) {
-      this.addPausePlay(this.container);
+      this.addPausePlay();
     }
     this.camera = new PerspectiveCamera(this.viewerWidgetConfig.fovInDegrees, parentBox.width / parentBox.height, 1);
     this.camera.position.z = this.distance;
@@ -203,10 +200,10 @@ export class LandmarkGrid {
     );
     this.scene = new Scene();
     // カメラコントローラーを作成
-    const controls = new OrbitControls(this.camera, canvas);
+    this.controls = new OrbitControls(this.camera, canvas);
     // 滑らかにカメラコントローラーを制御する
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.2;
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.2;
 
     /*
      * Set landmarkGridConfig
@@ -262,12 +259,6 @@ export class LandmarkGrid {
    */
   requestFrame(): void {
     window.requestAnimationFrame((): void => {
-      if (this.viewerWidgetConfig.isRotating) {
-        this.rotation += this.viewerWidgetConfig.rotationSpeed;
-        this.camera.position.x = Math.sin(this.rotation) * this.distance;
-        this.camera.position.z = Math.cos(this.rotation) * this.distance;
-        this.camera.lookAt(new Vector3());
-      }
       this.renderer.render(this.scene, this.camera);
       // Set labels
       this.labels.x.forEach((pair: NumberLabel) => {
@@ -313,12 +304,13 @@ export class LandmarkGrid {
     this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * distance;
     this.camera.position.y = Math.cos(thetaRad) * distance;
     this.camera.lookAt(new Vector3());
+    this.controls.update();
   }
 
   /**
    * @private: (in constructor)
    */
-  addPausePlay(parent: HTMLElement): void {
+  addPausePlay(): void {
     const PAUSE_SRC =
       'https://fonts.gstatic.com/s/i/googlematerialicons/pause/v14/white-24dp/1x/gm_pause_white_24dp.png';
     const PLAY_SRC =
@@ -326,17 +318,7 @@ export class LandmarkGrid {
 
     const button: HTMLImageElement = document.createElement('img');
     button.classList.add('controls');
-    button.src = this.viewerWidgetConfig.isRotating ? PAUSE_SRC : PLAY_SRC;
-    button.onclick = (): void => {
-      if (this.viewerWidgetConfig.isRotating) {
-        button.src = PLAY_SRC;
-        this.viewerWidgetConfig.isRotating = false;
-      } else {
-        button.src = PAUSE_SRC;
-        this.viewerWidgetConfig.isRotating = true;
-      }
-    };
-    parent.appendChild(button);
+    this.container.appendChild(button);
   }
 
   /**

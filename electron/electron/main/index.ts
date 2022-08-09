@@ -46,8 +46,6 @@ async function createWindow() {
     },
   });
 
-  win.maximize();
-
   win.webContents.openDevTools({ mode: 'detach' });
   if (app.isPackaged) {
     void win.loadFile(indexHtml);
