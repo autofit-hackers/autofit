@@ -1,7 +1,7 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
-import { evaluateRepForm } from '../coaching/formInstruction';
+import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
@@ -10,7 +10,7 @@ import { startKinect } from '../utils/kinect';
 import { startCaptureWebcam } from '../utils/record';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { LandmarkGrid } from '../utils/render/landmarkGrid';
-import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
+import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -38,6 +38,7 @@ export default function BodyTrack2d() {
 
   // 映像保存用
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
 
   /*
    * 毎kinect更新時に実行される
@@ -77,7 +78,7 @@ export default function BodyTrack2d() {
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // 動画撮影を開始
-          mediaRecorderRef.current = startCaptureWebcam(canvasRef.current, rep.current);
+          mediaRecorderRef.current = startCaptureWebcam(canvasRef.current, setRepVideoUrls);
 
           // レップの最初の身長を記録
           repState.current = setStandingHeight(repState.current, heightInFrame(currentPose));
@@ -104,7 +105,10 @@ export default function BodyTrack2d() {
           // 動画撮影を停止し、配列に保存する
           if (mediaRecorderRef.current) {
             mediaRecorderRef.current.stop();
+            console.log(rep.current.videoUrl);
           }
+
+          console.log('video url: ', rep.current);
 
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current);
@@ -120,9 +124,6 @@ export default function BodyTrack2d() {
 
           // RepStateの初期化
           repState.current = resetRepState();
-
-          // setRecordを更新する
-          setSetRecord(set.current);
         }
 
         // pose estimationの結果を描画
@@ -167,7 +168,13 @@ export default function BodyTrack2d() {
       landmarkGrid = new LandmarkGrid(gridDivRef.current);
       landmarkGrid.setCamera(90, 0, 150);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // このコンポーネントのアンマウント時に実行される
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      setSetRecord((_) => set.current);
+      setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
+    };
   }, []);
 
   return (

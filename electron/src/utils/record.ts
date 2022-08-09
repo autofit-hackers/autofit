@@ -1,6 +1,9 @@
-import { Rep } from '../training/rep';
+import { SetStateAction } from 'react';
 
-export const startCaptureWebcam = (canvas: HTMLCanvasElement, rep: Rep): MediaRecorder => {
+export const startCaptureWebcam = (
+  canvas: HTMLCanvasElement,
+  setRepVideoUrls: (update: SetStateAction<string[]>) => void,
+): MediaRecorder => {
   const stream = canvas.captureStream();
   const recorder = new MediaRecorder(stream, {
     mimeType: 'video/webm;codecs=vp9',
@@ -13,16 +16,14 @@ export const startCaptureWebcam = (canvas: HTMLCanvasElement, rep: Rep): MediaRe
   recorder.onstart = () => {
     // 開始一分でレコーダーを自動停止
     setTimeout(() => {
-      console.log('recorder time out');
       recorder.stop();
     }, 60000);
   };
   recorder.onstop = () => {
     const blob = new Blob(rec.data, { type: rec.type });
     if (blob.size > 0) {
-      const videoUrl = URL.createObjectURL(blob);
-      // eslint-disable-next-line no-param-reassign
-      rep.videoUrl = videoUrl;
+      const url = URL.createObjectURL(blob);
+      setRepVideoUrls((prevUrls) => [...prevUrls, url]);
     }
   };
 

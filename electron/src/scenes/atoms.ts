@@ -6,6 +6,8 @@ const KinectAzure = require('kinect-azure');
 
 export const phaseAtom = atom<number>(0);
 
+export const repVideoUrlsAtom = atom<string[]>([]);
+
 export const formInstructionItemsAtom = atom<FormInstructionItem[]>(formInstructionItemsQWS);
 
 export const setRecordAtom = atom<Set>(resetSet());
