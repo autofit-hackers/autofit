@@ -14,7 +14,7 @@ export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionI
 };
 
 // セット変数に各指導項目の評価結果を追加する
-export const recordFromEvaluationResult = (prevSet: Set, instructionItems: FormInstructionItem[]): Set => {
+export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormInstructionItem[]): Set => {
   const set: Set = prevSet;
 
   instructionItems.forEach((instructionItem, instructionIndex) => {
