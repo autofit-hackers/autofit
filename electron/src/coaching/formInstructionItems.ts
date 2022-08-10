@@ -1,6 +1,17 @@
 import { angleInYZ, angleInZX, distanceInYZ, distanceInZ, distanceInZX, midpointBetween } from '../training/pose';
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
-import { FormInstructionItem } from './formInstruction';
+
+export type FormInstructionItem = {
+  readonly id: number;
+  readonly name: string;
+  readonly reason?: string;
+  readonly recommendMenu?: string[];
+  readonly label?: string;
+  readonly text?: string;
+  readonly importance?: number;
+  readonly evaluate: (rep: Rep) => number;
+  readonly showGuideline?: (rep: Rep) => void;
+};
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 

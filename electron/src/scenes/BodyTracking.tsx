@@ -1,11 +1,11 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
-import {} from '../coaching/formInstruction';
+import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
-import { appendPoseToForm, calculateKeyframes, evaluateRepForm, Rep, resetRep } from '../training/rep';
+import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
-import { recordFormEvaluationResult, resetSet, Set } from '../training/set';
+import { resetSet, Set } from '../training/set';
 import { startKinect } from '../utils/kinect';
 import { startCaptureWebcam } from '../utils/record';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
