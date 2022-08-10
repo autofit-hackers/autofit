@@ -1,0 +1,122 @@
+{
+  "files.associations": {
+    ".eslintignore": "ignore"
+  },
+
+  "eslint.validate": ["javascript", "javascriptreact", "html", "typescriptreact", "typescript"],
+
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "javascript.validate.enable": false,
+  "javascript.format.enable": false,
+  "typescript.format.enable": false,
+  "javascript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "editor.codeActionsOnSave": ["source.organizeImports", "source.fixAll.eslint"],
+  "eslint.format.enable": false,
+
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+
+  "editor.wordWrap": "on",
+  "eslint.packageManager": "yarn",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "npm.packageManager": "yarn",
+
+  "files.autoSave": "onFocusChange",
+
+  // to reduce cpu usage of code helper
+  "files.watcherExclude": {
+    // Default Settings
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+
+    // Cache用のディレクトリやファイル
+    "**/.cache": true,
+
+    // Buildディレクトリやファイル
+    "**/dist": true,
+    "**/build": true,
+
+    // 画像や動画用のディレクトリやファイル
+    "**/images": true,
+    "**/movies": true
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.cache": true,
+    "**/*.meta": true,
+    "**/.DS_Store": true,
+    "node_modules": false,
+    "**/*.exe": true,
+    "**/*.dll": true,
+    "**/*.onnx": true
+  },
+  "search.exclude": {
+    ".git": true,
+    ".eslintcache": true,
+    ".erb/dll": true,
+    "release/{build,app/dist}": true,
+    "node_modules": true,
+    "npm-debug.log.*": true,
+    "test/**/__snapshots__": true,
+    "package-lock.json": true,
+    "*.{css,sass,scss}.d.ts": true
+  },
+
+  // todo-tree
+  "todo-tree.general.tags": ["FIXME", "TODO", "WHY", "HELPME", "XXX", "REF"],
+  "todo-tree.highlights.defaultHighlight": {
+    "gutterIcon": true
+  },
+  "todo-tree.highlights.customHighlight": {
+    "TODO": {
+      "icon": "bell-fill",
+      "foreground": "#ff9800",
+      "iconColour": "#ff9800"
+    },
+    "FIXME": {
+      "icon": "bug",
+      "foreground": "#ff0000",
+      "iconColour": "#ff0000"
+    },
+    "WHY": {
+      "icon": "question",
+      "foreground": "#af69ef",
+      "iconColour": "#af69ef"
+    },
+    "HELPME": {
+      "icon": "comment-discussion",
+      "foreground": "#00bfff",
+      "iconColour": "#00bfff"
+    },
+    "XXX": {
+      "icon": "x-circle-fill",
+      "foreground": "#ffff00",
+      "iconColour": "#ffff00"
+    },
+    "REF": {
+      "icon": "link",
+      "foreground": "#00ff00",
+      "iconColour": "#00ff00"
+    }
+  },
+  "editor.tabSize": 2,
+  "cSpell.words": [
+    "BGRA",
+    "CUDA",
+    "HANDTIP",
+    "Kinect",
+    "linewidth",
+    "mediapipe",
+    "NFOV",
+    "ondataavailable",
+    "UNBINNED"
+  ]
+}
