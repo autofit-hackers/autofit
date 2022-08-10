@@ -66,7 +66,7 @@ export function TimerCard(props: { time: number }) {
   );
 }
 
-export function VideoReplayer(props: { displayedRepIndex: number }) {
+export function VideoPlayer(props: { displayedRepIndex: number }) {
   const { displayedRepIndex } = props;
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
 

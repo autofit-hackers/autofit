@@ -5,7 +5,7 @@ import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import { GoodPoint, VideoReplayer } from './ReportComponents';
+import { GoodPoint, VideoPlayer } from './ReportComponents';
 
 export default function IntervalReport() {
   const [setRecord] = useAtom(setRecordAtom);
@@ -54,7 +54,7 @@ export default function IntervalReport() {
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing="1vh">
             {/* 撮影したRGB映像 */}
-            <VideoReplayer displayedRepIndex={displayedRepIndex} />
+            <VideoPlayer displayedRepIndex={displayedRepIndex} />
             {/* トレーニングの3D表示 */}
             <Grid item xs={12}>
               <Paper
