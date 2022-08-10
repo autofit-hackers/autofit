@@ -15,15 +15,10 @@ const squatDepth: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      console.log('bottomPose is undefined');
-
       return 1.0;
     }
     const bottomPoseKnee = midpointBetween(bottomPose.worldLandmarks[19], bottomPose.worldLandmarks[23]);
     const bottomPosePelvisKneeDistanceYZ = distanceInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    // const bottomPosePelvisKneeAngleYZ = angleInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    // console.log('bottomPosePelvisKneeYZ: ', bottomPosePelvisKneeYZ);
-    // console.log('bottomPosePelvisKneeAngleYZ: ', bottomPosePelvisKneeAngleYZ);
     // TODO: 十分に腰が下がっているかを判定可能か?
     // TODO: 桂以外の人でも判定できるようにする
     const upAngleKTR = (Math.PI * 9.0) / 180.0; // 9度は桂が指定
@@ -33,21 +28,13 @@ const squatDepth: FormInstructionItem = {
     const squatDepthDownCheck =
       -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - Math.sin(downAngleKTR) * bottomPosePelvisKneeDistanceYZ;
 
-    // console.log(squatDepthUpCheck);
-    // console.log(squatDepthDownCheck);
-
     // TODO: デバック用
     if (squatDepthUpCheck <= 0.0) {
-      console.log('腰の下げ方が足りない');
-
       return 0.0;
     }
     if (squatDepthDownCheck <= 0.0) {
-      console.log('腰を下げすぎ');
-
       return 0.0;
     }
-    console.log('十分に腰を落とした');
 
     return 1.0;
   },
@@ -64,8 +51,6 @@ const kneeOut: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      console.log('bottomPose is undefined');
-
       return 1.0;
     }
     const bottomPoseLeftThighAngleZX = angleInZX(bottomPose.worldLandmarks[18], bottomPose.worldLandmarks[19]);
@@ -122,23 +107,13 @@ const backBent: FormInstructionItem = {
     const topPose = getTopPose(rep);
     const bottomPose = getBottomPose(rep);
     if (topPose === undefined) {
-      console.log('topPose is undefined');
-
       return 1.0;
     }
     if (bottomPose === undefined) {
-      console.log('bottomPose is undefined');
-
       return 1.0;
     }
     const topPosePelvisNavalAngleYZ = angleInYZ(topPose.worldLandmarks[0], topPose.worldLandmarks[1]);
     const topPoseNavalChestAngleYZ = angleInYZ(topPose.worldLandmarks[1], topPose.worldLandmarks[2]);
-    // const topPoseChestNeckAngleYZ = angleInYZ(topPose.landmark[2], topPose.landmark[3]);
-    // const topPosePelvisNeckAngleYZ = angleInYZ(topPose.landmark[0], topPose.landmark[3]);
-    // const bottomPosePelvisNavalAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[1]);
-    // const bottomPoseNavalChestAngleYZ = angleInYZ(bottomPose.landmark[1], bottomPose.landmark[2]);
-    // const bottomPoseChestNeckAngleYZ = angleInYZ(bottomPose.landmark[2], bottomPose.landmark[3]);
-    // const bottomPosePelvisNeckAngleYZ = angleInYZ(bottomPose.landmark[0], bottomPose.landmark[3]);
 
     // TODO: acceptableErrorについて検証
     // TODO: 一つずつ書く
@@ -163,8 +138,6 @@ const kneePosition: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
-      console.log('bottomPose is undefined');
-
       return 1.0;
     }
     const bottomPoseLeftKneeFootZX = distanceInZX(bottomPose.worldLandmarks[21], bottomPose.worldLandmarks[19]);
