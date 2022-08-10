@@ -20,6 +20,13 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { copyLandmark } from '../../training/pose';
+
+export type CameraPosition = {
+  theta: number;
+  phi: number;
+  distance: number;
+};
+
 /**
  * ViewerWidget configuration and its default value.
  */
@@ -300,7 +307,8 @@ export class LandmarkGrid {
   /**
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
-  setCamera(theta: number, phi: number, distance = 150): void {
+  setCamera(cameraPosition: CameraPosition): void {
+    const { theta, phi, distance } = cameraPosition;
     const thetaRad = (theta * Math.PI) / 180;
     const phiRad = (phi * Math.PI) / 180;
     this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * distance;
