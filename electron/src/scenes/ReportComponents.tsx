@@ -1,6 +1,5 @@
-import { Grid, Paper, Slider, Typography } from '@mui/material';
+import { Grid, Paper, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
-import { useState } from 'react';
 import ReactPlayer from 'react-player';
 import RestTimer from '../ui_component/RestTimer';
 import { repVideoUrlsAtom } from './atoms';
@@ -67,17 +66,9 @@ export function TimerCard(props: { time: number }) {
   );
 }
 
-export function VideoReplayer() {
+export function VideoPlayer(props: { displayedRepIndex: number }) {
+  const { displayedRepIndex } = props;
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
-  const [repIndexToShow, setValue] = useState(0);
-
-  const marks = [];
-  for (let i = 0; i < repVideoUrls.length; i += 1) {
-    marks.push({
-      value: i + 1,
-      label: String(i + 1),
-    });
-  }
 
   return (
     <Grid item xs={12}>
@@ -90,19 +81,7 @@ export function VideoReplayer() {
           justifyContent: 'center',
         }}
       >
-        <ReactPlayer url={repVideoUrls[repIndexToShow - 1]} id="RepVideo" playing loop width="100%" height="100%" />
-        <Slider
-          // sx={{ position: 'absolute', marginLeft: '5%', width: '90%', alignSelf: 'center' }}
-          aria-label="Rep Index"
-          size="small"
-          valueLabelDisplay="auto"
-          value={repIndexToShow}
-          marks={marks}
-          step={1}
-          min={1}
-          max={repVideoUrls.length}
-          onChange={(event, value) => (typeof value === 'number' ? setValue(value) : null)}
-        />
+        <ReactPlayer url={repVideoUrls[displayedRepIndex]} id="RepVideo" playing loop width="100%" height="100%" />
         {/* <CardMedia sx={{ borderRadius: 3, height: '50vh' }} component="video" autoPlay image={videoPath} loop /> */}
       </Paper>
     </Grid>

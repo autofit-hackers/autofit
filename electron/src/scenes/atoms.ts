@@ -1,16 +1,16 @@
 import { atom } from 'jotai';
-import { Set } from '../training/set';
-
+import { FormInstructionItem, formInstructionItemsQWS } from '../coaching/formInstructionItems';
+import { resetSet, Set } from '../training/set';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const KinectAzure = require('kinect-azure');
 
 export const phaseAtom = atom<number>(0);
 
 export const repVideoUrlsAtom = atom<string[]>([]);
-export const setRecordAtom = atom<Set>({ reps: [] });
-export const acceptedErrorAtom = atom<number>(20);
 
-// KinectAzure
+export const formInstructionItemsAtom = atom<FormInstructionItem[]>(formInstructionItemsQWS);
+
+export const setRecordAtom = atom<Set>(resetSet());
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-const kinect = new KinectAzure();
-export const kinectAtom = atom<typeof KinectAzure>(kinect);
+export const kinectAtom = atom<typeof KinectAzure>(new KinectAzure());

@@ -8,9 +8,11 @@ type KeyframesIndex = {
 };
 
 export type Rep = {
+  index: number;
   form: Pose[];
   keyframesIndex: KeyframesIndex;
-  formErrors: { [instruction: string]: number };
+  videoUrl: string;
+  formEvaluationErrors: number[];
 };
 
 export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
@@ -18,7 +20,8 @@ export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
   form: [...prevRep.form, pose],
 });
 
-export const resetRep = (): Rep => ({
+export const resetRep = (repIndex: number): Rep => ({
+  index: repIndex,
   form: [],
   keyframesIndex: {
     top: undefined,
@@ -26,7 +29,8 @@ export const resetRep = (): Rep => ({
     ascendingMiddle: undefined,
     descendingMiddle: undefined,
   },
-  formErrors: {},
+  videoUrl: '',
+  formEvaluationErrors: [],
 });
 
 export const calculateKeyframes = (prevRep: Rep): Rep => {
