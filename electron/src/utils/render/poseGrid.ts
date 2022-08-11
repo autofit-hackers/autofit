@@ -52,7 +52,7 @@ const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
 /**
  * Configuration for the landmark grid and its default value.
  */
-export type LandmarkGridConfig = {
+export type PoseGridConfig = {
   axesColor: number;
   axesWidth: number;
   shouldSetLabels: boolean;
@@ -85,7 +85,7 @@ export type LandmarkGridConfig = {
   showHidden: boolean;
 };
 
-const DEFAULT_LANDMARK_GRID_CONFIG: LandmarkGridConfig = {
+const DEFAULT_LANDMARK_GRID_CONFIG: PoseGridConfig = {
   axesColor: 0xffffff,
   axesWidth: 2,
   shouldSetLabels: false,
@@ -135,7 +135,7 @@ type ColorMap<T> = Array<{ color: ColorName | undefined; list: T[] }>;
  * Provides a 3D grid that is rendered onto a canvas where landmarks and
  * connections can be drawn.
  */
-export class LandmarkGrid {
+export class PoseGrid {
   // Extended properties from ViewerWidget
   distance: number;
   rotation: number;
@@ -154,7 +154,7 @@ export class LandmarkGrid {
   landmarkGroup: Group;
   connectionGroup: Group;
   origin: Vector3;
-  landmarkGridConfig: LandmarkGridConfig;
+  poseGridConfig: PoseGridConfig;
   axesMaterial: Material;
   definedColors: { [colorName: string]: Material };
   connectionMaterial: Material;
@@ -171,7 +171,7 @@ export class LandmarkGrid {
   constructor(
     parent: HTMLElement,
     viewerWidgetConfig: ViewerWidgetConfig = DEFAULT_VIEWER_WIDGET_CONFIG,
-    landmarkGridConfig = DEFAULT_LANDMARK_GRID_CONFIG,
+    poseGridConfig = DEFAULT_LANDMARK_GRID_CONFIG,
   ) {
     /*
      * Set viewerWidgetConfig
@@ -213,40 +213,40 @@ export class LandmarkGrid {
     controls.dampingFactor = 0.2;
 
     /*
-     * Set landmarkGridConfig
+     * Set poseGridConfig
      */
-    this.landmarkGridConfig = landmarkGridConfig;
+    this.poseGridConfig = poseGridConfig;
     this.size = 100;
     this.landmarks = [];
-    this.landmarkMaterial = new MeshBasicMaterial({ color: this.landmarkGridConfig.landmarkColor });
-    this.landmarkGeometry = new SphereGeometry(this.landmarkGridConfig.landmarkSize);
-    this.nonvisibleMaterial = new MeshBasicMaterial({ color: this.landmarkGridConfig.nonvisibleLandmarkColor });
+    this.landmarkMaterial = new MeshBasicMaterial({ color: this.poseGridConfig.landmarkColor });
+    this.landmarkGeometry = new SphereGeometry(this.poseGridConfig.landmarkSize);
+    this.nonvisibleMaterial = new MeshBasicMaterial({ color: this.poseGridConfig.nonvisibleLandmarkColor });
     this.axesMaterial = new LineBasicMaterial({
-      color: this.landmarkGridConfig.axesColor,
-      linewidth: this.landmarkGridConfig.axesWidth,
+      color: this.poseGridConfig.axesColor,
+      linewidth: this.poseGridConfig.axesWidth,
     });
     this.gridMaterial = new LineBasicMaterial({ color: 0x999999 });
     this.connectionMaterial = new LineBasicMaterial({
-      color: this.landmarkGridConfig.connectionColor,
-      linewidth: this.landmarkGridConfig.connectionWidth,
+      color: this.poseGridConfig.connectionColor,
+      linewidth: this.poseGridConfig.connectionWidth,
     });
     this.isVisible = (normalizedLandmark: NormalizedLandmark): boolean =>
       normalizedLandmark.visibility === undefined ||
-      (!!normalizedLandmark.visibility && normalizedLandmark.visibility > this.landmarkGridConfig.minVisibility);
+      (!!normalizedLandmark.visibility && normalizedLandmark.visibility > this.poseGridConfig.minVisibility);
     this.definedColors = {};
-    this.landmarkGridConfig.definedColors.forEach((color) => {
+    this.poseGridConfig.definedColors.forEach((color) => {
       this.definedColors[color.name] = new LineBasicMaterial({
         color: color.value,
-        linewidth: this.landmarkGridConfig.connectionWidth,
+        linewidth: this.poseGridConfig.connectionWidth,
       });
     });
-    this.landmarkGridConfig.definedColors.forEach((color) => {
+    this.poseGridConfig.definedColors.forEach((color) => {
       this.definedColors[color.name] = new LineBasicMaterial({
         color: color.value,
-        linewidth: this.landmarkGridConfig.connectionWidth,
+        linewidth: this.poseGridConfig.connectionWidth,
       });
     });
-    this.sizeWhenFitted = 1 - 2 * this.landmarkGridConfig.margin;
+    this.sizeWhenFitted = 1 - 2 * this.poseGridConfig.margin;
 
     /*
      * Generate the grid and viewed materials
@@ -351,7 +351,7 @@ export class LandmarkGrid {
   drawAxes(): void {
     const axes: Group = new Group();
     const HALF_SIZE: number = this.size / 2;
-    const grid: Group = this.makeGrid(this.size, this.landmarkGridConfig.numCellsPerAxis);
+    const grid: Group = this.makeGrid(this.size, this.poseGridConfig.numCellsPerAxis);
     const xGrid: Group = grid;
     const yGrid: Object3D = grid.clone();
     const zGrid: Object3D = grid.clone();
@@ -398,8 +398,8 @@ export class LandmarkGrid {
       y: [],
       z: [],
     };
-    const cellsPerAxis: number = this.landmarkGridConfig.numCellsPerAxis;
-    const { range } = this.landmarkGridConfig;
+    const cellsPerAxis: number = this.poseGridConfig.numCellsPerAxis;
+    const { range } = this.poseGridConfig;
     const HALF_SIZE: number = this.size / 2;
     for (let i = 0; i < cellsPerAxis; i += 1) {
       // X labels
@@ -442,7 +442,7 @@ export class LandmarkGrid {
   createLabel(value: number): HTMLSpanElement {
     const span: HTMLSpanElement = document.createElement('span');
     span.classList.add('landmark-label-js');
-    if (this.landmarkGridConfig.shouldSetLabels) {
+    if (this.poseGridConfig.shouldSetLabels) {
       this.setLabel(span, value);
     }
     this.container.appendChild(span);
@@ -475,15 +475,15 @@ export class LandmarkGrid {
     );
     const centeredLandmarks: Array<NormalizedLandmark> =
       visibleLandmarks.length === 0 ? this.landmarks : visibleLandmarks;
-    if (this.landmarkGridConfig.centered) {
+    if (this.poseGridConfig.centered) {
       this.centralizeLandmarks(centeredLandmarks);
     }
     // Fit to grid if necessary
     let scalingFactor = 1;
-    if (this.landmarkGridConfig.fitToGrid) {
+    if (this.poseGridConfig.fitToGrid) {
       const rawScalingFactor: number = this.getFitToGridFactor(centeredLandmarks);
       const RESCALE = 0.5;
-      const { range } = this.landmarkGridConfig;
+      const { range } = this.poseGridConfig;
       // Finds the deviation from the default range ((1 / rawScalingFactor - 1)
       // * (range / 2)), and then it divides it by the step size of RESCALE. We
       // go the next step with Math.ceil. This calculation allows for discrete
@@ -501,7 +501,7 @@ export class LandmarkGrid {
         landmark.z *= scalingFactor;
       });
     }
-    if (this.landmarkGridConfig.shouldSetLabels) {
+    if (this.poseGridConfig.shouldSetLabels) {
       this.labels.x.forEach((label: NumberLabel) => {
         this.setLabel(label.element, (label.value - this.origin.x) / scalingFactor);
       });
@@ -561,14 +561,14 @@ export class LandmarkGrid {
   setLabel(span: HTMLSpanElement, value: number): void {
     // eslint-disable-next-line no-param-reassign
     span.textContent =
-      this.landmarkGridConfig.labelPrefix + value.toPrecision(2).toString() + this.landmarkGridConfig.labelSuffix;
+      this.poseGridConfig.labelPrefix + value.toPrecision(2).toString() + this.poseGridConfig.labelSuffix;
   }
 
   drawLandmarks(landmarkVectors: Vector3[]): void {
     for (let i = 0; i < this.landmarks.length; i += 1) {
       const visible: boolean = this.isVisible(this.landmarks[i]);
       let { nonvisibleMaterial } = this;
-      if (!this.landmarkGridConfig.showHidden && !visible) {
+      if (!this.poseGridConfig.showHidden && !visible) {
         nonvisibleMaterial = new Material();
         nonvisibleMaterial.visible = false;
       }
@@ -610,7 +610,7 @@ export class LandmarkGrid {
     const lines: Array<Vector3> = [];
     connections.forEach((connection: number[]): void => {
       if (
-        this.landmarkGridConfig.showHidden ||
+        this.poseGridConfig.showHidden ||
         (this.isVisible(this.landmarks[connection[0]]) && this.isVisible(this.landmarks[connection[1]]))
       ) {
         lines.push(landmarks[connection[0]]);
@@ -628,7 +628,7 @@ export class LandmarkGrid {
    * @private: Converts a landmark to a vector.(in Update)
    */
   landmarkToVector(point: NormalizedLandmark): Vector3 {
-    return new Vector3(point.x, -point.y, -point.z).multiplyScalar(this.size / this.landmarkGridConfig.range);
+    return new Vector3(point.x, -point.y, -point.z).multiplyScalar(this.size / this.poseGridConfig.range);
   }
 
   /**
@@ -645,7 +645,7 @@ export class LandmarkGrid {
     let factor = Infinity;
     for (let i = 0; i < landmarks.length; i += 1) {
       const maxNum: number = Math.max(Math.abs(landmarks[i].x), Math.abs(landmarks[i].y), Math.abs(landmarks[i].z));
-      factor = Math.min(factor, this.landmarkGridConfig.range / 2 / maxNum);
+      factor = Math.min(factor, this.poseGridConfig.range / 2 / maxNum);
     }
 
     return factor * this.sizeWhenFitted;

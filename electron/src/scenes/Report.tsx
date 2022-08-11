@@ -4,7 +4,7 @@ import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
-import { LandmarkGrid } from '../utils/render/landmarkGrid';
+import { PoseGrid } from '../utils/render/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import { GoodPoint, VideoPlayer } from './ReportComponents';
 
@@ -15,29 +15,29 @@ export default function IntervalReport() {
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState(0);
 
-  // LandmarkGrid用
+  // PoseGrid用
   const gridDivRef = useRef<HTMLDivElement | null>(null);
-  const landmarkGridRef = useRef<LandmarkGrid | null>(null);
+  const poseGridRef = useRef<PoseGrid | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
 
   // TODO: gridCameraPositionをSetRecordから取得するようにする
-  // Reportコンポーネントマウント時にKinectを停止し、LandmarkGridを作成する
+  // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
     stopKinect(kinect);
-    if (!landmarkGridRef.current && gridDivRef.current !== null) {
+    if (!poseGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      landmarkGridRef.current = new LandmarkGrid(gridDivRef.current);
-      landmarkGridRef.current.setCamera(formInstructionItems[0].gridCameraPosition);
+      poseGridRef.current = new PoseGrid(gridDivRef.current);
+      poseGridRef.current.setCamera(formInstructionItems[0].gridCameraPosition);
     }
   }, [formInstructionItems, kinect]);
 
-  // フォーム指導項目タブが押されたら、レップ映像とLandmarkGridを切り替える
+  // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
-    if (landmarkGridRef.current !== null) {
-      landmarkGridRef.current.setCamera(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
+    if (poseGridRef.current !== null) {
+      poseGridRef.current.setCamera(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
     }
   }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord, setRecord.formEvaluationResults]);
 
@@ -72,7 +72,7 @@ export default function IntervalReport() {
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing="0.5vh">
             {/* 撮影したRGB映像 */}
-            <VideoPlayer displayedRepIndex={displayedRepIndex} landmarkGridRef={landmarkGridRef} />
+            <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
             {/* トレーニングの3D表示 */}
             <Grid item xs={12}>
               <Paper
@@ -84,7 +84,7 @@ export default function IntervalReport() {
                 }}
               >
                 <div
-                  className="landmark-grid-container"
+                  className="pose-grid-container"
                   ref={gridDivRef}
                   style={{
                     position: 'relative',

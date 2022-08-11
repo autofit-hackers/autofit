@@ -5,7 +5,7 @@ import { CountdownCircleTimer, TimeProps } from 'react-countdown-circle-timer';
 import ReactPlayer from 'react-player';
 // eslint-disable-next-line import/no-unresolved
 import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
-import { LandmarkGrid } from '../utils/render/landmarkGrid';
+import { PoseGrid } from '../utils/render/poseGrid';
 import { repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export function TrainingStats(props: { text: string }) {
@@ -100,10 +100,10 @@ export function TimerCard(props: { time: number }) {
 
 export function VideoPlayer(props: {
   displayedRepIndex: number;
-  landmarkGridRef: React.MutableRefObject<LandmarkGrid | null>;
+  poseGridRef: React.MutableRefObject<PoseGrid | null>;
 }) {
   const videoRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
-  const { displayedRepIndex, landmarkGridRef } = props;
+  const { displayedRepIndex, poseGridRef } = props;
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
   const [setRecord] = useAtom(setRecordAtom);
 
@@ -128,9 +128,9 @@ export function VideoPlayer(props: {
           width="100%"
           height="100%"
           onReady={() => {
-            if (landmarkGridRef.current) {
-              // LandmarkGridをレップ映像に同期させる
-              landmarkGridRef.current.synchronizeToVideo(videoRef, setRecord, displayedRepIndex);
+            if (poseGridRef.current) {
+              // PoseGridをレップ映像に同期させる
+              poseGridRef.current.synchronizeToVideo(videoRef, setRecord, displayedRepIndex);
             }
           }}
         />

@@ -12,14 +12,14 @@ import { exportData } from '../utils/exporter';
 import { startKinect } from '../utils/kinect';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
-import { LandmarkGrid } from '../utils/render/landmarkGrid';
+import { PoseGrid } from '../utils/render/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
   const gridDivRef = useRef<HTMLDivElement | null>(null);
-  let landmarkGrid: LandmarkGrid;
+  let poseGrid: PoseGrid;
 
   // Phase
   const [, setPhase] = useAtom(phaseAtom);
@@ -146,9 +146,9 @@ export default function BodyTrack2d() {
           lineWidth: 4,
         });
 
-        // LandmarkGridの描画
-        if (landmarkGrid) {
-          landmarkGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
+        // PoseGridの描画
+        if (poseGrid) {
+          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
       }
 
@@ -167,14 +167,14 @@ export default function BodyTrack2d() {
   );
 
   /*
-   * Kinectの開始とLandmarkGridのセットアップ
+   * Kinectの開始とPoseGridのセットアップ
    */
   useEffect(() => {
     startKinect(kinect, onResults);
-    if (!landmarkGrid && gridDivRef.current !== null) {
+    if (!poseGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      landmarkGrid = new LandmarkGrid(gridDivRef.current);
-      landmarkGrid.setCamera();
+      poseGrid = new PoseGrid(gridDivRef.current);
+      poseGrid.setCamera();
     }
 
     // このコンポーネントのアンマウント時に実行される
@@ -237,7 +237,7 @@ export default function BodyTrack2d() {
         }}
       >
         <div
-          className="landmark-grid-container"
+          className="pose-grid-container"
           ref={gridDivRef}
           style={{
             position: 'absolute',
