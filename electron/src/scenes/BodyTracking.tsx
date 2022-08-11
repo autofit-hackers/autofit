@@ -1,5 +1,6 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Button } from '@mui/material';
+import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
@@ -9,7 +10,7 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { resetSet, Set } from '../training/set';
 import { exportData } from '../utils/exporter';
 import { startKinect } from '../utils/kinect';
-import { startCaptureWebcam } from '../utils/record';
+import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { LandmarkGrid } from '../utils/render/landmarkGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
@@ -29,8 +30,8 @@ export default function BodyTrack2d() {
    *セット・レップ・RepState変数
    */
   const [, setSetRecord] = useAtom(setRecordAtom);
-  const set = useRef<Set>(resetSet());
-  const rep = useRef<Rep>(resetRep(0));
+  const setRef = useRef<Set>(resetSet());
+  const repRef = useRef<Rep>(resetRep(0));
   const repState = useRef<RepState>(resetRepState());
 
   // settings
@@ -39,8 +40,10 @@ export default function BodyTrack2d() {
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
   // 映像保存用
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
+  const setVideoRecorderRef = useRef<MediaRecorder | null>(null);
   const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
+  const setVideoUrlRef = useRef<string>('');
 
   /*
    * 毎kinect更新時に実行される
@@ -64,6 +67,10 @@ export default function BodyTrack2d() {
         canvasRef.current.width = data.colorImageFrame.width;
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
+        // セット映像の記録を開始
+        if (setVideoRecorderRef.current == null) {
+          setVideoRecorderRef.current = startCapturingSetVideo(canvasRef.current, setVideoUrlRef);
+        }
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
@@ -80,7 +87,7 @@ export default function BodyTrack2d() {
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // 動画撮影を開始
-          mediaRecorderRef.current = startCaptureWebcam(canvasRef.current, setRepVideoUrls);
+          repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRepVideoUrls);
 
           // レップの最初の身長を記録
           repState.current = setStandingHeight(repState.current, heightInFrame(currentPose));
@@ -98,29 +105,24 @@ export default function BodyTrack2d() {
         );
 
         // 現フレームの推定Poseをレップのフォームに追加
-        rep.current = appendPoseToForm(rep.current, currentPose);
+        repRef.current = appendPoseToForm(repRef.current, currentPose);
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           console.log('rep end');
 
           // 動画撮影を停止し、配列に保存する
-          if (mediaRecorderRef.current) {
-            mediaRecorderRef.current.stop();
-            console.log(rep.current.videoUrl);
+          if (repVideoRecorderRef.current) {
+            repVideoRecorderRef.current.stop();
           }
 
-          console.log('video url: ', rep.current);
-
           // 完了したレップのフォームを分析・評価
-          rep.current = calculateKeyframes(rep.current);
-          rep.current = evaluateRepForm(rep.current, formInstructionItems);
-
-          console.log(rep.current.formEvaluationErrors);
+          repRef.current = calculateKeyframes(repRef.current);
+          repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
-          set.current.reps = [...set.current.reps, rep.current];
-          rep.current = resetRep(set.current.reps.length);
+          setRef.current.reps = [...setRef.current.reps, repRef.current];
+          repRef.current = resetRep(setRef.current.reps.length);
 
           // TODO: レップカウントを読み上げる
 
@@ -147,12 +149,12 @@ export default function BodyTrack2d() {
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
-      if (set.current.reps.length === 100) {
+      if (setRef.current.reps.length === 100) {
         setPhase(1);
       }
 
       // レップカウントを表示
-      canvasCtx.fillText(set.current.reps.length.toString(), 50, 50);
+      canvasCtx.fillText(setRef.current.reps.length.toString(), 50, 50);
       canvasCtx.scale(0.5, 0.5);
       canvasCtx.restore();
     },
@@ -168,13 +170,20 @@ export default function BodyTrack2d() {
     if (!landmarkGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       landmarkGrid = new LandmarkGrid(gridDivRef.current);
-      landmarkGrid.setCamera({ theta: 90, phi: 0, distance: 150 });
+      landmarkGrid.setCamera();
     }
 
     // このコンポーネントのアンマウント時に実行される
     return () => {
+      if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {
+        repVideoRecorderRef.current.stop();
+      }
+      // セット映像の録画を停止する
+      if (setVideoRecorderRef.current != null && setVideoRecorderRef.current.state === 'recording') {
+        setVideoRecorderRef.current.stop();
+      }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      setSetRecord((_) => set.current);
+      setSetRecord((_) => setRef.current);
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);
@@ -183,7 +192,15 @@ export default function BodyTrack2d() {
     <>
       <Button
         onClick={() => {
-          exportData(set.current.reps);
+          const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
+          exportData(setRef.current.reps);
+          // セット映像の録画を停止する
+          if (setVideoUrlRef.current === '' && setVideoRecorderRef.current != null) {
+            setVideoRecorderRef.current.stop();
+            setTimeout(() => {
+              void downloadVideo(setVideoUrlRef.current, `${now}.mp4`);
+            }, 1000);
+          }
         }}
         variant="contained"
         sx={{ position: 'relative', zIndex: 3, ml: 3 }}
