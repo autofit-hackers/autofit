@@ -10,7 +10,7 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { resetSet, Set } from '../training/set';
 import { exportData } from '../utils/exporter';
 import { startKinect } from '../utils/kinect';
-import { downloadVideo, startCaptureSetVideo, startCaptureWebcam } from '../utils/recordVideo';
+import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { LandmarkGrid } from '../utils/render/landmarkGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
@@ -69,7 +69,7 @@ export default function BodyTrack2d() {
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
         // セット映像の記録を開始
         if (setVideoRecorderRef.current == null) {
-          setVideoRecorderRef.current = startCaptureSetVideo(canvasRef.current, setVideoUrlRef);
+          setVideoRecorderRef.current = startCapturingSetVideo(canvasRef.current, setVideoUrlRef);
         }
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
@@ -87,7 +87,7 @@ export default function BodyTrack2d() {
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // 動画撮影を開始
-          repVideoRecorderRef.current = startCaptureWebcam(canvasRef.current, setRepVideoUrls);
+          repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRepVideoUrls);
 
           // レップの最初の身長を記録
           repState.current = setStandingHeight(repState.current, heightInFrame(currentPose));

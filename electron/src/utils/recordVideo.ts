@@ -1,7 +1,7 @@
 import { SetStateAction } from 'react';
 import { createWriteStream } from 'streamsaver';
 
-export const startCaptureWebcam = (
+export const startCapturingRepVideo = (
   canvas: HTMLCanvasElement,
   setVideoUrls: (update: SetStateAction<string[]>) => void,
 ): MediaRecorder => {
@@ -17,7 +17,7 @@ export const startCaptureWebcam = (
   recorder.onstart = () => {
     // 開始一分でレコーダーを自動停止
     setTimeout(() => {
-      console.log('time out');
+      console.log('Finishing webcam recorder: 1 min passed since the recording started');
       recorder.stop();
     }, 60000);
   };
@@ -35,7 +35,7 @@ export const startCaptureWebcam = (
 };
 
 // TODO: 上の関数とまとめたい
-export const startCaptureSetVideo = (
+export const startCapturingSetVideo = (
   canvas: HTMLCanvasElement,
   setVideoUrl: React.MutableRefObject<string>,
 ): MediaRecorder => {
@@ -73,9 +73,10 @@ export const downloadVideo = async (url: string, fileName: string) => {
   await fetch(url).then(async (response) => {
     const blob = response.body;
     const fileSize = Number(response.headers.get('content-length'));
-    const fileStream = createWriteStream(fileName, { size: fileSize });
+    const fileStream = createWriteStream(fileName, { size: fileSize }) as WritableStream<Uint8Array>;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    await blob?.pipeTo(fileStream);
+    if (blob != null) {
+      await blob.pipeTo(fileStream);
+    }
   });
 };
