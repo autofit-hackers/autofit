@@ -128,17 +128,17 @@ export const midpointBetween = (
 });
 
 export const heightInFrame = (pose: Pose): number => {
-  const nose = pose.landmarks[11];
+  const neck = pose.landmarks[3];
   const ankle = midpointBetween(pose.landmarks[20], pose.landmarks[24]);
 
-  return distanceInXY(nose, ankle);
+  return distanceInXY(neck, ankle);
 };
 
 export const heightInWorld = (pose: Pose): number => {
-  const noseWorld = pose.worldLandmarks[11];
+  const neckWorld = pose.worldLandmarks[3];
   const ankleWorld = midpointBetween(pose.worldLandmarks[20], pose.worldLandmarks[24]);
 
-  return distanceInXY(noseWorld, ankleWorld);
+  return distanceInXY(neckWorld, ankleWorld);
 };
 
 // XY座標に投影した際のX軸の正の方向となす角
