@@ -1,4 +1,6 @@
 import { NormalizedLandmark } from '@mediapipe/pose';
+// eslint-disable-next-line import/no-unresolved
+import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
   BufferGeometry,
   Color,
@@ -19,14 +21,15 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { copyLandmark } from '../../training/pose';
+import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../../training/pose';
+
+import { Set } from '../../training/set';
 
 export type CameraPosition = {
   theta: number;
   phi: number;
   distance: number;
 };
-
 /**
  * ViewerWidget configuration and its default value.
  */
@@ -678,5 +681,23 @@ export class LandmarkGrid {
       this.landmarks[i].z -= centerZ;
     }
     this.origin.set(centerX, centerY, centerZ);
+  }
+
+  synchronizeToVideo(
+    videoRef: React.RefObject<BaseReactPlayer<BaseReactPlayerProps>>,
+    setRecord: Set,
+    displayedRepIndex: number,
+  ) {
+    if (videoRef.current != null) {
+      const currentVideoDuration = videoRef.current.getDuration();
+      const currentVideoTime = videoRef.current.getCurrentTime();
+      const currentVideoProgress = currentVideoTime / currentVideoDuration;
+      const currentPoseFrame = Math.round(currentVideoProgress * setRecord.reps[displayedRepIndex].form.length);
+      this.updateLandmarks(
+        setRecord.reps[displayedRepIndex].form[currentPoseFrame].worldLandmarks,
+        KINECT_POSE_CONNECTIONS,
+      );
+    }
+    requestAnimationFrame(() => this.synchronizeToVideo(videoRef, setRecord, displayedRepIndex));
   }
 }
