@@ -1,8 +1,12 @@
 import { Grid, Paper, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
+import { useRef } from 'react';
 import { CountdownCircleTimer, TimeProps } from 'react-countdown-circle-timer';
 import ReactPlayer from 'react-player';
-import { repVideoUrlsAtom } from './atoms';
+// eslint-disable-next-line import/no-unresolved
+import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
+import { LandmarkGrid } from '../utils/render/landmarkGrid';
+import { repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export function TrainingStats(props: { text: string }) {
   const { text } = props;
@@ -94,9 +98,14 @@ export function TimerCard(props: { time: number }) {
   );
 }
 
-export function VideoPlayer(props: { displayedRepIndex: number }) {
-  const { displayedRepIndex } = props;
+export function VideoPlayer(props: {
+  displayedRepIndex: number;
+  landmarkGridRef: React.MutableRefObject<LandmarkGrid | null>;
+}) {
+  const videoRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
+  const { displayedRepIndex, landmarkGridRef } = props;
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
+  const [setRecord] = useAtom(setRecordAtom);
 
   return (
     <Grid item xs={12}>
@@ -109,7 +118,22 @@ export function VideoPlayer(props: { displayedRepIndex: number }) {
           justifyContent: 'center',
         }}
       >
-        <ReactPlayer url={repVideoUrls[displayedRepIndex]} id="RepVideo" playing loop width="100%" height="100%" />
+        <ReactPlayer
+          ref={videoRef}
+          url={repVideoUrls[displayedRepIndex]}
+          id="RepVideo"
+          playing
+          loop
+          controls
+          width="100%"
+          height="100%"
+          onReady={() => {
+            if (landmarkGridRef.current) {
+              // LandmarkGridをレップ映像に同期させる
+              landmarkGridRef.current.synchronizeToVideo(videoRef, setRecord, displayedRepIndex);
+            }
+          }}
+        />
         {/* <CardMedia sx={{ borderRadius: 3, height: '50vh' }} component="video" autoPlay image={videoPath} loop /> */}
       </Paper>
     </Grid>

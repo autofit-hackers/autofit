@@ -168,7 +168,7 @@ export default function BodyTrack2d() {
     if (!landmarkGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       landmarkGrid = new LandmarkGrid(gridDivRef.current);
-      landmarkGrid.setCamera(90, 0, 150);
+      landmarkGrid.setCamera({ theta: 90, phi: 0, distance: 150 });
     }
 
     // このコンポーネントのアンマウント時に実行される
