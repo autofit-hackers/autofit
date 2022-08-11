@@ -1,5 +1,14 @@
 import RestoreIcon from '@mui/icons-material/Restore';
-import { BottomNavigation, BottomNavigationAction, Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
+import {
+  BottomNavigation,
+  BottomNavigationAction,
+  Box,
+  Button,
+  createTheme,
+  CssBaseline,
+  Grid,
+  Paper,
+} from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -83,11 +92,13 @@ export default function IntervalReport() {
                   height: '70vw',
                 }}
               >
+                {/* TODO: Better positioning */}
                 <div
                   className="pose-grid-container"
                   ref={gridDivRef}
                   style={{
                     position: 'relative',
+                    textAlign: 'center',
                     height: '30vw',
                     width: '30vw',
                     top: 0,
@@ -95,6 +106,17 @@ export default function IntervalReport() {
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                   }}
                 />
+                <Button
+                  onClick={() => {
+                    if (poseGridRef.current !== null) {
+                      poseGridRef.current.setCamera(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
+                    }
+                  }}
+                  variant="contained"
+                  sx={{ textAlign: 'center', width: '15vw' }}
+                >
+                  Reset Camera Position
+                </Button>
               </Paper>
             </Grid>
             <GoodPoint text={formInstructionItems[selectedInstructionIndex].text ?? 'null'} />

@@ -134,7 +134,6 @@ export function VideoPlayer(props: {
             }
           }}
         />
-        {/* <CardMedia sx={{ borderRadius: 3, height: '50vh' }} component="video" autoPlay image={videoPath} loop /> */}
       </Paper>
     </Grid>
   );
