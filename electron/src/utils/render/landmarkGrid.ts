@@ -310,6 +310,7 @@ export class LandmarkGrid {
   /**
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
+  // Default parameters are set so that the grid is viewed from the side
   setCamera(cameraPosition: CameraPosition = { theta: 90, phi: 0, distance: 150 }): void {
     const { theta, phi, distance } = cameraPosition;
     const thetaRad = (theta * Math.PI) / 180;
