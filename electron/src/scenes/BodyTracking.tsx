@@ -35,7 +35,7 @@ export default function BodyTrack2d() {
   const repState = useRef<RepState>(resetRepState());
 
   // settings
-  const lowerThreshold = 0.7; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
+  const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
   const upperThreshold = 0.95; // TODO: temporarily hard coded => useContext(RepCountSettingContext).upperThreshold;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
