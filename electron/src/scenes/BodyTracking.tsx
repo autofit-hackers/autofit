@@ -30,8 +30,8 @@ export default function BodyTrack2d() {
    *セット・レップ・RepState変数
    */
   const [, setSetRecord] = useAtom(setRecordAtom);
-  const set = useRef<Set>(resetSet());
-  const rep = useRef<Rep>(resetRep(0));
+  const setRef = useRef<Set>(resetSet());
+  const repRef = useRef<Rep>(resetRep(0));
   const repState = useRef<RepState>(resetRepState());
 
   // settings
@@ -105,7 +105,7 @@ export default function BodyTrack2d() {
         );
 
         // 現フレームの推定Poseをレップのフォームに追加
-        rep.current = appendPoseToForm(rep.current, currentPose);
+        repRef.current = appendPoseToForm(repRef.current, currentPose);
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
@@ -117,12 +117,12 @@ export default function BodyTrack2d() {
           }
 
           // 完了したレップのフォームを分析・評価
-          rep.current = calculateKeyframes(rep.current);
-          rep.current = evaluateRepForm(rep.current, formInstructionItems);
+          repRef.current = calculateKeyframes(repRef.current);
+          repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
-          set.current.reps = [...set.current.reps, rep.current];
-          rep.current = resetRep(set.current.reps.length);
+          setRef.current.reps = [...setRef.current.reps, repRef.current];
+          repRef.current = resetRep(setRef.current.reps.length);
 
           // TODO: レップカウントを読み上げる
 
@@ -149,12 +149,12 @@ export default function BodyTrack2d() {
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
-      if (set.current.reps.length === 100) {
+      if (setRef.current.reps.length === 100) {
         setPhase(1);
       }
 
       // レップカウントを表示
-      canvasCtx.fillText(set.current.reps.length.toString(), 50, 50);
+      canvasCtx.fillText(setRef.current.reps.length.toString(), 50, 50);
       canvasCtx.scale(0.5, 0.5);
       canvasCtx.restore();
     },
@@ -183,7 +183,7 @@ export default function BodyTrack2d() {
         setVideoRecorderRef.current.stop();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      setSetRecord((_) => set.current);
+      setSetRecord((_) => setRef.current);
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);
@@ -193,7 +193,7 @@ export default function BodyTrack2d() {
       <Button
         onClick={() => {
           const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
-          exportData(set.current.reps);
+          exportData(setRef.current.reps);
           // セット映像の録画を停止する
           if (setVideoUrlRef.current === '' && setVideoRecorderRef.current != null) {
             setVideoRecorderRef.current.stop();
