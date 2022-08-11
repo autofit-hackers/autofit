@@ -1,14 +1,16 @@
+import { CameraPosition } from '../utils/render/landmarkGrid';
 import { angleInYZ, angleInZX, distanceInYZ, distanceInZ, distanceInZX, midpointBetween } from '../training/pose';
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
 
 export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
-  readonly reason?: string;
-  readonly recommendMenu?: string[];
   readonly label?: string;
   readonly text?: string;
+  readonly reason?: string;
+  readonly recommendMenu?: string[];
   readonly importance?: number;
+  readonly gridCameraPosition: CameraPosition;
   readonly evaluate: (rep: Rep) => number;
   readonly showGuideline?: (rep: Rep) => void;
 };
@@ -22,6 +24,7 @@ const squatDepth: FormInstructionItem = {
   label: '腰の深さ',
   text: '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
   importance: 0.5,
+  gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -58,6 +61,7 @@ const kneeOut: FormInstructionItem = {
   label: '膝が内側に入る',
   text: '膝が内側に入らないように注意しましょう。どうしても内に入ってしまう場合は足幅を狭くしてみましょう。',
   importance: 0.7,
+  gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
@@ -113,6 +117,7 @@ const backBent: FormInstructionItem = {
   label: '背中の曲がり',
   text: '背中が曲がってしまっており、腰を痛める危険性があります。背中に力をいれ、胸をはりながらしゃがみましょう',
   importance: 0.5,
+  gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // topで判定する
   evaluate: (rep: Rep) => {
     const topPose = getTopPose(rep);
@@ -145,6 +150,7 @@ const backBent: FormInstructionItem = {
 const kneePosition: FormInstructionItem = {
   id: 3,
   name: 'Knee position',
+  gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);

@@ -1,4 +1,5 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
+import { Button } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
@@ -6,6 +7,7 @@ import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from 
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { resetSet, Set } from '../training/set';
+import { exportData } from '../utils/exporter';
 import { startKinect } from '../utils/kinect';
 import { startCaptureWebcam } from '../utils/record';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
@@ -179,6 +181,15 @@ export default function BodyTrack2d() {
 
   return (
     <>
+      <Button
+        onClick={() => {
+          exportData(set.current.reps);
+        }}
+        variant="contained"
+        sx={{ position: 'relative', zIndex: 3, ml: 3 }}
+      >
+        SAVE
+      </Button>
       <canvas
         ref={canvasRef}
         className="main_canvas"
