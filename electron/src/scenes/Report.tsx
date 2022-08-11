@@ -22,24 +22,24 @@ export default function IntervalReport() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
 
-  // Reportコンポーネントマウント時にKinectを停止し、LandmarkGridを生成する
+  // TODO: gridCameraPositionをSetRecordから取得するようにする
+  // Reportコンポーネントマウント時にKinectを停止し、LandmarkGridを作成する
   useEffect(() => {
     stopKinect(kinect);
     if (!landmarkGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       landmarkGridRef.current = new LandmarkGrid(gridDivRef.current);
-      landmarkGridRef.current.setCamera(90, 0, 150);
+      landmarkGridRef.current.setCamera(formInstructionItems[0].gridCameraPosition);
     }
-  }, [kinect]);
+  }, [formInstructionItems, kinect]);
 
   // フォーム指導項目タブが押されたら、レップ映像とLandmarkGridを切り替える
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
     if (landmarkGridRef.current !== null) {
-      //  TODO: 各項目で適切なカメラビューを設定する
-      landmarkGridRef.current.setCamera(90, 0, 150);
+      landmarkGridRef.current.setCamera(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
     }
-  }, [displayedRepIndex, selectedInstructionIndex, setRecord, setRecord.formEvaluationResults]);
+  }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord, setRecord.formEvaluationResults]);
 
   const futuristicTheme = createTheme({
     palette: {
