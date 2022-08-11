@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
-import { heightInFrame, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
+import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { resetSet, Set } from '../training/set';
@@ -35,8 +35,8 @@ export default function BodyTrack2d() {
   const repState = useRef<RepState>(resetRepState());
 
   // settings
-  const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
-  const upperThreshold = 0.9; // TODO: temporarily hard coded => useContext(RepCountSettingContext).upperThreshold;
+  const lowerThreshold = 0.7; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
+  const upperThreshold = 0.95; // TODO: temporarily hard coded => useContext(RepCountSettingContext).upperThreshold;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
   // 映像保存用
@@ -89,8 +89,10 @@ export default function BodyTrack2d() {
           // 動画撮影を開始
           repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRepVideoUrls);
 
-          // レップの最初の身長を記録
-          repState.current = setStandingHeight(repState.current, heightInFrame(currentPose));
+          // セットの最初の身長を記録
+          if (setRef.current.reps.length === 0) {
+            repState.current = setStandingHeight(repState.current, heightInWorld(currentPose));
+          }
 
           // レップの開始フラグをoffにする
           repState.current.isFirstFrameInRep = false;
@@ -99,7 +101,7 @@ export default function BodyTrack2d() {
         // フォームを分析し、レップの状態を更新する
         repState.current = checkIfRepFinish(
           repState.current,
-          heightInFrame(currentPose),
+          heightInWorld(currentPose),
           lowerThreshold,
           upperThreshold,
         );
@@ -110,6 +112,8 @@ export default function BodyTrack2d() {
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           console.log('rep end');
+          console.log(repRef.current);
+          console.log('height', repState.current.standingHeight);
 
           // 動画撮影を停止し、配列に保存する
           if (repVideoRecorderRef.current) {
