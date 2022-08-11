@@ -17,9 +17,9 @@ export const startCapturingRepVideo = (
   recorder.onstart = () => {
     // 開始一分でレコーダーを自動停止
     setTimeout(() => {
-      console.log('Finishing webcam recorder: 1 min passed since the recording started');
+      console.log('Finishing webcam recorder: 3 min passed since the recording started');
       recorder.stop();
-    }, 60000);
+    }, 180000);
   };
   recorder.onstop = () => {
     const blob = new Blob(rec.data, { type: rec.type });
