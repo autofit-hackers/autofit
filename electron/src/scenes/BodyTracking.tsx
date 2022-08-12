@@ -5,7 +5,7 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
-import { appendPoseToForm, calculateKeyframes, Rep, resetRep } from '../training/rep';
+import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { resetSet, Set } from '../training/set';
 import { exportData } from '../utils/exporter';
@@ -92,6 +92,11 @@ export default function BodyTrack2d() {
           // セットの最初の身長を記録
           if (setRef.current.reps.length === 0) {
             repState.current = setStandingHeight(repState.current, heightInWorld(currentPose));
+          } else {
+            const firstRepTopPose = getTopPose(setRef.current.reps[0]);
+            if (firstRepTopPose !== undefined) {
+              repState.current = setStandingHeight(repState.current, heightInWorld(firstRepTopPose));
+            }
           }
 
           // レップの開始フラグをoffにする
