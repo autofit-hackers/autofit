@@ -2,7 +2,7 @@ import { Rep } from './rep';
 
 export type FormEvaluationResult = {
   name: string;
-  text?: string;
+  description?: string;
   eachRepErrors: number[];
   score: number;
   bestRepIndex: number;

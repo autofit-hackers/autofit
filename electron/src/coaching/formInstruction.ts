@@ -20,7 +20,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
   instructionItems.forEach((instructionItem) => {
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
-      text: '',
+      description: '',
       eachRepErrors: [],
       score: 0,
       bestRepIndex: 0,
