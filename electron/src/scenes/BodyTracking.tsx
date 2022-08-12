@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
-import { calculateRepFormError, recordFormEvaluationResult } from '../coaching/formInstruction';
+import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
@@ -127,7 +127,7 @@ export default function BodyTrack2d() {
 
           // 完了したレップのフォームを分析・評価
           repRef.current = calculateKeyframes(repRef.current);
-          repRef.current = calculateRepFormError(repRef.current, formInstructionItems);
+          repRef.current = calculateRepFormErrorScore(repRef.current, formInstructionItems);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           setRef.current.reps = [...setRef.current.reps, repRef.current];

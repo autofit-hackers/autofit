@@ -3,11 +3,11 @@ import { Rep } from '../training/rep';
 import { FormInstructionItem } from './formInstructionItems';
 
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
-export const calculateRepFormError = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
+export const calculateRepFormErrorScore = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
   const rep: Rep = prevRep;
 
   instructionItems.forEach((instructionItem) => {
-    rep.formEvaluationErrors[instructionItem.id] = instructionItem.evaluate(rep);
+    rep.formErrorScores[instructionItem.id] = instructionItem.evaluate(rep);
   });
 
   return rep;
@@ -29,7 +29,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
 
     // レップ変数に格納されている各指導項目のエラーを参照して、Resultオブジェクトに追加する
     set.reps.forEach((rep) => {
-      evaluationResult.eachRepErrors[rep.index] = rep.formEvaluationErrors[instructionItem.id];
+      evaluationResult.eachRepErrors[rep.index] = rep.formErrorScores[instructionItem.id];
     });
 
     // エラーの絶対値が最大/最小となるレップのインデックスを記録する
@@ -37,7 +37,8 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     evaluationResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
     evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
 
-    // TODO: 各評価項目のエラーの正負を参照して適切にテキストを設定する
+    // TODO: 各評価項目のエラーの正負を参照して適切に説明文を設定する
+
     // TODO: Scoreの計算
 
     set.formEvaluationResults[instructionItem.id] = evaluationResult;

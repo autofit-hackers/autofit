@@ -12,7 +12,7 @@ export type Rep = {
   form: Pose[];
   keyframesIndex: KeyframesIndex;
   videoUrl: string;
-  formEvaluationErrors: number[];
+  formErrorScores: number[];
 };
 
 export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
@@ -30,7 +30,7 @@ export const resetRep = (repIndex: number): Rep => ({
     descendingMiddle: undefined,
   },
   videoUrl: '',
-  formEvaluationErrors: [],
+  formErrorScores: [],
 });
 
 export const calculateKeyframes = (prevRep: Rep): Rep => {

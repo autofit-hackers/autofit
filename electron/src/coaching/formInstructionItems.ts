@@ -6,7 +6,7 @@ export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label?: string;
-  readonly text?: string;
+  readonly text: string[]; // index: [0, 1, 2]: errorが{-1以下、-1以上１以下、１以上}の場合の表示テキスト
   readonly reason?: string;
   readonly recommendMenu?: string[];
   readonly importance?: number;
@@ -22,7 +22,11 @@ const squatDepth: FormInstructionItem = {
   id: 0,
   name: 'Squat depth',
   label: '腰の深さ',
-  text: '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
+  text: [
+    '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
+    'ちょうどよい深さで腰を落とせています。この調子。',
+    '腰を落としすぎているようです。悪いことではありませんが、一般的なスクワットでは、太ももが水平になるところまで腰を落とせば十分です。',
+  ],
   importance: 0.5,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定
@@ -33,8 +37,6 @@ const squatDepth: FormInstructionItem = {
     }
     const bottomPoseKnee = midpointBetween(bottomPose.worldLandmarks[19], bottomPose.worldLandmarks[23]);
     const bottomPosePelvisKneeDistanceYZ = distanceInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    // TODO: 十分に腰が下がっているかを判定可能か?
-    // TODO: 桂以外の人でも判定できるようにする
     const upAngleKTR = (Math.PI * 9.0) / 180.0; // 9度は桂が指定
     const downAngleKTR = -(Math.PI * 9.0) / 180.0; // 9度は桂が指定;
     const squatDepthUpCheck =
@@ -42,7 +44,6 @@ const squatDepth: FormInstructionItem = {
     const squatDepthDownCheck =
       -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - Math.sin(downAngleKTR) * bottomPosePelvisKneeDistanceYZ;
 
-    // TODO: デバック用
     if (squatDepthUpCheck <= 0.0) {
       return 0.0;
     }
@@ -59,7 +60,11 @@ const kneeOut: FormInstructionItem = {
   id: 1,
   name: 'Knee out',
   label: '膝が内側に入る',
-  text: '膝が内側に入らないように注意しましょう。どうしても内に入ってしまう場合は足幅を狭くしてみましょう。',
+  text: [
+    '膝が内側に入らないように注意しましょう。',
+    'ちょうどいい膝の開き方ですね。',
+    '膝を外側に出そうとしすぎているようです。もう少しだけ膝の力を抜いてください。',
+  ],
   importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定する
@@ -73,9 +78,7 @@ const kneeOut: FormInstructionItem = {
     const bottomPoseLeftFootAngleZX = angleInZX(bottomPose.worldLandmarks[20], bottomPose.worldLandmarks[21]);
     const bottomPoseRightFootAngleZX = angleInZX(bottomPose.worldLandmarks[24], bottomPose.worldLandmarks[25]);
 
-    // TODO: acceptableErrorについて検証
     const acceptableError = 0.1;
-    // TODO: 左右の足がどのようにずれているのか，関数を分ける
     if (
       bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX >=
       acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
@@ -110,12 +113,15 @@ const kneeOut: FormInstructionItem = {
 };
 
 // 背中が反っていない
-// とりあえず，topとbottomだけで実装する．（今後，前後のフレームを追加する可能性あり）
 const backBent: FormInstructionItem = {
   id: 2,
   name: 'Back bent',
   label: '背中の曲がり',
-  text: '背中が曲がってしまっており、腰を痛める危険性があります。背中に力をいれ、胸をはりながらしゃがみましょう',
+  text: [
+    '背中が曲がってしまっており、腰を痛める危険性があります。背中に力をいれ、胸をはりながらしゃがみましょう',
+    '胴体の姿勢がとても良いです。',
+    '少し背中が反っているいるように見えます。背中を板のように真っすぐ保つよう意識するとよいでしょう',
+  ],
   importance: 0.5,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // topで判定する
@@ -131,9 +137,6 @@ const backBent: FormInstructionItem = {
     const topPosePelvisNavalAngleYZ = angleInYZ(topPose.worldLandmarks[0], topPose.worldLandmarks[1]);
     const topPoseNavalChestAngleYZ = angleInYZ(topPose.worldLandmarks[1], topPose.worldLandmarks[2]);
 
-    // TODO: acceptableErrorについて検証
-    // TODO: 一つずつ書く
-    // TODO: 上背部が反っている，曲がっている，下背部が反っている，曲がっているについて4つの関数or返し方を行う
     const acceptableError = 0.1;
     if (
       Math.abs(topPosePelvisNavalAngleYZ - topPoseNavalChestAngleYZ) >=
@@ -150,6 +153,11 @@ const backBent: FormInstructionItem = {
 const kneePosition: FormInstructionItem = {
   id: 3,
   name: 'Knee position',
+  text: [
+    '膝が前に出すぎています。関節を痛める危険性があるため、気を付けましょう',
+    'ひざの前後の位置が適切です。',
+    '膝をもう少し前に出しましょう。',
+  ],
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
@@ -166,8 +174,6 @@ const kneePosition: FormInstructionItem = {
       distanceInZ(bottomPose.worldLandmarks[25], bottomPose.worldLandmarks[23]),
     );
 
-    // TODO: 膝の位置を検討
-    // TODO: 許容されるずれについて検討．将来的には骨格から値を得たい
     const acceptableKneeAhead = -10;
     const acceptableKneeBack = 10;
     if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection <= acceptableKneeAhead) {
