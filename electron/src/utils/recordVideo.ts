@@ -15,11 +15,11 @@ export const startCapturingRepVideo = (
     rec.data.push(e.data);
   };
   recorder.onstart = () => {
-    // 開始一分でレコーダーを自動停止
+    // 開始1分でレコーダーを自動停止
     setTimeout(() => {
-      console.log('Finishing webcam recorder: 3 min passed since the recording started');
+      console.log('Finishing rep video recorder: 1 min passed since the recording started');
       recorder.stop();
-    }, 180000);
+    }, 60000);
   };
   recorder.onstop = () => {
     const blob = new Blob(rec.data, { type: rec.type });
@@ -49,11 +49,11 @@ export const startCapturingSetVideo = (
     rec.data.push(e.data);
   };
   recorder.onstart = () => {
-    // 開始一分でレコーダーを自動停止
+    // 開始3分でレコーダーを自動停止
     setTimeout(() => {
-      console.log('time out');
+      console.log('Finishing set video recorder: 3 min passed since the recording started');
       recorder.stop();
-    }, 60000);
+    }, 180000);
   };
   recorder.onstop = () => {
     const blob = new Blob(rec.data, { type: rec.type });
