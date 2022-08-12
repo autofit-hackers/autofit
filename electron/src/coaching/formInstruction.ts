@@ -3,7 +3,7 @@ import { Rep } from '../training/rep';
 import { FormInstructionItem } from './formInstructionItems';
 
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
-export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
+export const calculateRepFormError = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
   const rep: Rep = prevRep;
 
   instructionItems.forEach((instructionItem) => {
