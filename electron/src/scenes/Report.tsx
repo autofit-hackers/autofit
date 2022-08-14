@@ -38,7 +38,7 @@ export default function IntervalReport() {
     if (!poseGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGridRef.current = new PoseGrid(gridDivRef.current);
-      poseGridRef.current.setCamera(formInstructionItems[0].gridCameraPosition);
+      poseGridRef.current.setCameraPosition(formInstructionItems[0].gridCameraPosition);
     }
   }, [formInstructionItems, kinect]);
 
@@ -46,7 +46,7 @@ export default function IntervalReport() {
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
     if (poseGridRef.current !== null) {
-      poseGridRef.current.setCamera(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
+      poseGridRef.current.setCameraPosition(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
     }
   }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord, setRecord.formEvaluationResults]);
 
@@ -109,7 +109,9 @@ export default function IntervalReport() {
                 <Button
                   onClick={() => {
                     if (poseGridRef.current !== null) {
-                      poseGridRef.current.setCamera(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
+                      poseGridRef.current.setCameraPosition(
+                        formInstructionItems[selectedInstructionIndex].gridCameraPosition,
+                      );
                     }
                   }}
                   variant="contained"

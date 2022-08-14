@@ -179,7 +179,7 @@ export default function BodyTrack2d() {
     if (!poseGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current);
-      poseGrid.setCamera();
+      poseGrid.setCameraPosition();
     }
 
     // このコンポーネントのアンマウント時に実行される
