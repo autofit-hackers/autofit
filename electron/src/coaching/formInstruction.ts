@@ -1,5 +1,5 @@
-import { FormEvaluationResult, Set } from '../training/set';
-import { Rep } from '../training/rep';
+import { FormEvaluationResult, Set } from '../training_data/set';
+import { Rep } from '../training_data/rep';
 import { FormInstructionItem } from './formInstructionItems';
 
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する

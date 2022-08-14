@@ -1,6 +1,6 @@
 import { CameraPosition } from '../utils/poseGrid';
-import { angleInYZ, angleInZX, distanceInYZ, distanceInZ, distanceInZX, midpointBetween } from '../training/pose';
-import { getBottomPose, getTopPose, Rep } from '../training/rep';
+import { angleInYZ, angleInZX, distanceInYZ, distanceInZ, distanceInZX, midpointBetween } from '../training_data/pose';
+import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 
 export type FormInstructionItem = {
   readonly id: number;
