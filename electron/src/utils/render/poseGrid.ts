@@ -43,11 +43,6 @@ export type PoseGridConfig = {
   axesColor: number;
   axesWidth: number;
   shouldSetLabels: boolean;
-  /**
-   * The "centered" attribute describes whether the grid should use the center
-   * of the bounding box of the landmarks as the origin.
-   */
-  centered: boolean;
   connectionColor: number;
   connectionWidth: number;
   definedColors: Array<{ name: string; value: number }>;
@@ -81,7 +76,6 @@ const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   axesColor: 0xffffff,
   axesWidth: 2,
   shouldSetLabels: false,
-  centered: false,
   connectionColor: 0x00ffff,
   connectionWidth: 4,
   definedColors: [],
@@ -453,9 +447,6 @@ export class PoseGrid {
     );
     const centeredLandmarks: Array<NormalizedLandmark> =
       visibleLandmarks.length === 0 ? this.landmarks : visibleLandmarks;
-    if (this.poseGridConfig.centered) {
-      this.centralizeLandmarks(centeredLandmarks);
-    }
     // Fit to grid if necessary
     let scalingFactor = 1;
     if (this.poseGridConfig.fitToGrid) {
@@ -627,39 +618,6 @@ export class PoseGrid {
     }
 
     return factor * this.sizeWhenFitted;
-  }
-
-  /**
-   * @private:Relocate landmarks to the grid origin. (in Update)
-   */
-  centralizeLandmarks(landmarks: Array<NormalizedLandmark>): void {
-    if (landmarks.length === 0) {
-      return;
-    }
-    let maxX: number = landmarks[0].x;
-    let minX: number = landmarks[0].x;
-    let maxY: number = landmarks[0].y;
-    let minY: number = landmarks[0].y;
-    let maxZ: number = landmarks[0].z;
-    let minZ: number = landmarks[0].z;
-    for (let i = 1; i < landmarks.length; i += 1) {
-      const landmark: NormalizedLandmark = landmarks[i];
-      maxX = Math.max(maxX, landmark.x);
-      maxY = Math.max(maxY, landmark.y);
-      maxZ = Math.max(maxZ, landmark.z);
-      minX = Math.min(minX, landmark.x);
-      minY = Math.min(minY, landmark.y);
-      minZ = Math.min(minZ, landmark.z);
-    }
-    const centerX: number = (maxX + minX) / 2;
-    const centerY: number = (maxY + minY) / 2;
-    const centerZ: number = (maxZ + minZ) / 2;
-    for (let i = 0; i < this.landmarks.length; i += 1) {
-      this.landmarks[i].x -= centerX;
-      this.landmarks[i].y -= centerY;
-      this.landmarks[i].z -= centerZ;
-    }
-    this.origin.set(centerX, centerY, centerZ);
   }
 
   synchronizeToVideo(
