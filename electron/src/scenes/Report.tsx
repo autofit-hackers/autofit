@@ -1,14 +1,4 @@
-import RestoreIcon from '@mui/icons-material/Restore';
-import {
-  BottomNavigation,
-  BottomNavigationAction,
-  Box,
-  Button,
-  createTheme,
-  CssBaseline,
-  Grid,
-  Paper,
-} from '@mui/material';
+import { Box, Button, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -16,6 +6,7 @@ import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import GoodPoint from './report_components/GoodPoint';
+import InstructionNavigation from './report_components/InstructionNavigation';
 import RadarChart from './report_components/RadarChart';
 import VideoPlayer from './report_components/VideoPlayer';
 
@@ -148,41 +139,12 @@ export default function IntervalReport() {
               </Paper>
             </Grid>
             <GoodPoint text={formInstructionItems[selectedInstructionIndex].label ?? 'null'} />
-            <BottomNavigation
-              showLabels
-              value={selectedInstructionIndex}
-              onChange={(event, newValue: number) => {
-                setSelectedInstructionIndex(newValue);
-              }}
-              sx={{
-                mx: 'auto',
-                width: '90%',
-                '& .Mui-selected': { backgroundColor: '#005555' },
-              }}
-            >
-              {formInstructionItems.map((instructionItem) => (
-                <BottomNavigationAction
-                  key={instructionItem.id}
-                  label={instructionItem.label}
-                  icon={<RestoreIcon />}
-                  value={instructionItem.id}
-                  sx={{
-                    backgroundColor: 'grey.900',
-                    borderRadius: 0,
-                    border: 1,
-                    borderColor: 'grey.500',
-                    borderTop: 0,
-                    borderTopColor: '#006666',
-                    borderBottomRightRadius: 20,
-                    borderBottomLeftRadius: 20,
-                    boxShadow: 0,
-                    mr: 5,
-                  }}
-                />
-              ))}
-            </BottomNavigation>
-
-            {/* 詳細表示する指導の切り替えボタン類 */}
+            {/* 指導項目の切り替えタブ */}
+            <InstructionNavigation
+              selectedInstructionIndex={selectedInstructionIndex}
+              setSelectedInstructionIndex={setSelectedInstructionIndex}
+              formInstructionItems={formInstructionItems}
+            />
           </Grid>
         </Container>
       </Box>
