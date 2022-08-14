@@ -28,12 +28,12 @@ const decideDescriptionTexts = (eachRepErrors: number[], instructionItem: FormIn
     return errorDescriptions;
   });
 
-// セット全体に対する指導項目スコアを算出する
+// セット全体に対する指導項目スコアを100点満点で算出する
 // TODO: Scoreの算出手法を再考する
 const calculateScore = (eachRepErrorsAbs: number[]) => {
   const numberOfSuccessfulReps = eachRepErrorsAbs.filter((errorAbs) => errorAbs < 1).length;
   const numberOfTotalReps = eachRepErrorsAbs.length;
-  const score = numberOfSuccessfulReps / numberOfTotalReps;
+  const score = (numberOfSuccessfulReps / numberOfTotalReps) * 100;
 
   return score;
 };
