@@ -34,10 +34,7 @@ export type CameraPosition = {
  */
 export type PoseGridConfig = {
   backgroundColor: number;
-  fovInDegrees: number;
-  isRotating: boolean;
-  rotationSpeed: number;
-  shouldAddPausePlay: boolean;
+  cameraFov: number;
   axesColor: number;
   axesWidth: number;
   shouldSetLabels: boolean;
@@ -67,10 +64,7 @@ export type PoseGridConfig = {
 
 const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   backgroundColor: 0,
-  fovInDegrees: 75,
-  isRotating: false,
-  rotationSpeed: 0.0,
-  shouldAddPausePlay: false,
+  cameraFov: 75,
   axesColor: 0xffffff,
   axesWidth: 2,
   shouldSetLabels: false,
@@ -89,11 +83,6 @@ const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   range: 1,
   showHidden: true,
 };
-
-/**
- *
- */
-type NumberLabel = { element: HTMLElement; position: Vector3; value: number };
 
 /**
  * A connection between two landmarks
@@ -120,7 +109,6 @@ type ColorMap<T> = Array<{ color: ColorName | undefined; list: T[] }>;
  * connections can be drawn.
  */
 export class PoseGrid {
-  distance: number;
   rotation: number;
   disposeQueue: Array<BufferGeometry>;
   removeQueue: Array<Object3D>;
@@ -131,7 +119,6 @@ export class PoseGrid {
 
   size: number;
   landmarks: Array<NormalizedLandmark>;
-  labels: { x: NumberLabel[]; y: NumberLabel[]; z: NumberLabel[] };
   landmarkGroup: Group;
   connectionGroup: Group;
   origin: Vector3;
@@ -151,7 +138,6 @@ export class PoseGrid {
    */
   constructor(parent: HTMLElement, poseGridConfig = DEFAULT_POSE_GRID_CONFIG) {
     this.poseGridConfig = poseGridConfig;
-    this.distance = 100;
     this.rotation = 0;
     this.disposeQueue = [];
     this.removeQueue = [];
@@ -161,11 +147,7 @@ export class PoseGrid {
     this.container.appendChild(canvas);
     parent.appendChild(this.container);
     const parentBox: DOMRect = parent.getBoundingClientRect();
-    if (this.poseGridConfig.shouldAddPausePlay) {
-      this.addPausePlay(this.container);
-    }
-    this.camera = new PerspectiveCamera(this.poseGridConfig.fovInDegrees, parentBox.width / parentBox.height, 1);
-    this.camera.position.z = this.distance;
+    this.camera = new PerspectiveCamera(this.poseGridConfig.cameraFov, parentBox.width / parentBox.height, 1);
     this.camera.lookAt(new Vector3());
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
     this.renderer.setClearColor(new Color(this.poseGridConfig.backgroundColor), 0.5);
@@ -222,7 +204,6 @@ export class PoseGrid {
     // TODO: this is a magic-number hack to get the pose's foot to be on the grid. should be fixed to automatically adjust grid y to foot position.
     gridPlane.translateY(-this.size / 4);
     this.scene.add(gridPlane);
-    this.labels = this.createAxesLabels();
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
     this.connectionGroup = new Group();
@@ -236,29 +217,7 @@ export class PoseGrid {
    */
   requestFrame(): void {
     window.requestAnimationFrame((): void => {
-      if (this.poseGridConfig.isRotating) {
-        this.rotation += this.poseGridConfig.rotationSpeed;
-        this.camera.position.x = Math.sin(this.rotation) * this.distance;
-        this.camera.position.z = Math.cos(this.rotation) * this.distance;
-        this.camera.lookAt(new Vector3());
-      }
       this.renderer.render(this.scene, this.camera);
-      // Set labels
-      this.labels.x.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
-      this.labels.y.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
-      this.labels.z.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
     });
   }
 
@@ -289,91 +248,6 @@ export class PoseGrid {
     this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * distance;
     this.camera.position.y = Math.cos(thetaRad) * distance;
     this.camera.lookAt(new Vector3());
-  }
-
-  /**
-   * @private: (in constructor)
-   */
-  addPausePlay(parent: HTMLElement): void {
-    const PAUSE_SRC =
-      'https://fonts.gstatic.com/s/i/googlematerialicons/pause/v14/white-24dp/1x/gm_pause_white_24dp.png';
-    const PLAY_SRC =
-      'https://fonts.gstatic.com/s/i/googlematerialicons/play_arrow/v14/white-24dp/1x/gm_play_arrow_white_24dp.png';
-
-    const button: HTMLImageElement = document.createElement('img');
-    button.classList.add('controls');
-    button.src = this.poseGridConfig.isRotating ? PAUSE_SRC : PLAY_SRC;
-    button.onclick = (): void => {
-      if (this.poseGridConfig.isRotating) {
-        button.src = PLAY_SRC;
-        this.poseGridConfig.isRotating = false;
-      } else {
-        button.src = PAUSE_SRC;
-        this.poseGridConfig.isRotating = true;
-      }
-    };
-    parent.appendChild(button);
-  }
-
-  /**
-   * @private: Creates a label for the axes.(in constructor)
-   */
-  createAxesLabels(): { x: Array<NumberLabel>; y: Array<NumberLabel>; z: Array<NumberLabel> } {
-    const labels: { x: Array<NumberLabel>; y: Array<NumberLabel>; z: Array<NumberLabel> } = {
-      x: [],
-      y: [],
-      z: [],
-    };
-    const cellsPerAxis: number = this.poseGridConfig.numCellsPerAxis;
-    const { range } = this.poseGridConfig;
-    const HALF_SIZE: number = this.size / 2;
-    for (let i = 0; i < cellsPerAxis; i += 1) {
-      // X labels
-      // This for vector adds one to the count as it covers numCellsPerAxis-1
-      // points on the x-axis. The point not covered is where the y-axis meets
-      // the x-axis.
-      const xValue: number = ((i + 1) / cellsPerAxis - 0.5) * range;
-      labels.x.push({
-        position: new Vector3(((i + 1) / cellsPerAxis) * this.size - HALF_SIZE, -HALF_SIZE, HALF_SIZE),
-        element: this.createLabel(xValue),
-        value: xValue,
-      });
-      // Z labels
-      // This vector covers numCellsPerAxis-1 points on the z-axis. The point
-      // not covered is where the z-axis meets the x-axis.
-      const zValue: number = (i / cellsPerAxis - 0.5) * range;
-      labels.z.push({
-        position: new Vector3(HALF_SIZE, -HALF_SIZE, (i / cellsPerAxis) * this.size - HALF_SIZE),
-        element: this.createLabel(zValue),
-        value: zValue,
-      });
-    }
-    // Y labels
-    // This for loop covers all points on the y-axis
-    for (let i = 0; i <= cellsPerAxis; i += 1) {
-      const yValue: number = (i / cellsPerAxis - 0.5) * range;
-      labels.y.push({
-        position: new Vector3(-HALF_SIZE, (i / cellsPerAxis) * this.size - HALF_SIZE, HALF_SIZE),
-        element: this.createLabel(yValue),
-        value: yValue,
-      });
-    }
-
-    return labels;
-  }
-
-  /**
-   * @private:
-   */
-  createLabel(value: number): HTMLSpanElement {
-    const span: HTMLSpanElement = document.createElement('span');
-    span.classList.add('landmark-label-js');
-    if (this.poseGridConfig.shouldSetLabels) {
-      this.setLabel(span, value);
-    }
-    this.container.appendChild(span);
-
-    return span;
   }
 
   /**
@@ -424,17 +298,6 @@ export class PoseGrid {
         landmark.z *= scalingFactor;
       });
     }
-    if (this.poseGridConfig.shouldSetLabels) {
-      this.labels.x.forEach((label: NumberLabel) => {
-        this.setLabel(label.element, (label.value - this.origin.x) / scalingFactor);
-      });
-      this.labels.y.forEach((label: NumberLabel) => {
-        this.setLabel(label.element, (label.value - this.origin.y) / scalingFactor);
-      });
-      this.labels.z.forEach((label: NumberLabel) => {
-        this.setLabel(label.element, (label.value - this.origin.z) / scalingFactor);
-      });
-    }
     const landmarkVectors: Array<Vector3> = this.landmarks.map(
       (normalizedLandmark: NormalizedLandmark): Vector3 => this.landmarkToVector(normalizedLandmark),
     );
@@ -476,15 +339,6 @@ export class PoseGrid {
       bufferGeometry.dispose();
     });
     this.disposeQueue = [];
-  }
-
-  /**
-   * @private: Sets the label text.
-   */
-  setLabel(span: HTMLSpanElement, value: number): void {
-    // eslint-disable-next-line no-param-reassign
-    span.textContent =
-      this.poseGridConfig.labelPrefix + value.toPrecision(2).toString() + this.poseGridConfig.labelSuffix;
   }
 
   drawLandmarks(landmarkVectors: Vector3[]): void {
