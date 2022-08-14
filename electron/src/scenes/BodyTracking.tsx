@@ -8,11 +8,11 @@ import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from 
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { resetSet, Set } from '../training/set';
+import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { startKinect } from '../utils/kinect';
-import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
-import { renderBGRA32ColorFrame } from '../utils/render/drawing';
 import { PoseGrid } from '../utils/poseGrid';
+import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
