@@ -1,4 +1,4 @@
-import { CameraPosition } from '../utils/render/poseGrid';
+import { CameraPosition } from '../utils/poseGrid';
 import { angleInYZ, angleInZX, distanceInYZ, distanceInZ, distanceInZX, midpointBetween } from '../training/pose';
 import { getBottomPose, getTopPose, Rep } from '../training/rep';
 

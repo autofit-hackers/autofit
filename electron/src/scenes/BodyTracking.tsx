@@ -12,7 +12,7 @@ import { exportData } from '../utils/exporter';
 import { startKinect } from '../utils/kinect';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { renderBGRA32ColorFrame } from '../utils/render/drawing';
-import { PoseGrid } from '../utils/render/poseGrid';
+import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {

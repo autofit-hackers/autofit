@@ -13,7 +13,7 @@ import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
-import { PoseGrid } from '../utils/render/poseGrid';
+import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import { GoodPoint, VideoPlayer } from './ReportComponents';
 

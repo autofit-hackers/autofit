@@ -5,7 +5,7 @@ import { CountdownCircleTimer, TimeProps } from 'react-countdown-circle-timer';
 import ReactPlayer from 'react-player';
 // eslint-disable-next-line import/no-unresolved
 import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
-import { PoseGrid } from '../utils/render/poseGrid';
+import { PoseGrid } from '../utils/poseGrid';
 import { repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export function TrainingStats(props: { text: string }) {
