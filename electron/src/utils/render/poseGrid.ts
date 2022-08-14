@@ -16,9 +16,7 @@ import {
   SphereGeometry,
   Vector3,
   WebGLRenderer,
-  EdgesGeometry,
-  PlaneBufferGeometry,
-  PlaneGeometry,
+  GridHelper,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../../training/pose';
@@ -220,10 +218,10 @@ export class PoseGrid {
     });
     this.sizeWhenFitted = 1 - 2 * this.poseGridConfig.margin;
 
-    /*
-     * Generate the grid and viewed materials
-     */
-    this.drawAxes();
+    const gridPlane = new GridHelper(100, 10);
+    // TODO: this is a magic-number hack to get the pose's foot to be on the grid. should be fixed to automatically adjust grid y to foot position.
+    gridPlane.translateY(-this.size / 4);
+    this.scene.add(gridPlane);
     this.labels = this.createAxesLabels();
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
@@ -315,50 +313,6 @@ export class PoseGrid {
       }
     };
     parent.appendChild(button);
-  }
-
-  /**
-   * @private: Draw axes of the grid.(in constructor)
-   */
-  drawAxes(): void {
-    const axes: Group = new Group();
-    const HALF_SIZE: number = this.size / 2;
-    const grid: Group = this.makeGrid(this.size, this.poseGridConfig.numCellsPerAxis);
-    const xGrid: Group = grid;
-    const yGrid: Object3D = grid.clone();
-    const zGrid: Object3D = grid.clone();
-    xGrid.translateX(-HALF_SIZE);
-    xGrid.rotateY(Math.PI / 2);
-    yGrid.translateY(-HALF_SIZE);
-    yGrid.rotateX(Math.PI / 2);
-    axes.add(yGrid);
-    zGrid.translateZ(-HALF_SIZE);
-    this.scene.add(axes);
-  }
-
-  /**
-   * @private: Generate Grid.(in drawAxis in constructor)
-   */
-  makeGrid(size: number, numSteps: number): Group {
-    const grid: Group = new Group();
-    const plane: PlaneBufferGeometry = new PlaneGeometry(size, size);
-    const edges: EdgesGeometry = new EdgesGeometry(plane);
-    const wireFrame: LineSegments = new LineSegments(edges, this.gridMaterial);
-    grid.add(wireFrame);
-    const stepPlaneSize: number = size / numSteps;
-    const stepPlane: PlaneBufferGeometry = new PlaneGeometry(stepPlaneSize, stepPlaneSize);
-    const stepEdges: EdgesGeometry = new EdgesGeometry(stepPlane);
-    const corner: number = -size / 2 + stepPlaneSize / 2;
-    for (let i = 0; i < numSteps; i += 1) {
-      for (let j = 0; j < numSteps; j += 1) {
-        const stepFrame: LineSegments = new LineSegments(stepEdges, this.gridMaterial);
-        stepFrame.translateX(corner + i * stepPlaneSize);
-        stepFrame.translateY(corner + j * stepPlaneSize);
-        grid.add(stepFrame);
-      }
-    }
-
-    return grid;
   }
 
   /**
