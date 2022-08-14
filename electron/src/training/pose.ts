@@ -3,7 +3,7 @@ import {
   LandmarkConnectionArray,
   LandmarkList,
   NormalizedLandmark,
-  NormalizedLandmarkList
+  NormalizedLandmarkList,
 } from '@mediapipe/pose';
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -94,14 +94,18 @@ export type Pose = {
   worldLandmarks: LandmarkList;
 };
 
-export type Delta = {x: number, y: number, z: number};
+export type GridDelta = { x: number; y: number; z: number };
 
-export const translateLandmarkList = (landmarkList: LandmarkList, delta: Delta): LandmarkList => landmarkList.map((landmark: Landmark) => ({
-      x: landmark.x + delta.x,
-      y: landmark.y + delta.y,
-      z: landmark.z + delta.z,
-      visibility: landmark.visibility,
-    } as Landmark))
+export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
+  landmarkList.map(
+    (landmark: Landmark) =>
+      ({
+        x: landmark.x + delta.x,
+        y: landmark.y + delta.y,
+        z: landmark.z + delta.z,
+        visibility: landmark.visibility,
+      } as Landmark),
+  );
 
 // 正負あり
 export const distanceInX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>

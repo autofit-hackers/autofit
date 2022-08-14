@@ -4,7 +4,14 @@ import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
-import { Delta, heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose, translateLandmarkList } from '../training/pose';
+import {
+  GridDelta,
+  heightInWorld,
+  kinectToMediapipe,
+  KINECT_POSE_CONNECTIONS,
+  Pose,
+  translateLandmarkList,
+} from '../training/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
 import { resetSet, Set } from '../training/set';
@@ -155,8 +162,8 @@ export default function BodyTrack2d() {
         if (poseGrid) {
           // a user stands about 1.7m away from the camera (kinect)
           // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
-          const toStandingPoint: Delta = { x: 0, y: 0, z: -1700};
-          const landmarkListToDraw = translateLandmarkList(currentPose.worldLandmarks, toStandingPoint)
+          const toStandingPoint: GridDelta = { x: 0, y: 0, z: -1700 };
+          const landmarkListToDraw = translateLandmarkList(currentPose.worldLandmarks, toStandingPoint);
           poseGrid.updateLandmarks(landmarkListToDraw, KINECT_POSE_CONNECTIONS);
         }
       }
