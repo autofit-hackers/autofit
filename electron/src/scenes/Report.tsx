@@ -119,7 +119,7 @@ export default function IntervalReport() {
                 </Button>
               </Paper>
             </Grid>
-            <GoodPoint text={formInstructionItems[selectedInstructionIndex].text ?? 'null'} />
+            <GoodPoint text={formInstructionItems[selectedInstructionIndex].label ?? 'null'} />
             <BottomNavigation
               showLabels
               value={selectedInstructionIndex}

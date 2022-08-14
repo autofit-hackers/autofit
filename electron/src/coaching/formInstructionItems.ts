@@ -5,8 +5,10 @@ import { getBottomPose, getTopPose, Rep } from '../training/rep';
 export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
-  readonly label?: string;
-  readonly text: string[]; // index: [0, 1, 2]: errorが{-1以下、-1以上１以下、１以上}の場合の表示テキスト
+  readonly label: string;
+  readonly descriptionForNegativeError: string;
+  readonly descriptionForNearlyZeroError: string;
+  readonly descriptionForPositiveError: string;
   readonly reason?: string;
   readonly recommendMenu?: string[];
   readonly importance?: number;
@@ -22,11 +24,11 @@ const squatDepth: FormInstructionItem = {
   id: 0,
   name: 'Squat depth',
   label: '腰の深さ',
-  text: [
+  descriptionForNegativeError:
     '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
-    'ちょうどよい深さで腰を落とせています。この調子。',
+  descriptionForNearlyZeroError: 'ちょうどよい深さで腰を落とせています。この調子。',
+  descriptionForPositiveError:
     '腰を落としすぎているようです。悪いことではありませんが、一般的なスクワットでは、太ももが水平になるところまで腰を落とせば十分です。',
-  ],
   importance: 0.5,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定
@@ -60,11 +62,9 @@ const kneeOut: FormInstructionItem = {
   id: 1,
   name: 'Knee out',
   label: '膝が内側に入る',
-  text: [
-    '膝が内側に入らないように注意しましょう。',
-    'ちょうどいい膝の開き方ですね。',
-    '膝を外側に出そうとしすぎているようです。もう少しだけ膝の力を抜いてください。',
-  ],
+  descriptionForNegativeError: '膝が内側に入らないように注意しましょう。',
+  descriptionForNearlyZeroError: 'ちょうどいい膝の開き方ですね。',
+  descriptionForPositiveError: '膝を外側に出そうとしすぎているようです。もう少しだけ膝の力を抜いてください。',
   importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定する
@@ -117,11 +117,11 @@ const backBent: FormInstructionItem = {
   id: 2,
   name: 'Back bent',
   label: '背中の曲がり',
-  text: [
+  descriptionForNegativeError:
     '背中が曲がってしまっており、腰を痛める危険性があります。背中に力をいれ、胸をはりながらしゃがみましょう',
-    '胴体の姿勢がとても良いです。',
+  descriptionForNearlyZeroError: '胴体の姿勢がとても良いです。',
+  descriptionForPositiveError:
     '少し背中が反っているいるように見えます。背中を板のように真っすぐ保つよう意識するとよいでしょう',
-  ],
   importance: 0.5,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // topで判定する
@@ -153,11 +153,10 @@ const backBent: FormInstructionItem = {
 const kneePosition: FormInstructionItem = {
   id: 3,
   name: 'Knee position',
-  text: [
-    '膝が前に出すぎています。関節を痛める危険性があるため、気を付けましょう',
-    'ひざの前後の位置が適切です。',
-    '膝をもう少し前に出しましょう。',
-  ],
+  label: '膝の前後位置',
+  descriptionForNegativeError: '膝が前に出すぎています。関節を痛める危険性があるため、気を付けましょう',
+  descriptionForNearlyZeroError: 'ひざの前後の位置が適切です。',
+  descriptionForPositiveError: '膝をもう少し前に出しましょう。',
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   // bottomで判定する
   evaluate: (rep: Rep) => {
