@@ -4,7 +4,6 @@ import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
   BufferGeometry,
   Color,
-  EdgesGeometry,
   Group,
   LineBasicMaterial,
   LineSegments,
@@ -13,12 +12,13 @@ import {
   MeshBasicMaterial,
   Object3D,
   PerspectiveCamera,
-  PlaneBufferGeometry,
-  PlaneGeometry,
   Scene,
   SphereGeometry,
   Vector3,
   WebGLRenderer,
+  EdgesGeometry,
+  PlaneBufferGeometry,
+  PlaneGeometry,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../../training/pose';
@@ -30,29 +30,16 @@ export type CameraPosition = {
   phi: number;
   distance: number;
 };
-/**
- * ViewerWidget configuration and its default value.
- */
-export type ViewerWidgetConfig = {
-  backgroundColor: number;
-  fovInDegrees: number;
-  isRotating: boolean;
-  rotationSpeed: number;
-  shouldAddPausePlay: boolean;
-};
-
-const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
-  backgroundColor: 0,
-  fovInDegrees: 75,
-  isRotating: false,
-  rotationSpeed: 0.0,
-  shouldAddPausePlay: false,
-};
 
 /**
  * Configuration for the landmark grid and its default value.
  */
 export type PoseGridConfig = {
+  backgroundColor: number;
+  fovInDegrees: number;
+  isRotating: boolean;
+  rotationSpeed: number;
+  shouldAddPausePlay: boolean;
   axesColor: number;
   axesWidth: number;
   shouldSetLabels: boolean;
@@ -85,7 +72,12 @@ export type PoseGridConfig = {
   showHidden: boolean;
 };
 
-const DEFAULT_LANDMARK_GRID_CONFIG: PoseGridConfig = {
+const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
+  backgroundColor: 0,
+  fovInDegrees: 75,
+  isRotating: false,
+  rotationSpeed: 0.0,
+  shouldAddPausePlay: false,
   axesColor: 0xffffff,
   axesWidth: 2,
   shouldSetLabels: false,
@@ -136,18 +128,15 @@ type ColorMap<T> = Array<{ color: ColorName | undefined; list: T[] }>;
  * connections can be drawn.
  */
 export class PoseGrid {
-  // Extended properties from ViewerWidget
   distance: number;
   rotation: number;
   disposeQueue: Array<BufferGeometry>;
   removeQueue: Array<Object3D>;
-  viewerWidgetConfig: ViewerWidgetConfig;
   container: HTMLDivElement;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   scene: Scene;
 
-  // Original properties
   size: number;
   landmarks: Array<NormalizedLandmark>;
   labels: { x: NumberLabel[]; y: NumberLabel[]; z: NumberLabel[] };
@@ -168,33 +157,26 @@ export class PoseGrid {
   /**
    * @public
    */
-  constructor(
-    parent: HTMLElement,
-    viewerWidgetConfig: ViewerWidgetConfig = DEFAULT_VIEWER_WIDGET_CONFIG,
-    poseGridConfig = DEFAULT_LANDMARK_GRID_CONFIG,
-  ) {
-    /*
-     * Set viewerWidgetConfig
-     */
+  constructor(parent: HTMLElement, poseGridConfig = DEFAULT_POSE_GRID_CONFIG) {
+    this.poseGridConfig = poseGridConfig;
     this.distance = 100;
     this.rotation = 0;
     this.disposeQueue = [];
     this.removeQueue = [];
-    this.viewerWidgetConfig = { ...DEFAULT_VIEWER_WIDGET_CONFIG, ...viewerWidgetConfig };
     this.container = document.createElement('div');
     this.container.classList.add('viewer-widget-js');
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     this.container.appendChild(canvas);
     parent.appendChild(this.container);
     const parentBox: DOMRect = parent.getBoundingClientRect();
-    if (this.viewerWidgetConfig.shouldAddPausePlay) {
+    if (this.poseGridConfig.shouldAddPausePlay) {
       this.addPausePlay(this.container);
     }
-    this.camera = new PerspectiveCamera(this.viewerWidgetConfig.fovInDegrees, parentBox.width / parentBox.height, 1);
+    this.camera = new PerspectiveCamera(this.poseGridConfig.fovInDegrees, parentBox.width / parentBox.height, 1);
     this.camera.position.z = this.distance;
     this.camera.lookAt(new Vector3());
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
-    this.renderer.setClearColor(new Color(this.viewerWidgetConfig.backgroundColor), 0.5);
+    this.renderer.setClearColor(new Color(this.poseGridConfig.backgroundColor), 0.5);
     this.renderer.setSize(Math.floor(parentBox.width), Math.floor(parentBox.height));
     window.addEventListener(
       'resize',
@@ -212,10 +194,6 @@ export class PoseGrid {
     controls.enableDamping = true;
     controls.dampingFactor = 0.2;
 
-    /*
-     * Set poseGridConfig
-     */
-    this.poseGridConfig = poseGridConfig;
     this.size = 100;
     this.landmarks = [];
     this.landmarkMaterial = new MeshBasicMaterial({ color: this.poseGridConfig.landmarkColor });
@@ -266,8 +244,8 @@ export class PoseGrid {
    */
   requestFrame(): void {
     window.requestAnimationFrame((): void => {
-      if (this.viewerWidgetConfig.isRotating) {
-        this.rotation += this.viewerWidgetConfig.rotationSpeed;
+      if (this.poseGridConfig.isRotating) {
+        this.rotation += this.poseGridConfig.rotationSpeed;
         this.camera.position.x = Math.sin(this.rotation) * this.distance;
         this.camera.position.z = Math.cos(this.rotation) * this.distance;
         this.camera.lookAt(new Vector3());
@@ -332,14 +310,14 @@ export class PoseGrid {
 
     const button: HTMLImageElement = document.createElement('img');
     button.classList.add('controls');
-    button.src = this.viewerWidgetConfig.isRotating ? PAUSE_SRC : PLAY_SRC;
+    button.src = this.poseGridConfig.isRotating ? PAUSE_SRC : PLAY_SRC;
     button.onclick = (): void => {
-      if (this.viewerWidgetConfig.isRotating) {
+      if (this.poseGridConfig.isRotating) {
         button.src = PLAY_SRC;
-        this.viewerWidgetConfig.isRotating = false;
+        this.poseGridConfig.isRotating = false;
       } else {
         button.src = PAUSE_SRC;
-        this.viewerWidgetConfig.isRotating = true;
+        this.poseGridConfig.isRotating = true;
       }
     };
     parent.appendChild(button);
