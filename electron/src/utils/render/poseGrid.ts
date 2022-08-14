@@ -18,7 +18,7 @@ import {
   Scene,
   SphereGeometry,
   Vector3,
-  WebGLRenderer,
+  WebGLRenderer
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../../training/pose';

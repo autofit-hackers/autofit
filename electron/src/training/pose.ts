@@ -94,6 +94,19 @@ export type Pose = {
   worldLandmarks: LandmarkList;
 };
 
+export type GridDelta = { x: number; y: number; z: number };
+
+export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
+  landmarkList.map(
+    (landmark: Landmark) =>
+      ({
+        x: landmark.x + delta.x,
+        y: landmark.y + delta.y,
+        z: landmark.z + delta.z,
+        visibility: landmark.visibility,
+      } as Landmark),
+  );
+
 // 正負あり
 export const distanceInX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   p2.x - p1.x;
