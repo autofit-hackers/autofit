@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/render/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
+import { RadarChart } from './RadarChart';
 import { GoodPoint, VideoPlayer } from './ReportComponents';
 
 export default function IntervalReport() {
@@ -66,9 +67,33 @@ export default function IntervalReport() {
     },
   });
 
+  // radar chart config and state
+  // TODO: instruction algorithms generate indicators and series
+  const radarChartIndicators = [
+    { name: 'しゃがみの深さ', max: 100 },
+    { name: '膝の角度（内外）', max: 100 },
+    { name: '膝の位置（前後）', max: 100 },
+    { name: '腰の真っ直ぐさ', max: 100 },
+    { name: 'しゃがみ・立ち上がりの真っ直ぐさ', max: 100 },
+    { name: '情熱', max: 100 },
+  ];
+  const radarChartSeries = [
+    {
+      value: [20, 60, 40, 40, 80, 80],
+      name: '前回のセット',
+    },
+    {
+      value: [60, 60, 80, 80, 80, 80],
+      name: '現在のセット',
+    },
+  ];
+  // TODO: fix radar chart placement and height on design freeze
+  const radarChartHeight = 400;
+
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
+      <RadarChart indicators={radarChartIndicators} series={radarChartSeries} height={radarChartHeight} />
       <Box
         component="main"
         sx={{
