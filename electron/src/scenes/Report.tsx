@@ -15,8 +15,9 @@ import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import { RadarChart } from './RadarChart';
-import { GoodPoint, VideoPlayer } from './ReportComponents';
+import GoodPoint from './report_components/GoodPoint';
+import RadarChart from './report_components/RadarChart';
+import VideoPlayer from './report_components/VideoPlayer';
 
 export default function IntervalReport() {
   // セット記録用

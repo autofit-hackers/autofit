@@ -4,7 +4,7 @@ export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
 type RadarChartProps = { indicators: RadarChartIndicators; series: RadarChartSeries; height: number };
 
-export function RadarChart(radarChartProps: RadarChartProps) {
+function RadarChart(radarChartProps: RadarChartProps) {
   const { indicators, series, height } = radarChartProps;
   const legends: string[] = series.map((row) => row.name);
   const option = {
