@@ -36,7 +36,7 @@ function VideoPlayer(props: { displayedRepIndex: number; poseGridRef: React.Muta
           onReady={() => {
             if (poseGridRef.current) {
               // PoseGridをレップ映像に同期させる
-              poseGridRef.current.synchronizeToVideo(videoRef, setRecord, displayedRepIndex);
+              poseGridRef.current.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex);
             }
           }}
         />

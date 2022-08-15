@@ -435,7 +435,7 @@ export class PoseGrid {
     return factor * this.sizeWhenFitted;
   }
 
-  synchronizeToVideo(
+  startSynchronizingToVideo(
     videoRef: React.RefObject<BaseReactPlayer<BaseReactPlayerProps>>,
     setRecord: Set,
     displayedRepIndex: number,
@@ -450,6 +450,6 @@ export class PoseGrid {
         KINECT_POSE_CONNECTIONS,
       );
     }
-    requestAnimationFrame(() => this.synchronizeToVideo(videoRef, setRecord, displayedRepIndex));
+    requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
   }
 }
