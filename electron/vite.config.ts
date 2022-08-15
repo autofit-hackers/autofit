@@ -22,11 +22,11 @@ export default defineConfig({
     react(),
     electron({
       main: {
-        entry: 'electron/main/index.ts',
+        entry: 'src/ipc/main/index.ts',
         vite: {
           build: {
             sourcemap: false,
-            outDir: 'dist/electron/main',
+            outDir: 'dist/src/ipc/main',
             plugins: 'esbuild.plugins.js',
             external: ['pg-native', 'ssh2'],
           },
@@ -35,13 +35,13 @@ export default defineConfig({
       preload: {
         input: {
           // You can configure multiple preload scripts here
-          index: join(__dirname, 'electron/preload/index.ts'),
+          index: join(__dirname, 'src/ipc/preload/index.ts'),
         },
         vite: {
           build: {
             // For debug
             sourcemap: 'inline',
-            outDir: 'dist/electron/preload',
+            outDir: 'dist/src/ipc/preload',
             plugins: 'esbuild.plugins.js',
             external: ['pg-native', 'ssh2'],
           },
