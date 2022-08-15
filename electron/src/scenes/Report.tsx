@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import GoodPoint from './report_components/GoodPoint';
 import InstructionNavigation from './report_components/InstructionNavigation';
 import RadarChart from './report_components/RadarChart';
+import ResultDescription from './report_components/ResultDescription';
 import VideoPlayer from './report_components/VideoPlayer';
 
 export default function IntervalReport() {
@@ -15,16 +15,19 @@ export default function IntervalReport() {
   const [setRecord] = useAtom(setRecordAtom);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
-  const [displayedRepIndex, setDisplayedRepIndex] = useState(0);
+  const [displayedRepIndex, setDisplayedRepIndex] = useState(
+    setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex,
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [kinect] = useAtom(kinectAtom);
 
   // PoseGrid用
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const [kinect] = useAtom(kinectAtom);
+  console.log('parent description', setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep);
 
-  // TODO: gridCameraPositionをSetRecordから取得するようにする
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
     stopKinect(kinect);
@@ -35,13 +38,14 @@ export default function IntervalReport() {
     }
   }, [formInstructionItems, kinect]);
 
+  // TODO: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
     if (poseGridRef.current !== null) {
       poseGridRef.current.setCameraPosition(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
     }
-  }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord, setRecord.formEvaluationResults]);
+  }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
 
   const futuristicTheme = createTheme({
     palette: {
@@ -58,34 +62,21 @@ export default function IntervalReport() {
       },
     },
   });
-
   // radar chart config and state
-  // TODO: instruction algorithms generate indicators and series
-  const radarChartIndicators = [
-    { name: 'しゃがみの深さ', max: 100 },
-    { name: '膝の角度（内外）', max: 100 },
-    { name: '膝の位置（前後）', max: 100 },
-    { name: '腰の真っ直ぐさ', max: 100 },
-    { name: 'しゃがみ・立ち上がりの真っ直ぐさ', max: 100 },
-    { name: '情熱', max: 100 },
-  ];
+  const radarChartIndicators = formInstructionItems.map((instruction) => ({
+    name: instruction.name,
+    max: 100,
+  }));
   const radarChartSeries = [
     {
-      value: [20, 60, 40, 40, 80, 80],
-      name: '前回のセット',
-    },
-    {
-      value: [60, 60, 80, 80, 80, 80],
-      name: '現在のセット',
+      value: setRecord.formEvaluationResults.map((result) => result.score),
+      name: '今回のセット',
     },
   ];
-  // TODO: fix radar chart placement and height on design freeze
-  const radarChartHeight = 400;
 
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
-      <RadarChart indicators={radarChartIndicators} series={radarChartSeries} height={radarChartHeight} />
       <Box
         component="main"
         sx={{
@@ -96,6 +87,8 @@ export default function IntervalReport() {
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          {/* TODO: better placement */}
+          <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
           <Grid container spacing="0.5vh">
             {/* 撮影したRGB映像 */}
             <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
@@ -109,7 +102,6 @@ export default function IntervalReport() {
                   height: '70vw',
                 }}
               >
-                {/* TODO: Better positioning */}
                 <div
                   className="pose-grid-container"
                   ref={gridDivRef}
@@ -137,8 +129,12 @@ export default function IntervalReport() {
                   Reset Camera Position
                 </Button>
               </Paper>
+              <ResultDescription
+                descriptionsForEachRep={
+                  setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
+                }
+              />
             </Grid>
-            <GoodPoint text={formInstructionItems[selectedInstructionIndex].label ?? 'null'} />
             {/* 指導項目の切り替えタブ */}
             <InstructionNavigation
               selectedInstructionIndex={selectedInstructionIndex}

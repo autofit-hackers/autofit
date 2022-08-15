@@ -2,10 +2,11 @@ import ReactECharts from 'echarts-for-react';
 
 export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
-type RadarChartProps = { indicators: RadarChartIndicators; series: RadarChartSeries; height: number };
+type RadarChartProps = { indicators: RadarChartIndicators; series: RadarChartSeries; style: React.CSSProperties };
 
 function RadarChart(radarChartProps: RadarChartProps) {
-  const { indicators, series, height } = radarChartProps;
+  const { indicators, series, style } = radarChartProps;
+  console.log('series', series);
   const legends: string[] = series.map((row) => row.name);
   const option = {
     title: {
@@ -27,7 +28,7 @@ function RadarChart(radarChartProps: RadarChartProps) {
     ],
   };
 
-  return <ReactECharts option={option} style={{ height }} />;
+  return <ReactECharts option={option} style={style} />;
 }
 
 export default RadarChart;
