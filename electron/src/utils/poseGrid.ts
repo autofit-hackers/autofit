@@ -116,7 +116,7 @@ export class PoseGrid {
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   scene: Scene;
-
+  orbitControls: OrbitControls;
   size: number;
   landmarks: Array<NormalizedLandmark>;
   landmarkGroup: Group;
@@ -163,10 +163,10 @@ export class PoseGrid {
     );
     this.scene = new Scene();
     // カメラコントローラーを作成
-    const controls = new OrbitControls(this.camera, canvas);
+    this.orbitControls = new OrbitControls(this.camera, canvas);
     // 滑らかにカメラコントローラーを制御する
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.2;
+    this.orbitControls.enableDamping = true;
+    this.orbitControls.dampingFactor = 0.2;
 
     this.size = 100;
     this.landmarks = [];
@@ -210,6 +210,13 @@ export class PoseGrid {
     this.scene.add(this.connectionGroup);
     this.origin = new Vector3();
     this.requestFrame();
+  }
+
+  updateOrbitControls(): void {
+    window.requestAnimationFrame((): void => {
+      this.orbitControls.update();
+      this.renderer.render(this.scene, this.camera);
+    });
   }
 
   /**

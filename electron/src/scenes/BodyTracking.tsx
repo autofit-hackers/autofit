@@ -75,7 +75,7 @@ export default function BodyTrack2d() {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
 
-      if (data.bodyFrame.bodies) {
+      if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入
         const currentPose: Pose = kinectToMediapipe(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
@@ -155,6 +155,9 @@ export default function BodyTrack2d() {
         if (poseGrid) {
           poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
+      } else {
+        // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
+        poseGrid.updateOrbitControls();
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
