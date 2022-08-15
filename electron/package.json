@@ -6,7 +6,7 @@
   "description": "Vite React Electron boilerplate.",
   "author": "草鞋没号 <308487730@qq.com>",
   "license": "MIT",
-  "main": "dist/electron/main/index.js",
+  "main": "dist/src/ipc/main/index.js",
   "scripts": {
     "start": "vite",
     "dev": "vite",

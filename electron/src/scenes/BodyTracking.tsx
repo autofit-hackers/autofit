@@ -4,7 +4,14 @@ import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
-import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import {
+  GridDelta,
+  heightInWorld,
+  kinectToMediapipe,
+  KINECT_POSE_CONNECTIONS,
+  Pose,
+  translateLandmarkList,
+} from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { resetSet, Set } from '../training_data/set';
@@ -153,7 +160,11 @@ export default function BodyTrack2d() {
 
         // PoseGridの描画
         if (poseGrid) {
-          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
+          // a user stands about 1.7m away from the camera (kinect)
+          // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
+          const toStandingPoint: GridDelta = { x: 0, y: 0, z: -1700 };
+          const landmarkListToDraw = translateLandmarkList(currentPose.worldLandmarks, toStandingPoint);
+          poseGrid.updateLandmarks(landmarkListToDraw, KINECT_POSE_CONNECTIONS);
         }
       } else {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
