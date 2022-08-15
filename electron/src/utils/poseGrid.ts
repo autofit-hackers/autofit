@@ -445,11 +445,16 @@ export class PoseGrid {
       const currentVideoTime = videoRef.current.getCurrentTime();
       const currentVideoProgress = currentVideoTime / currentVideoDuration;
       const currentPoseFrame = Math.round(currentVideoProgress * setRecord.reps[displayedRepIndex].form.length);
-      this.updateLandmarks(
-        setRecord.reps[displayedRepIndex].form[currentPoseFrame].worldLandmarks,
-        KINECT_POSE_CONNECTIONS,
-      );
+      const currentPoseFrameLandmarks = setRecord.reps[displayedRepIndex].form[currentPoseFrame]?.worldLandmarks;
+      if (currentPoseFrameLandmarks) {
+        this.updateLandmarks(
+          setRecord.reps[displayedRepIndex].form[currentPoseFrame].worldLandmarks,
+          KINECT_POSE_CONNECTIONS,
+        );
+      } else {
+        this.updateOrbitControls();
+      }
+      requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
     }
-    requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
   }
 }
