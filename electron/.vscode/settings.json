@@ -9,8 +9,6 @@
   "javascript.validate.enable": false,
   "javascript.format.enable": false,
   "typescript.format.enable": false,
-  "javascript.inlayHints.parameterNames.enabled": "all",
-  "typescript.inlayHints.parameterNames.enabled": "all",
   "editor.codeActionsOnSave": ["source.organizeImports", "source.fixAll.eslint"],
   "eslint.format.enable": false,
 
@@ -111,6 +109,7 @@
   "cSpell.words": [
     "BGRA",
     "CUDA",
+    "echarts",
     "HANDTIP",
     "Kinect",
     "linewidth",

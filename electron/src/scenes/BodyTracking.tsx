@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
-import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
+import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
 import {
   GridDelta,
   heightInWorld,
@@ -11,15 +11,15 @@ import {
   KINECT_POSE_CONNECTIONS,
   Pose,
   translateLandmarkList,
-} from '../training/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training/rep';
-import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training/repState';
-import { resetSet, Set } from '../training/set';
+} from '../training_data/pose';
+import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
+import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
+import { resetSet, Set } from '../training_data/set';
+import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { startKinect } from '../utils/kinect';
+import { PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
-import { renderBGRA32ColorFrame } from '../utils/render/drawing';
-import { PoseGrid } from '../utils/render/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
@@ -82,7 +82,7 @@ export default function BodyTrack2d() {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
 
-      if (data.bodyFrame.bodies) {
+      if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入
         const currentPose: Pose = kinectToMediapipe(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
@@ -134,7 +134,7 @@ export default function BodyTrack2d() {
 
           // 完了したレップのフォームを分析・評価
           repRef.current = calculateKeyframes(repRef.current);
-          repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
+          repRef.current = calculateRepFormErrorScore(repRef.current, formInstructionItems);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           setRef.current.reps = [...setRef.current.reps, repRef.current];
@@ -166,6 +166,9 @@ export default function BodyTrack2d() {
           const landmarkListToDraw = translateLandmarkList(currentPose.worldLandmarks, toStandingPoint);
           poseGrid.updateLandmarks(landmarkListToDraw, KINECT_POSE_CONNECTIONS);
         }
+      } else {
+        // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
+        poseGrid.updateOrbitControls();
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
@@ -190,7 +193,7 @@ export default function BodyTrack2d() {
     if (!poseGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current);
-      poseGrid.setCamera();
+      poseGrid.setCameraPosition();
     }
 
     // このコンポーネントのアンマウント時に実行される

@@ -4,7 +4,6 @@ import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
   BufferGeometry,
   Color,
-  EdgesGeometry,
   Group,
   LineBasicMaterial,
   LineSegments,
@@ -13,54 +12,32 @@ import {
   MeshBasicMaterial,
   Object3D,
   PerspectiveCamera,
-  PlaneBufferGeometry,
-  PlaneGeometry,
   Scene,
   SphereGeometry,
   Vector3,
-  WebGLRenderer
+  WebGLRenderer,
+  GridHelper,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../../training/pose';
+import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../training_data/pose';
 
-import { Set } from '../../training/set';
+import { Set } from '../training_data/set';
 
 export type CameraPosition = {
   theta: number;
   phi: number;
   distance: number;
 };
-/**
- * ViewerWidget configuration and its default value.
- */
-export type ViewerWidgetConfig = {
-  backgroundColor: number;
-  fovInDegrees: number;
-  isRotating: boolean;
-  rotationSpeed: number;
-  shouldAddPausePlay: boolean;
-};
-
-const DEFAULT_VIEWER_WIDGET_CONFIG: ViewerWidgetConfig = {
-  backgroundColor: 0,
-  fovInDegrees: 75,
-  isRotating: false,
-  rotationSpeed: 0.0,
-  shouldAddPausePlay: false,
-};
 
 /**
  * Configuration for the landmark grid and its default value.
  */
 export type PoseGridConfig = {
+  backgroundColor: number;
+  cameraFov: number;
   axesColor: number;
   axesWidth: number;
   shouldSetLabels: boolean;
-  /**
-   * The "centered" attribute describes whether the grid should use the center
-   * of the bounding box of the landmarks as the origin.
-   */
-  centered: boolean;
   connectionColor: number;
   connectionWidth: number;
   definedColors: Array<{ name: string; value: number }>;
@@ -85,11 +62,12 @@ export type PoseGridConfig = {
   showHidden: boolean;
 };
 
-const DEFAULT_LANDMARK_GRID_CONFIG: PoseGridConfig = {
+const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
+  backgroundColor: 0,
+  cameraFov: 75,
   axesColor: 0xffffff,
   axesWidth: 2,
   shouldSetLabels: false,
-  centered: false,
   connectionColor: 0x00ffff,
   connectionWidth: 4,
   definedColors: [],
@@ -105,11 +83,6 @@ const DEFAULT_LANDMARK_GRID_CONFIG: PoseGridConfig = {
   range: 1,
   showHidden: true,
 };
-
-/**
- *
- */
-type NumberLabel = { element: HTMLElement; position: Vector3; value: number };
 
 /**
  * A connection between two landmarks
@@ -136,21 +109,16 @@ type ColorMap<T> = Array<{ color: ColorName | undefined; list: T[] }>;
  * connections can be drawn.
  */
 export class PoseGrid {
-  // Extended properties from ViewerWidget
-  distance: number;
   rotation: number;
   disposeQueue: Array<BufferGeometry>;
   removeQueue: Array<Object3D>;
-  viewerWidgetConfig: ViewerWidgetConfig;
   container: HTMLDivElement;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   scene: Scene;
-
-  // Original properties
+  orbitControls: OrbitControls;
   size: number;
   landmarks: Array<NormalizedLandmark>;
-  labels: { x: NumberLabel[]; y: NumberLabel[]; z: NumberLabel[] };
   landmarkGroup: Group;
   connectionGroup: Group;
   origin: Vector3;
@@ -168,33 +136,21 @@ export class PoseGrid {
   /**
    * @public
    */
-  constructor(
-    parent: HTMLElement,
-    viewerWidgetConfig: ViewerWidgetConfig = DEFAULT_VIEWER_WIDGET_CONFIG,
-    poseGridConfig = DEFAULT_LANDMARK_GRID_CONFIG,
-  ) {
-    /*
-     * Set viewerWidgetConfig
-     */
-    this.distance = 100;
+  constructor(parent: HTMLElement, poseGridConfig = DEFAULT_POSE_GRID_CONFIG) {
+    this.poseGridConfig = poseGridConfig;
     this.rotation = 0;
     this.disposeQueue = [];
     this.removeQueue = [];
-    this.viewerWidgetConfig = { ...DEFAULT_VIEWER_WIDGET_CONFIG, ...viewerWidgetConfig };
     this.container = document.createElement('div');
     this.container.classList.add('viewer-widget-js');
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     this.container.appendChild(canvas);
     parent.appendChild(this.container);
     const parentBox: DOMRect = parent.getBoundingClientRect();
-    if (this.viewerWidgetConfig.shouldAddPausePlay) {
-      this.addPausePlay(this.container);
-    }
-    this.camera = new PerspectiveCamera(this.viewerWidgetConfig.fovInDegrees, parentBox.width / parentBox.height, 1);
-    this.camera.position.z = this.distance;
+    this.camera = new PerspectiveCamera(this.poseGridConfig.cameraFov, parentBox.width / parentBox.height, 1);
     this.camera.lookAt(new Vector3());
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
-    this.renderer.setClearColor(new Color(this.viewerWidgetConfig.backgroundColor), 0.5);
+    this.renderer.setClearColor(new Color(this.poseGridConfig.backgroundColor), 0.5);
     this.renderer.setSize(Math.floor(parentBox.width), Math.floor(parentBox.height));
     window.addEventListener(
       'resize',
@@ -207,15 +163,11 @@ export class PoseGrid {
     );
     this.scene = new Scene();
     // カメラコントローラーを作成
-    const controls = new OrbitControls(this.camera, canvas);
+    this.orbitControls = new OrbitControls(this.camera, canvas);
     // 滑らかにカメラコントローラーを制御する
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.2;
+    this.orbitControls.enableDamping = true;
+    this.orbitControls.dampingFactor = 0.2;
 
-    /*
-     * Set poseGridConfig
-     */
-    this.poseGridConfig = poseGridConfig;
     this.size = 100;
     this.landmarks = [];
     this.landmarkMaterial = new MeshBasicMaterial({ color: this.poseGridConfig.landmarkColor });
@@ -248,11 +200,10 @@ export class PoseGrid {
     });
     this.sizeWhenFitted = 1 - 2 * this.poseGridConfig.margin;
 
-    /*
-     * Generate the grid and viewed materials
-     */
-    this.drawAxes();
-    this.labels = this.createAxesLabels();
+    const gridPlane = new GridHelper(100, 10);
+    // TODO: this is a magic-number hack to get the pose's foot to be on the grid. should be fixed to automatically adjust grid y to foot position.
+    gridPlane.translateY(-this.size / 4);
+    this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
     this.connectionGroup = new Group();
@@ -261,34 +212,19 @@ export class PoseGrid {
     this.requestFrame();
   }
 
+  updateOrbitControls(): void {
+    window.requestAnimationFrame((): void => {
+      this.orbitControls.update();
+      this.renderer.render(this.scene, this.camera);
+    });
+  }
+
   /**
    * @private:
    */
   requestFrame(): void {
     window.requestAnimationFrame((): void => {
-      if (this.viewerWidgetConfig.isRotating) {
-        this.rotation += this.viewerWidgetConfig.rotationSpeed;
-        this.camera.position.x = Math.sin(this.rotation) * this.distance;
-        this.camera.position.z = Math.cos(this.rotation) * this.distance;
-        this.camera.lookAt(new Vector3());
-      }
       this.renderer.render(this.scene, this.camera);
-      // Set labels
-      this.labels.x.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
-      this.labels.y.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
-      this.labels.z.forEach((pair: NumberLabel) => {
-        const position: Vector3 = this.getCanvasPosition(pair.position);
-        // eslint-disable-next-line no-param-reassign
-        pair.element.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      });
     });
   }
 
@@ -311,7 +247,7 @@ export class PoseGrid {
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
   // Default parameters are set so that the grid is viewed from the side
-  setCamera(cameraPosition: CameraPosition = { theta: 90, phi: 0, distance: 150 }): void {
+  setCameraPosition(cameraPosition: CameraPosition = { theta: 90, phi: 0, distance: 150 }): void {
     const { theta, phi, distance } = cameraPosition;
     const thetaRad = (theta * Math.PI) / 180;
     const phiRad = (phi * Math.PI) / 180;
@@ -319,135 +255,6 @@ export class PoseGrid {
     this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * distance;
     this.camera.position.y = Math.cos(thetaRad) * distance;
     this.camera.lookAt(new Vector3());
-  }
-
-  /**
-   * @private: (in constructor)
-   */
-  addPausePlay(parent: HTMLElement): void {
-    const PAUSE_SRC =
-      'https://fonts.gstatic.com/s/i/googlematerialicons/pause/v14/white-24dp/1x/gm_pause_white_24dp.png';
-    const PLAY_SRC =
-      'https://fonts.gstatic.com/s/i/googlematerialicons/play_arrow/v14/white-24dp/1x/gm_play_arrow_white_24dp.png';
-
-    const button: HTMLImageElement = document.createElement('img');
-    button.classList.add('controls');
-    button.src = this.viewerWidgetConfig.isRotating ? PAUSE_SRC : PLAY_SRC;
-    button.onclick = (): void => {
-      if (this.viewerWidgetConfig.isRotating) {
-        button.src = PLAY_SRC;
-        this.viewerWidgetConfig.isRotating = false;
-      } else {
-        button.src = PAUSE_SRC;
-        this.viewerWidgetConfig.isRotating = true;
-      }
-    };
-    parent.appendChild(button);
-  }
-
-  /**
-   * @private: Draw axes of the grid.(in constructor)
-   */
-  drawAxes(): void {
-    const axes: Group = new Group();
-    const HALF_SIZE: number = this.size / 2;
-    const grid: Group = this.makeGrid(this.size, this.poseGridConfig.numCellsPerAxis);
-    const xGrid: Group = grid;
-    const yGrid: Object3D = grid.clone();
-    const zGrid: Object3D = grid.clone();
-    xGrid.translateX(-HALF_SIZE);
-    xGrid.rotateY(Math.PI / 2);
-    yGrid.translateY(-HALF_SIZE);
-    yGrid.rotateX(Math.PI / 2);
-    axes.add(yGrid);
-    zGrid.translateZ(-HALF_SIZE);
-    this.scene.add(axes);
-  }
-
-  /**
-   * @private: Generate Grid.(in drawAxis in constructor)
-   */
-  makeGrid(size: number, numSteps: number): Group {
-    const grid: Group = new Group();
-    const plane: PlaneBufferGeometry = new PlaneGeometry(size, size);
-    const edges: EdgesGeometry = new EdgesGeometry(plane);
-    const wireFrame: LineSegments = new LineSegments(edges, this.gridMaterial);
-    grid.add(wireFrame);
-    const stepPlaneSize: number = size / numSteps;
-    const stepPlane: PlaneBufferGeometry = new PlaneGeometry(stepPlaneSize, stepPlaneSize);
-    const stepEdges: EdgesGeometry = new EdgesGeometry(stepPlane);
-    const corner: number = -size / 2 + stepPlaneSize / 2;
-    for (let i = 0; i < numSteps; i += 1) {
-      for (let j = 0; j < numSteps; j += 1) {
-        const stepFrame: LineSegments = new LineSegments(stepEdges, this.gridMaterial);
-        stepFrame.translateX(corner + i * stepPlaneSize);
-        stepFrame.translateY(corner + j * stepPlaneSize);
-        grid.add(stepFrame);
-      }
-    }
-
-    return grid;
-  }
-
-  /**
-   * @private: Creates a label for the axes.(in constructor)
-   */
-  createAxesLabels(): { x: Array<NumberLabel>; y: Array<NumberLabel>; z: Array<NumberLabel> } {
-    const labels: { x: Array<NumberLabel>; y: Array<NumberLabel>; z: Array<NumberLabel> } = {
-      x: [],
-      y: [],
-      z: [],
-    };
-    const cellsPerAxis: number = this.poseGridConfig.numCellsPerAxis;
-    const { range } = this.poseGridConfig;
-    const HALF_SIZE: number = this.size / 2;
-    for (let i = 0; i < cellsPerAxis; i += 1) {
-      // X labels
-      // This for vector adds one to the count as it covers numCellsPerAxis-1
-      // points on the x-axis. The point not covered is where the y-axis meets
-      // the x-axis.
-      const xValue: number = ((i + 1) / cellsPerAxis - 0.5) * range;
-      labels.x.push({
-        position: new Vector3(((i + 1) / cellsPerAxis) * this.size - HALF_SIZE, -HALF_SIZE, HALF_SIZE),
-        element: this.createLabel(xValue),
-        value: xValue,
-      });
-      // Z labels
-      // This vector covers numCellsPerAxis-1 points on the z-axis. The point
-      // not covered is where the z-axis meets the x-axis.
-      const zValue: number = (i / cellsPerAxis - 0.5) * range;
-      labels.z.push({
-        position: new Vector3(HALF_SIZE, -HALF_SIZE, (i / cellsPerAxis) * this.size - HALF_SIZE),
-        element: this.createLabel(zValue),
-        value: zValue,
-      });
-    }
-    // Y labels
-    // This for loop covers all points on the y-axis
-    for (let i = 0; i <= cellsPerAxis; i += 1) {
-      const yValue: number = (i / cellsPerAxis - 0.5) * range;
-      labels.y.push({
-        position: new Vector3(-HALF_SIZE, (i / cellsPerAxis) * this.size - HALF_SIZE, HALF_SIZE),
-        element: this.createLabel(yValue),
-        value: yValue,
-      });
-    }
-
-    return labels;
-  }
-
-  /**
-   * @private:
-   */
-  createLabel(value: number): HTMLSpanElement {
-    const span: HTMLSpanElement = document.createElement('span');
-    span.classList.add('landmark-label-js');
-    if (this.poseGridConfig.shouldSetLabels) {
-      this.setLabel(span, value);
-    }
-    this.container.appendChild(span);
-
-    return span;
   }
 
   /**
@@ -475,9 +282,6 @@ export class PoseGrid {
     );
     const centeredLandmarks: Array<NormalizedLandmark> =
       visibleLandmarks.length === 0 ? this.landmarks : visibleLandmarks;
-    if (this.poseGridConfig.centered) {
-      this.centralizeLandmarks(centeredLandmarks);
-    }
     // Fit to grid if necessary
     let scalingFactor = 1;
     if (this.poseGridConfig.fitToGrid) {
@@ -499,17 +303,6 @@ export class PoseGrid {
         landmark.y *= scalingFactor;
         // eslint-disable-next-line no-param-reassign
         landmark.z *= scalingFactor;
-      });
-    }
-    if (this.poseGridConfig.shouldSetLabels) {
-      this.labels.x.forEach((label: NumberLabel) => {
-        this.setLabel(label.element, (label.value - this.origin.x) / scalingFactor);
-      });
-      this.labels.y.forEach((label: NumberLabel) => {
-        this.setLabel(label.element, (label.value - this.origin.y) / scalingFactor);
-      });
-      this.labels.z.forEach((label: NumberLabel) => {
-        this.setLabel(label.element, (label.value - this.origin.z) / scalingFactor);
       });
     }
     const landmarkVectors: Array<Vector3> = this.landmarks.map(
@@ -553,15 +346,6 @@ export class PoseGrid {
       bufferGeometry.dispose();
     });
     this.disposeQueue = [];
-  }
-
-  /**
-   * @private: Sets the label text.
-   */
-  setLabel(span: HTMLSpanElement, value: number): void {
-    // eslint-disable-next-line no-param-reassign
-    span.textContent =
-      this.poseGridConfig.labelPrefix + value.toPrecision(2).toString() + this.poseGridConfig.labelSuffix;
   }
 
   drawLandmarks(landmarkVectors: Vector3[]): void {
@@ -651,40 +435,7 @@ export class PoseGrid {
     return factor * this.sizeWhenFitted;
   }
 
-  /**
-   * @private:Relocate landmarks to the grid origin. (in Update)
-   */
-  centralizeLandmarks(landmarks: Array<NormalizedLandmark>): void {
-    if (landmarks.length === 0) {
-      return;
-    }
-    let maxX: number = landmarks[0].x;
-    let minX: number = landmarks[0].x;
-    let maxY: number = landmarks[0].y;
-    let minY: number = landmarks[0].y;
-    let maxZ: number = landmarks[0].z;
-    let minZ: number = landmarks[0].z;
-    for (let i = 1; i < landmarks.length; i += 1) {
-      const landmark: NormalizedLandmark = landmarks[i];
-      maxX = Math.max(maxX, landmark.x);
-      maxY = Math.max(maxY, landmark.y);
-      maxZ = Math.max(maxZ, landmark.z);
-      minX = Math.min(minX, landmark.x);
-      minY = Math.min(minY, landmark.y);
-      minZ = Math.min(minZ, landmark.z);
-    }
-    const centerX: number = (maxX + minX) / 2;
-    const centerY: number = (maxY + minY) / 2;
-    const centerZ: number = (maxZ + minZ) / 2;
-    for (let i = 0; i < this.landmarks.length; i += 1) {
-      this.landmarks[i].x -= centerX;
-      this.landmarks[i].y -= centerY;
-      this.landmarks[i].z -= centerZ;
-    }
-    this.origin.set(centerX, centerY, centerZ);
-  }
-
-  synchronizeToVideo(
+  startSynchronizingToVideo(
     videoRef: React.RefObject<BaseReactPlayer<BaseReactPlayerProps>>,
     setRecord: Set,
     displayedRepIndex: number,
@@ -694,11 +445,16 @@ export class PoseGrid {
       const currentVideoTime = videoRef.current.getCurrentTime();
       const currentVideoProgress = currentVideoTime / currentVideoDuration;
       const currentPoseFrame = Math.round(currentVideoProgress * setRecord.reps[displayedRepIndex].form.length);
-      this.updateLandmarks(
-        setRecord.reps[displayedRepIndex].form[currentPoseFrame].worldLandmarks,
-        KINECT_POSE_CONNECTIONS,
-      );
+      const currentPoseFrameLandmarks = setRecord.reps[displayedRepIndex].form[currentPoseFrame]?.worldLandmarks;
+      if (currentPoseFrameLandmarks) {
+        this.updateLandmarks(
+          setRecord.reps[displayedRepIndex].form[currentPoseFrame].worldLandmarks,
+          KINECT_POSE_CONNECTIONS,
+        );
+      } else {
+        this.updateOrbitControls();
+      }
+      requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
     }
-    requestAnimationFrame(() => this.synchronizeToVideo(videoRef, setRecord, displayedRepIndex));
   }
 }

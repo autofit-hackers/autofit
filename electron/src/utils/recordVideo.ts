@@ -17,8 +17,10 @@ export const startCapturingRepVideo = (
   recorder.onstart = () => {
     // 開始1分でレコーダーを自動停止
     setTimeout(() => {
-      console.log('Finishing rep video recorder: 1 min passed since the recording started');
-      recorder.stop();
+      if (recorder.state === 'recording') {
+        console.log('Finishing rep video recorder: 1 min passed since the recording started');
+        recorder.stop();
+      }
     }, 60000);
   };
   recorder.onstop = () => {
@@ -51,8 +53,10 @@ export const startCapturingSetVideo = (
   recorder.onstart = () => {
     // 開始3分でレコーダーを自動停止
     setTimeout(() => {
-      console.log('Finishing set video recorder: 3 min passed since the recording started');
-      recorder.stop();
+      if (recorder.state === 'recording') {
+        console.log('Finishing set video recorder: 3 min passed since the recording started');
+        recorder.stop();
+      }
     }, 180000);
   };
   recorder.onstop = () => {
