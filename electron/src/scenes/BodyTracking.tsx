@@ -71,7 +71,7 @@ export default function BodyTrack2d() {
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
 
       if (canvasImageData.current === null) {
-        canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
+        canvasRef.current.width = data.colorImageFrame.width;
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
         // セット映像の記録を開始
