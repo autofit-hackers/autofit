@@ -8,7 +8,16 @@ export const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImag
     pixelArray[i + 2] = newPixelData[i];
     pixelArray[i + 3] = 0xff;
   }
-  ctx.putImageData(canvasImageData, 0, 0);
+  // 取得映像の両端1/4をカットして貼り付ける
+  ctx.putImageData(
+    canvasImageData,
+    -canvasImageData.width / 4,
+    0,
+    canvasImageData.width / 4,
+    0,
+    canvasImageData.width / 2,
+    canvasImageData.height,
+  );
 };
 
 export const drawBarsFromTwoPoints = (
