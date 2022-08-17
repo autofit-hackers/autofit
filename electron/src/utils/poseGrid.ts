@@ -19,7 +19,7 @@ import {
   GridHelper,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../training_data/pose';
+import { translateLandmarkList, copyLandmark, KINECT_POSE_CONNECTIONS } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
 
@@ -265,9 +265,12 @@ export class PoseGrid {
     colorConnections?: ConnectionList | ColorMap<Connection>,
     colorLandmarks?: ColorMap<number>,
   ): void {
+    // a user stands about 1.7m away from the camera (kinect)
+    // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
+    const translatedLandmarks = translateLandmarkList(landmarks, { x: 0, y: 0, z: -1700 });
     this.connectionGroup.clear();
     this.clearResources();
-    this.landmarks = landmarks.map(copyLandmark);
+    this.landmarks = translatedLandmarks.map(copyLandmark);
     // Convert connections to ColorList if not already
     let connections: ColorMap<Connection> = [];
     if (colorConnections) {
