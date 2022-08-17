@@ -235,15 +235,12 @@ export default function BodyTrack2d() {
         className="main_canvas"
         style={{
           position: 'absolute',
-          marginLeft: 0,
-          marginRight: 'auto',
-          top: 0,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
           zIndex: 1,
-          width: 'auto',
-          height: 'auto',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          margin: 'auto',
         }}
       />
       <div
