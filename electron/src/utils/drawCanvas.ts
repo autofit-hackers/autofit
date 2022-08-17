@@ -11,19 +11,6 @@ export const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImag
   ctx.putImageData(canvasImageData, 0, 0);
 };
 
-// sideを描画する
-export const sideRenderFrame = (ctx: CanvasRenderingContext2D, canvasImageData: ImageData) => {
-  // const newPixelData = Buffer.from(imageFrame.imageData);
-  const pixelArray = canvasImageData.data;
-  for (let i = 0; i < canvasImageData.data.length; i += 4) {
-    pixelArray[i] = 0;
-    pixelArray[i + 1] = 0xff;
-    pixelArray[i + 2] = 0xff;
-    pixelArray[i + 3] = 0xff;
-  }
-  ctx.putImageData(canvasImageData, 0, 0);
-};
-
 export const drawBarsFromTwoPoints = (
   ctx: CanvasRenderingContext2D,
   x1: number,
