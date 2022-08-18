@@ -166,70 +166,42 @@ export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandm
 export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
   Math.atan2(p2.x - p1.x, p2.z - p1.z);
 
-// Sideを描画するために行う座標変換
-export const normalizeSideWorldLandmarkPoint = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-  LandmarkPoint: Landmark,
-): NormalizedLandmark => {
-  // const normalizedLandmarks: NormalizedLandmarkList = [];
-  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
-  const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
-  const heightOfBody = 1500;
-
-  return {
-    x: ((LandmarkPoint.z - lowCenterZ) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
-    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
-    z: 0,
-  };
-};
-
-export const normalizeSideSideWorldLandmarks = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-): NormalizedLandmarkList => {
-  const normalizedLandmarks: NormalizedLandmarkList = [];
-
-  for (let i = 0; i < worldLandmarks.length; i += 1) {
-    normalizedLandmarks[i] = normalizeSideWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
-  }
-
-  return normalizedLandmarks;
-};
-
-// Frontを描画するために行う座標返還
-export const normalizeFrontWorldLandmarkPoint = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-  LandmarkPoint: Landmark,
-): NormalizedLandmark => {
-  const lowCenterX = (worldLandmarks[20].x + worldLandmarks[24].x) / 2;
-  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
-  const heightOfBody = 1500;
-
-  return {
-    x: ((LandmarkPoint.x - lowCenterX) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
-    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
-    z: 0,
-  };
-};
-
-export const normalizeFrontWorldLandmarks = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-): NormalizedLandmarkList => {
-  const normalizedLandmarks: NormalizedLandmarkList = [];
-
-  for (let i = 0; i < worldLandmarks.length; i += 1) {
-    normalizedLandmarks[i] = normalizeFrontWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
-  }
-
-  return normalizedLandmarks;
-};
-
 export const copyLandmark = (normalizedLandmark: NormalizedLandmark): NormalizedLandmark => ({
   x: normalizedLandmark.x,
   y: normalizedLandmark.y,
   z: normalizedLandmark.z,
   visibility: normalizedLandmark.visibility,
 });
+
+// TODO: 上の関数と役割が被っているので、どちらかに統一する
+export const getAngle = (pose: Pose, startJoint: number, endJoint: number, viewDirection: string) => {
+  const start = pose.worldLandmarks[startJoint];
+  const end = pose.worldLandmarks[endJoint];
+  const x = end.x - start.x;
+  const y = end.y - start.y;
+  const z = end.z - start.z;
+  if (viewDirection === 'front') {
+    return (Math.atan2(y, x) * 180) / Math.PI;
+  }
+  if (viewDirection === 'left' || viewDirection === 'side') {
+    return (Math.atan2(z, y) * 180) / Math.PI;
+  }
+  if (viewDirection === 'yAxis') {
+    return (Math.atan2(Math.sqrt(x * x + z * z), y) * 180) / Math.PI;
+  }
+
+  return (Math.atan2(x, -z) * 180) / Math.PI;
+};
+
+// TODO: 必要か？
+export const getWorldPosition = (pose: Pose, jointNumber: number, xyz: string) => {
+  const joint = pose.worldLandmarks[jointNumber];
+  if (xyz === 'x') {
+    return joint.x;
+  }
+  if (xyz === 'y') {
+    return joint.y;
+  }
+
+  return joint.z;
+};
