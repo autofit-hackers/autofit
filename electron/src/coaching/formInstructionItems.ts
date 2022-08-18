@@ -54,7 +54,7 @@ const squatDepth: FormInstructionItem = {
 
 const kneeInAndOut: FormInstructionItem = {
   id: 1,
-  name: 'Knee out',
+  name: 'Knee in and out',
   label: 'ひざの内旋・外旋',
   descriptionForNegativeError: '膝が内側に入らないように注意しましょう。',
   descriptionForNearlyZeroError: 'ちょうどいい膝の開き方ですね。',
@@ -104,7 +104,7 @@ const stanceWidth: FormInstructionItem = {
 
 const kneeFrontAndBack: FormInstructionItem = {
   id: 3,
-  name: 'Knee position',
+  name: 'Knee front and back',
   label: '膝の前後位置',
   descriptionForNegativeError: '膝が前に出すぎています。関節を痛める危険性があるため、気を付けましょう',
   descriptionForNearlyZeroError: 'ひざの前後の位置が適切です。',
@@ -125,8 +125,8 @@ const kneeFrontAndBack: FormInstructionItem = {
 
 const squatVelocity: FormInstructionItem = {
   id: 4,
-  name: 'Knee position',
-  label: '膝の前後位置',
+  name: 'Speed',
+  label: 'フォーム速度',
   descriptionForNegativeError: 'もう少し早くスクワットしましょう。',
   descriptionForNearlyZeroError: 'ちょうどいいスピードです。',
   descriptionForPositiveError: '動きが速いです。もう少しゆっくりにしましょう。',
