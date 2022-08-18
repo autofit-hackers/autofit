@@ -1,4 +1,4 @@
-import { Box, Button, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
+import { Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -6,6 +6,7 @@ import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import InstructionNavigation from './report_components/InstructionNavigation';
+import PoseGridViewer from './report_components/PoseGridViewer';
 import RadarChart from './report_components/RadarChart';
 import ResultDescription from './report_components/ResultDescription';
 import VideoPlayer from './report_components/VideoPlayer';
@@ -100,32 +101,11 @@ export default function IntervalReport() {
                   height: '70vw',
                 }}
               >
-                <div
-                  className="pose-grid-container"
-                  ref={gridDivRef}
-                  style={{
-                    position: 'relative',
-                    textAlign: 'center',
-                    height: '30vw',
-                    width: '30vw',
-                    top: 0,
-                    left: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  }}
+                <PoseGridViewer
+                  gridDivRef={gridDivRef}
+                  poseGridRef={poseGridRef}
+                  cameraPosition={formInstructionItems[selectedInstructionIndex].gridCameraPosition}
                 />
-                <Button
-                  onClick={() => {
-                    if (poseGridRef.current !== null) {
-                      poseGridRef.current.setCameraPosition(
-                        formInstructionItems[selectedInstructionIndex].gridCameraPosition,
-                      );
-                    }
-                  }}
-                  variant="contained"
-                  sx={{ textAlign: 'center', width: '15vw' }}
-                >
-                  Reset Camera Position
-                </Button>
               </Paper>
               <ResultDescription
                 descriptionsForEachRep={
