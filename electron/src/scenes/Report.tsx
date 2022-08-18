@@ -26,8 +26,6 @@ export default function IntervalReport() {
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
 
-  console.log('parent description', setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep);
-
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
     stopKinect(kinect);

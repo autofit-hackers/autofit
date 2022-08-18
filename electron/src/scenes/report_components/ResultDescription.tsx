@@ -2,7 +2,6 @@ import { Paper, Typography } from '@mui/material';
 
 function ResultDescription(props: { descriptionsForEachRep: string[] }) {
   const { descriptionsForEachRep } = props;
-  console.log('child discription', descriptionsForEachRep);
 
   return (
     <Paper
