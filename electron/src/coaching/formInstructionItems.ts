@@ -116,7 +116,6 @@ const kneeFrontAndBack: FormInstructionItem = {
     if (pose === undefined) {
       return 0.0;
     }
-
     // TODO: 左足も考慮する
     const error = distanceInZ(pose.worldLandmarks[KJ.KNEE_RIGHT], pose.worldLandmarks[KJ.FOOT_RIGHT]);
 

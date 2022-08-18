@@ -183,12 +183,15 @@ export const getAngle = (pose: Pose, startJoint: number, endJoint: number, viewD
   if (viewDirection === 'front') {
     return (Math.atan2(y, x) * 180) / Math.PI;
   }
-  if (viewDirection === 'left' || viewDirection === 'side') {
+  if (viewDirection === 'side') {
     return (Math.atan2(z, y) * 180) / Math.PI;
   }
-  if (viewDirection === 'yAxis') {
+  if (viewDirection === 'above') {
     return (Math.atan2(Math.sqrt(x * x + z * z), y) * 180) / Math.PI;
   }
+  if (viewDirection === 'top') {
+    return (Math.atan2(x, -z) * 180) / Math.PI;
+  }
 
-  return (Math.atan2(x, -z) * 180) / Math.PI;
+  throw new Error(`Unknown view direction: ${viewDirection}`);
 };
