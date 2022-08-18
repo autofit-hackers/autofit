@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import InstructionNavigation from './report_components/InstructionNavigation';
+import InstructionTabs from './report_components/InstructionTabs';
 import PoseGridViewer from './report_components/PoseGridViewer';
 import RadarChart from './report_components/RadarChart';
 import ResultDescription from './report_components/ResultDescription';
@@ -114,7 +114,7 @@ export default function IntervalReport() {
               />
             </Grid>
             {/* 指導項目の切り替えタブ */}
-            <InstructionNavigation
+            <InstructionTabs
               selectedInstructionIndex={selectedInstructionIndex}
               setSelectedInstructionIndex={setSelectedInstructionIndex}
               formInstructionItems={formInstructionItems}
