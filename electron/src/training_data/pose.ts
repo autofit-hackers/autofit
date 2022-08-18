@@ -94,42 +94,27 @@ export type Pose = {
   worldLandmarks: LandmarkList;
 };
 
-export type GridDelta = { x: number; y: number; z: number };
+export const getDistance = (start: Landmark, end: Landmark) => ({
+  x: Math.abs(start.x - end.x),
+  y: Math.abs(start.y - end.y),
+  z: Math.abs(start.z - end.z),
+  xy: Math.sqrt((start.x - end.x) ** 2 + (start.y - end.y) ** 2),
+  yz: Math.sqrt((start.y - end.y) ** 2 + (start.z - end.z) ** 2),
+  zx: Math.sqrt((start.z - end.z) ** 2 + (start.x - end.x) ** 2),
+  xyz: Math.sqrt((start.x - end.x) ** 2 + (start.y - end.y) ** 2 + (start.z - end.z) ** 2),
+});
 
-export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
-  landmarkList.map(
-    (landmark: Landmark) =>
-      ({
-        x: landmark.x + delta.x,
-        y: landmark.y + delta.y,
-        z: landmark.z + delta.z,
-        visibility: landmark.visibility,
-      } as Landmark),
-  );
+export const getAngle = (start: Landmark, end: Landmark) => {
+  const x = end.x - start.x;
+  const y = end.y - start.y;
+  const z = end.z - start.z;
 
-// 正負あり
-export const distanceInX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  p2.x - p1.x;
-
-// 正負あり
-export const distanceInY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  p2.y - p1.y;
-
-// 正負あり
-export const distanceInZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  p2.z - p1.z;
-
-export const distanceInXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
-
-export const distanceInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
-
-export const distanceInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.z - p2.z) ** 2 + (p1.x - p2.x) ** 2);
-
-export const distanceInXYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
+  return {
+    xy: (Math.atan2(y, x) * 180) / Math.PI,
+    yz: (Math.atan2(z, y) * 180) / Math.PI,
+    zx: (Math.atan2(x, -z) * 180) / Math.PI,
+  };
+};
 
 export const midpointBetween = (
   p1: NormalizedLandmark | Landmark,
@@ -144,87 +129,14 @@ export const heightInFrame = (pose: Pose): number => {
   const neck = pose.landmarks[3];
   const ankle = midpointBetween(pose.landmarks[20], pose.landmarks[24]);
 
-  return distanceInXY(neck, ankle);
+  return getDistance(neck, ankle).xy;
 };
 
 export const heightInWorld = (pose: Pose): number => {
   const neckWorld = pose.worldLandmarks[3];
   const ankleWorld = midpointBetween(pose.worldLandmarks[20], pose.worldLandmarks[24]);
 
-  return distanceInXY(neckWorld, ankleWorld);
-};
-
-// XY座標に投影した際のX軸の正の方向となす角
-export const angleInXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-// YZ座標に投影した際のY軸の正の方向となす角
-export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.atan2(p2.z - p1.z, p2.y - p1.y);
-
-// ZX座標に投影した際のZ軸の正の方向となす角
-export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.atan2(p2.x - p1.x, p2.z - p1.z);
-
-// Sideを描画するために行う座標変換
-export const normalizeSideWorldLandmarkPoint = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-  LandmarkPoint: Landmark,
-): NormalizedLandmark => {
-  // const normalizedLandmarks: NormalizedLandmarkList = [];
-  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
-  const lowCenterZ = (worldLandmarks[20].z + worldLandmarks[24].z) / 2;
-  const heightOfBody = 1500;
-
-  return {
-    x: ((LandmarkPoint.z - lowCenterZ) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
-    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
-    z: 0,
-  };
-};
-
-export const normalizeSideSideWorldLandmarks = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-): NormalizedLandmarkList => {
-  const normalizedLandmarks: NormalizedLandmarkList = [];
-
-  for (let i = 0; i < worldLandmarks.length; i += 1) {
-    normalizedLandmarks[i] = normalizeSideWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
-  }
-
-  return normalizedLandmarks;
-};
-
-// Frontを描画するために行う座標返還
-export const normalizeFrontWorldLandmarkPoint = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-  LandmarkPoint: Landmark,
-): NormalizedLandmark => {
-  const lowCenterX = (worldLandmarks[20].x + worldLandmarks[24].x) / 2;
-  const lowCenterY = (worldLandmarks[20].y + worldLandmarks[24].y) / 2;
-  const heightOfBody = 1500;
-
-  return {
-    x: ((LandmarkPoint.x - lowCenterX) * canvas.height * 0.8) / canvas.width / heightOfBody + 0.5,
-    y: ((LandmarkPoint.y - lowCenterY) * 0.8) / heightOfBody + 0.9,
-    z: 0,
-  };
-};
-
-export const normalizeFrontWorldLandmarks = (
-  worldLandmarks: LandmarkList,
-  canvas: HTMLCanvasElement,
-): NormalizedLandmarkList => {
-  const normalizedLandmarks: NormalizedLandmarkList = [];
-
-  for (let i = 0; i < worldLandmarks.length; i += 1) {
-    normalizedLandmarks[i] = normalizeFrontWorldLandmarkPoint(worldLandmarks, canvas, worldLandmarks[i]);
-  }
-
-  return normalizedLandmarks;
+  return getDistance(neckWorld, ankleWorld).xy;
 };
 
 export const copyLandmark = (normalizedLandmark: NormalizedLandmark): NormalizedLandmark => ({
@@ -233,3 +145,16 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   z: normalizedLandmark.z,
   visibility: normalizedLandmark.visibility,
 });
+
+export type GridDelta = { x: number; y: number; z: number };
+
+export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
+  landmarkList.map(
+    (landmark: Landmark) =>
+      ({
+        x: landmark.x + delta.x,
+        y: landmark.y + delta.y,
+        z: landmark.z + delta.z,
+        visibility: landmark.visibility,
+      } as Landmark),
+  );
