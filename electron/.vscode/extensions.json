@@ -26,6 +26,7 @@
     "stylelint.vscode-stylelint",
     "tabnine.tabnine-vscode",
     "gruntfuggly.todo-tree",
-    "steoates.autoimport"
+    "steoates.autoimport",
+    "usernamehw.errorlens"
   ]
 }
