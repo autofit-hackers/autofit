@@ -1,6 +1,7 @@
+import { getDistance, getAngle } from '../training_data/pose';
 import { CameraPosition } from '../utils/poseGrid';
-import { angleInYZ, angleInZX, distanceInYZ, distanceInZ, distanceInZX, midpointBetween } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
+import { KJ } from '../utils/kinectJoints';
 
 export type FormInstructionItem = {
   readonly id: number;
@@ -19,11 +20,18 @@ export type FormInstructionItem = {
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
-// スクワットの深さ
+const normalizeError = (threshold: { upper: number; middle: number; lower: number }, error: number): number => {
+  if (error < threshold.middle) {
+    return (error - threshold.middle) / (threshold.middle - threshold.lower);
+  }
+
+  return (error - threshold.middle) / (threshold.upper - threshold.middle);
+};
+
 const squatDepth: FormInstructionItem = {
   id: 0,
   name: 'Squat depth',
-  label: '腰の深さ',
+  label: 'しゃがむ深さ',
   descriptionForNegativeError:
     '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
   descriptionForNearlyZeroError: 'ちょうどよい深さで腰を落とせています。この調子。',
@@ -31,171 +39,111 @@ const squatDepth: FormInstructionItem = {
     '腰を落としすぎているようです。悪いことではありませんが、一般的なスクワットでは、太ももが水平になるところまで腰を落とせば十分です。',
   importance: 0.5,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
-  // bottomで判定
   evaluate: (rep: Rep) => {
-    const bottomPose = getBottomPose(rep);
-    if (bottomPose === undefined) {
-      return 1.0;
-    }
-    const bottomPoseKnee = midpointBetween(bottomPose.worldLandmarks[19], bottomPose.worldLandmarks[23]);
-    const bottomPosePelvisKneeDistanceYZ = distanceInYZ(bottomPose.worldLandmarks[0], bottomPoseKnee);
-    const upAngleKTR = (Math.PI * 9.0) / 180.0; // 9度は桂が指定
-    const downAngleKTR = -(Math.PI * 9.0) / 180.0; // 9度は桂が指定;
-    const squatDepthUpCheck =
-      bottomPose.worldLandmarks[0].y - bottomPoseKnee.y + Math.sin(upAngleKTR) * bottomPosePelvisKneeDistanceYZ;
-    const squatDepthDownCheck =
-      -bottomPose.worldLandmarks[0].y + bottomPoseKnee.y - Math.sin(downAngleKTR) * bottomPosePelvisKneeDistanceYZ;
-
-    if (squatDepthUpCheck <= 0.0) {
+    const pose = getBottomPose(rep);
+    const threshold = { upper: 90, middle: 80, lower: 60 };
+    if (pose === undefined) {
       return 0.0;
     }
-    if (squatDepthDownCheck <= 0.0) {
-      return 0.0;
-    }
+    // errorはbottomの太ももの水平面との角度を計算。値は正で、約90度
+    // TODO: 右足も考慮
+    const error = -getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).yz;
 
-    return 1.0;
+    return normalizeError(threshold, error);
   },
 };
 
-// 真上から見た太ももの角度と踵の角度が等しい
-const kneeOut: FormInstructionItem = {
+const kneeInAndOut: FormInstructionItem = {
   id: 1,
-  name: 'Knee out',
-  label: '膝が内側に入る',
+  name: 'Knee in and out',
+  label: 'ひざの内旋・外旋',
   descriptionForNegativeError: '膝が内側に入らないように注意しましょう。',
   descriptionForNearlyZeroError: 'ちょうどいい膝の開き方ですね。',
   descriptionForPositiveError: '膝を外側に出そうとしすぎているようです。もう少しだけ膝の力を抜いてください。',
   importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
-  // bottomで判定する
   evaluate: (rep: Rep) => {
-    const bottomPose = getBottomPose(rep);
-    if (bottomPose === undefined) {
-      return 1.0;
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
+    const threshold = { upper: 15, middle: 0, lower: -15 };
+    if (bottomWorldLandmarks === undefined) {
+      return 0.0;
     }
-    const bottomPoseLeftThighAngleZX = angleInZX(bottomPose.worldLandmarks[18], bottomPose.worldLandmarks[19]);
-    const bottomPoseRightThighAngleZX = angleInZX(bottomPose.worldLandmarks[22], bottomPose.worldLandmarks[23]);
-    const bottomPoseLeftFootAngleZX = angleInZX(bottomPose.worldLandmarks[20], bottomPose.worldLandmarks[21]);
-    const bottomPoseRightFootAngleZX = angleInZX(bottomPose.worldLandmarks[24], bottomPose.worldLandmarks[25]);
+    // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
+    const openingOfKnee =
+      getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
+      getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
+    const openingOfToe =
+      getAngle(bottomWorldLandmarks[KJ.ANKLE_LEFT], bottomWorldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(bottomWorldLandmarks[KJ.ANKLE_RIGHT], bottomWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+    const error = openingOfKnee - openingOfToe;
 
-    const acceptableError = 0.1;
-    if (
-      bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX >=
-      acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
-    ) {
-      // 左太ももと左足が同じ方向を向いていない
-      return 0.0;
-    }
-    if (
-      bottomPoseLeftThighAngleZX - bottomPoseLeftFootAngleZX <=
-      -acceptableError * Math.abs(bottomPoseLeftFootAngleZX)
-    ) {
-      // 左太ももと左足が同じ方向を向いていない
-      return 0.0;
-    }
-    if (
-      bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX >=
-      acceptableError * Math.abs(bottomPoseRightFootAngleZX)
-    ) {
-      // 右太ももと右足が同じ方向を向いていない
-      return 0.0;
-    }
-    if (
-      bottomPoseRightThighAngleZX - bottomPoseRightFootAngleZX <=
-      -acceptableError * Math.abs(bottomPoseRightFootAngleZX)
-    ) {
-      // 右太ももと右足が同じ方向を向いていない
-      return 0.0;
-    }
-
-    return 1.0;
+    return normalizeError(threshold, error);
   },
 };
 
-// 背中が反っていない
-const backBent: FormInstructionItem = {
+// 足のスタンス幅
+const stanceWidth: FormInstructionItem = {
   id: 2,
-  name: 'Back bent',
-  label: '背中の曲がり',
-  descriptionForNegativeError:
-    '背中が曲がってしまっており、腰を痛める危険性があります。背中に力をいれ、胸をはりながらしゃがみましょう',
-  descriptionForNearlyZeroError: '胴体の姿勢がとても良いです。',
-  descriptionForPositiveError:
-    '少し背中が反っているいるように見えます。背中を板のように真っすぐ保つよう意識するとよいでしょう',
-  importance: 0.5,
+  name: 'Stance width',
+  label: '足のスタンス幅',
+  descriptionForNegativeError: '足がスタンス幅を満たしていないようです。',
+  descriptionForNearlyZeroError: 'ちょうどいいスタンス幅ですね。',
+  descriptionForPositiveError: '足幅が広すぎるようです。',
+  importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
-  // topで判定する
   evaluate: (rep: Rep) => {
-    const topPose = getTopPose(rep);
-    const bottomPose = getBottomPose(rep);
-    if (topPose === undefined) {
-      return 1.0;
-    }
-    if (bottomPose === undefined) {
-      return 1.0;
-    }
-    const topPosePelvisNavalAngleYZ = angleInYZ(topPose.worldLandmarks[0], topPose.worldLandmarks[1]);
-    const topPoseNavalChestAngleYZ = angleInYZ(topPose.worldLandmarks[1], topPose.worldLandmarks[2]);
-
-    const acceptableError = 0.1;
-    if (
-      Math.abs(topPosePelvisNavalAngleYZ - topPoseNavalChestAngleYZ) >=
-      acceptableError * Math.abs(topPosePelvisNavalAngleYZ)
-    ) {
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    const threshold = { upper: 2, middle: 1.4, lower: 1 };
+    if (topWorldLandmarks === undefined) {
       return 0.0;
     }
+    const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
+    const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
+    const error = footWidth / shoulderWidth;
 
-    return 1.0;
+    return normalizeError(threshold, error);
   },
 };
 
-// 膝先がつま先から見てどれだけ前方or後方にあるか
-const kneePosition: FormInstructionItem = {
+const kneeFrontAndBack: FormInstructionItem = {
   id: 3,
-  name: 'Knee position',
+  name: 'Knee front and back',
   label: '膝の前後位置',
   descriptionForNegativeError: '膝が前に出すぎています。関節を痛める危険性があるため、気を付けましょう',
   descriptionForNearlyZeroError: 'ひざの前後の位置が適切です。',
   descriptionForPositiveError: '膝をもう少し前に出しましょう。',
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
-  // bottomで判定する
   evaluate: (rep: Rep) => {
-    const bottomPose = getBottomPose(rep);
-    if (bottomPose === undefined) {
-      return 1.0;
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
+    const threshold = { upper: 30, middle: 10, lower: -10 };
+    if (bottomWorldLandmarks === undefined) {
+      return 0.0;
     }
-    const bottomPoseLeftKneeFootZX = distanceInZX(bottomPose.worldLandmarks[21], bottomPose.worldLandmarks[19]);
-    const bottomPoseRightKneeFootZX = distanceInZX(bottomPose.worldLandmarks[25], bottomPose.worldLandmarks[23]);
-    const bottomPoseLeftKneeFootDirection = Math.sign(
-      distanceInZ(bottomPose.worldLandmarks[21], bottomPose.worldLandmarks[19]),
-    );
-    const bottomPoseRightKneeFootDirection = Math.sign(
-      distanceInZ(bottomPose.worldLandmarks[25], bottomPose.worldLandmarks[23]),
-    );
+    // TODO: 左足も考慮する
+    const error = getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], bottomWorldLandmarks[KJ.FOOT_RIGHT]).z;
 
-    const acceptableKneeAhead = -10;
-    const acceptableKneeBack = 10;
-    if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection <= acceptableKneeAhead) {
-      // 左膝が前に出すぎ
-      return 0.0;
-    }
-    if (bottomPoseRightKneeFootZX * bottomPoseRightKneeFootDirection <= acceptableKneeAhead) {
-      // 右膝が前に出すぎ
-      return 0.0;
-    }
-    if (bottomPoseLeftKneeFootZX * bottomPoseLeftKneeFootDirection >= acceptableKneeBack) {
-      // 左膝が後すぎる
-      return 0.0;
-    }
-    if (bottomPoseRightKneeFootZX * bottomPoseRightKneeFootDirection >= acceptableKneeBack) {
-      // 左膝が後ろすぎる
-      return 0.0;
-    }
+    return normalizeError(threshold, error);
+  },
+};
 
-    return 1.0;
+const squatVelocity: FormInstructionItem = {
+  id: 4,
+  name: 'Speed',
+  label: 'フォーム速度',
+  descriptionForNegativeError: 'もう少し早くスクワットしましょう。',
+  descriptionForNearlyZeroError: 'ちょうどいいスピードです。',
+  descriptionForPositiveError: '動きが速いです。もう少しゆっくりにしましょう。',
+  gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
+  evaluate: (rep: Rep) => {
+    // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
+    const fps = 25;
+    const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
+    const error = rep.form.length / fps;
+
+    return normalizeError(threshold, error);
   },
 };
 
 // 指導項目を追加したらここにもかく
-export const formInstructionItemsQWS = [squatDepth, kneeOut, backBent, kneePosition];
+export const formInstructionItemsQWS = [squatDepth, kneeInAndOut, stanceWidth, kneeFrontAndBack, squatVelocity];
 export const formInstructionItemsEmpty = [];
