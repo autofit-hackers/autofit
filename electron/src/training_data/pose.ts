@@ -94,42 +94,27 @@ export type Pose = {
   worldLandmarks: LandmarkList;
 };
 
-export type GridDelta = { x: number; y: number; z: number };
+export const getDistance = (start: Landmark, end: Landmark) => ({
+  x: Math.abs(start.x - end.x),
+  y: Math.abs(start.y - end.y),
+  z: Math.abs(start.z - end.z),
+  xy: Math.sqrt((start.x - end.x) ** 2 + (start.y - end.y) ** 2),
+  yz: Math.sqrt((start.y - end.y) ** 2 + (start.z - end.z) ** 2),
+  zx: Math.sqrt((start.z - end.z) ** 2 + (start.x - end.x) ** 2),
+  xyz: Math.sqrt((start.x - end.x) ** 2 + (start.y - end.y) ** 2 + (start.z - end.z) ** 2),
+});
 
-export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
-  landmarkList.map(
-    (landmark: Landmark) =>
-      ({
-        x: landmark.x + delta.x,
-        y: landmark.y + delta.y,
-        z: landmark.z + delta.z,
-        visibility: landmark.visibility,
-      } as Landmark),
-  );
+export const getAngle = (start: Landmark, end: Landmark) => {
+  const x = end.x - start.x;
+  const y = end.y - start.y;
+  const z = end.z - start.z;
 
-// 正負あり
-export const distanceInX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  p2.x - p1.x;
-
-// 正負あり
-export const distanceInY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  p2.y - p1.y;
-
-// 正負あり
-export const distanceInZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  p2.z - p1.z;
-
-export const distanceInXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
-
-export const distanceInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
-
-export const distanceInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.z - p2.z) ** 2 + (p1.x - p2.x) ** 2);
-
-export const distanceInXYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
+  return {
+    xy: (Math.atan2(y, x) * 180) / Math.PI,
+    yz: (Math.atan2(z, y) * 180) / Math.PI,
+    zx: (Math.atan2(x, -z) * 180) / Math.PI,
+  };
+};
 
 export const midpointBetween = (
   p1: NormalizedLandmark | Landmark,
@@ -144,27 +129,15 @@ export const heightInFrame = (pose: Pose): number => {
   const neck = pose.landmarks[3];
   const ankle = midpointBetween(pose.landmarks[20], pose.landmarks[24]);
 
-  return distanceInXY(neck, ankle);
+  return getDistance(neck, ankle).xy;
 };
 
 export const heightInWorld = (pose: Pose): number => {
   const neckWorld = pose.worldLandmarks[3];
   const ankleWorld = midpointBetween(pose.worldLandmarks[20], pose.worldLandmarks[24]);
 
-  return distanceInXY(neckWorld, ankleWorld);
+  return getDistance(neckWorld, ankleWorld).xy;
 };
-
-// XY座標に投影した際のX軸の正の方向となす角
-export const angleInXY = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-// YZ座標に投影した際のY軸の正の方向となす角
-export const angleInYZ = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.atan2(p2.z - p1.z, p2.y - p1.y);
-
-// ZX座標に投影した際のZ軸の正の方向となす角
-export const angleInZX = (p1: NormalizedLandmark | Landmark, p2: NormalizedLandmark | Landmark): number =>
-  Math.atan2(p2.x - p1.x, p2.z - p1.z);
 
 export const copyLandmark = (normalizedLandmark: NormalizedLandmark): NormalizedLandmark => ({
   x: normalizedLandmark.x,
@@ -173,25 +146,15 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   visibility: normalizedLandmark.visibility,
 });
 
-// TODO: 上の関数と役割が被っているので、どちらかに統一する
-export const getAngle = (pose: Pose, startJoint: number, endJoint: number, viewDirection: string) => {
-  const start = pose.worldLandmarks[startJoint];
-  const end = pose.worldLandmarks[endJoint];
-  const x = end.x - start.x;
-  const y = end.y - start.y;
-  const z = end.z - start.z;
-  if (viewDirection === 'front') {
-    return (Math.atan2(y, x) * 180) / Math.PI;
-  }
-  if (viewDirection === 'side') {
-    return (Math.atan2(z, y) * 180) / Math.PI;
-  }
-  if (viewDirection === 'above') {
-    return (Math.atan2(Math.sqrt(x * x + z * z), y) * 180) / Math.PI;
-  }
-  if (viewDirection === 'top') {
-    return (Math.atan2(x, -z) * 180) / Math.PI;
-  }
+export type GridDelta = { x: number; y: number; z: number };
 
-  throw new Error(`Unknown view direction: ${viewDirection}`);
-};
+export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
+  landmarkList.map(
+    (landmark: Landmark) =>
+      ({
+        x: landmark.x + delta.x,
+        y: landmark.y + delta.y,
+        z: landmark.z + delta.z,
+        visibility: landmark.visibility,
+      } as Landmark),
+  );

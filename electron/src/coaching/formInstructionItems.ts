@@ -1,5 +1,5 @@
+import { getDistance, getAngle } from '../training_data/pose';
 import { CameraPosition } from '../utils/poseGrid';
-import { distanceInX, distanceInZ, getAngle } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import { KJ } from '../utils/kinectJoints';
 
@@ -46,7 +46,8 @@ const squatDepth: FormInstructionItem = {
       return 0.0;
     }
     // errorはbottomの太ももの水平面との角度を計算。値は正で、約90度
-    const error = -getAngle(pose, KJ.HIP_RIGHT, KJ.KNEE_RIGHT, 'side');
+    // TODO: 右足も考慮
+    const error = -getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).yz;
 
     return normalizeError(threshold, error);
   },
@@ -62,16 +63,18 @@ const kneeInAndOut: FormInstructionItem = {
   importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
-    const pose = getBottomPose(rep);
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const threshold = { upper: 15, middle: 0, lower: -15 };
-    if (pose === undefined) {
+    if (bottomWorldLandmarks === undefined) {
       return 0.0;
     }
     // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
     const openingOfKnee =
-      getAngle(pose, KJ.HIP_LEFT, KJ.KNEE_LEFT, 'top') - getAngle(pose, KJ.HIP_RIGHT, KJ.KNEE_RIGHT, 'top');
+      getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
+      getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
     const openingOfToe =
-      getAngle(pose, KJ.ANKLE_LEFT, KJ.FOOT_LEFT, 'top') - getAngle(pose, KJ.ANKLE_RIGHT, KJ.FOOT_RIGHT, 'top');
+      getAngle(bottomWorldLandmarks[KJ.ANKLE_LEFT], bottomWorldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(bottomWorldLandmarks[KJ.ANKLE_RIGHT], bottomWorldLandmarks[KJ.FOOT_RIGHT]).zx;
     const error = openingOfKnee - openingOfToe;
 
     return normalizeError(threshold, error);
@@ -89,13 +92,13 @@ const stanceWidth: FormInstructionItem = {
   importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
-    const pose = getTopPose(rep);
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
     const threshold = { upper: 2, middle: 1.4, lower: 1 };
-    if (pose === undefined) {
+    if (topWorldLandmarks === undefined) {
       return 0.0;
     }
-    const footWidth = distanceInX(pose.worldLandmarks[KJ.FOOT_LEFT], pose.worldLandmarks[KJ.FOOT_RIGHT]);
-    const shoulderWidth = distanceInX(pose.worldLandmarks[KJ.SHOULDER_LEFT], pose.worldLandmarks[KJ.SHOULDER_RIGHT]);
+    const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
+    const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const error = footWidth / shoulderWidth;
 
     return normalizeError(threshold, error);
@@ -111,13 +114,13 @@ const kneeFrontAndBack: FormInstructionItem = {
   descriptionForPositiveError: '膝をもう少し前に出しましょう。',
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
-    const pose = getBottomPose(rep);
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const threshold = { upper: 30, middle: 10, lower: -10 };
-    if (pose === undefined) {
+    if (bottomWorldLandmarks === undefined) {
       return 0.0;
     }
     // TODO: 左足も考慮する
-    const error = distanceInZ(pose.worldLandmarks[KJ.KNEE_RIGHT], pose.worldLandmarks[KJ.FOOT_RIGHT]);
+    const error = getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], bottomWorldLandmarks[KJ.FOOT_RIGHT]).z;
 
     return normalizeError(threshold, error);
   },
