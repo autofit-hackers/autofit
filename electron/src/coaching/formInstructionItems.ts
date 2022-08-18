@@ -1,5 +1,5 @@
 import { CameraPosition } from '../utils/poseGrid';
-import { getAngle, getWorldPosition } from '../training_data/pose';
+import { distanceInX, distanceInZ, getAngle } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import { KJ } from '../utils/kinectJoints';
 
@@ -94,9 +94,8 @@ const stanceWidth: FormInstructionItem = {
     if (pose === undefined) {
       return 0.0;
     }
-    const footWidth = getWorldPosition(pose, KJ.FOOT_LEFT, 'x') - getWorldPosition(pose, KJ.FOOT_RIGHT, 'x');
-    const shoulderWidth =
-      getWorldPosition(pose, KJ.SHOULDER_LEFT, 'x') - getWorldPosition(pose, KJ.SHOULDER_RIGHT, 'x');
+    const footWidth = distanceInX(pose.worldLandmarks[KJ.FOOT_LEFT], pose.worldLandmarks[KJ.FOOT_RIGHT]);
+    const shoulderWidth = distanceInX(pose.worldLandmarks[KJ.SHOULDER_LEFT], pose.worldLandmarks[KJ.SHOULDER_RIGHT]);
     const error = footWidth / shoulderWidth;
 
     return normalizeError(threshold, error);
@@ -117,7 +116,9 @@ const kneeFrontAndBack: FormInstructionItem = {
     if (pose === undefined) {
       return 0.0;
     }
-    const error = getWorldPosition(pose, KJ.KNEE_RIGHT, 'z') - getWorldPosition(pose, KJ.FOOT_RIGHT, 'z');
+
+    // TODO: 左足も考慮する
+    const error = distanceInZ(pose.worldLandmarks[KJ.KNEE_RIGHT], pose.worldLandmarks[KJ.FOOT_RIGHT]);
 
     return normalizeError(threshold, error);
   },

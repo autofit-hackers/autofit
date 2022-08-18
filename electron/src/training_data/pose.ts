@@ -192,16 +192,3 @@ export const getAngle = (pose: Pose, startJoint: number, endJoint: number, viewD
 
   return (Math.atan2(x, -z) * 180) / Math.PI;
 };
-
-// TODO: 必要か？
-export const getWorldPosition = (pose: Pose, jointNumber: number, xyz: string) => {
-  const joint = pose.worldLandmarks[jointNumber];
-  if (xyz === 'x') {
-    return joint.x;
-  }
-  if (xyz === 'y') {
-    return joint.y;
-  }
-
-  return joint.z;
-};
