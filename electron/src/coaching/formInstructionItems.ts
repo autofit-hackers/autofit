@@ -7,9 +7,8 @@ export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
-  readonly descriptionForNegativeError: string;
-  readonly descriptionForNearlyZeroError: string;
-  readonly descriptionForPositiveError: string;
+  readonly description: { minus: string; normal: string; plus: string };
+  readonly voice: { minus: string; normal: string; plus: string };
   readonly reason?: string;
   readonly recommendMenu?: string[];
   readonly importance?: number;
@@ -32,11 +31,16 @@ const squatDepth: FormInstructionItem = {
   id: 0,
   name: 'Squat depth',
   label: 'しゃがむ深さ',
-  descriptionForNegativeError:
-    '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
-  descriptionForNearlyZeroError: 'ちょうどよい深さで腰を落とせています。この調子。',
-  descriptionForPositiveError:
-    '腰を落としすぎているようです。悪いことではありませんが、一般的なスクワットでは、太ももが水平になるところまで腰を落とせば十分です。',
+  description: {
+    minus: '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
+    normal: 'ちょうどよい深さで腰を落とせています。この調子。',
+    plus: '腰を落としすぎているようです。悪いことではありませんが、一般的なスクワットでは、太ももが水平になるところまで腰を落とせば十分です。',
+  },
+  voice: {
+    minus: '腰を太ももが平行になるまで落としましょう。',
+    normal: 'ちょうどよい深さで腰を落とせています。この調子。',
+    plus: '腰は太ももが床と平行になるところまで落とせば十分です。',
+  },
   importance: 0.5,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
@@ -57,9 +61,16 @@ const kneeInAndOut: FormInstructionItem = {
   id: 1,
   name: 'Knee in and out',
   label: 'ひざの内旋・外旋',
-  descriptionForNegativeError: '膝が内側に入らないように注意しましょう。',
-  descriptionForNearlyZeroError: 'ちょうどいい膝の開き方ですね。',
-  descriptionForPositiveError: '膝を外側に出そうとしすぎているようです。もう少しだけ膝の力を抜いてください。',
+  description: {
+    minus: '膝が内側に入りすぎています。膝を痛める可能性があるので、足と太ももが平行になるようにしましょう。',
+    normal: '足の向きと太ももの向きが一致していて、とても良いです。',
+    plus: '膝を外側に出そうとしすぎているようです。もう少しだけ膝の力を抜いてください。',
+  },
+  voice: {
+    minus: '膝が内側に入りすぎています。',
+    normal: '足の向きと太ももの向きが一致していて、とても良いです。',
+    plus: '膝を外側に出そうとしすぎているようです。',
+  },
   importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
@@ -86,9 +97,16 @@ const stanceWidth: FormInstructionItem = {
   id: 2,
   name: 'Stance width',
   label: '足のスタンス幅',
-  descriptionForNegativeError: '足がスタンス幅を満たしていないようです。',
-  descriptionForNearlyZeroError: 'ちょうどいいスタンス幅ですね。',
-  descriptionForPositiveError: '足幅が広すぎるようです。',
+  description: {
+    minus: '足幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅程度に開きましょう。',
+    normal: '足のスタンスはバッチリです。',
+    plus: '足幅が広すぎます。肩幅程度に狭めてみましょう。',
+  },
+  voice: {
+    minus: '足幅が狭すぎます。足は肩幅程度に開きましょう。',
+    normal: '足のスタンスはバッチリです。',
+    plus: '足幅が広すぎます。肩幅程度に狭めてみましょう。',
+  },
   importance: 0.7,
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
@@ -109,9 +127,16 @@ const kneeFrontAndBack: FormInstructionItem = {
   id: 3,
   name: 'Knee front and back',
   label: '膝の前後位置',
-  descriptionForNegativeError: '膝が前に出すぎています。関節を痛める危険性があるため、気を付けましょう',
-  descriptionForNearlyZeroError: 'ひざの前後の位置が適切です。',
-  descriptionForPositiveError: '膝をもう少し前に出しましょう。',
+  description: {
+    minus: 'お尻を引きすぎているようです。つま先の上までは膝を出しても大丈夫です。',
+    normal: 'ちょうど良い膝の曲げ方です。その調子で重心を足の真上で保ちましょう。',
+    plus: '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が声すぎないように注意しましょう。',
+  },
+  voice: {
+    minus: 'お尻を引きすぎです。',
+    normal: 'ちょうど良い膝の曲げ方です。',
+    plus: '膝が前に出過ぎています。',
+  },
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
@@ -130,9 +155,16 @@ const squatVelocity: FormInstructionItem = {
   id: 4,
   name: 'Speed',
   label: 'フォーム速度',
-  descriptionForNegativeError: 'もう少し早くスクワットしましょう。',
-  descriptionForNearlyZeroError: 'ちょうどいいスピードです。',
-  descriptionForPositiveError: '動きが速いです。もう少しゆっくりにしましょう。',
+  description: {
+    minus: 'スクワットのペースが速いです。もう少しゆっくりの速度で効かせましょう。',
+    normal: 'いい速さでスクワットできています。',
+    plus: '少しペースが遅いです。効かせることも重要ですが、効率よく筋力を発揮するため、テンポ良く立ち上がれるようにしましょう。',
+  },
+  voice: {
+    minus: '少し速いです。もう少しゆっくり。',
+    normal: 'いい速さです。',
+    plus: '少しペースが遅いです。もう少しテンポ良く。',
+  },
   gridCameraPosition: { theta: 0, phi: 0, distance: 150 },
   evaluate: (rep: Rep) => {
     // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
