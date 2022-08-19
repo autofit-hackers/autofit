@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
+import playRepCountSound from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
@@ -133,7 +134,8 @@ export default function BodyTrack2d() {
           setRef.current.reps = [...setRef.current.reps, repRef.current];
           repRef.current = resetRep(setRef.current.reps.length);
 
-          // TODO: レップカウントを読み上げる
+          // レップカウントを読み上げる
+          playRepCountSound(setRef.current.reps.length);
 
           // RepStateの初期化
           repState.current = resetRepState();

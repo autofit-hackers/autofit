@@ -107,6 +107,7 @@
   },
   "editor.tabSize": 2,
   "cSpell.words": [
+    "autofit",
     "BGRA",
     "CUDA",
     "echarts",
@@ -118,6 +119,6 @@
     "ondataavailable",
     "streamsaver",
     "UNBINNED",
-    "autofit"
+    "uttr"
   ]
 }
