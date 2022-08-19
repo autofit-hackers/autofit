@@ -1,4 +1,4 @@
-import { Box, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
+import { Box, createTheme, CssBaseline, Grid } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -44,7 +44,7 @@ export default function IntervalReport() {
     if (poseGridRef.current !== null) {
       poseGridRef.current.setCameraPosition(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
     }
-  }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
+  }, [formInstructionItems, selectedInstructionIndex, setRecord]);
 
   const futuristicTheme = createTheme({
     palette: {
@@ -76,51 +76,51 @@ export default function IntervalReport() {
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          height: 1920,
-          width: 1080,
-          overflow: 'auto',
-        }}
-      >
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          {/* TODO: better placement */}
-          <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
-          <Grid container spacing="0.5vh">
-            {/* 撮影したRGB映像 */}
-            <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
-            {/* トレーニングの3D表示 */}
-            <Grid item xs={12}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '70vw',
-                }}
-              >
+      <Box sx={{ display: 'flex' }}>
+        <InstructionTabs
+          selectedInstructionIndex={selectedInstructionIndex}
+          setSelectedInstructionIndex={setSelectedInstructionIndex}
+          formInstructionItems={formInstructionItems}
+        />
+        <Box
+          component="main"
+          sx={{
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+            flexGrow: 1,
+            height: '100vh',
+            overflow: 'auto',
+          }}
+        >
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={3}>
+              {/* 撮影したRGB映像 */}
+              <Grid item xs={6}>
+                <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+              </Grid>
+              {/* トレーニングの3D表示 */}
+              <Grid item xs={6}>
                 <PoseGridViewer
                   gridDivRef={gridDivRef}
                   poseGridRef={poseGridRef}
                   cameraPosition={formInstructionItems[selectedInstructionIndex].gridCameraPosition}
                 />
-              </Paper>
-              <ResultDescription
-                descriptionsForEachRep={
-                  setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
-                }
-              />
+              </Grid>
+              {/* スコアのレーダーチャート */}
+              <Grid item xs={5}>
+                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+              </Grid>
+              {/* フォーム評価の説明文 */}
+              <Grid item xs={7}>
+                <ResultDescription
+                  descriptionsForEachRep={
+                    setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
+                  }
+                />
+              </Grid>
             </Grid>
-            {/* 指導項目の切り替えタブ */}
-            <InstructionTabs
-              selectedInstructionIndex={selectedInstructionIndex}
-              setSelectedInstructionIndex={setSelectedInstructionIndex}
-              formInstructionItems={formInstructionItems}
-            />
-          </Grid>
-        </Container>
+          </Container>
+        </Box>
       </Box>
     </ThemeProvider>
   );

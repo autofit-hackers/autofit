@@ -17,6 +17,7 @@ function InstructionTabs(props: {
       textColor="secondary"
       indicatorColor="secondary"
       aria-label="secondary tabs example"
+      orientation="vertical"
     >
       {formInstructionItems.map((instructionItem) => (
         <Tab key={instructionItem.id} label={instructionItem.label} value={instructionItem.id} sx={{}} />

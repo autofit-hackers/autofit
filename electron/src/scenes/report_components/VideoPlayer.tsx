@@ -1,4 +1,4 @@
-import { Grid, Paper } from '@mui/material';
+import { Paper } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useRef } from 'react';
 import ReactPlayer from 'react-player';
@@ -14,34 +14,24 @@ function VideoPlayer(props: { displayedRepIndex: number; poseGridRef: React.Muta
   const [setRecord] = useAtom(setRecordAtom);
 
   return (
-    <Grid item xs={12}>
-      <Paper
-        sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '57vw',
-          justifyContent: 'center',
+    <Paper>
+      <ReactPlayer
+        ref={videoRef}
+        url={repVideoUrls[displayedRepIndex]}
+        id="RepVideo"
+        playing
+        loop
+        controls
+        height="100%"
+        width="100%"
+        onReady={() => {
+          if (poseGridRef.current) {
+            // PoseGridをレップ映像に同期させる
+            poseGridRef.current.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex);
+          }
         }}
-      >
-        <ReactPlayer
-          ref={videoRef}
-          url={repVideoUrls[displayedRepIndex]}
-          id="RepVideo"
-          playing
-          loop
-          controls
-          width="100%"
-          height="100%"
-          onReady={() => {
-            if (poseGridRef.current) {
-              // PoseGridをレップ映像に同期させる
-              poseGridRef.current.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex);
-            }
-          }}
-        />
-      </Paper>
-    </Grid>
+      />
+    </Paper>
   );
 }
 
