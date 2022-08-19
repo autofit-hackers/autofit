@@ -27,7 +27,7 @@ function PoseGridViewer(props: {
           zIndex: 1,
           textAlign: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          height: '95%',
+          height: '95%', // TODO: Resolve hardcoded value
           width: '100%',
         }}
       />
@@ -38,7 +38,7 @@ function PoseGridViewer(props: {
           }
         }}
         variant="contained"
-        sx={{ position: 'absolute', top: '0%', textAlign: 'center', zIndex: 2 }}
+        sx={{ position: 'absolute', top: 0, textAlign: 'center', zIndex: 2 }}
       >
         Reset Camera Position
       </Button>
