@@ -2,7 +2,6 @@ import { Paper, Typography } from '@mui/material';
 
 function ResultDescription(props: { descriptionsForEachRep: string[] }) {
   const { descriptionsForEachRep } = props;
-  console.log('child discription', descriptionsForEachRep);
 
   return (
     <Paper
@@ -10,9 +9,10 @@ function ResultDescription(props: { descriptionsForEachRep: string[] }) {
         p: 2,
         display: 'flex',
         flexDirection: 'column',
-        height: '20vh',
         backgroundColor: '#005555',
         border: 1,
+        height: '100%',
+        width: '100%',
         borderColor: 'grey.500',
         borderRadius: 5,
         boxShadow: 0,

@@ -18,11 +18,11 @@ const decideDescriptionTexts = (eachRepErrors: number[], instructionItem: FormIn
   eachRepErrors.map((error) => {
     let errorDescriptions = '';
     if (error <= -1) {
-      errorDescriptions = instructionItem.descriptionForNegativeError;
+      errorDescriptions = instructionItem.description.minus;
     } else if (error >= 1) {
-      errorDescriptions = instructionItem.descriptionForPositiveError;
+      errorDescriptions = instructionItem.description.plus;
     } else {
-      errorDescriptions = instructionItem.descriptionForNearlyZeroError;
+      errorDescriptions = instructionItem.description.normal;
     }
 
     return errorDescriptions;

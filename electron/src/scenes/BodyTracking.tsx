@@ -5,14 +5,7 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
 import playRepCountSound from '../coaching/voiceGuidance';
-import {
-  GridDelta,
-  heightInWorld,
-  kinectToMediapipe,
-  KINECT_POSE_CONNECTIONS,
-  Pose,
-  translateLandmarkList,
-} from '../training_data/pose';
+import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { resetSet, Set } from '../training_data/set';
@@ -72,7 +65,7 @@ export default function BodyTrack2d() {
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
 
       if (canvasImageData.current === null) {
-        canvasRef.current.width = data.colorImageFrame.width;
+        canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
         // セット映像の記録を開始
@@ -162,11 +155,7 @@ export default function BodyTrack2d() {
 
         // PoseGridの描画
         if (poseGrid) {
-          // a user stands about 1.7m away from the camera (kinect)
-          // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
-          const toStandingPoint: GridDelta = { x: 0, y: 0, z: -1700 };
-          const landmarkListToDraw = translateLandmarkList(currentPose.worldLandmarks, toStandingPoint);
-          poseGrid.updateLandmarks(landmarkListToDraw, KINECT_POSE_CONNECTIONS);
+          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
       } else {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
@@ -195,7 +184,7 @@ export default function BodyTrack2d() {
     if (!poseGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current);
-      poseGrid.setCameraPosition();
+      poseGrid.setCameraAngle();
     }
 
     // このコンポーネントのアンマウント時に実行される
@@ -237,15 +226,12 @@ export default function BodyTrack2d() {
         className="main_canvas"
         style={{
           position: 'absolute',
-          marginLeft: 0,
-          marginRight: 'auto',
-          top: 0,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
           zIndex: 1,
-          width: 'auto',
-          height: 'auto',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          margin: 'auto',
         }}
       />
       <div

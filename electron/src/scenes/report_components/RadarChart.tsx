@@ -6,16 +6,8 @@ type RadarChartProps = { indicators: RadarChartIndicators; series: RadarChartSer
 
 function RadarChart(radarChartProps: RadarChartProps) {
   const { indicators, series, style } = radarChartProps;
-  console.log('series', series);
   const legends: string[] = series.map((row) => row.name);
   const option = {
-    title: {
-      text: 'Training Performance',
-    },
-    tooltip: {},
-    legend: {
-      data: legends,
-    },
     radar: {
       indicator: indicators,
     },

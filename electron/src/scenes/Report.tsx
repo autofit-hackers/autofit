@@ -1,11 +1,12 @@
-import { Box, Button, createTheme, CssBaseline, Grid, Paper } from '@mui/material';
+import { Box, createTheme, CssBaseline, Grid } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import InstructionNavigation from './report_components/InstructionNavigation';
+import InstructionTabs from './report_components/InstructionTabs';
+import PoseGridViewer from './report_components/PoseGridViewer';
 import RadarChart from './report_components/RadarChart';
 import ResultDescription from './report_components/ResultDescription';
 import VideoPlayer from './report_components/VideoPlayer';
@@ -26,15 +27,13 @@ export default function IntervalReport() {
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
 
-  console.log('parent description', setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep);
-
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
     stopKinect(kinect);
     if (!poseGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGridRef.current = new PoseGrid(gridDivRef.current);
-      poseGridRef.current.setCameraPosition(formInstructionItems[0].gridCameraPosition);
+      poseGridRef.current.setCameraAngle(formInstructionItems[0].poseGridCameraAngle);
     }
   }, [formInstructionItems, kinect]);
 
@@ -43,9 +42,9 @@ export default function IntervalReport() {
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
     if (poseGridRef.current !== null) {
-      poseGridRef.current.setCameraPosition(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
+      poseGridRef.current.setCameraAngle(formInstructionItems[selectedInstructionIndex].poseGridCameraAngle);
     }
-  }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
+  }, [formInstructionItems, selectedInstructionIndex, setRecord]);
 
   const futuristicTheme = createTheme({
     palette: {
@@ -77,72 +76,51 @@ export default function IntervalReport() {
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          height: 1920,
-          width: 1080,
-          overflow: 'auto',
-        }}
-      >
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          {/* TODO: better placement */}
-          <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
-          <Grid container spacing="0.5vh">
-            {/* 撮影したRGB映像 */}
-            <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
-            {/* トレーニングの3D表示 */}
-            <Grid item xs={12}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '70vw',
-                }}
-              >
-                <div
-                  className="pose-grid-container"
-                  ref={gridDivRef}
-                  style={{
-                    position: 'relative',
-                    textAlign: 'center',
-                    height: '30vw',
-                    width: '30vw',
-                    top: 0,
-                    left: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  }}
+      <Box sx={{ display: 'flex' }}>
+        <InstructionTabs
+          selectedInstructionIndex={selectedInstructionIndex}
+          setSelectedInstructionIndex={setSelectedInstructionIndex}
+          formInstructionItems={formInstructionItems}
+        />
+        <Box
+          component="main"
+          sx={{
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+            flexGrow: 1,
+            height: '100vh',
+            overflow: 'auto',
+          }}
+        >
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={3}>
+              {/* 撮影したRGB映像 */}
+              <Grid item xs={6}>
+                <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+              </Grid>
+              {/* トレーニングの3D表示 */}
+              <Grid item xs={6}>
+                <PoseGridViewer
+                  gridDivRef={gridDivRef}
+                  poseGridRef={poseGridRef}
+                  cameraPosition={formInstructionItems[selectedInstructionIndex].poseGridCameraAngle}
                 />
-                <Button
-                  onClick={() => {
-                    if (poseGridRef.current !== null) {
-                      poseGridRef.current.setCameraPosition(
-                        formInstructionItems[selectedInstructionIndex].gridCameraPosition,
-                      );
-                    }
-                  }}
-                  variant="contained"
-                  sx={{ textAlign: 'center', width: '15vw' }}
-                >
-                  Reset Camera Position
-                </Button>
-              </Paper>
-              <ResultDescription
-                descriptionsForEachRep={
-                  setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
-                }
-              />
+              </Grid>
+              {/* スコアのレーダーチャート */}
+              <Grid item xs={5}>
+                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+              </Grid>
+              {/* フォーム評価の説明文 */}
+              <Grid item xs={7}>
+                <ResultDescription
+                  descriptionsForEachRep={
+                    setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
+                  }
+                />
+              </Grid>
             </Grid>
-            {/* 指導項目の切り替えタブ */}
-            <InstructionNavigation
-              selectedInstructionIndex={selectedInstructionIndex}
-              setSelectedInstructionIndex={setSelectedInstructionIndex}
-              formInstructionItems={formInstructionItems}
-            />
-          </Grid>
-        </Container>
+          </Container>
+        </Box>
       </Box>
     </ThemeProvider>
   );
