@@ -33,7 +33,7 @@ export default function IntervalReport() {
     if (!poseGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGridRef.current = new PoseGrid(gridDivRef.current);
-      poseGridRef.current.setCameraPosition(formInstructionItems[0].gridCameraPosition);
+      poseGridRef.current.setCameraAngle(formInstructionItems[0].poseGridCameraAngle);
     }
   }, [formInstructionItems, kinect]);
 
@@ -42,7 +42,7 @@ export default function IntervalReport() {
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
     if (poseGridRef.current !== null) {
-      poseGridRef.current.setCameraPosition(formInstructionItems[selectedInstructionIndex].gridCameraPosition);
+      poseGridRef.current.setCameraAngle(formInstructionItems[selectedInstructionIndex].poseGridCameraAngle);
     }
   }, [formInstructionItems, selectedInstructionIndex, setRecord]);
 
@@ -103,7 +103,7 @@ export default function IntervalReport() {
                 <PoseGridViewer
                   gridDivRef={gridDivRef}
                   poseGridRef={poseGridRef}
-                  cameraPosition={formInstructionItems[selectedInstructionIndex].gridCameraPosition}
+                  cameraPosition={formInstructionItems[selectedInstructionIndex].poseGridCameraAngle}
                 />
               </Grid>
               {/* スコアのレーダーチャート */}

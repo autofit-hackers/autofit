@@ -23,10 +23,9 @@ import { translateLandmarkList, copyLandmark, KINECT_POSE_CONNECTIONS } from '..
 
 import { Set } from '../training_data/set';
 
-export type CameraPosition = {
+export type CameraAngle = {
   theta: number;
   phi: number;
-  distance: number;
 };
 
 /**
@@ -109,6 +108,7 @@ type ColorMap<T> = Array<{ color: ColorName | undefined; list: T[] }>;
  * connections can be drawn.
  */
 export class PoseGrid {
+  parentBox: DOMRect;
   rotation: number;
   disposeQueue: Array<BufferGeometry>;
   removeQueue: Array<Object3D>;
@@ -146,12 +146,16 @@ export class PoseGrid {
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     this.container.appendChild(canvas);
     parent.appendChild(this.container);
-    const parentBox: DOMRect = parent.getBoundingClientRect();
-    this.camera = new PerspectiveCamera(this.poseGridConfig.cameraFov, parentBox.width / parentBox.height, 1);
+    this.parentBox = parent.getBoundingClientRect();
+    this.camera = new PerspectiveCamera(
+      this.poseGridConfig.cameraFov,
+      this.parentBox.width / this.parentBox.height,
+      1,
+    );
     this.camera.lookAt(new Vector3());
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
     this.renderer.setClearColor(new Color(this.poseGridConfig.backgroundColor), 0.5);
-    this.renderer.setSize(Math.floor(parentBox.width), Math.floor(parentBox.height));
+    this.renderer.setSize(Math.floor(this.parentBox.width), Math.floor(this.parentBox.height));
     window.addEventListener(
       'resize',
       /**
@@ -247,13 +251,14 @@ export class PoseGrid {
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
   // Default parameters are set so that the grid is viewed from the side
-  setCameraPosition(cameraPosition: CameraPosition = { theta: 90, phi: 0, distance: 150 }): void {
-    const { theta, phi, distance } = cameraPosition;
+  setCameraAngle(cameraAngle: CameraAngle = { theta: 90, phi: 0 }): void {
+    const { theta, phi } = cameraAngle;
     const thetaRad = (theta * Math.PI) / 180;
     const phiRad = (phi * Math.PI) / 180;
-    this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * distance;
-    this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * distance;
-    this.camera.position.y = Math.cos(thetaRad) * distance;
+    const cameraDistance = this.parentBox.width / 5; // PoseGridViewerのサイズに応じてカメラの距離を調整する
+    this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * cameraDistance;
+    this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * cameraDistance;
+    this.camera.position.y = Math.cos(thetaRad) * cameraDistance;
     this.camera.lookAt(new Vector3());
   }
 

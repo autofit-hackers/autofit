@@ -1,10 +1,10 @@
 import { Button } from '@mui/material';
-import { CameraPosition, PoseGrid } from '../../utils/poseGrid';
+import { CameraAngle, PoseGrid } from '../../utils/poseGrid';
 
 function PoseGridViewer(props: {
   gridDivRef: React.MutableRefObject<HTMLDivElement | null>;
   poseGridRef: React.MutableRefObject<PoseGrid | null>;
-  cameraPosition: CameraPosition;
+  cameraPosition: CameraAngle;
 }) {
   const { gridDivRef, poseGridRef, cameraPosition } = props;
 
@@ -26,18 +26,18 @@ function PoseGridViewer(props: {
           position: 'relative',
           textAlign: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          height: '90%',
+          height: '95%',
           width: '100%',
         }}
       />
       <Button
         onClick={() => {
           if (poseGridRef.current !== null) {
-            poseGridRef.current.setCameraPosition(cameraPosition);
+            poseGridRef.current.setCameraAngle(cameraPosition);
           }
         }}
         variant="contained"
-        sx={{ textAlign: 'center', height: '10%' }}
+        sx={{ textAlign: 'center' }}
       >
         Reset Camera Position
       </Button>
