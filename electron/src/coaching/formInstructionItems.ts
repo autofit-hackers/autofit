@@ -42,7 +42,7 @@ const squatDepth: FormInstructionItem = {
     plus: '腰は太ももが床と平行になるところまで落とせば十分です。',
   },
   importance: 0.5,
-  poseGridCameraAngle: { theta: 0, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 0 },
   evaluate: (rep: Rep) => {
     const pose = getBottomPose(rep);
     const threshold = { upper: 90, middle: 80, lower: 60 };
@@ -72,7 +72,7 @@ const kneeInAndOut: FormInstructionItem = {
     plus: '膝を外側に出そうとしすぎているようです。',
   },
   importance: 0.7,
-  poseGridCameraAngle: { theta: 0, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluate: (rep: Rep) => {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const threshold = { upper: 15, middle: 0, lower: -15 };
@@ -108,7 +108,7 @@ const stanceWidth: FormInstructionItem = {
     plus: '足幅が広すぎます。肩幅程度に狭めてみましょう。',
   },
   importance: 0.7,
-  poseGridCameraAngle: { theta: 0, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluate: (rep: Rep) => {
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
     const threshold = { upper: 2, middle: 1.4, lower: 1 };
@@ -137,7 +137,7 @@ const kneeFrontAndBack: FormInstructionItem = {
     normal: 'ちょうど良い膝の曲げ方です。',
     plus: '膝が前に出過ぎています。',
   },
-  poseGridCameraAngle: { theta: 0, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 0 },
   evaluate: (rep: Rep) => {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const threshold = { upper: 30, middle: 10, lower: -10 };
@@ -165,7 +165,7 @@ const squatVelocity: FormInstructionItem = {
     normal: 'いい速さです。',
     plus: '少しペースが遅いです。もう少しテンポ良く。',
   },
-  poseGridCameraAngle: { theta: 0, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluate: (rep: Rep) => {
     // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
     const fps = 25;
