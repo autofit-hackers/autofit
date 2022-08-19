@@ -13,6 +13,7 @@ function VideoPlayer(props: { displayedRepIndex: number; poseGridRef: React.Muta
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
   const [setRecord] = useAtom(setRecordAtom);
 
+  // TODO: ビデオの操作UXを快適にする（コントロールパネル、再生速度調整UIなど）
   return (
     <Paper>
       <ReactPlayer
