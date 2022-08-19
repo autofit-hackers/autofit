@@ -13,7 +13,7 @@ function PoseGridViewer(props: {
       className="square-box"
       style={{
         zIndex: 2,
-        position: 'absolute',
+        position: 'relative',
         // TODO: Resolve hardcoded value
         width: '588px',
         height: '665px',
@@ -23,7 +23,8 @@ function PoseGridViewer(props: {
         className="pose-grid-container"
         ref={gridDivRef}
         style={{
-          position: 'relative',
+          position: 'absolute',
+          zIndex: 1,
           textAlign: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
           height: '95%',
@@ -37,7 +38,7 @@ function PoseGridViewer(props: {
           }
         }}
         variant="contained"
-        sx={{ textAlign: 'center' }}
+        sx={{ position: 'absolute', top: '0%', textAlign: 'center', zIndex: 2 }}
       >
         Reset Camera Position
       </Button>
