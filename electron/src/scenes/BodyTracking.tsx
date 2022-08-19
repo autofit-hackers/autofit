@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
+import playRepCountSound from '../coaching/voiceGuidance';
 import {
   GridDelta,
   heightInWorld,
@@ -140,7 +141,8 @@ export default function BodyTrack2d() {
           setRef.current.reps = [...setRef.current.reps, repRef.current];
           repRef.current = resetRep(setRef.current.reps.length);
 
-          // TODO: レップカウントを読み上げる
+          // レップカウントを読み上げる
+          playRepCountSound(setRef.current.reps.length);
 
           // RepStateの初期化
           repState.current = resetRepState();
