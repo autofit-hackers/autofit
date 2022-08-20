@@ -1,8 +1,17 @@
 import './AutofitLogo.css';
 
-export default function AutofitLogo() {
+export default function AutofitLogo(props: { scale: number; style: React.CSSProperties }) {
+  const { scale, style } = props;
+
   return (
-    <svg width="545" height="134" viewBox="0 0 545 134" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width={545 * scale}
+      height={134 * scale}
+      viewBox="0 0 545 134"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={style}
+    >
       <mask
         id="path-1-outside-1_210_6"
         maskUnits="userSpaceOnUse"
