@@ -16,7 +16,7 @@ export default function TrainingMain() {
           <Button
             variant="contained"
             onClick={() => {
-              setPhase(1);
+              setPhase(2);
             }}
             sx={{ zIndex: 2 }}
           >
@@ -27,7 +27,7 @@ export default function TrainingMain() {
       )}
       {phase === 2 && (
         <>
-          <Button variant="contained" onClick={() => setPhase(0)}>
+          <Button variant="contained" onClick={() => setPhase(1)}>
             Back to Training
           </Button>
           <IntervalReport />
