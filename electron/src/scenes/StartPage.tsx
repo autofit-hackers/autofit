@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
+import AutofitLogo from './report_components/AutofitLogo';
 import './StartPage.css';
 
 export default function StartPage() {
@@ -10,6 +11,7 @@ export default function StartPage() {
 
   return (
     <div className="gradient-background" style={{ height: '100vh', width: '100vw' }}>
+      <AutofitLogo />
       <div
         style={{
           // display: 'flex',
