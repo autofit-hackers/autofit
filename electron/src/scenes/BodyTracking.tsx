@@ -164,7 +164,7 @@ export default function BodyTrack2d() {
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
       if (setRef.current.reps.length === 100) {
-        setPhase(1);
+        setPhase((prevPhase) => prevPhase + 1);
       }
 
       // レップカウントを表示

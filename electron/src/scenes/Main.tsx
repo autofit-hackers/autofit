@@ -1,18 +1,17 @@
-import { Button, Typography } from '@mui/material';
+import { Button } from '@mui/material';
 import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
 import BodyTrack2d from './BodyTracking';
 import IntervalReport from './Report';
+import StartPage from './StartPage';
 
 export default function TrainingMain() {
   const [phase, setPhase] = useAtom(phaseAtom);
 
   return (
     <>
-      <Typography fontWeight={600} zIndex={2} position="relative">
-        PHASE = {phase}
-      </Typography>
-      {phase === 0 && (
+      {phase === 0 && <StartPage />}
+      {phase === 1 && (
         <>
           <Button
             variant="contained"
@@ -21,15 +20,15 @@ export default function TrainingMain() {
             }}
             sx={{ zIndex: 2 }}
           >
-            Phase Ahead
+            Finish Training
           </Button>
           <BodyTrack2d />
         </>
       )}
-      {phase === 1 && (
+      {phase === 2 && (
         <>
           <Button variant="contained" onClick={() => setPhase(0)}>
-            Phase Back
+            Back to Training
           </Button>
           <IntervalReport />
         </>
