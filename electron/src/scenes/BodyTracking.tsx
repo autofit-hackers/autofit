@@ -213,6 +213,7 @@ export default function BodyTrack2d() {
     }
 
     // このコンポーネントのアンマウント時に実行される
+    // FIXME: 最初にもよばれる
     return () => {
       if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {
         repVideoRecorderRef.current.stop();
@@ -223,6 +224,7 @@ export default function BodyTrack2d() {
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
       setSetRecord((_) => setRef.current);
+      // TODO: 次のマウントのほうがアンマウントよりも早いので、もっと上側に記述する必要がある。
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);

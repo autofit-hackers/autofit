@@ -1,5 +1,5 @@
-import { FormEvaluationResult, Set } from '../training_data/set';
 import { Rep } from '../training_data/rep';
+import { FormEvaluationResult, Set } from '../training_data/set';
 import { FormInstructionItem } from './formInstructionItems';
 
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
@@ -28,6 +28,20 @@ const decideDescriptionTexts = (eachRepErrors: number[], instructionItem: FormIn
     return errorDescriptions;
   });
 
+// セットに対する総評の決定
+const decideOverallTexts = (eachRepErrors: number[], instructionItem: FormInstructionItem): string => {
+  // エラーの和を計算
+  const errorSum = eachRepErrors.reduce((acc, err) => acc + err, 0);
+  let overallComment = '';
+  if (errorSum <= 0) {
+    overallComment = instructionItem.overAllComment.minus;
+  } else {
+    overallComment = instructionItem.overAllComment.plus;
+  }
+
+  return overallComment;
+};
+
 // セット全体に対する指導項目スコアを100点満点で算出する
 // TODO: Scoreの算出手法を再考する
 const calculateScore = (eachRepErrorsAbs: number[]) => {
@@ -46,6 +60,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
       descriptionsForEachRep: [],
+      overallComment: '',
       eachRepErrors: [],
       score: 0,
       bestRepIndex: 0,
@@ -67,6 +82,9 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
 
     // 各レップに対する表示テキストの決定
     evaluationResult.descriptionsForEachRep = decideDescriptionTexts(evaluationResult.eachRepErrors, instructionItem);
+
+    // セット全体に対する総評の決定
+    evaluationResult.overallComment = decideOverallTexts(evaluationResult.eachRepErrors, instructionItem);
 
     set.formEvaluationResults[instructionItem.id] = evaluationResult;
   });
