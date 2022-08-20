@@ -164,6 +164,9 @@ export default function BodyTrack2d() {
 
           // RepStateの初期化
           repState.current = resetRepState();
+
+          // FIXME: 応急処置的にレップカウント内でセットを評価する
+          setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
         }
 
         // pose estimationの結果を描画
