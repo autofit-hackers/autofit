@@ -17,34 +17,59 @@ import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '.
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
 export default function BodyTrack2d() {
+  // 描画
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   let poseGrid: PoseGrid;
 
-  // Phase
   const [, setPhase] = useAtom(phaseAtom);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
 
-  /*
-   *セット・レップ・RepState変数
-   */
+  // トレーニングデータ
   const [, setSetRecord] = useAtom(setRecordAtom);
   const setRef = useRef<Set>(resetSet());
   const repRef = useRef<Rep>(resetRep(0));
   const repState = useRef<RepState>(resetRepState());
 
   // settings
-  const lowerThreshold = 0.8; // TODO: temporarily hard coded => useContext(RepCountSettingContext).lowerThreshold;
-  const upperThreshold = 0.95; // TODO: temporarily hard coded => useContext(RepCountSettingContext).upperThreshold;
+  const lowerThreshold = 0.8; // TODO: temporarily hard coded
+  const upperThreshold = 0.95;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
-  // 映像保存用
+  // 映像保存
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
   const setVideoRecorderRef = useRef<MediaRecorder | null>(null);
-  const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
   const setVideoUrlRef = useRef<string>('');
+  const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
+
+  const handleSave = () => {
+    const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
+    exportData(setRef.current.reps);
+    // セット映像の録画を停止する
+    if (setVideoUrlRef.current === '' && setVideoRecorderRef.current != null) {
+      setVideoRecorderRef.current.stop();
+      setTimeout(() => {
+        void downloadVideo(setVideoUrlRef.current, `${now}.mp4`);
+      }, 1000);
+    }
+  };
+
+  const handleReset = () => {
+    // 描画
+    canvasImageData.current = null;
+    // トレーニングデータ
+    setSetRecord(resetSet());
+    setRef.current = resetSet();
+    repRef.current = resetRep(0);
+    repState.current = resetRepState();
+    // 映像保存
+    repVideoRecorderRef.current = null;
+    setVideoRecorderRef.current = null;
+    setRepVideoUrls([]);
+    setVideoUrlRef.current = '';
+  };
 
   /*
    * 毎kinect更新時に実行される
@@ -204,22 +229,11 @@ export default function BodyTrack2d() {
 
   return (
     <>
-      <Button
-        onClick={() => {
-          const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
-          exportData(setRef.current.reps);
-          // セット映像の録画を停止する
-          if (setVideoUrlRef.current === '' && setVideoRecorderRef.current != null) {
-            setVideoRecorderRef.current.stop();
-            setTimeout(() => {
-              void downloadVideo(setVideoUrlRef.current, `${now}.mp4`);
-            }, 1000);
-          }
-        }}
-        variant="contained"
-        sx={{ position: 'relative', zIndex: 3, ml: 3 }}
-      >
+      <Button onClick={handleSave} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
         SAVE
+      </Button>
+      <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
+        RESET TRAINING
       </Button>
       <canvas
         ref={canvasRef}
