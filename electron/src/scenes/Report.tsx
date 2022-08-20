@@ -5,11 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import InstructionTabs from './report_components/InstructionTabs';
-import PoseGridViewer from './report_components/PoseGridViewer';
-import RadarChart from './report_components/RadarChart';
-import ResultDescription from './report_components/ResultDescription';
-import VideoPlayer from './report_components/VideoPlayer';
+import InstructionNavigation from './ui-components/InstructionNavigation';
+import RadarChart from './ui-components/RadarChart';
+import ResultDescription from './ui-components/ResultDescription';
+import VideoPlayer from './ui-components/VideoPlayer';
 
 export default function IntervalReport() {
   // セット記録用

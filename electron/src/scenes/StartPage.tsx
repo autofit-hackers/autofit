@@ -1,7 +1,7 @@
 import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
-import AutofitLogo from './report_components/AutofitLogo';
 import './StartPage.css';
+import AutofitLogo from './ui-components/AutofitLogo';
 
 export default function StartPage() {
   const [, setPhase] = useAtom(phaseAtom);
