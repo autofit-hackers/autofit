@@ -62,7 +62,7 @@ export default function BodyTrack2d() {
         throw new Error('canvasCtx is null');
       }
       canvasCtx.save();
-      canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.width);
+      canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
       if (canvasImageData.current === null) {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
@@ -169,7 +169,7 @@ export default function BodyTrack2d() {
 
       // レップカウントを表示
       canvasCtx.fillText(setRef.current.reps.length.toString(), 50, 50);
-      canvasCtx.scale(0.5, 0.5);
+      // canvasCtx.scale(0.5, 0.5);
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
