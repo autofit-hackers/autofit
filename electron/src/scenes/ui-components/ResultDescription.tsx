@@ -1,7 +1,11 @@
 import { Paper, Typography } from '@mui/material';
 
-function ResultDescription(props: { descriptionsForEachRep: string[] }) {
-  const { descriptionsForEachRep } = props;
+function ResultDescription(props: {
+  descriptionsForEachRep: string[];
+  isOverallComment: boolean;
+  overAllComment: string;
+}) {
+  const { descriptionsForEachRep, isOverallComment, overAllComment } = props;
 
   return (
     <Paper
@@ -19,12 +23,17 @@ function ResultDescription(props: { descriptionsForEachRep: string[] }) {
         color: '#00ffff',
       }}
     >
-      {descriptionsForEachRep.map((description, repIndex) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <Typography key={repIndex}>
-          {repIndex + 1}レップ目では、{description}
-        </Typography>
-      ))}
+      {isOverallComment ? (
+        <Typography>{overAllComment}</Typography>
+      ) : (
+        descriptionsForEachRep.map((description, repIndex) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <Typography key={repIndex}>
+            {repIndex + 1}レップ目では、{description}
+          </Typography>
+        ))
+      )}
+      {}
     </Paper>
   );
 }

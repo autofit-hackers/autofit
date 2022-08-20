@@ -1,10 +1,11 @@
-import { Box, createTheme, CssBaseline, Grid } from '@mui/material';
+import { Box, CssBaseline, Grid } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
+import futuristicTheme from './themes';
 import InstructionTabs from './ui-components/InstructionTabs';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
@@ -15,9 +16,9 @@ export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
-  const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
-  const [displayedRepIndex, setDisplayedRepIndex] = useState(
-    setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex,
+  const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(-1);
+  const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
+    selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -40,30 +41,21 @@ export default function IntervalReport() {
   // TODO: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
   useEffect(() => {
-    setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
+    setDisplayedRepIndex(
+      selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
+    );
     if (poseGridRef.current !== null) {
-      poseGridRef.current.setCameraAngle(formInstructionItems[selectedInstructionIndex].poseGridCameraAngle);
+      poseGridRef.current.setCameraAngle(
+        selectedInstructionIndex >= 0
+          ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
+          : formInstructionItems[0].poseGridCameraAngle,
+      );
     }
   }, [formInstructionItems, selectedInstructionIndex, setRecord]);
 
-  const futuristicTheme = createTheme({
-    palette: {
-      mode: 'dark',
-      primary: {
-        main: '#00ffff',
-        dark: '#00ffff',
-        contrastText: '#fff',
-      },
-      secondary: {
-        main: '#00ffff',
-        dark: '#ba000d',
-        contrastText: '#000',
-      },
-    },
-  });
   // radar chart config and state
   const radarChartIndicators = formInstructionItems.map((instruction) => ({
-    name: instruction.name,
+    name: instruction.label,
     max: 100,
   }));
   const radarChartSeries = [
@@ -103,7 +95,11 @@ export default function IntervalReport() {
                 <PoseGridViewer
                   gridDivRef={gridDivRef}
                   poseGridRef={poseGridRef}
-                  cameraPosition={formInstructionItems[selectedInstructionIndex].poseGridCameraAngle}
+                  cameraPosition={
+                    selectedInstructionIndex >= 0
+                      ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
+                      : formInstructionItems[0].poseGridCameraAngle
+                  }
                 />
               </Grid>
               {/* スコアのレーダーチャート */}
@@ -114,8 +110,12 @@ export default function IntervalReport() {
               <Grid item xs={7}>
                 <ResultDescription
                   descriptionsForEachRep={
-                    setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
+                    selectedInstructionIndex >= 0
+                      ? setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
+                      : []
                   }
+                  isOverallComment={selectedInstructionIndex === -1}
+                  overAllComment="yayaya"
                 />
               </Grid>
             </Grid>
