@@ -72,7 +72,11 @@ export const kinectToMediapipe = (
   const mediapipePoseWorld: LandmarkList = [];
   const depthToRGB = (Math.PI * 6) / 180.0;
   for (let i = 0; i < kinectPoses.length; i += 1) {
-    mediapipePose[i] = { x: kinectPoses[i].colorX / canvas.width, y: kinectPoses[i].colorY / canvas.height, z: 0 };
+    mediapipePose[i] = {
+      x: kinectPoses[i].colorX / canvas.width - 0.5,
+      y: kinectPoses[i].colorY / canvas.height,
+      z: 0,
+    };
 
     // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
     if (rotation) {
