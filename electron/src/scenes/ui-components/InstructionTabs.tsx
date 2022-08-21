@@ -7,6 +7,7 @@ function InstructionTabs(props: {
   formInstructionItems: FormInstructionItem[];
 }) {
   const { selectedInstructionIndex, setSelectedInstructionIndex, formInstructionItems } = props;
+  const tabItems = [<Tab key={-1} label="総評" value={-1} sx={{}} />];
 
   return (
     <Tabs
@@ -19,9 +20,11 @@ function InstructionTabs(props: {
       aria-label="secondary tabs example"
       orientation="vertical"
     >
-      {formInstructionItems.map((instructionItem) => (
-        <Tab key={instructionItem.id} label={instructionItem.label} value={instructionItem.id} sx={{}} />
-      ))}
+      {tabItems.concat(
+        formInstructionItems.map((instructionItem) => (
+          <Tab key={instructionItem.id} label={instructionItem.label} value={instructionItem.id} sx={{}} />
+        )),
+      )}
     </Tabs>
   );
 }

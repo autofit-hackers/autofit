@@ -71,9 +71,7 @@ export default function BodyTrack2d() {
     setVideoUrlRef.current = '';
   };
 
-  /*
-   * 毎kinect更新時に実行される
-   */
+  // 毎kinect更新時に実行される
   const onResults = useCallback(
     (data: {
       colorImageFrame: { imageData: ImageData; width: number; height: number };
@@ -142,8 +140,7 @@ export default function BodyTrack2d() {
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
-          console.log('rep end');
-          console.log(repRef.current);
+          console.log('rep end', repRef.current);
           console.log('height', repState.current.standingHeight);
 
           // 動画撮影を停止し、配列に保存する
@@ -164,6 +161,10 @@ export default function BodyTrack2d() {
 
           // RepStateの初期化
           repState.current = resetRepState();
+
+          // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
+          // TODO: アンマウント前にまとめて行うほうがスマート
+          setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
         }
 
         // pose estimationの結果を描画
@@ -201,9 +202,7 @@ export default function BodyTrack2d() {
     [],
   );
 
-  /*
-   * Kinectの開始とPoseGridのセットアップ
-   */
+  // Kinectの開始とPoseGridのセットアップ
   useEffect(() => {
     startKinect(kinect, onResults);
     if (!poseGrid && gridDivRef.current !== null) {
@@ -213,6 +212,7 @@ export default function BodyTrack2d() {
     }
 
     // このコンポーネントのアンマウント時に実行される
+    // FIXME: 最初にもよばれる
     return () => {
       if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {
         repVideoRecorderRef.current.stop();
@@ -223,6 +223,7 @@ export default function BodyTrack2d() {
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
       setSetRecord((_) => setRef.current);
+      // FIXME: 次のマウントのほうがアンマウントよりも早いので、この処理はレポートのコンポーネントに反映されない
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);
