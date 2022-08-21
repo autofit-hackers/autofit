@@ -159,13 +159,14 @@ const kneeFrontAndBack: FormInstructionItem = {
   },
   poseGridCameraAngle: { theta: 90, phi: 0 },
   evaluate: (rep: Rep) => {
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const threshold = { upper: 30, middle: 10, lower: -10 };
-    if (bottomWorldLandmarks === undefined) {
+    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
     // TODO: 左足も考慮する
-    const error = getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], bottomWorldLandmarks[KJ.FOOT_RIGHT]).z;
+    const error = getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
 
     return normalizeError(threshold, error);
   },
