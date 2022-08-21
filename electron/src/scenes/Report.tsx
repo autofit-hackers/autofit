@@ -65,19 +65,6 @@ export default function IntervalReport() {
     },
   ];
 
-  // overallComment prop
-  console.log('SE:', setRecord);
-  const scores = setRecord.formEvaluationResults.map((result) => {
-    console.log(result.name, result.score);
-    console.log('res ', result);
-
-    return result.score;
-  });
-  console.log(scores);
-  const minScore = scores.reduce((num1: number, num2: number) => Math.min(num1, num2), 0);
-  const minScoreIndex = scores.indexOf(minScore);
-  console.log('sc = ', minScore, 'id = ', minScoreIndex);
-
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
@@ -128,7 +115,7 @@ export default function IntervalReport() {
                       : []
                   }
                   isOverallComment={selectedInstructionIndex === -1}
-                  overAllComment={setRecord.formEvaluationResults[minScoreIndex].overallComment}
+                  overallComment={setRecord.setResult.overallComment}
                 />
               </Grid>
             </Grid>

@@ -52,6 +52,29 @@ const calculateScore = (eachRepErrorsAbs: number[]) => {
   return score;
 };
 
+// セットに対する総評の決定
+const decideOverallComment = (set: Set) => {
+  const scores = set.formEvaluationResults.map((result) => result.score);
+
+  if (!Number.isNaN(scores[0])) {
+    const minScore = scores.reduce((num1: number, num2: number) => Math.min(num1, num2), 1);
+    const minScoreIndex = scores.indexOf(minScore);
+
+    // const indices = [];
+    // let idx = scores.indexOf(minScoreIndex);
+    // while (idx !== -1) {
+    //   indices.push(idx);
+    //   idx = scores.indexOf(minScoreIndex, idx + 1);
+    // }
+    // console.log(scores, indices);
+
+    // return indices.map((v) => set.formEvaluationResults[v].overallComment);
+    return [set.formEvaluationResults[minScoreIndex].overallComment];
+  }
+
+  return [''];
+};
+
 // セット変数に各指導項目の評価結果を追加する
 export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormInstructionItem[]): Set => {
   const set: Set = prevSet;
@@ -88,6 +111,10 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
 
     set.formEvaluationResults[instructionItem.id] = evaluationResult;
   });
+
+  // セットに対する総評の決定
+  set.setResult.overallComment = decideOverallComment(set);
+  console.log('set', set);
 
   return set;
 };

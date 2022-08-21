@@ -3,9 +3,11 @@ import { Paper, Typography } from '@mui/material';
 function ResultDescription(props: {
   descriptionsForEachRep: string[];
   isOverallComment: boolean;
-  overAllComment: string;
+  overallComment: string[];
 }) {
-  const { descriptionsForEachRep, isOverallComment, overAllComment } = props;
+  // TODO: bool とコメントを両方持つのはダサいので総評と指導項目ごとコメントは分けてもいいかも
+  const { descriptionsForEachRep, isOverallComment, overallComment } = props;
+  // overallComment.map((comment, idx) => <Typography key={idx}>{comment}</Typography>)
 
   return (
     <Paper
@@ -24,7 +26,7 @@ function ResultDescription(props: {
       }}
     >
       {isOverallComment ? (
-        <Typography>{overAllComment}</Typography>
+        <Typography>{overallComment[0]}</Typography>
       ) : (
         descriptionsForEachRep.map((description, repIndex) => (
           // eslint-disable-next-line react/no-array-index-key
