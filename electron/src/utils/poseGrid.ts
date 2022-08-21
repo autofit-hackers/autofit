@@ -343,9 +343,11 @@ export class PoseGrid {
       }
     }
     this.drawLandmarks(landmarkVectors);
+
+    // ガイドラインの追加
     if (guideSymbols && guideSymbols.lines) {
       guideSymbols.lines.forEach((linePair) => {
-        this.drawLine(linePair);
+        this.drawLine(linePair, scalingFactor);
       });
     }
 
@@ -373,6 +375,7 @@ export class PoseGrid {
   }
 
   drawLandmarks(landmarkVectors: Vector3[]): void {
+    // console.log('drawLandmarks', landmarkVectors[KJ.FOOT_LEFT], landmarkVectors[KJ.FOOT_RIGHT]);
     for (let i = 0; i < this.landmarks.length; i += 1) {
       const visible: boolean = this.isVisible(this.landmarks[i]);
       let { nonvisibleMaterial } = this;
@@ -435,6 +438,7 @@ export class PoseGrid {
   /**
    * @private: Converts a landmark to a vector.(in Update)
    */
+  // FIXME: こんなところでスケール変えてんじゃねえ！！
   landmarkToVector(point: NormalizedLandmark): Vector3 {
     return new Vector3(point.x, -point.y, -point.z).multiplyScalar(this.size / this.poseGridConfig.range);
   }
@@ -482,10 +486,16 @@ export class PoseGrid {
     }
   }
 
-  drawLine(guideLinePair: GuideLinePair): void {
+  drawLine(guideLinePair: GuideLinePair, scalingFactor: number): void {
     const color: Material = this.connectionMaterial;
-    const from = new Vector3(guideLinePair.from.x, guideLinePair.from.y, guideLinePair.from.z);
-    const to = new Vector3(guideLinePair.to.x, guideLinePair.to.y, guideLinePair.to.z);
+    const lmks = translateLandmarkList([guideLinePair.from, guideLinePair.to], { x: 0, y: 0, z: -1700 });
+    const lmksScaled = lmks.map((lmk) => ({
+      x: lmk.x * scalingFactor,
+      y: lmk.y * scalingFactor,
+      z: lmk.z * scalingFactor,
+    }));
+    const from = this.landmarkToVector(lmksScaled[0]);
+    const to = this.landmarkToVector(lmksScaled[1]);
     const lines: Array<Vector3> = [from, to];
     const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
     this.disposeQueue.push(geometry);
