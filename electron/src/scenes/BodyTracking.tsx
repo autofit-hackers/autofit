@@ -71,9 +71,7 @@ export default function BodyTrack2d() {
     setVideoUrlRef.current = '';
   };
 
-  /*
-   * 毎kinect更新時に実行される
-   */
+  // 毎kinect更新時に実行される
   const onResults = useCallback(
     (data: {
       colorImageFrame: { imageData: ImageData; width: number; height: number };
@@ -142,8 +140,7 @@ export default function BodyTrack2d() {
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
-          console.log('rep end');
-          console.log(repRef.current);
+          console.log('rep end', repRef.current);
           console.log('height', repState.current.standingHeight);
 
           // 動画撮影を停止し、配列に保存する
@@ -205,9 +202,7 @@ export default function BodyTrack2d() {
     [],
   );
 
-  /*
-   * Kinectの開始とPoseGridのセットアップ
-   */
+  // Kinectの開始とPoseGridのセットアップ
   useEffect(() => {
     startKinect(kinect, onResults);
     if (!poseGrid && gridDivRef.current !== null) {
