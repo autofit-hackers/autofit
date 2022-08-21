@@ -10,7 +10,7 @@ type FixOutlierOfValueReturn = {
   fixedValue: number;
 };
 
-type FixOutlierParams = {
+export type FixOutlierParams = {
   alpha: number;
   threshold: number;
 };
@@ -22,7 +22,7 @@ function fixOutlierOfValue(prev: number, curr: number, fixOutlierParams: FixOutl
     return { isOutlier: true, fixedValue: ema };
   }
 
-  return { isOutlier: false, fixedValue: ema };
+  return { isOutlier: false, fixedValue: curr };
 }
 
 type LandmarkIntersection = {
@@ -52,7 +52,7 @@ function fixOutlierOfLandmark(
   return { isOutlier, fixedLandmark };
 }
 
-function fixOutlierOfLandmarkList(
+export function fixOutlierOfLandmarkList(
   prev: LandmarkIntersectionList,
   curr: LandmarkIntersectionList,
   fixOutlierParams: FixOutlierParams,
@@ -68,5 +68,3 @@ function fixOutlierOfLandmarkList(
 
   return fixedLandmarkList;
 }
-
-export default fixOutlierOfLandmarkList;
