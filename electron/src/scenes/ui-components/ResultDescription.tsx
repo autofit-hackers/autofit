@@ -3,11 +3,11 @@ import { Paper, Typography } from '@mui/material';
 function ResultDescription(props: {
   descriptionsForEachRep: string[];
   isOverallComment: boolean;
-  overallComment: string[];
+  overallComments: string[];
 }) {
   // TODO: bool とコメントを両方持つのはダサいので総評と指導項目ごとコメントは分けてもいいかも
-  const { descriptionsForEachRep, isOverallComment, overallComment } = props;
-  // overallComment.map((comment, idx) => <Typography key={idx}>{comment}</Typography>)
+  const { descriptionsForEachRep, isOverallComment, overallComments } = props;
+  // overallComments.map((comment, idx) => <Typography key={idx}>{comment}</Typography>)
 
   return (
     <Paper
@@ -25,16 +25,17 @@ function ResultDescription(props: {
         color: '#00ffff',
       }}
     >
-      {isOverallComment ? (
-        <Typography>{overallComment[0]}</Typography>
-      ) : (
-        descriptionsForEachRep.map((description, repIndex) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <Typography key={repIndex}>
-            {repIndex + 1}レップ目では、{description}
-          </Typography>
-        ))
-      )}
+      {isOverallComment
+        ? overallComments.map((comment, idx) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <Typography key={idx}>{comment}</Typography>
+          ))
+        : descriptionsForEachRep.map((description, repIndex) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <Typography key={repIndex}>
+              {repIndex + 1}レップ目では、{description}
+            </Typography>
+          ))}
       {}
     </Paper>
   );

@@ -115,7 +115,7 @@ export default function IntervalReport() {
                       : []
                   }
                   isOverallComment={selectedInstructionIndex === -1}
-                  overallComment={setRecord.setResult.overallComment}
+                  overallComments={setRecord.setResult.overallComment}
                 />
               </Grid>
             </Grid>

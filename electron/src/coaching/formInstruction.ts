@@ -58,18 +58,16 @@ const decideOverallComment = (set: Set) => {
 
   if (!Number.isNaN(scores[0])) {
     const minScore = scores.reduce((num1: number, num2: number) => Math.min(num1, num2), 1);
-    const minScoreIndex = scores.indexOf(minScore);
 
-    // const indices = [];
-    // let idx = scores.indexOf(minScoreIndex);
-    // while (idx !== -1) {
-    //   indices.push(idx);
-    //   idx = scores.indexOf(minScoreIndex, idx + 1);
-    // }
-    // console.log(scores, indices);
+    // 最小値をとるインデックスを配列で取得し、コメントの配列を返す
+    const indices = [];
+    let idx = scores.indexOf(minScore);
+    while (idx !== -1) {
+      indices.push(idx);
+      idx = scores.indexOf(minScore, idx + 1);
+    }
 
-    // return indices.map((v) => set.formEvaluationResults[v].overallComment);
-    return [set.formEvaluationResults[minScoreIndex].overallComment];
+    return indices.map((v) => set.formEvaluationResults[v].overallComment);
   }
 
   return [''];
@@ -114,7 +112,6 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
 
   // セットに対する総評の決定
   set.setResult.overallComment = decideOverallComment(set);
-  console.log('set', set);
 
   return set;
 };

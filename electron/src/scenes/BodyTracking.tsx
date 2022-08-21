@@ -164,6 +164,10 @@ export default function BodyTrack2d() {
 
           // RepStateの初期化
           repState.current = resetRepState();
+
+          // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
+          // TODO: アンマウント前にまとめて行うほうがスマート
+          setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
         }
 
         // pose estimationの結果を描画
@@ -224,7 +228,7 @@ export default function BodyTrack2d() {
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
       setSetRecord((_) => setRef.current);
-      // TODO: 次のマウントのほうがアンマウントよりも早いので、もっと上側に記述する必要がある。
+      // FIXME: 次のマウントのほうがアンマウントよりも早いので、この処理はレポートのコンポーネントに反映されない
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);
