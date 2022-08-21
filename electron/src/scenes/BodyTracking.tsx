@@ -41,7 +41,8 @@ export default function BodyTrack2d() {
 
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
-  const fixOutlierParams: FixOutlierParams = { alpha: 0.2, threshold: 3.0 };
+  const prevPoseRef = useRef<Pose | null>(null);
+  const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 2.0 };
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
@@ -106,8 +107,6 @@ export default function BodyTrack2d() {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
 
-      let prevPose: Pose | null = null;
-
       if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入
         const rawCurrentPose: Pose = kinectToMediapipe(
@@ -118,15 +117,22 @@ export default function BodyTrack2d() {
         );
 
         // 外れ値処理
-        const currentPose =
-          prevPose == null
-            ? rawCurrentPose
-            : {
-                ...rawCurrentPose,
-                landmarks: fixOutlierOfLandmarkList(prevPose, rawCurrentPose.landmarks, fixOutlierParams),
-                worldLandmarks: fixOutlierOfLandmarkList(prevPose, rawCurrentPose.worldLandmarks, fixOutlierParams),
-              };
-        prevPose = currentPose;
+        const currentPose: Pose = rawCurrentPose;
+        if (prevPoseRef.current != null) {
+          const fixedLandmarks = fixOutlierOfLandmarkList(
+            prevPoseRef.current.landmarks,
+            rawCurrentPose.landmarks,
+            fixOutlierParams,
+          );
+          currentPose.landmarks = fixedLandmarks;
+          const fixedWorldLandmarks = fixOutlierOfLandmarkList(
+            prevPoseRef.current.worldLandmarks,
+            rawCurrentPose.worldLandmarks,
+            fixOutlierParams,
+          );
+          currentPose.worldLandmarks = fixedWorldLandmarks;
+        }
+        prevPoseRef.current = currentPose;
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {

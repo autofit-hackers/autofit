@@ -1,7 +1,14 @@
+import { NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
+
 import zip from './zip';
 
 // calculate exponential moving average (EMA)
+// the bigger alpha is, the more dominant current value is
 function calcEMA(alpha: number, prev: number, curr: number) {
+  if (alpha <= 0 || alpha >= 1) {
+    throw new Error('alpha must be between 0 and 1');
+  }
+
   return alpha * curr + (1 - alpha) * prev;
 }
 
@@ -15,32 +22,26 @@ export type FixOutlierParams = {
   threshold: number;
 };
 
+// if an deviation of current value from exponential moving average (EMA) is larger than threshold, then return previous value
+// otherwise return current EMA
 function fixOutlierOfValue(prev: number, curr: number, fixOutlierParams: FixOutlierParams): FixOutlierOfValueReturn {
   const ema = calcEMA(fixOutlierParams.alpha, prev, curr);
   const diff = Math.abs(ema - curr);
   if (diff > fixOutlierParams.threshold) {
-    return { isOutlier: true, fixedValue: ema };
+    return { isOutlier: true, fixedValue: prev };
   }
 
-  return { isOutlier: false, fixedValue: curr };
+  return { isOutlier: false, fixedValue: ema };
 }
-
-type LandmarkIntersection = {
-  x: number;
-  y: number;
-  z: number;
-};
-
-type LandmarkIntersectionList = LandmarkIntersection[];
 
 type FixOutlierOfLandmarkReturn = {
   isOutlier: boolean;
-  fixedLandmark: LandmarkIntersection;
+  fixedLandmark: NormalizedLandmark;
 };
 
 function fixOutlierOfLandmark(
-  prev: LandmarkIntersection,
-  curr: LandmarkIntersection,
+  prev: NormalizedLandmark,
+  curr: NormalizedLandmark,
   fixOutlierParams: FixOutlierParams,
 ): FixOutlierOfLandmarkReturn {
   const x = fixOutlierOfValue(prev.x, curr.x, fixOutlierParams);
@@ -53,18 +54,17 @@ function fixOutlierOfLandmark(
 }
 
 export function fixOutlierOfLandmarkList(
-  prev: LandmarkIntersectionList,
-  curr: LandmarkIntersectionList,
+  prev: NormalizedLandmarkList,
+  curr: NormalizedLandmarkList,
   fixOutlierParams: FixOutlierParams,
-): LandmarkIntersectionList {
+): NormalizedLandmarkList {
   if (prev.length !== curr.length) {
     throw new Error('prev and curr must have the same length');
   }
-  const fixedLandmarkList = zip(prev, curr).map(([prevLandmark, currLandmark]) => {
+
+  return zip(prev, curr).map(([prevLandmark, currLandmark]) => {
     const { fixedLandmark } = fixOutlierOfLandmark(prevLandmark, currLandmark, fixOutlierParams);
 
     return fixedLandmark;
   });
-
-  return fixedLandmarkList;
 }
