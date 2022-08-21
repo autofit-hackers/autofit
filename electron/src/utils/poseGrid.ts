@@ -4,6 +4,7 @@ import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
   BufferGeometry,
   Color,
+  GridHelper,
   Group,
   LineBasicMaterial,
   LineSegments,
@@ -16,12 +17,20 @@ import {
   SphereGeometry,
   Vector3,
   WebGLRenderer,
-  GridHelper,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { translateLandmarkList, copyLandmark, KINECT_POSE_CONNECTIONS } from '../training_data/pose';
+import { copyLandmark, KINECT_POSE_CONNECTIONS, translateLandmarkList } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
+
+export type GuideLinePair = {
+  from: { x: number; y: number; z: number };
+  to: { x: number; y: number; z: number };
+};
+
+export type GuideSymbols = {
+  lines?: GuideLinePair[];
+};
 
 export type CameraAngle = {
   theta: number;
@@ -269,6 +278,7 @@ export class PoseGrid {
     landmarks: NormalizedLandmark[],
     colorConnections?: ConnectionList | ColorMap<Connection>,
     colorLandmarks?: ColorMap<number>,
+    guideSymbols?: GuideSymbols,
   ): void {
     // a user stands about 1.7m away from the camera (kinect)
     // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
@@ -333,6 +343,12 @@ export class PoseGrid {
       }
     }
     this.drawLandmarks(landmarkVectors);
+    if (guideSymbols && guideSymbols.lines) {
+      guideSymbols.lines.forEach((linePair) => {
+        this.drawLine(linePair);
+      });
+    }
+
     // Color special landmarks
     if (colorLandmarks) {
       colorLandmarks.forEach((colorDef) => {
@@ -464,5 +480,17 @@ export class PoseGrid {
       }
       requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
     }
+  }
+
+  drawLine(guideLinePair: GuideLinePair): void {
+    const color: Material = this.connectionMaterial;
+    const from = new Vector3(guideLinePair.from.x, guideLinePair.from.y, guideLinePair.from.z);
+    const to = new Vector3(guideLinePair.to.x, guideLinePair.to.y, guideLinePair.to.z);
+    const lines: Array<Vector3> = [from, to];
+    const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
+    this.disposeQueue.push(geometry);
+    const wireFrame: LineSegments = new LineSegments(geometry, color);
+    this.removeQueue.push(wireFrame);
+    this.connectionGroup.add(wireFrame);
   }
 }

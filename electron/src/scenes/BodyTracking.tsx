@@ -181,7 +181,9 @@ export default function BodyTrack2d() {
 
         // PoseGridの描画
         if (poseGrid) {
-          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
+          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS, [], {
+            lines: [{ from: { x: 0, y: 0, z: 0 }, to: { x: 10, y: 0, z: 0 } }],
+          });
         }
       } else {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
