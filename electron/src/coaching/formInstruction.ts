@@ -28,18 +28,18 @@ const decideDescriptionTexts = (eachRepErrors: number[], instructionItem: FormIn
     return errorDescriptions;
   });
 
-// セットに対する総評の決定
+// 各指導項目についてセットに対する総評の決定
 const decideOverallTexts = (eachRepErrors: number[], instructionItem: FormInstructionItem): string => {
   // エラーの和を計算
   const errorSum = eachRepErrors.reduce((acc, err) => acc + err, 0);
-  let overallComment = '';
+  let summary = '';
   if (errorSum <= 0) {
-    overallComment = instructionItem.overAllComment.minus;
+    summary = instructionItem.summaryDescription.minus;
   } else {
-    overallComment = instructionItem.overAllComment.plus;
+    summary = instructionItem.summaryDescription.plus;
   }
 
-  return overallComment;
+  return summary;
 };
 
 // セット全体に対する指導項目スコアを100点満点で算出する
@@ -52,8 +52,8 @@ const calculateScore = (eachRepErrorsAbs: number[]) => {
   return score;
 };
 
-// セットに対する総評の決定
-const decideOverallComment = (set: Set) => {
+// 表示する総評テキストの選択
+const selectDisplayedSummary = (set: Set) => {
   const scores = set.formEvaluationResults.map((result) => result.score);
 
   if (!Number.isNaN(scores[0])) {
@@ -111,7 +111,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
   });
 
   // セットに対する総評の決定
-  set.setResult.overallComment = decideOverallComment(set);
+  set.summary.description = selectDisplayedSummary(set);
 
   return set;
 };

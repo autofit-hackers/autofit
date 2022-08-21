@@ -10,17 +10,17 @@ export type FormEvaluationResult = {
   worstRepIndex: number;
 };
 
-export type SetResult = {
+export type SetSummary = {
   weight?: number;
-  overallComment: string[];
+  description: string[];
 };
 
-export type Set = { reps: Rep[]; formEvaluationResults: FormEvaluationResult[]; setResult: SetResult };
+export type Set = { reps: Rep[]; formEvaluationResults: FormEvaluationResult[]; summary: SetSummary };
 
 export const resetSet = (): Set => ({
   reps: [],
   formEvaluationResults: [],
-  setResult: { overallComment: [''] },
+  summary: { description: [''] },
 });
 
 export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({

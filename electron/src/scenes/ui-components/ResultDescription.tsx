@@ -3,11 +3,10 @@ import { Paper, Typography } from '@mui/material';
 function ResultDescription(props: {
   descriptionsForEachRep: string[];
   isOverallComment: boolean;
-  overallComments: string[];
+  summaryDescription: string[];
 }) {
-  // TODO: bool とコメントを両方持つのはダサいので総評と指導項目ごとコメントは分けてもいいかも
-  const { descriptionsForEachRep, isOverallComment, overallComments } = props;
-  // overallComments.map((comment, idx) => <Typography key={idx}>{comment}</Typography>)
+  // TODO: bool とコメントを両方持つのはダサいので総評と指導項目ごとコメントは別コンポーネントに分けてもいい
+  const { descriptionsForEachRep, isOverallComment, summaryDescription } = props;
 
   return (
     <Paper
@@ -26,9 +25,9 @@ function ResultDescription(props: {
       }}
     >
       {isOverallComment
-        ? overallComments.map((comment, idx) => (
+        ? summaryDescription.map((description, idx) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Typography key={idx}>{comment}</Typography>
+            <Typography key={idx}>{description}</Typography>
           ))
         : descriptionsForEachRep.map((description, repIndex) => (
             // eslint-disable-next-line react/no-array-index-key
