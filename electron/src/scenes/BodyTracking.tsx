@@ -183,7 +183,10 @@ export default function BodyTrack2d() {
         // 描画するガイドラインの定義
         let lines: GuideLinePair[] = [];
         if (setRef.current.reps.length > 0 && formInstructionItemsQWS[1].showGuideline !== undefined) {
-          lines = formInstructionItemsQWS[1].showGuideline?.(setRef.current.reps[setRef.current.reps.length - 1]);
+          lines = formInstructionItemsQWS[3].showGuideline?.(
+            setRef.current.reps[setRef.current.reps.length - 1],
+            currentPose,
+          ) as GuideLinePair[];
         }
 
         // PoseGridの描画

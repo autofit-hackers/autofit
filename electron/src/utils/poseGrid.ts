@@ -4,6 +4,7 @@ import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
   BufferGeometry,
   Color,
+  CylinderGeometry,
   GridHelper,
   Group,
   LineBasicMaterial,
@@ -22,6 +23,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { copyLandmark, KINECT_POSE_CONNECTIONS, translateLandmarkList } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
+import KJ from './kinectJoints';
 
 export type GuideLinePair = {
   from: { x: number; y: number; z: number };
@@ -130,6 +132,7 @@ export class PoseGrid {
   landmarks: Array<NormalizedLandmark>;
   landmarkGroup: Group;
   connectionGroup: Group;
+  cylGroup: Group;
   origin: Vector3;
   poseGridConfig: PoseGridConfig;
   axesMaterial: Material;
@@ -219,6 +222,8 @@ export class PoseGrid {
     this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
+    this.cylGroup = new Group();
+    this.scene.add(this.cylGroup);
     this.connectionGroup = new Group();
     this.scene.add(this.connectionGroup);
     this.origin = new Vector3();
@@ -282,8 +287,10 @@ export class PoseGrid {
   ): void {
     // a user stands about 1.7m away from the camera (kinect)
     // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
+    // TODO: resize はまとめる
     const translatedLandmarks = translateLandmarkList(landmarks, { x: 0, y: 0, z: -1700 });
     this.connectionGroup.clear();
+    this.cylGroup.clear();
     this.clearResources();
     this.landmarks = translatedLandmarks.map(copyLandmark);
     // Convert connections to ColorList if not already
@@ -314,6 +321,7 @@ export class PoseGrid {
       // Scaling factor takes the number of these steps and converts it back
       // into a factor that the landmark can be multiplied by.
       scalingFactor = 1 / ((numRescaleSteps * RESCALE) / (range / 2) + 1);
+      // TODO: resize はまとめる
       this.landmarks.forEach((landmark: NormalizedLandmark) => {
         // eslint-disable-next-line no-param-reassign
         landmark.x *= scalingFactor;
@@ -351,6 +359,8 @@ export class PoseGrid {
       });
     }
 
+    this.drawCyl(landmarkVectors[KJ.HAND_RIGHT], landmarkVectors[KJ.HAND_LEFT]);
+
     // Color special landmarks
     if (colorLandmarks) {
       colorLandmarks.forEach((colorDef) => {
@@ -375,7 +385,6 @@ export class PoseGrid {
   }
 
   drawLandmarks(landmarkVectors: Vector3[]): void {
-    // console.log('drawLandmarks', landmarkVectors[KJ.FOOT_LEFT], landmarkVectors[KJ.FOOT_RIGHT]);
     for (let i = 0; i < this.landmarks.length; i += 1) {
       const visible: boolean = this.isVisible(this.landmarks[i]);
       let { nonvisibleMaterial } = this;
@@ -502,5 +511,17 @@ export class PoseGrid {
     const wireFrame: LineSegments = new LineSegments(geometry, color);
     this.removeQueue.push(wireFrame);
     this.connectionGroup.add(wireFrame);
+  }
+
+  drawCyl(from: Vector3, to: Vector3): void {
+    const center = from.add(to).multiplyScalar(0.5);
+    const distance = from.distanceTo(to);
+    // const rotation = from.angleTo(to);
+    const geometry = new CylinderGeometry(0.5, 0.5, distance, 32);
+    const material = new MeshBasicMaterial({ color: 0xffff00 });
+    const cylinder = new Mesh(geometry, material);
+    cylinder.position.copy(center);
+    // cylinder.rotation.copy(rotation);
+    this.cylGroup.add(cylinder);
   }
 }
