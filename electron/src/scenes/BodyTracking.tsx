@@ -43,6 +43,7 @@ export default function BodyTrack2d() {
   // TODO: titration of outlier detection parameters
   const prevPoseRef = useRef<Pose | null>(null);
   const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 2.0 };
+  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.7, threshold: 200 };
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
@@ -127,7 +128,7 @@ export default function BodyTrack2d() {
           const fixedWorldLandmarks = fixOutlierOfLandmarkList(
             prevPoseRef.current.worldLandmarks,
             rawCurrentPose.worldLandmarks,
-            fixOutlierParams,
+            fixWorldOutlierPrams,
           );
           currentPose.worldLandmarks = fixedWorldLandmarks;
         }
