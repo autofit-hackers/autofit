@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-shadow
-export const enum KJ {
+const enum KJ {
   PELVIS, // 0
   SPINE_NAVEL, // 1
   SPINE_CHEST, // 2
@@ -35,5 +35,4 @@ export const enum KJ {
   COUNT, // 32
 }
 
-export const hoge = 0;
-// TODO: named export のために配置。ほかのjoint情報も配置予定
+export default KJ;

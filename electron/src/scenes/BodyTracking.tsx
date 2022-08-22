@@ -1,9 +1,10 @@
-import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
+import * as Draw2D from '@mediapipe/drawing_utils';
 import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
+import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
@@ -13,7 +14,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
-import { PoseGrid } from '../utils/poseGrid';
+import { GuideLinePair, PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
@@ -194,20 +195,29 @@ export default function BodyTrack2d() {
         }
 
         // pose estimationの結果を描画
-        drawLandmarks(canvasCtx, currentPose.landmarks, {
+        Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
           color: 'white',
           lineWidth: 4,
           radius: 8,
           fillColor: 'lightgreen',
         });
-        drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
+        Draw2D.drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
           color: 'white',
           lineWidth: 4,
         });
 
+        // 描画するガイドラインの定義
+        let lines: GuideLinePair[] = [];
+        if (setRef.current.reps.length > 0 && formInstructionItemsQWS[1].showGuideline !== undefined) {
+          lines = formInstructionItemsQWS[3].showGuideline?.(
+            setRef.current.reps[setRef.current.reps.length - 1],
+            currentPose,
+          ) as GuideLinePair[];
+        }
+
         // PoseGridの描画
         if (poseGrid) {
-          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
+          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS, [], { lines });
         }
       } else {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する

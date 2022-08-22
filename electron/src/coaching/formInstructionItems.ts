@@ -1,7 +1,7 @@
-import { getAngle, getDistance } from '../training_data/pose';
+import { getAngle, getDistance, Pose } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
-import { KJ } from '../utils/kinectJoints';
-import { CameraAngle } from '../utils/poseGrid';
+import KJ from '../utils/kinectJoints';
+import { CameraAngle, GuideLinePair } from '../utils/poseGrid';
 
 export type FormInstructionItem = {
   readonly id: number;
@@ -15,7 +15,7 @@ export type FormInstructionItem = {
   readonly importance?: number;
   readonly poseGridCameraAngle: CameraAngle;
   readonly evaluate: (rep: Rep) => number;
-  readonly showGuideline?: (rep: Rep) => void;
+  readonly showGuideline?: (prevRep: Rep, currPose?: Pose) => GuideLinePair[];
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -102,6 +102,17 @@ const kneeInAndOut: FormInstructionItem = {
 
     return normalizeError(threshold, error);
   },
+  showGuideline(rep: Rep) {
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    // const threshold = { upper: 15, middle: 0, lower: -15 };
+    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
+      return [];
+    }
+    const line: GuideLinePair = { from: bottomWorldLandmarks[KJ.FOOT_LEFT], to: topWorldLandmarks[KJ.FOOT_RIGHT] };
+
+    return [line];
+  },
 };
 
 // 足の幅
@@ -146,7 +157,7 @@ const kneeFrontAndBack: FormInstructionItem = {
   description: {
     minus: 'お尻を引きすぎているようです。つま先の上までは膝を出しても大丈夫です。',
     normal: 'ちょうど良い膝の曲げ方です。その調子で重心を足の真上で保ちましょう。',
-    plus: '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が声すぎないように注意しましょう。',
+    plus: '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が超えすぎないように注意しましょう。',
   },
   voice: {
     minus: 'お尻を引きすぎです。',
@@ -162,7 +173,7 @@ const kneeFrontAndBack: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
-    const threshold = { upper: 30, middle: 10, lower: -10 };
+    const threshold = { upper: 150, middle: 10, lower: -10 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
@@ -170,6 +181,34 @@ const kneeFrontAndBack: FormInstructionItem = {
     const error = getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
 
     return normalizeError(threshold, error);
+  },
+  showGuideline(rep: Rep, currPose?: Pose) {
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    if (currPose === undefined) {
+      return [];
+    }
+    const currentWorldLandmarks = currPose.worldLandmarks;
+    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
+      return [];
+    }
+    const from = {
+      x: currentWorldLandmarks[KJ.KNEE_LEFT].x,
+      y: currentWorldLandmarks[KJ.KNEE_LEFT].y,
+      z: bottomWorldLandmarks[KJ.FOOT_LEFT].z - 100,
+    };
+    const to = {
+      x: currentWorldLandmarks[KJ.KNEE_RIGHT].x,
+      y: currentWorldLandmarks[KJ.KNEE_RIGHT].y,
+      z: bottomWorldLandmarks[KJ.FOOT_RIGHT].z - 100,
+    };
+
+    const line: GuideLinePair = { from, to };
+
+    // console.log(getDistance(bottomWorldLandmarks[KJ.KNEE_LEFT], bottomWorldLandmarks[KJ.FOOT_LEFT]));
+    // , { from: bottomWorldLandmarks[KJ.KNEE_LEFT], to: bottomWorldLandmarks[KJ.KNEE_RIGHT] }
+
+    return [line];
   },
 };
 

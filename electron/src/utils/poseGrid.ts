@@ -4,6 +4,8 @@ import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
   BufferGeometry,
   Color,
+  CylinderGeometry,
+  GridHelper,
   Group,
   LineBasicMaterial,
   LineSegments,
@@ -16,12 +18,21 @@ import {
   SphereGeometry,
   Vector3,
   WebGLRenderer,
-  GridHelper,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { translateLandmarkList, copyLandmark, KINECT_POSE_CONNECTIONS } from '../training_data/pose';
+import { copyLandmark, KINECT_POSE_CONNECTIONS, translateLandmarkList } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
+import KJ from './kinectJoints';
+
+export type GuideLinePair = {
+  from: { x: number; y: number; z: number };
+  to: { x: number; y: number; z: number };
+};
+
+export type GuideSymbols = {
+  lines?: GuideLinePair[];
+};
 
 export type CameraAngle = {
   theta: number;
@@ -121,6 +132,7 @@ export class PoseGrid {
   landmarks: Array<NormalizedLandmark>;
   landmarkGroup: Group;
   connectionGroup: Group;
+  cylGroup: Group;
   origin: Vector3;
   poseGridConfig: PoseGridConfig;
   axesMaterial: Material;
@@ -212,6 +224,8 @@ export class PoseGrid {
     this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
+    this.cylGroup = new Group();
+    // this.scene.add(this.cylGroup);
     this.connectionGroup = new Group();
     this.scene.add(this.connectionGroup);
     this.origin = new Vector3();
@@ -271,11 +285,14 @@ export class PoseGrid {
     landmarks: NormalizedLandmark[],
     colorConnections?: ConnectionList | ColorMap<Connection>,
     colorLandmarks?: ColorMap<number>,
+    guideSymbols?: GuideSymbols,
   ): void {
     // a user stands about 1.7m away from the camera (kinect)
     // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
+    // TODO: resize はまとめる
     const translatedLandmarks = translateLandmarkList(landmarks, { x: 0, y: 0, z: -1700 });
     this.connectionGroup.clear();
+    this.cylGroup.clear();
     this.clearResources();
     this.landmarks = translatedLandmarks.map(copyLandmark);
     // Convert connections to ColorList if not already
@@ -306,6 +323,7 @@ export class PoseGrid {
       // Scaling factor takes the number of these steps and converts it back
       // into a factor that the landmark can be multiplied by.
       scalingFactor = 1 / ((numRescaleSteps * RESCALE) / (range / 2) + 1);
+      // TODO: resize はまとめる
       this.landmarks.forEach((landmark: NormalizedLandmark) => {
         // eslint-disable-next-line no-param-reassign
         landmark.x *= scalingFactor;
@@ -335,6 +353,16 @@ export class PoseGrid {
       }
     }
     this.drawLandmarks(landmarkVectors);
+
+    // ガイドラインの追加
+    if (guideSymbols && guideSymbols.lines) {
+      guideSymbols.lines.forEach((linePair) => {
+        this.drawLine(linePair, scalingFactor);
+      });
+    }
+
+    this.drawCyl(landmarkVectors[KJ.HAND_RIGHT], landmarkVectors[KJ.HAND_LEFT]);
+
     // Color special landmarks
     if (colorLandmarks) {
       colorLandmarks.forEach((colorDef) => {
@@ -421,6 +449,7 @@ export class PoseGrid {
   /**
    * @private: Converts a landmark to a vector.(in Update)
    */
+  // FIXME: こんなところでスケール変えてんじゃねえ！！
   landmarkToVector(point: NormalizedLandmark): Vector3 {
     return new Vector3(point.x, -point.y, -point.z).multiplyScalar(this.size / this.poseGridConfig.range);
   }
@@ -466,5 +495,35 @@ export class PoseGrid {
       }
       requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
     }
+  }
+
+  drawLine(guideLinePair: GuideLinePair, scalingFactor: number): void {
+    const color: Material = this.connectionMaterial;
+    const lmks = translateLandmarkList([guideLinePair.from, guideLinePair.to], { x: 0, y: 0, z: -1700 });
+    const lmksScaled = lmks.map((lmk) => ({
+      x: lmk.x * scalingFactor,
+      y: lmk.y * scalingFactor,
+      z: lmk.z * scalingFactor,
+    }));
+    const from = this.landmarkToVector(lmksScaled[0]);
+    const to = this.landmarkToVector(lmksScaled[1]);
+    const lines: Array<Vector3> = [from, to];
+    const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
+    this.disposeQueue.push(geometry);
+    const wireFrame: LineSegments = new LineSegments(geometry, color);
+    this.removeQueue.push(wireFrame);
+    this.connectionGroup.add(wireFrame);
+  }
+
+  drawCyl(from: Vector3, to: Vector3): void {
+    const center = from.add(to).multiplyScalar(0.5);
+    const distance = from.distanceTo(to);
+    // const rotation = from.angleTo(to);
+    const geometry = new CylinderGeometry(0.5, 0.5, distance, 32);
+    const material = new MeshBasicMaterial({ color: 0xffff00 });
+    const cylinder = new Mesh(geometry, material);
+    cylinder.position.copy(center);
+    // cylinder.rotation.copy(rotation);
+    this.cylGroup.add(cylinder);
   }
 }
