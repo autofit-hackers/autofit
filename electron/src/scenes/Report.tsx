@@ -2,10 +2,12 @@ import { Box, CssBaseline, Grid } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
+import ReactToPrint from 'react-to-print';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import futuristicTheme from './themes';
+import PrintButton from './ui-components/Buttons';
 import InstructionTabs from './ui-components/InstructionTabs';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
@@ -65,63 +67,73 @@ export default function IntervalReport() {
     },
   ];
 
+  // react-to-print
+  const componentToPrintRef = useRef<HTMLDivElement>(null);
+
   return (
-    <ThemeProvider theme={futuristicTheme}>
-      <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
-        <InstructionTabs
-          selectedInstructionIndex={selectedInstructionIndex}
-          setSelectedInstructionIndex={setSelectedInstructionIndex}
-          formInstructionItems={formInstructionItems}
-        />
-        <Box
-          component="main"
-          sx={{
-            backgroundColor: (theme) =>
-              theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
-            flexGrow: 1,
-            height: '100vh',
-            overflow: 'auto',
-          }}
-        >
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              {/* 撮影したRGB映像 */}
-              <Grid item xs={6}>
-                <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
-              </Grid>
-              {/* トレーニングの3D表示 */}
-              <Grid item xs={6}>
-                <PoseGridViewer
-                  gridDivRef={gridDivRef}
-                  poseGridRef={poseGridRef}
-                  cameraPosition={
-                    selectedInstructionIndex >= 0
-                      ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                      : formInstructionItems[0].poseGridCameraAngle
-                  }
-                />
-              </Grid>
-              {/* スコアのレーダーチャート */}
-              <Grid item xs={5}>
-                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
-              </Grid>
-              {/* フォーム評価の説明文 */}
-              <Grid item xs={7}>
-                <ResultDescription
-                  descriptionsForEachRep={
-                    selectedInstructionIndex >= 0
-                      ? setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
-                      : []
-                  }
-                  isOverallComment={selectedInstructionIndex === -1}
-                  summaryDescription={setRecord.summary.description}
-                />
-              </Grid>
-            </Grid>
-          </Container>
-        </Box>
-      </Box>
-    </ThemeProvider>
+    <div>
+      {/* You have to place ReactToPrint component as a sibling of the component you want to print. */}
+      <ReactToPrint trigger={() => PrintButton()} content={() => componentToPrintRef.current} />
+      <div ref={componentToPrintRef}>
+        <ThemeProvider theme={futuristicTheme}>
+          <CssBaseline />
+
+          <Box sx={{ display: 'flex' }}>
+            <InstructionTabs
+              selectedInstructionIndex={selectedInstructionIndex}
+              setSelectedInstructionIndex={setSelectedInstructionIndex}
+              formInstructionItems={formInstructionItems}
+            />
+            <Box
+              component="main"
+              sx={{
+                backgroundColor: (theme) =>
+                  theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+                flexGrow: 1,
+                height: '100vh',
+                overflow: 'auto',
+              }}
+            >
+              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Grid container spacing={3}>
+                  {/* 撮影したRGB映像 */}
+                  <Grid item xs={6}>
+                    <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+                  </Grid>
+                  {/* トレーニングの3D表示 */}
+                  <Grid item xs={6}>
+                    <PoseGridViewer
+                      gridDivRef={gridDivRef}
+                      poseGridRef={poseGridRef}
+                      cameraPosition={
+                        selectedInstructionIndex >= 0
+                          ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
+                          : formInstructionItems[0].poseGridCameraAngle
+                      }
+                    />
+                  </Grid>
+                  {/* スコアのレーダーチャート */}
+                  <Grid item xs={5}>
+                    <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+                  </Grid>
+                  {/* フォーム評価の説明文 */}
+                  <Grid item xs={7}>
+                    <ResultDescription
+                      descriptionsForEachRep={
+                        selectedInstructionIndex >= 0
+                          ? setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
+                          : []
+                      }
+                      isOverallComment={selectedInstructionIndex === -1}
+                      summaryDescription={setRecord.summary.description}
+                    />
+                  </Grid>
+                </Grid>
+              </Container>
+            </Box>
+          </Box>
+        </ThemeProvider>
+      </div>
+    </div>
   );
 }

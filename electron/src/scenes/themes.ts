@@ -1,6 +1,7 @@
 import { createTheme } from '@mui/material';
 
 const futuristicTheme = createTheme({
+  typography: { fontSize: 17 },
   palette: {
     mode: 'dark',
     primary: {

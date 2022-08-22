@@ -12,6 +12,7 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
+import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { GuideLinePair, PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
@@ -39,7 +40,13 @@ export default function BodyTrack2d() {
   const upperThreshold = 0.95;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
-  // 映像保存
+  // 外れ値処理の設定
+  // TODO: titration of outlier detection parameters
+  const prevPoseRef = useRef<Pose | null>(null);
+  const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 2.0 };
+  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.7, threshold: 200 };
+
+  // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
   const setVideoRecorderRef = useRef<MediaRecorder | null>(null);
   const setVideoUrlRef = useRef<string>('');
@@ -102,12 +109,30 @@ export default function BodyTrack2d() {
 
       if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入
-        const currentPose: Pose = kinectToMediapipe(
+        const rawCurrentPose: Pose = kinectToMediapipe(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
           data.bodyFrame.bodies[0].skeleton.joints,
           canvasRef.current,
           true,
         );
+
+        // 外れ値処理
+        const currentPose: Pose = rawCurrentPose;
+        if (prevPoseRef.current != null) {
+          const fixedLandmarks = fixOutlierOfLandmarkList(
+            prevPoseRef.current.landmarks,
+            rawCurrentPose.landmarks,
+            fixOutlierParams,
+          );
+          currentPose.landmarks = fixedLandmarks;
+          const fixedWorldLandmarks = fixOutlierOfLandmarkList(
+            prevPoseRef.current.worldLandmarks,
+            rawCurrentPose.worldLandmarks,
+            fixWorldOutlierPrams,
+          );
+          currentPose.worldLandmarks = fixedWorldLandmarks;
+        }
+        prevPoseRef.current = currentPose;
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {

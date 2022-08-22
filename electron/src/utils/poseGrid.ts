@@ -217,8 +217,10 @@ export class PoseGrid {
     this.sizeWhenFitted = 1 - 2 * this.poseGridConfig.margin;
 
     const gridPlane = new GridHelper(100, 10);
-    // TODO: this is a magic-number hack to get the pose's foot to be on the grid. should be fixed to automatically adjust grid y to foot position.
-    gridPlane.translateY(-this.size / 4);
+    // translate grid plane on foot height
+    // TODO: hardcoded value
+    gridPlane.translateY(-50);
+
     this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
