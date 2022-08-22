@@ -2,7 +2,15 @@ import { Howl } from 'howler';
 
 export const playTrainingStartSound = () => {
   const sound = new Howl({
-    src: ['../../resources/audio/start_train.wav'],
+    src: ['../../resources/audio/start_training.wav'],
+    volume: 0.5,
+  });
+  sound.play();
+};
+
+export const playTrainingEndSound = () => {
+  const sound = new Howl({
+    src: ['../../resources/audio/finish_training.wav'],
     volume: 0.5,
   });
   sound.play();
