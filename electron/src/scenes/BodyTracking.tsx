@@ -77,6 +77,7 @@ export default function BodyTrack2d() {
     setVideoRecorderRef.current = null;
     setRepVideoUrls([]);
     setVideoUrlRef.current = '';
+    playTrainingStartSound();
   };
 
   // 毎kinect更新時に実行される
@@ -102,7 +103,6 @@ export default function BodyTrack2d() {
         // セット映像の記録を開始
         if (setVideoRecorderRef.current == null) {
           setVideoRecorderRef.current = startCapturingSetVideo(canvasRef.current, setVideoUrlRef);
-          playTrainingStartSound();
         }
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
