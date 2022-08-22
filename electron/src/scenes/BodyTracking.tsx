@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
-import playRepCountSound from '../coaching/voiceGuidance';
+import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
@@ -100,6 +100,7 @@ export default function BodyTrack2d() {
         // セット映像の記録を開始
         if (setVideoRecorderRef.current == null) {
           setVideoRecorderRef.current = startCapturingSetVideo(canvasRef.current, setVideoUrlRef);
+          playTrainingStartSound();
         }
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
