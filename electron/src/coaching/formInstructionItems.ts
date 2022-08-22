@@ -15,7 +15,7 @@ export type FormInstructionItem = {
   readonly importance?: number;
   readonly poseGridCameraAngle: CameraAngle;
   readonly evaluate: (rep: Rep) => number;
-  readonly showGuideline?: (prevRep: Rep, currPose: Pose) => GuideLinePair[];
+  readonly showGuideline?: (prevRep: Rep, currPose?: Pose) => GuideLinePair[];
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -182,9 +182,12 @@ const kneeFrontAndBack: FormInstructionItem = {
 
     return normalizeError(threshold, error);
   },
-  showGuideline(rep: Rep, currPose: Pose) {
+  showGuideline(rep: Rep, currPose?: Pose) {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    if (currPose === undefined) {
+      return [];
+    }
     const currentWorldLandmarks = currPose.worldLandmarks;
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return [];
