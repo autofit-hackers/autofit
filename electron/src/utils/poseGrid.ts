@@ -225,7 +225,7 @@ export class PoseGrid {
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
     this.cylGroup = new Group();
-    this.scene.add(this.cylGroup);
+    // this.scene.add(this.cylGroup);
     this.connectionGroup = new Group();
     this.scene.add(this.connectionGroup);
     this.origin = new Vector3();
