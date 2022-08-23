@@ -361,7 +361,7 @@ export class PoseGrid {
       });
     }
 
-    this.drawCyl(landmarkVectors[KJ.HAND_RIGHT], landmarkVectors[KJ.HAND_LEFT]);
+    this.drawCylinder(landmarkVectors[KJ.HAND_RIGHT], landmarkVectors[KJ.HAND_LEFT]);
 
     // Color special landmarks
     if (colorLandmarks) {
@@ -515,7 +515,7 @@ export class PoseGrid {
     this.connectionGroup.add(wireFrame);
   }
 
-  drawCyl(from: Vector3, to: Vector3): void {
+  drawCylinder(from: Vector3, to: Vector3): void {
     const center = from.add(to).multiplyScalar(0.5);
     const distance = from.distanceTo(to);
     // const rotation = from.angleTo(to);
