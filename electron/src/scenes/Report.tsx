@@ -8,7 +8,7 @@ import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import futuristicTheme from './themes';
+import futuristicTheme, { paperSx } from './themes';
 import PrintButton from './ui-components/Buttons';
 import InstructionItems from './ui-components/InstructionMiniItems';
 import PoseGridViewer from './ui-components/PoseGridViewer';
@@ -96,39 +96,13 @@ export default function IntervalReport() {
                 <Grid container spacing={3}>
                   {/* 撮影したRGB映像 */}
                   <Grid item xs={6}>
-                    <Paper
-                      sx={{
-                        p: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        border: 1,
-                        height: '100%',
-                        width: '100%',
-                        borderColor: 'grey.500',
-                        borderRadius: 5,
-                        boxShadow: 0,
-                        backgroundColor: 'white',
-                      }}
-                    >
+                    <Paper sx={paperSx}>
                       <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
                     </Paper>
                   </Grid>
                   {/* トレーニングの3D表示 */}
                   <Grid item xs={6}>
-                    <Paper
-                      sx={{
-                        p: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        border: 1,
-                        height: '100%',
-                        width: '100%',
-                        borderColor: 'grey.500',
-                        borderRadius: 5,
-                        boxShadow: 0,
-                        backgroundColor: 'white',
-                      }}
-                    >
+                    <Paper sx={paperSx}>
                       <PoseGridViewer
                         gridDivRef={gridDivRef}
                         poseGridRef={poseGridRef}
@@ -141,20 +115,7 @@ export default function IntervalReport() {
                     </Paper>
                   </Grid>
                   <Grid item xs={12}>
-                    <Paper
-                      sx={{
-                        p: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        border: 1,
-                        height: '100%',
-                        width: '100%',
-                        borderColor: 'grey.500',
-                        borderRadius: 5,
-                        boxShadow: 0,
-                        backgroundColor: 'white',
-                      }}
-                    >
+                    <Paper sx={paperSx}>
                       <Stack direction="row" spacing={3}>
                         <Chip label="総評" color="success" icon={<AssessmentIcon fontSize="small" />} />
                       </Stack>

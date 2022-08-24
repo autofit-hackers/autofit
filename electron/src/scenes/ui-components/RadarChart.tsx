@@ -1,6 +1,7 @@
 import { Paper } from '@mui/material';
 import { graphic } from 'echarts';
 import ReactECharts from 'echarts-for-react';
+import { paperSx } from '../themes';
 
 export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
@@ -39,20 +40,7 @@ function RadarChart(radarChartProps: RadarChartProps) {
   };
 
   return (
-    <Paper
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        border: 1,
-        height: '100%',
-        width: '100%',
-        borderColor: 'grey.500',
-        borderRadius: 5,
-        boxShadow: 0,
-        backgroundColor: 'white',
-      }}
-    >
+    <Paper sx={paperSx}>
       <ReactECharts option={option} style={style} />
     </Paper>
   );

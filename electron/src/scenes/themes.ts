@@ -18,3 +18,16 @@ const futuristicTheme = createTheme({
 });
 
 export default futuristicTheme;
+
+export const paperSx = {
+  p: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  border: 1,
+  height: '100%',
+  width: '100%',
+  borderColor: 'grey.500',
+  borderRadius: 2,
+  boxShadow: 0,
+  backgroundColor: 'white',
+};

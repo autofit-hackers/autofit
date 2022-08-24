@@ -3,6 +3,7 @@ import StartIcon from '@mui/icons-material/Start';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import { Chip, IconButton, Paper, Stack, Typography } from '@mui/material';
 import { FormEvaluationResult } from '../../training_data/set';
+import { paperSx } from '../themes';
 
 function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;
@@ -22,20 +23,7 @@ function InstructionItem(props: {
   const { isGood, description, itemIndex, setSelectedInstructionIndex } = props;
 
   return (
-    <Paper
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        border: 1,
-        height: '100%',
-        width: '100%',
-        borderColor: 'grey.500',
-        borderRadius: 5,
-        boxShadow: 0,
-        backgroundColor: 'white',
-      }}
-    >
+    <Paper sx={paperSx}>
       <Stack direction="row">
         <GoodChip isGood={isGood} />
       </Stack>
