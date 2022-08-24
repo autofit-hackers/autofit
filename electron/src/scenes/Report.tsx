@@ -1,4 +1,5 @@
-import { Box, CssBaseline, Grid } from '@mui/material';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import { Box, Chip, CssBaseline, Grid, Paper, Stack, Typography } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -9,10 +10,10 @@ import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import futuristicTheme from './themes';
 import PrintButton from './ui-components/Buttons';
-import InstructionTabs from './ui-components/InstructionTabs';
+import InstructionItems from './ui-components/InstructionMiniItems';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
-import ResultDescription from './ui-components/ResultDescription';
+import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
 
 export default function IntervalReport() {
@@ -81,11 +82,6 @@ export default function IntervalReport() {
           <CssBaseline />
 
           <Box sx={{ display: 'flex' }}>
-            <InstructionTabs
-              selectedInstructionIndex={selectedInstructionIndex}
-              setSelectedInstructionIndex={setSelectedInstructionIndex}
-              formInstructionItems={formInstructionItems}
-            />
             <Box
               component="main"
               sx={{
@@ -100,34 +96,83 @@ export default function IntervalReport() {
                 <Grid container spacing={3}>
                   {/* 撮影したRGB映像 */}
                   <Grid item xs={6}>
-                    <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+                    <Paper
+                      sx={{
+                        p: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        border: 1,
+                        height: '100%',
+                        width: '100%',
+                        borderColor: 'grey.500',
+                        borderRadius: 5,
+                        boxShadow: 0,
+                        backgroundColor: 'white',
+                      }}
+                    >
+                      <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+                    </Paper>
                   </Grid>
                   {/* トレーニングの3D表示 */}
                   <Grid item xs={6}>
-                    <PoseGridViewer
-                      gridDivRef={gridDivRef}
-                      poseGridRef={poseGridRef}
-                      cameraPosition={
-                        selectedInstructionIndex >= 0
-                          ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                          : formInstructionItems[0].poseGridCameraAngle
-                      }
-                    />
+                    <Paper
+                      sx={{
+                        p: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        border: 1,
+                        height: '100%',
+                        width: '100%',
+                        borderColor: 'grey.500',
+                        borderRadius: 5,
+                        boxShadow: 0,
+                        backgroundColor: 'white',
+                      }}
+                    >
+                      <PoseGridViewer
+                        gridDivRef={gridDivRef}
+                        poseGridRef={poseGridRef}
+                        cameraPosition={
+                          selectedInstructionIndex >= 0
+                            ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
+                            : formInstructionItems[0].poseGridCameraAngle
+                        }
+                      />
+                    </Paper>
                   </Grid>
-                  {/* スコアのレーダーチャート */}
+                  <Grid item xs={12}>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        border: 1,
+                        height: '100%',
+                        width: '100%',
+                        borderColor: 'grey.500',
+                        borderRadius: 5,
+                        boxShadow: 0,
+                        backgroundColor: 'white',
+                      }}
+                    >
+                      <Stack direction="row" spacing={3}>
+                        <Chip label="総評" color="success" icon={<AssessmentIcon fontSize="small" />} />
+                      </Stack>
+                      <Typography variant="h6">{setRecord.summary.description}</Typography>
+                    </Paper>
+                  </Grid>
                   <Grid item xs={5}>
-                    <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+                    <Stack spacing={3}>
+                      <TotalScore score={60} />
+                      {/* スコアのレーダーチャート */}
+                      <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+                    </Stack>
                   </Grid>
                   {/* フォーム評価の説明文 */}
                   <Grid item xs={7}>
-                    <ResultDescription
-                      descriptionsForEachRep={
-                        selectedInstructionIndex >= 0
-                          ? setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
-                          : []
-                      }
-                      isOverallComment={selectedInstructionIndex === -1}
-                      summaryDescription={setRecord.summary.description}
+                    <InstructionItems
+                      formEvaluationResults={setRecord.formEvaluationResults}
+                      setSelectedInstructionIndex={setSelectedInstructionIndex}
                     />
                   </Grid>
                 </Grid>

@@ -120,5 +120,6 @@
     "streamsaver",
     "UNBINNED",
     "uttr"
-  ]
+  ],
+  "color-picker.languages": ["typescript"]
 }

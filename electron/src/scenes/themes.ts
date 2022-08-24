@@ -3,15 +3,15 @@ import { createTheme } from '@mui/material';
 const futuristicTheme = createTheme({
   typography: { fontSize: 17 },
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
-      main: '#00ffff',
-      dark: '#00ffff',
+      main: '#E7234E',
+      light: '#E7234E',
       contrastText: '#fff',
     },
     secondary: {
-      main: '#00ffff',
-      dark: '#ba000d',
+      main: '#9EC927',
+      light: '#9EC927',
       contrastText: '#000',
     },
   },
