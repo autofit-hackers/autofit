@@ -4,12 +4,14 @@ import { phaseAtom } from './atoms';
 import BodyTrack2d from './BodyTracking';
 import IntervalReport from './Report';
 import StartPage from './StartPage';
+import ProductMenu from './ui-components/ProductMenu';
 
 export default function TrainingMain() {
   const [phase, setPhase] = useAtom(phaseAtom);
 
   return (
     <>
+      <ProductMenu />
       {phase === 0 && <StartPage />}
       {phase === 1 && (
         <>
