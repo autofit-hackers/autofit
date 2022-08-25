@@ -16,7 +16,7 @@ function PoseGridViewer(props: {
         position: 'relative',
         // TODO: Resolve hardcoded value
         width: '100%',
-        height: '100%',
+        height: '528px',
         // FIXME: height はピクセル指定しないと正しく表示されない
       }}
     >

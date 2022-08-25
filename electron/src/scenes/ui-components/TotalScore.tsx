@@ -6,9 +6,9 @@ function TotalScore(props: { score: number }) {
 
   return (
     <Card>
-      <CardContent sx={cardSx}>
+      <CardContent sx={{ cardSx }}>
         <Typography>あなたのスクワットは</Typography>
-        <Stack direction="row" alignItems="flex-end">
+        <Stack direction="row" alignItems="flex-end" justifyContent="center">
           <Typography fontSize={100} fontWeight="bold">
             {score}
           </Typography>

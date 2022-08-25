@@ -196,6 +196,7 @@ export default function BodyTrack2d() {
           // TODO: アンマウント前にまとめて行うほうがスマート
           setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
 
+          // レップカウントを更新
           if (repCounterRef.current) {
             repCounterRef.current.innerHTML = setRef.current.reps.length.toString();
           }
@@ -236,6 +237,7 @@ export default function BodyTrack2d() {
         setPhase((prevPhase) => prevPhase + 1);
       }
 
+      // HELPME: いらないかも（repCount描画の名残り）
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -252,7 +254,7 @@ export default function BodyTrack2d() {
     }
 
     if (repCounterRef.current !== null) {
-      repCounterRef.current.innerHTML = 'Aaa';
+      repCounterRef.current.innerHTML = '0';
     }
 
     // このコンポーネントのアンマウント時に実行される

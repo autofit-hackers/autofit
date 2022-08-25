@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
+import { formInstructionItemsAtom, kinectAtom, playSoundAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
 import InstructionItems from './ui-components/InstructionMiniItems';
 import PoseGridViewer from './ui-components/PoseGridViewer';
@@ -29,16 +29,18 @@ export default function IntervalReport() {
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
 
+  const [playSound] = useAtom(playSoundAtom);
+
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
-    playTrainingEndSound();
+    playTrainingEndSound(playSound);
     stopKinect(kinect);
     if (!poseGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGridRef.current = new PoseGrid(gridDivRef.current);
       poseGridRef.current.setCameraAngle(formInstructionItems[0].poseGridCameraAngle);
     }
-  }, [formInstructionItems, kinect]);
+  }, [formInstructionItems, kinect, playSound]);
 
   // TODO: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
@@ -87,19 +89,17 @@ export default function IntervalReport() {
             </Typography>
             <Grid container spacing={3}>
               {/* 撮影したRGB映像 */}
-              <Grid item xs={6}>
+              <Grid item xs={6} alignItems="stretch">
                 <Card>
                   <CardContent sx={cardSx}>
-                    <CardHeader title="RGB映像" />
                     <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
                   </CardContent>
                 </Card>
               </Grid>
               {/* トレーニングの3D表示 */}
-              <Grid item xs={6}>
+              <Grid item xs={6} alignItems="stretch">
                 <Card>
                   <CardContent sx={cardSx}>
-                    <CardHeader title="3D表示" />
                     <PoseGridViewer
                       gridDivRef={gridDivRef}
                       poseGridRef={poseGridRef}
@@ -115,14 +115,14 @@ export default function IntervalReport() {
               <Grid item xs={12}>
                 <Card>
                   <CardContent sx={cardSx}>
-                    <CardHeader title="総評" />
+                    <CardHeader title="総評" titleTypographyProps={{ fontWeight: 'bold' }} />
                     <Typography variant="h6">{setRecord.summary.description}</Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={5}>
                 <Stack spacing={3}>
-                  <TotalScore score={60} />
+                  <TotalScore score={setRecord.summary.totalScore} />
                   {/* スコアのレーダーチャート */}
                   <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
                 </Stack>

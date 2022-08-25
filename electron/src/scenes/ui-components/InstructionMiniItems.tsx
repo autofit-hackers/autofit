@@ -6,8 +6,8 @@ import { FormEvaluationResult } from '../../training_data/set';
 function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;
 
-  const goodChip = <Chip label="Good" color="secondary" icon={<ThumbUpAltIcon fontSize="small" />} />;
-  const badChip = <Chip label="Bad" color="primary" icon={<ErrorIcon fontSize="small" />} />;
+  const goodChip = <Chip label="Good" color="secondary" icon={<ThumbUpAltIcon fontSize="small" />} sx={{ mb: 1 }} />;
+  const badChip = <Chip label="Bad" color="primary" icon={<ErrorIcon fontSize="small" />} sx={{ mb: 1 }} />;
 
   return isGood ? goodChip : badChip;
 }
@@ -17,9 +17,9 @@ function InstructionItem(props: {
   description: string;
   itemIndex: number;
   setSelectedInstructionIndex: React.Dispatch<React.SetStateAction<number>>;
-  color: '#000000' | '#0000ff';
+  isSelected: boolean;
 }) {
-  const { isGood, description, itemIndex, setSelectedInstructionIndex, color } = props;
+  const { isGood, description, itemIndex, setSelectedInstructionIndex, isSelected } = props;
 
   return (
     <Card>
@@ -28,11 +28,11 @@ function InstructionItem(props: {
           setSelectedInstructionIndex(itemIndex);
         }}
       >
-        <CardContent sx={{ flex: '1 0 auto' }}>
+        <CardContent sx={{ flex: '1 0 auto' }} style={{ backgroundColor: isSelected ? '#5555ff' : '#ffffff' }}>
           <Stack direction="row">
             <GoodChip isGood={isGood} />
           </Stack>
-          <Typography color={color}>{description}</Typography>
+          <Typography color={isSelected ? '#ffffff' : '0000ff'}>{description}</Typography>
         </CardContent>
       </CardActionArea>
     </Card>
@@ -50,11 +50,13 @@ function InstructionItems(props: {
     <Stack spacing={3}>
       {formEvaluationResults.map((formEvaluationResult, itemIndex) => (
         <InstructionItem
-          isGood={false}
+          // FIXME: logic and threshold
+          isGood={formEvaluationResult.score > 50}
+          // FIXME: [0] ではなく Result.descriptionForSet を追加して使用
           description={formEvaluationResult.descriptionsForEachRep[0]}
           itemIndex={itemIndex}
           setSelectedInstructionIndex={setSelectedInstructionIndex}
-          color={selectedInstructionIndex === itemIndex ? '#0000ff' : '#000000'}
+          isSelected={selectedInstructionIndex === itemIndex}
         />
       ))}
     </Stack>

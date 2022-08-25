@@ -13,6 +13,7 @@ export const calculateRepFormErrorScore = (prevRep: Rep, instructionItems: FormI
   return rep;
 };
 
+// FIXME: レップごとではなく、セット全体（Good/badとテキスト表示が矛盾する可能性）
 // 各レップに対する表示テキストの決定
 const decideDescriptionTexts = (eachRepErrors: number[], instructionItem: FormInstructionItem): string[] =>
   eachRepErrors.map((error) => {
@@ -112,6 +113,12 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
 
   // セットに対する総評の決定
   set.summary.description = selectDisplayedSummary(set);
+
+  // セットの合計得点を計算
+  set.summary.totalScore = Math.round(
+    set.formEvaluationResults.map((result) => result.score).reduce((num1: number, num2: number) => num1 + num2, 0) /
+      set.formEvaluationResults.length,
+  );
 
   return set;
 };

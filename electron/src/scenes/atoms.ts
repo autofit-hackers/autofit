@@ -14,3 +14,5 @@ export const setRecordAtom = atom<Set>(resetSet());
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 export const kinectAtom = atom<typeof KinectAzure>(new KinectAzure());
+
+export const playSoundAtom = atom<boolean>(false);
