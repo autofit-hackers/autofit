@@ -114,9 +114,9 @@ export const getAngle = (start: Landmark, end: Landmark) => {
   const z = end.z - start.z;
 
   return {
-    xy: (Math.atan2(y, x) * 180) / Math.PI,
-    yz: (Math.atan2(z, y) * 180) / Math.PI,
-    zx: (Math.atan2(x, -z) * 180) / Math.PI,
+    xy: (Math.atan2(y, x) * 180) / Math.PI, // x軸となす角度
+    yz: (Math.atan2(z, y) * 180) / Math.PI, // y軸となす角度
+    zx: (Math.atan2(x, -z) * 180) / Math.PI, // z軸となす角度
   };
 };
 
