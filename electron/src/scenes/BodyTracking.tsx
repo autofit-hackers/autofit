@@ -259,7 +259,6 @@ export default function BodyTrack2d() {
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
       setSetRecord((_) => setRef.current);
-      // FIXME: 次のマウントのほうがアンマウントよりも早いので、この処理はレポートのコンポーネントに反映されない
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);

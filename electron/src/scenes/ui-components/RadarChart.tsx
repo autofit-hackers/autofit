@@ -1,7 +1,7 @@
-import { Paper } from '@mui/material';
+import { Card, CardContent } from '@mui/material';
 import { graphic } from 'echarts';
 import ReactECharts from 'echarts-for-react';
-import { paperSx } from '../themes';
+import { cardSx } from '../themes';
 
 export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
@@ -40,9 +40,11 @@ function RadarChart(radarChartProps: RadarChartProps) {
   };
 
   return (
-    <Paper sx={paperSx}>
-      <ReactECharts option={option} style={style} />
-    </Paper>
+    <Card>
+      <CardContent sx={cardSx}>
+        <ReactECharts option={option} style={style} />
+      </CardContent>
+    </Card>
   );
 }
 

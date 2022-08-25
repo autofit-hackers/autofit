@@ -1,5 +1,4 @@
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import { Box, Chip, CssBaseline, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Stack, Typography } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -8,7 +7,7 @@ import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import futuristicTheme, { paperSx } from './themes';
+import futuristicTheme, { cardSx } from './themes';
 import PrintButton from './ui-components/Buttons';
 import InstructionItems from './ui-components/InstructionMiniItems';
 import PoseGridViewer from './ui-components/PoseGridViewer';
@@ -93,34 +92,43 @@ export default function IntervalReport() {
               }}
             >
               <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+                  おつかれさまでした。フォーム分析の結果です。
+                </Typography>
                 <Grid container spacing={3}>
                   {/* 撮影したRGB映像 */}
                   <Grid item xs={6}>
-                    <Paper sx={paperSx}>
-                      <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
-                    </Paper>
+                    <Card>
+                      <CardContent sx={cardSx}>
+                        <CardHeader title="RGB映像" />
+                        <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+                      </CardContent>
+                    </Card>
                   </Grid>
                   {/* トレーニングの3D表示 */}
                   <Grid item xs={6}>
-                    <Paper sx={paperSx}>
-                      <PoseGridViewer
-                        gridDivRef={gridDivRef}
-                        poseGridRef={poseGridRef}
-                        cameraPosition={
-                          selectedInstructionIndex >= 0
-                            ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                            : formInstructionItems[0].poseGridCameraAngle
-                        }
-                      />
-                    </Paper>
+                    <Card>
+                      <CardContent sx={cardSx}>
+                        <CardHeader title="3D表示" />
+                        <PoseGridViewer
+                          gridDivRef={gridDivRef}
+                          poseGridRef={poseGridRef}
+                          cameraPosition={
+                            selectedInstructionIndex >= 0
+                              ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
+                              : formInstructionItems[0].poseGridCameraAngle
+                          }
+                        />
+                      </CardContent>
+                    </Card>
                   </Grid>
                   <Grid item xs={12}>
-                    <Paper sx={paperSx}>
-                      <Stack direction="row" spacing={3}>
-                        <Chip label="総評" color="success" icon={<AssessmentIcon fontSize="small" />} />
-                      </Stack>
-                      <Typography variant="h6">{setRecord.summary.description}</Typography>
-                    </Paper>
+                    <Card>
+                      <CardContent sx={cardSx}>
+                        <CardHeader title="総評" />
+                        <Typography variant="h6">{setRecord.summary.description}</Typography>
+                      </CardContent>
+                    </Card>
                   </Grid>
                   <Grid item xs={5}>
                     <Stack spacing={3}>
@@ -133,6 +141,7 @@ export default function IntervalReport() {
                   <Grid item xs={7}>
                     <InstructionItems
                       formEvaluationResults={setRecord.formEvaluationResults}
+                      selectedInstructionIndex={selectedInstructionIndex}
                       setSelectedInstructionIndex={setSelectedInstructionIndex}
                     />
                   </Grid>

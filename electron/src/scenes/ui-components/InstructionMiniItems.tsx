@@ -1,9 +1,7 @@
 import ErrorIcon from '@mui/icons-material/Error';
-import StartIcon from '@mui/icons-material/Start';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
-import { Chip, IconButton, Paper, Stack, Typography } from '@mui/material';
+import { Card, CardActionArea, CardContent, Chip, Stack, Typography } from '@mui/material';
 import { FormEvaluationResult } from '../../training_data/set';
-import { paperSx } from '../themes';
 
 function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;
@@ -19,33 +17,34 @@ function InstructionItem(props: {
   description: string;
   itemIndex: number;
   setSelectedInstructionIndex: React.Dispatch<React.SetStateAction<number>>;
+  color: '#000000' | '#0000ff';
 }) {
-  const { isGood, description, itemIndex, setSelectedInstructionIndex } = props;
+  const { isGood, description, itemIndex, setSelectedInstructionIndex, color } = props;
 
   return (
-    <Paper sx={paperSx}>
-      <Stack direction="row">
-        <GoodChip isGood={isGood} />
-      </Stack>
-      <Stack direction="row" justifyContent="space-around">
-        <Typography>{description}</Typography>
-        <IconButton
-          onClick={() => {
-            setSelectedInstructionIndex(itemIndex);
-          }}
-        >
-          <StartIcon />
-        </IconButton>
-      </Stack>
-    </Paper>
+    <Card>
+      <CardActionArea
+        onClick={() => {
+          setSelectedInstructionIndex(itemIndex);
+        }}
+      >
+        <CardContent sx={{ flex: '1 0 auto' }}>
+          <Stack direction="row">
+            <GoodChip isGood={isGood} />
+          </Stack>
+          <Typography color={color}>{description}</Typography>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 }
 
 function InstructionItems(props: {
   formEvaluationResults: FormEvaluationResult[];
+  selectedInstructionIndex: number;
   setSelectedInstructionIndex: React.Dispatch<React.SetStateAction<number>>;
 }) {
-  const { formEvaluationResults, setSelectedInstructionIndex } = props;
+  const { formEvaluationResults, selectedInstructionIndex, setSelectedInstructionIndex } = props;
 
   return (
     <Stack spacing={3}>
@@ -55,6 +54,7 @@ function InstructionItems(props: {
           description={formEvaluationResult.descriptionsForEachRep[0]}
           itemIndex={itemIndex}
           setSelectedInstructionIndex={setSelectedInstructionIndex}
+          color={selectedInstructionIndex === itemIndex ? '#0000ff' : '#000000'}
         />
       ))}
     </Stack>

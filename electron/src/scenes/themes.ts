@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material';
 
 const futuristicTheme = createTheme({
-  typography: { fontSize: 17 },
+  typography: { fontSize: 16, fontFamily: '-apple-system' },
   palette: {
     mode: 'light',
     primary: {
@@ -23,11 +23,11 @@ export const paperSx = {
   p: 2,
   display: 'flex',
   flexDirection: 'column',
-  border: 1,
   height: '100%',
   width: '100%',
-  borderColor: 'grey.500',
   borderRadius: 2,
   boxShadow: 0,
   backgroundColor: 'white',
 };
+
+export const cardSx = { flex: '1 0 auto' };
