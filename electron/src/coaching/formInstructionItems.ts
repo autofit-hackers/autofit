@@ -87,7 +87,7 @@ const kneeInAndOut: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const threshold = { upper: 15, middle: 0, lower: -15 };
+    const threshold = { upper: 30, middle: 10, lower: -5 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
@@ -215,7 +215,7 @@ const kneeFrontAndBack: FormInstructionItem = {
 const squatVelocity: FormInstructionItem = {
   id: 4,
   name: 'Speed',
-  label: 'フォーム速度',
+  label: '速度',
   description: {
     minus: 'スクワットのペースが速いです。もう少しゆっくりの速度で効かせましょう。',
     normal: 'いい速さでスクワットできています。',
@@ -235,8 +235,16 @@ const squatVelocity: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
     const fps = 25;
-    const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
-    const error = rep.form.length / fps;
+    // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
+    const threshold = { upper: 3.0, middle: 2.2, lower: 1.6 };
+    if (
+      rep.keyframesIndex === undefined ||
+      rep.keyframesIndex.ascendingMiddle === undefined ||
+      rep.keyframesIndex.descendingMiddle === undefined
+    ) {
+      throw new Error('keyframesIndex is undefined');
+    }
+    const error = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
 
     return normalizeError(threshold, error);
   },
