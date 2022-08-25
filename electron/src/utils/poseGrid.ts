@@ -400,6 +400,36 @@ export class PoseGrid {
     }
   }
 
+  drawLine(guideLinePair: GuideLinePair, scalingFactor: number): void {
+    const color: Material = this.connectionMaterial;
+    const lmks = translateLandmarkList([guideLinePair.from, guideLinePair.to], { x: 0, y: 0, z: -1700 });
+    const lmksScaled = lmks.map((lmk) => ({
+      x: lmk.x * scalingFactor,
+      y: lmk.y * scalingFactor,
+      z: lmk.z * scalingFactor,
+    }));
+    const from = this.landmarkToVector(lmksScaled[0]);
+    const to = this.landmarkToVector(lmksScaled[1]);
+    const lines: Array<Vector3> = [from, to];
+    const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
+    this.disposeQueue.push(geometry);
+    const wireFrame: LineSegments = new LineSegments(geometry, color);
+    this.removeQueue.push(wireFrame);
+    this.connectionGroup.add(wireFrame);
+  }
+
+  drawCylinder(from: Vector3, to: Vector3): void {
+    const center = from.add(to).multiplyScalar(0.5);
+    const distance = from.distanceTo(to);
+    // const rotation = from.angleTo(to);
+    const geometry = new CylinderGeometry(0.5, 0.5, distance, 32);
+    const material = new MeshBasicMaterial({ color: 0xffff00 });
+    const cylinder = new Mesh(geometry, material);
+    cylinder.position.copy(center);
+    // cylinder.rotation.copy(rotation);
+    this.cylGroup.add(cylinder);
+  }
+
   /**
    * @private: Colors the landmarks based on their type. (in Update)
    */
@@ -495,35 +525,5 @@ export class PoseGrid {
       }
       requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
     }
-  }
-
-  drawLine(guideLinePair: GuideLinePair, scalingFactor: number): void {
-    const color: Material = this.connectionMaterial;
-    const lmks = translateLandmarkList([guideLinePair.from, guideLinePair.to], { x: 0, y: 0, z: -1700 });
-    const lmksScaled = lmks.map((lmk) => ({
-      x: lmk.x * scalingFactor,
-      y: lmk.y * scalingFactor,
-      z: lmk.z * scalingFactor,
-    }));
-    const from = this.landmarkToVector(lmksScaled[0]);
-    const to = this.landmarkToVector(lmksScaled[1]);
-    const lines: Array<Vector3> = [from, to];
-    const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
-    this.disposeQueue.push(geometry);
-    const wireFrame: LineSegments = new LineSegments(geometry, color);
-    this.removeQueue.push(wireFrame);
-    this.connectionGroup.add(wireFrame);
-  }
-
-  drawCylinder(from: Vector3, to: Vector3): void {
-    const center = from.add(to).multiplyScalar(0.5);
-    const distance = from.distanceTo(to);
-    // const rotation = from.angleTo(to);
-    const geometry = new CylinderGeometry(0.5, 0.5, distance, 32);
-    const material = new MeshBasicMaterial({ color: 0xffff00 });
-    const cylinder = new Mesh(geometry, material);
-    cylinder.position.copy(center);
-    // cylinder.rotation.copy(rotation);
-    this.cylGroup.add(cylinder);
   }
 }
