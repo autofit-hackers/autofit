@@ -14,7 +14,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
-import { GuideLinePair, PoseGrid } from '../utils/poseGrid';
+import { LineEndPoints, PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
@@ -207,12 +207,12 @@ export default function BodyTrack2d() {
         });
 
         // 描画するガイドラインの定義
-        let lines: GuideLinePair[] = [];
-        if (setRef.current.reps.length > 0 && formInstructionItemsQWS[1].showGuideline !== undefined) {
-          lines = formInstructionItemsQWS[3].showGuideline?.(
+        let lines: LineEndPoints[] = [];
+        if (setRef.current.reps.length > 0 && formInstructionItemsQWS[1].getGuidelineSymbols !== undefined) {
+          lines = formInstructionItemsQWS[3].getGuidelineSymbols?.(
             setRef.current.reps[setRef.current.reps.length - 1],
             currentPose,
-          ) as GuideLinePair[];
+          ) as LineEndPoints[];
         }
 
         // PoseGridの描画

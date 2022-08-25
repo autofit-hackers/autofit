@@ -7,7 +7,7 @@ export const calculateRepFormErrorScore = (prevRep: Rep, instructionItems: FormI
   const rep: Rep = prevRep;
 
   instructionItems.forEach((instructionItem) => {
-    rep.formErrorScores[instructionItem.id] = instructionItem.evaluate(rep);
+    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateFrom(rep);
   });
 
   return rep;

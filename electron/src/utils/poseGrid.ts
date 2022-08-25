@@ -25,13 +25,22 @@ import { copyLandmark, KINECT_POSE_CONNECTIONS, translateLandmarkList } from '..
 import { Set } from '../training_data/set';
 import KJ from './kinectJoints';
 
-export type GuideLinePair = {
+export type LineEndPoints = {
   from: { x: number; y: number; z: number };
   to: { x: number; y: number; z: number };
 };
 
-export type GuideSymbols = {
-  lines?: GuideLinePair[];
+type SquareCorners = {
+  1: { x: number; y: number; z: number };
+  2: { x: number; y: number; z: number };
+  3: { x: number; y: number; z: number };
+  4: { x: number; y: number; z: number };
+};
+
+export type GuidelineSymbols = {
+  lines?: LineEndPoints[];
+  spheres?: { x: number; y: number; z: number }[];
+  squares?: SquareCorners[]; // should have 4 points
 };
 
 export type CameraAngle = {
@@ -285,7 +294,7 @@ export class PoseGrid {
     landmarks: NormalizedLandmark[],
     colorConnections?: ConnectionList | ColorMap<Connection>,
     colorLandmarks?: ColorMap<number>,
-    guideSymbols?: GuideSymbols,
+    guideSymbols?: GuidelineSymbols,
   ): void {
     // a user stands about 1.7m away from the camera (kinect)
     // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
@@ -400,7 +409,7 @@ export class PoseGrid {
     }
   }
 
-  drawLine(guideLinePair: GuideLinePair, scalingFactor: number): void {
+  drawLine(guideLinePair: LineEndPoints, scalingFactor: number): void {
     const color: Material = this.connectionMaterial;
     const lmks = translateLandmarkList([guideLinePair.from, guideLinePair.to], { x: 0, y: 0, z: -1700 });
     const lmksScaled = lmks.map((lmk) => ({
