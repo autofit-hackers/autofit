@@ -26,11 +26,11 @@ function RadarChart(radarChartProps: RadarChartProps) {
         areaStyle: {
           color: new graphic.RadialGradient(0.1, 0.6, 1, [
             {
-              color: 'rgba(255, 145, 124, 0.1)',
+              color: 'rgba(0, 145, 124, 0.1)',
               offset: 0,
             },
             {
-              color: 'rgba(255, 145, 124, 0.9)',
+              color: 'rgba(0, 145, 124, 0.9)',
               offset: 1,
             },
           ]),
