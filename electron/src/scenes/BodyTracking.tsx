@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
-import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
@@ -14,7 +13,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
-import { LineEndPoints, PoseGrid } from '../utils/poseGrid';
+import { PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
@@ -206,18 +205,9 @@ export default function BodyTrack2d() {
           lineWidth: 4,
         });
 
-        // 描画するガイドラインの定義
-        let lines: LineEndPoints[] = [];
-        if (setRef.current.reps.length > 0 && formInstructionItemsQWS[1].getGuidelineSymbols !== undefined) {
-          lines = formInstructionItemsQWS[3].getGuidelineSymbols?.(
-            setRef.current.reps[setRef.current.reps.length - 1],
-            currentPose,
-          ) as LineEndPoints[];
-        }
-
         // PoseGridの描画
         if (poseGrid) {
-          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS, [], { lines });
+          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
       } else {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
