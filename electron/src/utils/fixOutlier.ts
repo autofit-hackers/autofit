@@ -20,6 +20,7 @@ type FixOutlierOfValueReturn = {
 export type FixOutlierParams = {
   alpha: number;
   threshold: number;
+  maxConsecutiveOutlierCount: number;
 };
 
 // if an deviation of current value from exponential moving average (EMA) is larger than threshold, then return previous value
@@ -62,8 +63,16 @@ export function fixOutlierOfLandmarkList(
     throw new Error('prev and curr must have the same length');
   }
 
+  let consecutiveOutlierCount = 0;
+
   return zip(prev, curr).map(([prevLandmark, currLandmark]) => {
-    const { fixedLandmark } = fixOutlierOfLandmark(prevLandmark, currLandmark, fixOutlierParams);
+    const { isOutlier, fixedLandmark } = fixOutlierOfLandmark(prevLandmark, currLandmark, fixOutlierParams);
+    // if currLandmark is classified as outlier maxConsecutiveOutlierCount times in a row,
+    // then return currLandmark to avoid returning the same landmark value for a long time
+    consecutiveOutlierCount = isOutlier ? consecutiveOutlierCount + 1 : 0;
+    if (consecutiveOutlierCount > fixOutlierParams.maxConsecutiveOutlierCount) {
+      return currLandmark;
+    }
 
     return fixedLandmark;
   });
