@@ -7,7 +7,7 @@ import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, playSoundAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
-import InstructionItems from './ui-components/InstructionMiniItems';
+import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
 import TotalScore from './ui-components/TotalScore';
@@ -129,7 +129,7 @@ export default function IntervalReport() {
               </Grid>
               {/* フォーム評価の説明文 */}
               <Grid item xs={7}>
-                <InstructionItems
+                <InstructionSummaryCards
                   formEvaluationResults={setRecord.formEvaluationResults}
                   selectedInstructionIndex={selectedInstructionIndex}
                   setSelectedInstructionIndex={setSelectedInstructionIndex}

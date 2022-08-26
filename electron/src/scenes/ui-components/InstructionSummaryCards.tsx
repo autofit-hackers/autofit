@@ -12,7 +12,7 @@ function GoodChip(props: { isGood: boolean }) {
   return isGood ? goodChip : badChip;
 }
 
-function InstructionItem(props: {
+function InstructionSummaryCard(props: {
   isGood: boolean;
   description: string;
   itemIndex: number;
@@ -39,7 +39,7 @@ function InstructionItem(props: {
   );
 }
 
-function InstructionItems(props: {
+function InstructionSummaryCards(props: {
   formEvaluationResults: FormEvaluationResult[];
   selectedInstructionIndex: number;
   setSelectedInstructionIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -49,7 +49,7 @@ function InstructionItems(props: {
   return (
     <Stack spacing={3}>
       {formEvaluationResults.map((formEvaluationResult, itemIndex) => (
-        <InstructionItem
+        <InstructionSummaryCard
           // FIXME: logic and threshold
           isGood={formEvaluationResult.score > 50}
           description={formEvaluationResult.shortSummary}
@@ -62,4 +62,4 @@ function InstructionItems(props: {
   );
 }
 
-export default InstructionItems;
+export default InstructionSummaryCards;
