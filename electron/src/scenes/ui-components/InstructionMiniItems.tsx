@@ -6,8 +6,8 @@ import { FormEvaluationResult } from '../../training_data/set';
 function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;
 
-  const goodChip = <Chip label="Good" color="secondary" icon={<ThumbUpAltIcon fontSize="small" />} sx={{ mb: 1 }} />;
-  const badChip = <Chip label="Bad" color="primary" icon={<ErrorIcon fontSize="small" />} sx={{ mb: 1 }} />;
+  const goodChip = <Chip label="Good" color="success" icon={<ThumbUpAltIcon fontSize="small" />} sx={{ mb: 1 }} />;
+  const badChip = <Chip label="Bad" color="error" icon={<ErrorIcon fontSize="small" />} sx={{ mb: 1 }} />;
 
   return isGood ? goodChip : badChip;
 }
@@ -52,8 +52,7 @@ function InstructionItems(props: {
         <InstructionItem
           // FIXME: logic and threshold
           isGood={formEvaluationResult.score > 50}
-          // FIXME: [0] ではなく Result.descriptionForSet を追加して使用
-          description={formEvaluationResult.descriptionsForEachRep[0]}
+          description={formEvaluationResult.shortSummary}
           itemIndex={itemIndex}
           setSelectedInstructionIndex={setSelectedInstructionIndex}
           isSelected={selectedInstructionIndex === itemIndex}

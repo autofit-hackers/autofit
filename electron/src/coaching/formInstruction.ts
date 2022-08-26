@@ -13,31 +13,31 @@ export const calculateRepFormErrorScore = (prevRep: Rep, instructionItems: FormI
   return rep;
 };
 
-// FIXME: レップごとではなく、セット全体（Good/badとテキスト表示が矛盾する可能性）
 // 各レップに対する表示テキストの決定
-const decideDescriptionTexts = (eachRepErrors: number[], instructionItem: FormInstructionItem): string[] =>
-  eachRepErrors.map((error) => {
-    let errorDescriptions = '';
-    if (error <= -1) {
-      errorDescriptions = instructionItem.description.minus;
-    } else if (error >= 1) {
-      errorDescriptions = instructionItem.description.plus;
-    } else {
-      errorDescriptions = instructionItem.description.normal;
-    }
+const decideShortSummary = (eachRepErrors: number[], instructionItem: FormInstructionItem): string => {
+  let shortSummary = '';
+  // 平均errorの値でテキストを決定
+  const error = eachRepErrors.reduce((num1: number, num2: number) => num1 + num2, 0) / eachRepErrors.length;
+  if (error <= -1) {
+    shortSummary = instructionItem.shortDescription.minus;
+  } else if (error >= 1) {
+    shortSummary = instructionItem.shortDescription.plus;
+  } else {
+    shortSummary = instructionItem.shortDescription.normal;
+  }
 
-    return errorDescriptions;
-  });
+  return shortSummary;
+};
 
 // 各指導項目についてセットに対する総評の決定
-const decideOverallTexts = (eachRepErrors: number[], instructionItem: FormInstructionItem): string => {
+const decideLongSummary = (eachRepErrors: number[], instructionItem: FormInstructionItem): string => {
   // エラーの和を計算
   const errorSum = eachRepErrors.reduce((acc, err) => acc + err, 0);
   let summary = '';
   if (errorSum <= 0) {
-    summary = instructionItem.summaryDescription.minus;
+    summary = instructionItem.longDescription.minus;
   } else {
-    summary = instructionItem.summaryDescription.plus;
+    summary = instructionItem.longDescription.plus;
   }
 
   return summary;
@@ -68,7 +68,7 @@ const selectDisplayedSummary = (set: Set) => {
       idx = scores.indexOf(minScore, idx + 1);
     }
 
-    return indices.map((v) => set.formEvaluationResults[v].overallComment);
+    return indices.map((v) => set.formEvaluationResults[v].longSummary);
   }
 
   return [''];
@@ -81,8 +81,8 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
   instructionItems.forEach((instructionItem) => {
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
-      descriptionsForEachRep: [],
-      overallComment: '',
+      shortSummary: '',
+      longSummary: '',
       eachRepErrors: [],
       score: 0,
       bestRepIndex: 0,
@@ -103,10 +103,13 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     evaluationResult.score = calculateScore(eachRepErrorsAbs);
 
     // 各レップに対する表示テキストの決定
-    evaluationResult.descriptionsForEachRep = decideDescriptionTexts(evaluationResult.eachRepErrors, instructionItem);
+    evaluationResult.shortSummary = decideShortSummary(evaluationResult.eachRepErrors, instructionItem);
+
+    // セット全体に対する指導項目ごとの表示テキストを決定
+    evaluationResult.shortSummary = decideShortSummary(eachRepErrorsAbs, instructionItem);
 
     // セット全体に対する総評の決定
-    evaluationResult.overallComment = decideOverallTexts(evaluationResult.eachRepErrors, instructionItem);
+    evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrors, instructionItem);
 
     set.formEvaluationResults[instructionItem.id] = evaluationResult;
   });
