@@ -241,8 +241,16 @@ const squatVelocity: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
     const fps = 25;
-    const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
-    const error = rep.form.length / fps;
+    // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
+    const threshold = { upper: 3.0, middle: 2.2, lower: 1.6 };
+    if (
+      rep.keyframesIndex === undefined ||
+      rep.keyframesIndex.ascendingMiddle === undefined ||
+      rep.keyframesIndex.descendingMiddle === undefined
+    ) {
+      throw new Error('keyframesIndex is undefined');
+    }
+    const error = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
 
     return normalizeError(threshold, error);
   },
