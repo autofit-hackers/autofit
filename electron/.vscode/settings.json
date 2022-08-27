@@ -9,7 +9,12 @@
   "javascript.validate.enable": false,
   "javascript.format.enable": false,
   "typescript.format.enable": false,
-  "editor.codeActionsOnSave": ["source.organizeImports", "source.fixAll.eslint"],
+  "editor.codeActionsOnSave": [
+    "source.organizeImports",
+    "source.fixAll.eslint",
+    "source.fixAll.tslint",
+    "source.fixAll"
+  ],
   "eslint.format.enable": false,
 
   "editor.defaultFormatter": "esbenp.prettier-vscode",
