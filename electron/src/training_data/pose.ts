@@ -83,7 +83,9 @@ export const kinectToMediapipe = (
       mediapipePoseWorld[i] = {
         x: kinectPoses[i].cameraX,
         y: kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB),
-        z: kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB),
+        // a user stands about 1.7m away from the camera (kinect)
+        // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
+        z: kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB) - 1700,
       };
     } else {
       mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
@@ -149,16 +151,3 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   z: normalizedLandmark.z,
   visibility: normalizedLandmark.visibility,
 });
-
-export type GridDelta = { x: number; y: number; z: number };
-
-export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
-  landmarkList.map(
-    (landmark: Landmark) =>
-      ({
-        x: landmark.x + delta.x,
-        y: landmark.y + delta.y,
-        z: landmark.z + delta.z,
-        visibility: landmark.visibility,
-      } as Landmark),
-  );

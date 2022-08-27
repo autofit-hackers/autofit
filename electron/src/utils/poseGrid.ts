@@ -20,7 +20,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { copyLandmark, KINECT_POSE_CONNECTIONS, translateLandmarkList } from '../training_data/pose';
+import { copyLandmark, KINECT_POSE_CONNECTIONS } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
 import KJ from './kinectJoints';
@@ -296,14 +296,10 @@ export class PoseGrid {
     colorLandmarks?: ColorMap<number>,
     guideSymbols?: GuidelineSymbols,
   ): void {
-    // a user stands about 1.7m away from the camera (kinect)
-    // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
-    // TODO: resize はまとめる
-    const translatedLandmarks = translateLandmarkList(landmarks, { x: 0, y: 0, z: -1700 });
     this.connectionGroup.clear();
     this.cylGroup.clear();
     this.clearResources();
-    this.landmarks = translatedLandmarks.map(copyLandmark);
+    this.landmarks = landmarks.map(copyLandmark);
     // Convert connections to ColorList if not already
     let connections: ColorMap<Connection> = [];
     if (colorConnections) {
@@ -366,7 +362,7 @@ export class PoseGrid {
     // ガイドラインの追加
     if (guideSymbols && guideSymbols.lines) {
       guideSymbols.lines.forEach((linePair) => {
-        this.drawLine(linePair, scalingFactor);
+        this.drawLine(linePair);
       });
     }
 
@@ -409,16 +405,10 @@ export class PoseGrid {
     }
   }
 
-  drawLine(guideLinePair: LineEndPoints, scalingFactor: number): void {
+  drawLine(guideLinePair: LineEndPoints): void {
     const color: Material = this.connectionMaterial;
-    const lmks = translateLandmarkList([guideLinePair.from, guideLinePair.to], { x: 0, y: 0, z: -1700 });
-    const lmksScaled = lmks.map((lmk) => ({
-      x: lmk.x * scalingFactor,
-      y: lmk.y * scalingFactor,
-      z: lmk.z * scalingFactor,
-    }));
-    const from = this.landmarkToVector(lmksScaled[0]);
-    const to = this.landmarkToVector(lmksScaled[1]);
+    const from = this.landmarkToVector(guideLinePair.from);
+    const to = this.landmarkToVector(guideLinePair.to);
     const lines: Array<Vector3> = [from, to];
     const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
     this.disposeQueue.push(geometry);
