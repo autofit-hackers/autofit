@@ -1,7 +1,7 @@
 import { getAngle, getDistance, Pose } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import KJ from '../utils/kinectJoints';
-import { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
+import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
 export type FormInstructionItem = {
   readonly id: number;
@@ -15,7 +15,7 @@ export type FormInstructionItem = {
   readonly importance?: number;
   readonly poseGridCameraAngle: CameraAngle;
   readonly evaluateFrom: (rep: Rep) => number;
-  readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
+  readonly generateGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -69,7 +69,7 @@ const squatDepth: FormInstructionItem = {
 
     return calculateError(threshold, meanThighAngleFromSide);
   },
-  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+  generateGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
     const threshold = { upper: 90, middle: 80, lower: 60 };
     const guidelineSymbols: GuidelineSymbols = {};
     const bottomPose = getBottomPose(rep);
