@@ -1,5 +1,4 @@
-import { NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
-
+import { NormalizedLandmark } from '@mediapipe/pose';
 import zip from './zip';
 
 // calculate exponential moving average (EMA)
@@ -23,57 +22,67 @@ export type FixOutlierParams = {
   maxConsecutiveOutlierCount: number;
 };
 
-// if an deviation of current value from exponential moving average (EMA) is larger than threshold, then return previous value
-// otherwise return current EMA
-function fixOutlierOfValue(prev: number, curr: number, fixOutlierParams: FixOutlierParams): FixOutlierOfValueReturn {
-  const ema = calcEMA(fixOutlierParams.alpha, prev, curr);
-  const diff = Math.abs(ema - curr);
-  if (diff > fixOutlierParams.threshold) {
-    return { isOutlier: true, fixedValue: prev };
-  }
-
-  return { isOutlier: false, fixedValue: ema };
-}
-
 type FixOutlierOfLandmarkReturn = {
   isOutlier: boolean;
   fixedLandmark: NormalizedLandmark;
 };
 
-function fixOutlierOfLandmark(
-  prev: NormalizedLandmark,
-  curr: NormalizedLandmark,
-  fixOutlierParams: FixOutlierParams,
-): FixOutlierOfLandmarkReturn {
-  const x = fixOutlierOfValue(prev.x, curr.x, fixOutlierParams);
-  const y = fixOutlierOfValue(prev.y, curr.y, fixOutlierParams);
-  const z = fixOutlierOfValue(prev.z, curr.z, fixOutlierParams);
-  const isOutlier = x.isOutlier || y.isOutlier || z.isOutlier;
-  const fixedLandmark = { ...curr, x: x.fixedValue, y: y.fixedValue, z: z.fixedValue };
+export class FixOutlier {
+  readonly params: FixOutlierParams;
+  consecutiveOutlierCount: number;
 
-  return { isOutlier, fixedLandmark };
-}
-
-export function fixOutlierOfLandmarkList(
-  prev: NormalizedLandmarkList,
-  curr: NormalizedLandmarkList,
-  fixOutlierParams: FixOutlierParams,
-): NormalizedLandmarkList {
-  if (prev.length !== curr.length) {
-    throw new Error('prev and curr must have the same length');
+  constructor(params: FixOutlierParams) {
+    this.params = params;
+    this.reset();
   }
 
-  let consecutiveOutlierCount = 0;
+  reset() {
+    this.consecutiveOutlierCount = 0;
+  }
 
-  return zip(prev, curr).map(([prevLandmark, currLandmark]) => {
-    const { isOutlier, fixedLandmark } = fixOutlierOfLandmark(prevLandmark, currLandmark, fixOutlierParams);
-    // if currLandmark is classified as outlier maxConsecutiveOutlierCount times in a row,
-    // then return currLandmark to avoid returning the same landmark value for a long time
-    consecutiveOutlierCount = isOutlier ? consecutiveOutlierCount + 1 : 0;
-    if (consecutiveOutlierCount > fixOutlierParams.maxConsecutiveOutlierCount) {
-      return currLandmark;
+  // if an deviation of current value from exponential moving average (EMA) is larger than threshold, then return previous value
+  // otherwise return current EMA
+  fixOutlierOfValue(prev: number, curr: number): FixOutlierOfValueReturn {
+    const ema = calcEMA(this.params.alpha, prev, curr);
+    const diff = Math.abs(ema - curr);
+    if (diff > this.params.threshold) {
+      return { isOutlier: true, fixedValue: prev };
     }
 
-    return fixedLandmark;
-  });
+    return { isOutlier: false, fixedValue: ema };
+  }
+
+  fixOutlierOfLandmark(prev: NormalizedLandmark, curr: NormalizedLandmark): FixOutlierOfLandmarkReturn {
+    const x = this.fixOutlierOfValue(prev.x, curr.x);
+    const y = this.fixOutlierOfValue(prev.y, curr.y);
+    const z = this.fixOutlierOfValue(prev.z, curr.z);
+    const isOutlier = x.isOutlier || y.isOutlier || z.isOutlier;
+    const fixedLandmark = { ...curr, x: x.fixedValue, y: y.fixedValue, z: z.fixedValue };
+
+    return { isOutlier, fixedLandmark };
+  }
+
+  fixOutlierOfLandmarkList(prev: NormalizedLandmark[], curr: NormalizedLandmark[]): NormalizedLandmark[] {
+    if (prev.length !== curr.length) {
+      throw new Error('prev and curr must have the same length');
+    }
+
+    const fixOutlierOfLandmarkReturns = zip(prev, curr).map(([prevLandmark, currLandmark]) =>
+      this.fixOutlierOfLandmark(prevLandmark, currLandmark),
+    );
+
+    const isOutlier = fixOutlierOfLandmarkReturns.some(
+      (fixOutlierOfLandmarkReturn) => fixOutlierOfLandmarkReturn.isOutlier,
+    );
+    this.consecutiveOutlierCount = isOutlier ? this.consecutiveOutlierCount + 1 : 0;
+    // if current landmarks is judged as outliers maxConsecutiveOutlierCount times in a row,
+    // then return current landmarks to avoid returning the same landmark value for a long time
+    if (this.consecutiveOutlierCount >= this.params.maxConsecutiveOutlierCount) {
+      this.reset();
+
+      return curr;
+    }
+
+    return fixOutlierOfLandmarkReturns.map((fixOutlierOfLandmarkReturn) => fixOutlierOfLandmarkReturn.fixedLandmark);
+  }
 }

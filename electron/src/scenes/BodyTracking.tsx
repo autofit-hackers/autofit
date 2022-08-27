@@ -12,7 +12,7 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
-import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
+import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { GuideLinePair, PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
@@ -40,11 +40,15 @@ export default function BodyTrack2d() {
   const upperThreshold = 0.95;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
+  // settings to treat outliers in pose estimation
+  const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 2.0, maxConsecutiveOutlierCount: 10 };
+  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 200, maxConsecutiveOutlierCount: 10 };
+
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
   const prevPoseRef = useRef<Pose | null>(null);
-  const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 2.0, maxConsecutiveOutlierCount: 10 };
-  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.7, threshold: 200, maxConsecutiveOutlierCount: 10 };
+  const fixOutlierRef = useRef<FixOutlier>(new FixOutlier(fixOutlierParams));
+  const fixWorldOutlierRef = useRef<FixOutlier>(new FixOutlier(fixWorldOutlierPrams));
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
@@ -67,6 +71,9 @@ export default function BodyTrack2d() {
   const handleReset = () => {
     // 描画
     canvasImageData.current = null;
+    // reset fixOutlier state
+    fixOutlierRef.current.reset();
+    fixWorldOutlierRef.current.reset();
     // トレーニングデータ
     setSetRecord(resetSet());
     setRef.current = resetSet();
@@ -120,16 +127,14 @@ export default function BodyTrack2d() {
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
         if (prevPoseRef.current != null) {
-          const fixedLandmarks = fixOutlierOfLandmarkList(
+          const fixedLandmarks = fixOutlierRef.current.fixOutlierOfLandmarkList(
             prevPoseRef.current.landmarks,
             rawCurrentPose.landmarks,
-            fixOutlierParams,
           );
           currentPose.landmarks = fixedLandmarks;
-          const fixedWorldLandmarks = fixOutlierOfLandmarkList(
+          const fixedWorldLandmarks = fixWorldOutlierRef.current.fixOutlierOfLandmarkList(
             prevPoseRef.current.worldLandmarks,
             rawCurrentPose.worldLandmarks,
-            fixWorldOutlierPrams,
           );
           currentPose.worldLandmarks = fixedWorldLandmarks;
         }
