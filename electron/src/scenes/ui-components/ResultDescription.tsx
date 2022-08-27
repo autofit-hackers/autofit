@@ -14,14 +14,12 @@ function ResultDescription(props: {
         p: 2,
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#005555',
         border: 1,
         height: '100%',
         width: '100%',
         borderColor: 'grey.500',
         borderRadius: 5,
         boxShadow: 0,
-        color: '#00ffff',
       }}
     >
       {isOverallComment

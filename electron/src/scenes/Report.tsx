@@ -1,18 +1,16 @@
-import { Box, CssBaseline, Grid } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Stack, Typography } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
-import ReactToPrint from 'react-to-print';
 import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
-import futuristicTheme from './themes';
-import PrintButton from './ui-components/Buttons';
-import InstructionTabs from './ui-components/InstructionTabs';
+import { formInstructionItemsAtom, kinectAtom, playSoundAtom, setRecordAtom } from './atoms';
+import futuristicTheme, { cardSx } from './themes';
+import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
-import ResultDescription from './ui-components/ResultDescription';
+import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
 
 export default function IntervalReport() {
@@ -31,16 +29,18 @@ export default function IntervalReport() {
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
 
+  const [playSound] = useAtom(playSoundAtom);
+
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
-    playTrainingEndSound();
+    playTrainingEndSound(playSound);
     stopKinect(kinect);
     if (!poseGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGridRef.current = new PoseGrid(gridDivRef.current);
       poseGridRef.current.setCameraAngle(formInstructionItems[0].poseGridCameraAngle);
     }
-  }, [formInstructionItems, kinect]);
+  }, [formInstructionItems, kinect, playSound]);
 
   // TODO: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
@@ -69,41 +69,37 @@ export default function IntervalReport() {
     },
   ];
 
-  // react-to-print
-  const componentToPrintRef = useRef<HTMLDivElement>(null);
-
   return (
-    <div>
-      {/* You have to place ReactToPrint component as a sibling of the component you want to print. */}
-      <ReactToPrint trigger={() => PrintButton()} content={() => componentToPrintRef.current} />
-      <div ref={componentToPrintRef}>
-        <ThemeProvider theme={futuristicTheme}>
-          <CssBaseline />
-
-          <Box sx={{ display: 'flex' }}>
-            <InstructionTabs
-              selectedInstructionIndex={selectedInstructionIndex}
-              setSelectedInstructionIndex={setSelectedInstructionIndex}
-              formInstructionItems={formInstructionItems}
-            />
-            <Box
-              component="main"
-              sx={{
-                backgroundColor: (theme) =>
-                  theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
-                flexGrow: 1,
-                height: '100vh',
-                overflow: 'auto',
-              }}
-            >
-              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Grid container spacing={3}>
-                  {/* 撮影したRGB映像 */}
-                  <Grid item xs={6}>
+    <ThemeProvider theme={futuristicTheme}>
+      <CssBaseline />
+      <Box sx={{ display: 'flex' }}>
+        <Box
+          component="main"
+          sx={{
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+            flexGrow: 1,
+            height: '100vh',
+            overflow: 'auto',
+          }}
+        >
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+              おつかれさまでした。フォーム分析の結果です。
+            </Typography>
+            <Grid container spacing={3}>
+              {/* 撮影したRGB映像 */}
+              <Grid item xs={6} alignItems="stretch">
+                <Card>
+                  <CardContent sx={cardSx}>
                     <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
-                  </Grid>
-                  {/* トレーニングの3D表示 */}
-                  <Grid item xs={6}>
+                  </CardContent>
+                </Card>
+              </Grid>
+              {/* トレーニングの3D表示 */}
+              <Grid item xs={6} alignItems="stretch">
+                <Card>
+                  <CardContent sx={cardSx}>
                     <PoseGridViewer
                       gridDivRef={gridDivRef}
                       poseGridRef={poseGridRef}
@@ -113,29 +109,36 @@ export default function IntervalReport() {
                           : formInstructionItems[0].poseGridCameraAngle
                       }
                     />
-                  </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12}>
+                <Card>
+                  <CardContent sx={cardSx}>
+                    <CardHeader title="総評" titleTypographyProps={{ fontWeight: 'bold' }} />
+                    <Typography variant="h6">{setRecord.summary.description}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={5}>
+                <Stack spacing={3}>
+                  <TotalScore score={setRecord.summary.totalScore} />
                   {/* スコアのレーダーチャート */}
-                  <Grid item xs={5}>
-                    <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
-                  </Grid>
-                  {/* フォーム評価の説明文 */}
-                  <Grid item xs={7}>
-                    <ResultDescription
-                      descriptionsForEachRep={
-                        selectedInstructionIndex >= 0
-                          ? setRecord.formEvaluationResults[selectedInstructionIndex].descriptionsForEachRep
-                          : []
-                      }
-                      isOverallComment={selectedInstructionIndex === -1}
-                      summaryDescription={setRecord.summary.description}
-                    />
-                  </Grid>
-                </Grid>
-              </Container>
-            </Box>
-          </Box>
-        </ThemeProvider>
-      </div>
-    </div>
+                  <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+                </Stack>
+              </Grid>
+              {/* フォーム評価の説明文 */}
+              <Grid item xs={7}>
+                <InstructionSummaryCards
+                  formEvaluationResults={setRecord.formEvaluationResults}
+                  selectedInstructionIndex={selectedInstructionIndex}
+                  setSelectedInstructionIndex={setSelectedInstructionIndex}
+                />
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      </Box>
+    </ThemeProvider>
   );
 }

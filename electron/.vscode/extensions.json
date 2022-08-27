@@ -27,6 +27,7 @@
     "tabnine.tabnine-vscode",
     "gruntfuggly.todo-tree",
     "steoates.autoimport",
-    "usernamehw.errorlens"
+    "usernamehw.errorlens",
+    "AntiAntiSepticeye.vscode-color-picker"
   ]
 }

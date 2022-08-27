@@ -1,20 +1,33 @@
 import { createTheme } from '@mui/material';
 
 const futuristicTheme = createTheme({
-  typography: { fontSize: 17 },
+  typography: { fontSize: 16, fontFamily: '-apple-system' },
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
-      main: '#00ffff',
-      dark: '#00ffff',
+      main: '#E7234E',
+      light: '#E7234E',
       contrastText: '#fff',
     },
     secondary: {
-      main: '#00ffff',
-      dark: '#ba000d',
+      main: '#9EC927',
+      light: '#9EC927',
       contrastText: '#000',
     },
   },
 });
 
 export default futuristicTheme;
+
+export const paperSx = {
+  p: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
+  width: '100%',
+  borderRadius: 2,
+  boxShadow: 0,
+  backgroundColor: 'white',
+};
+
+export const cardSx = { flex: '1 0 auto' };

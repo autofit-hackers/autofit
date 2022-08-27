@@ -56,7 +56,7 @@
     "**/.cache": true,
     "**/*.meta": true,
     "**/.DS_Store": true,
-    "node_modules": false,
+    "node_modules": true,
     "**/*.exe": true,
     "**/*.dll": true,
     "**/*.onnx": true
@@ -117,6 +117,7 @@
     "CUDA",
     "echarts",
     "HANDTIP",
+    "HELPME",
     "Kinect",
     "linewidth",
     "mediapipe",
@@ -125,5 +126,6 @@
     "streamsaver",
     "UNBINNED",
     "uttr"
-  ]
+  ],
+  "color-picker.languages": ["typescript"]
 }

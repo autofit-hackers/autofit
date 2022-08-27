@@ -56,6 +56,9 @@ export default function BodyTrack2d() {
   const setVideoUrlRef = useRef<string>('');
   const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
 
+  // レップカウント用
+  const repCounterRef = useRef<HTMLDivElement | null>(null);
+
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
     exportData(setRef.current.reps);
@@ -197,6 +200,11 @@ export default function BodyTrack2d() {
           // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
           // TODO: アンマウント前にまとめて行うほうがスマート
           setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
+
+          // レップカウントを更新
+          if (repCounterRef.current) {
+            repCounterRef.current.innerHTML = setRef.current.reps.length.toString();
+          }
         }
 
         // pose estimationの結果を描画
@@ -234,9 +242,7 @@ export default function BodyTrack2d() {
         setPhase((prevPhase) => prevPhase + 1);
       }
 
-      // レップカウントを表示
-      canvasCtx.fillText(setRef.current.reps.length.toString(), 50, 50);
-      // canvasCtx.scale(0.5, 0.5);
+      // HELPME: いらないかも（repCount描画の名残り）
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -252,6 +258,10 @@ export default function BodyTrack2d() {
       poseGrid.setCameraAngle();
     }
 
+    if (repCounterRef.current !== null) {
+      repCounterRef.current.innerHTML = '0';
+    }
+
     // このコンポーネントのアンマウント時に実行される
     // FIXME: 最初にもよばれる
     return () => {
@@ -264,7 +274,6 @@ export default function BodyTrack2d() {
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
       setSetRecord((_) => setRef.current);
-      // FIXME: 次のマウントのほうがアンマウントよりも早いので、この処理はレポートのコンポーネントに反映されない
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);
@@ -290,6 +299,7 @@ export default function BodyTrack2d() {
           margin: 'auto',
         }}
       />
+      <div ref={repCounterRef} />
       <div
         className="square-box"
         style={{
