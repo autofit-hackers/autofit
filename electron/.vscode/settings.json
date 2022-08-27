@@ -51,7 +51,7 @@
     "**/.cache": true,
     "**/*.meta": true,
     "**/.DS_Store": true,
-    "node_modules": true,
+    "node_modules": false,
     "**/*.exe": true,
     "**/*.dll": true,
     "**/*.onnx": true

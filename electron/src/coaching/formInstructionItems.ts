@@ -87,17 +87,23 @@ const kneeInAndOut: FormInstructionItem = {
   evaluate: (rep: Rep) => {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const threshold = { upper: 15, middle: 0, lower: -15 };
+    const threshold = { upper: 40, middle: 25, lower: 10 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
     // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
-    const openingOfKnee =
+    let openingOfKnee =
       getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
       getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
-    const openingOfToe =
+    let openingOfToe =
       getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
       getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+    while (openingOfKnee < 0) {
+      openingOfKnee += 360;
+    }
+    while (openingOfToe < 0) {
+      openingOfToe += 360;
+    }
     const error = openingOfKnee - openingOfToe;
 
     return normalizeError(threshold, error);

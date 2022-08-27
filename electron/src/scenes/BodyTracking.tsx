@@ -2,11 +2,11 @@ import * as Draw2D from '@mediapipe/drawing_utils';
 import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
-import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import { getAngle, heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { resetSet, Set } from '../training_data/set';
@@ -14,9 +14,19 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
+import KJ from '../utils/kinectJoints';
 import { GuideLinePair, PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
-import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
+import {
+  formDebugAtom,
+  formInstructionItemsAtom,
+  kinectAtom,
+  phaseAtom,
+  playSoundAtom,
+  repVideoUrlsAtom,
+  setRecordAtom,
+} from './atoms';
+import RealtimeChart from './ui-components/RealtimeChart';
 
 export default function BodyTrack2d() {
   // 描画
@@ -39,6 +49,8 @@ export default function BodyTrack2d() {
   const lowerThreshold = 0.8; // TODO: temporarily hard coded
   const upperThreshold = 0.95;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
+  const [playSound] = useAtom(playSoundAtom);
+  const [isDebugMode] = useAtom(formDebugAtom);
 
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
@@ -54,6 +66,11 @@ export default function BodyTrack2d() {
 
   // レップカウント用
   const repCounterRef = useRef<HTMLDivElement | null>(null);
+
+  // form debug
+  const formDebugRef = useRef<HTMLDivElement>(null);
+  const [echartsData, setEchartsData] = useState<number[]>([]);
+  const [barData, setBarData] = useState<number[]>([]);
 
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
@@ -80,7 +97,7 @@ export default function BodyTrack2d() {
     setVideoRecorderRef.current = null;
     setRepVideoUrls([]);
     setVideoUrlRef.current = '';
-    playTrainingStartSound();
+    playTrainingStartSound(playSound);
   };
 
   // 毎kinect更新時に実行される
@@ -187,7 +204,7 @@ export default function BodyTrack2d() {
           repRef.current = resetRep(setRef.current.reps.length);
 
           // レップカウントを読み上げる
-          playRepCountSound(setRef.current.reps.length);
+          playRepCountSound(setRef.current.reps.length, playSound);
 
           // RepStateの初期化
           repState.current = resetRepState();
@@ -199,6 +216,12 @@ export default function BodyTrack2d() {
           // レップカウントを更新
           if (repCounterRef.current) {
             repCounterRef.current.innerHTML = setRef.current.reps.length.toString();
+          }
+          if (formDebugRef.current) {
+            formDebugRef.current.innerHTML = setRef.current.formEvaluationResults.reduce(
+              (acc, cur) => `${acc}<pre>${cur.name}:\t${cur.shortSummary}</pre>`,
+              '',
+            );
           }
         }
 
@@ -273,6 +296,41 @@ export default function BodyTrack2d() {
     };
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (prevPoseRef.current) {
+        let knee =
+          getAngle(prevPoseRef.current?.worldLandmarks[KJ.HIP_LEFT], prevPoseRef.current?.worldLandmarks[KJ.KNEE_LEFT])
+            .zx -
+          getAngle(
+            prevPoseRef.current?.worldLandmarks[KJ.HIP_RIGHT],
+            prevPoseRef.current?.worldLandmarks[KJ.KNEE_RIGHT],
+          ).zx;
+        const topWorldLandmarks = prevPoseRef.current.worldLandmarks;
+        let ankle =
+          getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
+          getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+
+        if (knee < 0) {
+          knee = 360 + knee;
+        }
+        if (ankle < 0) {
+          ankle = 360 + ankle;
+        }
+        if (knee > 180) {
+          knee = 360 - knee;
+        }
+        if (ankle > 180) {
+          ankle = 360 - ankle;
+        }
+        setEchartsData(echartsData.concat([knee]));
+        setBarData(barData.concat([ankle]));
+      }
+    }, 100);
+
+    return () => clearInterval(timer);
+  });
+
   return (
     <>
       <Button onClick={handleSave} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
@@ -295,28 +353,16 @@ export default function BodyTrack2d() {
         }}
       />
       <div ref={repCounterRef} />
-      <div
-        className="square-box"
-        style={{
-          zIndex: 2,
-          position: 'absolute',
-          width: '30vw',
-          height: '30vw',
+      {isDebugMode ? <div ref={formDebugRef} /> : null}
+
+      <RealtimeChart data={echartsData} bar={barData} />
+      <Button
+        onClick={() => {
+          setEchartsData([]);
         }}
       >
-        <div
-          className="pose-grid-container"
-          ref={gridDivRef}
-          style={{
-            position: 'absolute',
-            height: '100%',
-            width: '100%',
-            top: 0,
-            left: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          }}
-        />
-      </div>
+        reset
+      </Button>
     </>
   );
 }
