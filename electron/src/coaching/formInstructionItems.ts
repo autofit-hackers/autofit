@@ -207,14 +207,17 @@ const kneeFrontAndBack: FormInstructionItem = {
   evaluateFrom: (rep: Rep) => {
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
-    const threshold = { upper: 150, middle: 10, lower: -10 };
+    const threshold = { upper: 15, middle: 1, lower: -1 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
-    // TODO: 左足も考慮する
-    const error = getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
 
-    return calculateError(threshold, error);
+    const kneeFootDistanceZ =
+      (getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z +
+        getDistance(bottomWorldLandmarks[KJ.KNEE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).z) /
+      2;
+
+    return calculateError(threshold, kneeFootDistanceZ);
   },
 };
 

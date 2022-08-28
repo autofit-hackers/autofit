@@ -5,6 +5,7 @@ import {
   NormalizedLandmark,
   NormalizedLandmarkList,
 } from '@mediapipe/pose';
+import { Vector3 } from 'three';
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
@@ -79,13 +80,14 @@ export const kinectToMediapipe = (
     };
 
     // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
+    // woldLandmarksはmmからcm単位に変換する
     if (rotation) {
       mediapipePoseWorld[i] = {
-        x: kinectPoses[i].cameraX,
-        y: kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB),
+        x: kinectPoses[i].cameraX / 10,
+        y: kinectPoses[i].cameraY * Math.cos(depthToRGB) + (kinectPoses[i].cameraZ * Math.sin(depthToRGB)) / 10,
         // a user stands about 1.7m away from the camera (kinect)
         // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
-        z: kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB) - 1700,
+        z: kinectPoses[i].cameraY * Math.sin(-depthToRGB) + (kinectPoses[i].cameraZ * Math.cos(depthToRGB)) / 10 - 170,
       };
     } else {
       mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
@@ -151,3 +153,5 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   z: normalizedLandmark.z,
   visibility: normalizedLandmark.visibility,
 });
+
+export const landmarkToVector = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, -point.z);
