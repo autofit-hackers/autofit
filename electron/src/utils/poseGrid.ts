@@ -162,6 +162,7 @@ export class PoseGrid {
   }
 
   changeCameraType(): void {
+    const prevCameraPosition = this.camera.position.clone();
     if (this.camera instanceof PerspectiveCamera) {
       this.camera = new OrthographicCamera(
         -this.config.camera.distance * 0.7,
@@ -175,7 +176,8 @@ export class PoseGrid {
     this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
-    this.setCameraAngle();
+    this.camera.position.set(prevCameraPosition.x, prevCameraPosition.y, prevCameraPosition.z);
+    this.camera.lookAt(new Vector3());
   }
 
   /**
