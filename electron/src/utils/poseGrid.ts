@@ -1,4 +1,4 @@
-import { LandmarkConnectionArray, NormalizedLandmark } from '@mediapipe/pose';
+import { LandmarkConnectionArray, NormalizedLandmarkList } from '@mediapipe/pose';
 // eslint-disable-next-line import/no-unresolved
 import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
@@ -20,7 +20,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { copyLandmark, KINECT_POSE_CONNECTIONS, landmarkToVector } from '../training_data/pose';
+import { KINECT_POSE_CONNECTIONS, landmarkToVector } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
 
@@ -77,7 +77,6 @@ export class PoseGrid {
   renderer: WebGLRenderer;
   scene: Scene;
   orbitControls: OrbitControls;
-  landmarks: Array<NormalizedLandmark>;
   landmarkGeometry: BufferGeometry;
   landmarkMaterial: Material;
   landmarkGroup: Group;
@@ -118,7 +117,6 @@ export class PoseGrid {
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
 
-    this.landmarks = [];
     this.landmarkMaterial = new MeshBasicMaterial({ color: this.poseGridConfig.landmarkColor });
     this.landmarkGeometry = new SphereGeometry(this.poseGridConfig.landmarkSize);
     this.connectionMaterial = new LineBasicMaterial({
@@ -170,30 +168,25 @@ export class PoseGrid {
    * @public: Update the landmarks coordinates in OnResults callback.
    */
   updateLandmarks(
-    landmarks: NormalizedLandmark[],
+    landmarks: NormalizedLandmarkList,
     connections: LandmarkConnectionArray,
     guideSymbols?: GuidelineSymbols,
   ): void {
     this.connectionGroup.clear();
     this.cylinderGroup.clear();
     this.clearResources();
-    this.landmarks = landmarks.map(copyLandmark);
-    const landmarkVectors: Array<Vector3> = this.landmarks.map(
-      (normalizedLandmark: NormalizedLandmark): Vector3 => landmarkToVector(normalizedLandmark),
-    );
-    this.drawConnections(landmarkVectors, connections);
+    this.drawConnections(landmarks, connections);
     const meshLength: number = this.landmarkGroup.children.length;
-    const landmarkLength: number = this.landmarks.length;
-    if (meshLength < landmarkLength) {
-      for (let i = meshLength; i < landmarkLength; i += 1) {
+    if (meshLength < landmarks.length) {
+      for (let i = meshLength; i < landmarks.length; i += 1) {
         this.landmarkGroup.add(new Mesh(this.landmarkGeometry));
       }
-    } else if (meshLength > landmarkLength) {
-      for (let i = landmarkLength; i < meshLength; i += 1) {
+    } else if (meshLength > landmarks.length) {
+      for (let i = landmarks.length; i < meshLength; i += 1) {
         this.landmarkGroup.remove(this.landmarkGroup.children[i]);
       }
     }
-    this.drawLandmarks(landmarkVectors);
+    this.drawLandmarks(landmarks);
 
     // ガイドラインの描画
     if (guideSymbols) {
@@ -214,11 +207,11 @@ export class PoseGrid {
     this.disposeQueue = [];
   }
 
-  drawLandmarks(landmarkVectors: Vector3[]): void {
-    for (let i = 0; i < this.landmarks.length; i += 1) {
+  drawLandmarks(landmarks: NormalizedLandmarkList): void {
+    for (let i = 0; i < landmarks.length; i += 1) {
       const sphere: Mesh = this.landmarkGroup.children[i] as Mesh;
       sphere.material = this.landmarkMaterial;
-      sphere.position.copy(landmarkVectors[i]);
+      sphere.position.copy(landmarkToVector(landmarks[i]));
     }
   }
 
@@ -252,12 +245,12 @@ export class PoseGrid {
     }
   }
 
-  drawConnections(landmarks: Array<Vector3>, connections: LandmarkConnectionArray): void {
+  drawConnections(landmarks: NormalizedLandmarkList, connections: LandmarkConnectionArray): void {
     const color: Material = this.connectionMaterial;
     const lines: Array<Vector3> = [];
     connections.forEach((connection): void => {
-      lines.push(landmarks[connection[0]]);
-      lines.push(landmarks[connection[1]]);
+      lines.push(landmarkToVector(landmarks[connection[0]]));
+      lines.push(landmarkToVector(landmarks[connection[1]]));
     });
     const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
     this.disposeQueue.push(geometry);
