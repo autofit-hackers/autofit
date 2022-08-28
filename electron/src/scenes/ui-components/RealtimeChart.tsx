@@ -17,8 +17,8 @@ function RealtimeChart(props: {
     },
     yAxis: {
       type: 'value',
-      min: thresh.lower,
-      max: thresh.upper + 60,
+      min: (thresh.lower - thresh.center) * 2 + thresh.center,
+      max: (thresh.upper - thresh.center) * 2 + thresh.center,
     },
     legend: { data: ['ももの角度', '足の角度'] },
     series: [

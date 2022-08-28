@@ -370,6 +370,7 @@ export default function BodyTrack2d() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current);
       poseGrid.setCameraAngle();
+      poseGrid.isAutoRotating = true;
     }
 
     if (repCounterRef.current !== null) {

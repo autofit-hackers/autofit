@@ -144,6 +144,8 @@ export class PoseGrid {
   nonvisibleMaterial: Material;
   sizeWhenFitted: number;
   isVisible: (normalizedLandmark: NormalizedLandmark) => boolean;
+  isAutoRotating: boolean;
+  phiForAutoRotation: number;
 
   /**
    * @public
@@ -166,7 +168,7 @@ export class PoseGrid {
     );
     this.camera.lookAt(new Vector3());
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
-    this.renderer.setClearColor(new Color(this.poseGridConfig.backgroundColor), 0.5);
+    this.renderer.setClearColor(new Color(this.poseGridConfig.backgroundColor), 0.1);
     this.renderer.setSize(Math.floor(this.parentBox.width), Math.floor(this.parentBox.height));
     window.addEventListener(
       'resize',
@@ -220,6 +222,10 @@ export class PoseGrid {
     // translate grid plane on foot height
     // TODO: hardcoded value
     gridPlane.translateY(-50);
+
+    // カメラ自動回転
+    this.isAutoRotating = false;
+    this.phiForAutoRotation = 0;
 
     this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
@@ -362,6 +368,12 @@ export class PoseGrid {
     }
 
     this.drawCyl(landmarkVectors[KJ.HAND_RIGHT], landmarkVectors[KJ.HAND_LEFT]);
+
+    // カメラの回転;
+    if (this.isAutoRotating) {
+      this.phiForAutoRotation += 0.7;
+      this.setCameraAngle({ theta: 90, phi: this.phiForAutoRotation });
+    }
 
     // Color special landmarks
     if (colorLandmarks) {

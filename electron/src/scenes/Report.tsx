@@ -2,10 +2,9 @@ import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Slider, Stack, T
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
-import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, playSoundAtom, setRecordAtom } from './atoms';
+import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
@@ -29,18 +28,15 @@ export default function IntervalReport() {
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
 
-  const [playSound] = useAtom(playSoundAtom);
-
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
-    playTrainingEndSound(playSound);
     stopKinect(kinect);
     if (!poseGridRef.current && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGridRef.current = new PoseGrid(gridDivRef.current);
       poseGridRef.current.setCameraAngle(formInstructionItems[0].poseGridCameraAngle);
     }
-  }, [formInstructionItems, kinect, playSound]);
+  }, [formInstructionItems, kinect]);
 
   // TODO: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
