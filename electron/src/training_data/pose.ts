@@ -154,4 +154,4 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   visibility: normalizedLandmark.visibility,
 });
 
-export const landmarkToVector = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, -point.z);
+export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, -point.z);

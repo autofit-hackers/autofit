@@ -4,7 +4,7 @@ import { Line, OrbitControls, PerspectiveCamera, Plane, Sphere } from '@react-th
 import { Canvas, Euler, useThree } from '@react-three/fiber';
 import { Suspense } from 'react';
 import { Vector3 } from 'three';
-import { KINECT_POSE_CONNECTIONS, landmarkToVector } from '../../training_data/pose';
+import { KINECT_POSE_CONNECTIONS, landmarkToVector3 } from '../../training_data/pose';
 
 type CameraAngle = {
   theta: number;
@@ -72,7 +72,7 @@ function Landmarks(props: { landmarks: NormalizedLandmarkList | undefined }) {
     <>
       {landmarks &&
         landmarks.map((landmark) => (
-          <Sphere position={landmarkToVector(landmark)}>
+          <Sphere position={landmarkToVector3(landmark)}>
             <meshBasicMaterial color="hotpink" />
           </Sphere>
         ))}
@@ -89,7 +89,7 @@ function Bones(props: { landmarks: NormalizedLandmarkList | undefined; connectio
       {landmarks &&
         connections.map((connection) => (
           <Line
-            points={[landmarkToVector(landmarks[connection[0]]), landmarkToVector(landmarks[connection[1]])]}
+            points={[landmarkToVector3(landmarks[connection[0]]), landmarkToVector3(landmarks[connection[1]])]}
             color={0x00ffff}
             lineWidth={3}
           />
@@ -104,7 +104,7 @@ function Guideline(props: { symbols: GuidelineSymbols }) {
   return (
     <>
       {symbols.lines &&
-        symbols.lines.map((line) => <Line points={[landmarkToVector(line.from), landmarkToVector(line.to)]} />)}
+        symbols.lines.map((line) => <Line points={[landmarkToVector3(line.from), landmarkToVector3(line.to)]} />)}
       {symbols.squares &&
         symbols.squares.map((square) => (
           <Plane position={square.position} scale={square.scale} rotation={square.rotation} />

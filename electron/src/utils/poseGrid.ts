@@ -20,25 +20,25 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { KINECT_POSE_CONNECTIONS, landmarkToVector } from '../training_data/pose';
+import { KINECT_POSE_CONNECTIONS, landmarkToVector3 } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
 
 export type LineEndPoints = {
-  from: { x: number; y: number; z: number };
-  to: { x: number; y: number; z: number };
+  from: Vector3;
+  to: Vector3;
 };
 
 type SquareCorners = {
-  1: { x: number; y: number; z: number };
-  2: { x: number; y: number; z: number };
-  3: { x: number; y: number; z: number };
-  4: { x: number; y: number; z: number };
+  1: Vector3;
+  2: Vector3;
+  3: Vector3;
+  4: Vector3;
 };
 
 export type GuidelineSymbols = {
   lines?: LineEndPoints[];
-  spheres?: { x: number; y: number; z: number }[];
+  spheres?: Vector3[];
   squares?: SquareCorners[]; // should have 4 points
 };
 
@@ -211,14 +211,14 @@ export class PoseGrid {
     for (let i = 0; i < landmarks.length; i += 1) {
       const sphere: Mesh = this.landmarkGroup.children[i] as Mesh;
       sphere.material = this.landmarkMaterial;
-      sphere.position.copy(landmarkToVector(landmarks[i]));
+      sphere.position.copy(landmarkToVector3(landmarks[i]));
     }
   }
 
   drawLine(guideLinePair: LineEndPoints): void {
     const color: Material = this.connectionMaterial;
-    const from = landmarkToVector(guideLinePair.from);
-    const to = landmarkToVector(guideLinePair.to);
+    const from = landmarkToVector3(guideLinePair.from);
+    const to = landmarkToVector3(guideLinePair.to);
     const lines: Array<Vector3> = [from, to];
     const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
     this.disposeQueue.push(geometry);
@@ -249,8 +249,8 @@ export class PoseGrid {
     const color: Material = this.connectionMaterial;
     const lines: Array<Vector3> = [];
     connections.forEach((connection): void => {
-      lines.push(landmarkToVector(landmarks[connection[0]]));
-      lines.push(landmarkToVector(landmarks[connection[1]]));
+      lines.push(landmarkToVector3(landmarks[connection[0]]));
+      lines.push(landmarkToVector3(landmarks[connection[1]]));
     });
     const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
     this.disposeQueue.push(geometry);
