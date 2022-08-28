@@ -120,6 +120,22 @@ export const getAngle = (start: Landmark, end: Landmark) => {
   };
 };
 
+export const normalizeAngle = (angle: number, shouldInferiorAngle = false): number => {
+  let normalizedAngle = angle;
+  while (normalizedAngle < 0 || normalizedAngle > 360) {
+    if (angle < 0) {
+      normalizedAngle += 360;
+    } else if (angle > 360) {
+      normalizedAngle -= 360;
+    }
+  }
+  if (shouldInferiorAngle && normalizedAngle > 180) {
+    normalizedAngle = 360 - normalizedAngle;
+  }
+
+  return normalizedAngle;
+};
+
 export const midpointBetween = (
   p1: NormalizedLandmark | Landmark,
   p2: NormalizedLandmark | Landmark,

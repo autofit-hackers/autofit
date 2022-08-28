@@ -1,4 +1,5 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
+import { Landmark } from '@mediapipe/pose';
 import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
@@ -6,7 +7,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
-import { getAngle, heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import {
+  getAngle,
+  heightInWorld,
+  kinectToMediapipe,
+  KINECT_POSE_CONNECTIONS,
+  normalizeAngle,
+  Pose,
+} from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { resetSet, Set } from '../training_data/set';
@@ -27,6 +35,41 @@ import {
   setRecordAtom,
 } from './atoms';
 import RealtimeChart from './ui-components/RealtimeChart';
+
+export type EvaluatedFrames = {
+  topToe: number;
+  openingOfKnees: number[];
+  openingOfToes: number[];
+  kneePositionsZ: number[];
+};
+
+// const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: EvaluatedFrames): EvaluatedFrames => {
+//   const { openingOfKnees, openingOfToes, kneePositionsZ } = evaluatedFrames;
+//   const openingOfKnee = normalizeAngle(
+//     getAngle(currentPose?.worldLandmarks[KJ.HIP_LEFT], currentPose?.worldLandmarks[KJ.KNEE_LEFT]).zx -
+//       getAngle(currentPose?.worldLandmarks[KJ.HIP_RIGHT], currentPose?.worldLandmarks[KJ.KNEE_RIGHT]).zx,
+//     true,
+//   );
+//   const openingOfToe = normalizeAngle(
+//     getAngle(currentPose?.worldLandmarks[KJ.ANKLE_LEFT], currentPose?.worldLandmarks[KJ.FOOT_LEFT]).zx -
+//       getAngle(currentPose?.worldLandmarks[KJ.ANKLE_RIGHT], currentPose?.worldLandmarks[KJ.FOOT_RIGHT]).zx,
+//     true,
+//   );
+//   let topToe = 0;
+//   if (prevRep.keyframesIndex.top !== undefined) {
+//     const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
+//     topToe =
+//       getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
+//       getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+//   }
+
+//   return {
+//     topToe,
+//     openingOfKnees: openingOfKnees.concat([openingOfKnee]),
+//     openingOfToes: openingOfToes.concat([openingOfToe]),
+//     kneePositionsZ: kneePositionsZ.concat([0]),
+//   };
+// };
 
 export default function BodyTrack2d() {
   // 描画
@@ -75,6 +118,13 @@ export default function BodyTrack2d() {
   const formDebugRef = useRef<HTMLDivElement>(null);
   const [echartsData, setEchartsData] = useState<number[]>([]);
   const [barData, setBarData] = useState<number[]>([]);
+  const [threshData, setThreshData] = useState<number>(0);
+  // const evaluatedFrameRef = useRef<EvaluatedFrames>({
+  //   topToe: 0,
+  //   openingOfKnees: [],
+  //   openingOfToes: [],
+  //   kneePositionsZ: [],
+  // });
 
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
@@ -304,32 +354,41 @@ export default function BodyTrack2d() {
   useEffect(() => {
     const timer = setInterval(() => {
       if (prevPoseRef.current) {
-        let knee =
+        const openingOfKnee = normalizeAngle(
           getAngle(prevPoseRef.current?.worldLandmarks[KJ.HIP_LEFT], prevPoseRef.current?.worldLandmarks[KJ.KNEE_LEFT])
             .zx -
+            getAngle(
+              prevPoseRef.current?.worldLandmarks[KJ.HIP_RIGHT],
+              prevPoseRef.current?.worldLandmarks[KJ.KNEE_RIGHT],
+            ).zx,
+          true,
+        );
+        const openingOfToe = normalizeAngle(
           getAngle(
-            prevPoseRef.current?.worldLandmarks[KJ.HIP_RIGHT],
-            prevPoseRef.current?.worldLandmarks[KJ.KNEE_RIGHT],
-          ).zx;
-        const topWorldLandmarks = prevPoseRef.current.worldLandmarks;
-        let ankle =
-          getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
-          getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+            prevPoseRef.current?.worldLandmarks[KJ.ANKLE_LEFT],
+            prevPoseRef.current?.worldLandmarks[KJ.FOOT_LEFT],
+          ).zx -
+            getAngle(
+              prevPoseRef.current?.worldLandmarks[KJ.ANKLE_RIGHT],
+              prevPoseRef.current?.worldLandmarks[KJ.FOOT_RIGHT],
+            ).zx,
+          true,
+        );
+        const currentRepCnt = setRef.current.reps.length - 1;
+        let topToe = 0;
+        if (currentRepCnt > 0) {
+          const currentRep = setRef.current.reps[currentRepCnt];
+          if (currentRep.keyframesIndex.top !== undefined) {
+            const topWorldLandmarks = currentRep.form[currentRep.keyframesIndex.top].worldLandmarks as Landmark[];
+            topToe =
+              getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
+              getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+          }
+        }
 
-        if (knee < 0) {
-          knee = 360 + knee;
-        }
-        if (ankle < 0) {
-          ankle = 360 + ankle;
-        }
-        if (knee > 180) {
-          knee = 360 - knee;
-        }
-        if (ankle > 180) {
-          ankle = 360 - ankle;
-        }
-        setEchartsData(echartsData.concat([knee]));
-        setBarData(barData.concat([ankle]));
+        setEchartsData(echartsData.concat([openingOfKnee]));
+        setBarData(barData.concat([openingOfToe]));
+        setThreshData(topToe);
       }
     }, 100);
 
@@ -348,7 +407,7 @@ export default function BodyTrack2d() {
         ref={canvasRef}
         className="main_canvas"
         style={{
-          position: 'absolute',
+          position: 'relative',
           zIndex: 1,
           top: 0,
           right: 0,
@@ -360,7 +419,7 @@ export default function BodyTrack2d() {
       <div ref={repCounterRef} />
       {isDebugMode ? <div ref={formDebugRef} /> : null}
 
-      <RealtimeChart data={echartsData} bar={barData} />
+      <RealtimeChart data={echartsData} bar={barData} thresh={threshData} />
       <Button
         onClick={() => {
           setEchartsData([]);

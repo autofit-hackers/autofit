@@ -1,4 +1,4 @@
-import { getAngle, getDistance, Pose } from '../training_data/pose';
+import { getAngle, getDistance, normalizeAngle, Pose } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import KJ from '../utils/kinectJoints';
 import { CameraAngle, GuideLinePair } from '../utils/poseGrid';
@@ -92,18 +92,14 @@ const kneeInAndOut: FormInstructionItem = {
       return 0.0;
     }
     // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
-    let openingOfKnee =
+    const openingOfKnee = normalizeAngle(
       getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
-      getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
-    let openingOfToe =
+        getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx,
+    );
+    const openingOfToe = normalizeAngle(
       getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
-      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
-    while (openingOfKnee < 0) {
-      openingOfKnee += 360;
-    }
-    while (openingOfToe < 0) {
-      openingOfToe += 360;
-    }
+        getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx,
+    );
     const error = openingOfKnee - openingOfToe;
 
     return normalizeError(threshold, error);
@@ -239,7 +235,7 @@ const squatVelocity: FormInstructionItem = {
   },
   poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluate: (rep: Rep) => {
-    // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
+    // FIXME: fpsを取得する必要がある。一旦25でハードコードしている。
     const fps = 25;
     // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
     const threshold = { upper: 3.0, middle: 2.2, lower: 1.6 };
