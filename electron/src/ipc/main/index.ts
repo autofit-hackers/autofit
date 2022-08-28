@@ -3,9 +3,9 @@
 /* eslint-disable no-shadow */
 /* eslint-disable @typescript-eslint/require-await */
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { release } from 'os';
 import { join } from 'path';
-import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration();
 
@@ -35,7 +35,7 @@ const indexHtml = join(ROOT_PATH.dist, 'index.html');
 
 async function createWindow() {
   win = new BrowserWindow({
-    width: 1920,
+    width: 1080,
     height: 1080,
     title: 'Main window',
     icon: join(ROOT_PATH.public, 'favicon.svg'),
@@ -46,7 +46,7 @@ async function createWindow() {
     },
   });
 
-  win.webContents.openDevTools({ mode: 'detach' });
+  win.webContents.openDevTools({ mode: 'right' });
   if (app.isPackaged) {
     void win.loadFile(indexHtml);
   } else {

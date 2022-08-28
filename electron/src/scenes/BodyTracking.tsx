@@ -17,7 +17,7 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
-import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
+import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
@@ -45,17 +45,24 @@ export default function BodyTrack2d() {
   const upperThreshold = 0.95;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
+  // settings to treat outliers in pose estimation
+  const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 2.0, maxConsecutiveOutlierCount: 10 };
+  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 200, maxConsecutiveOutlierCount: 10 };
+
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
   const prevPoseRef = useRef<Pose | null>(null);
-  const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 2.0 };
-  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.7, threshold: 200 };
+  const fixOutlierRef = useRef<FixOutlier>(new FixOutlier(fixOutlierParams));
+  const fixWorldOutlierRef = useRef<FixOutlier>(new FixOutlier(fixWorldOutlierPrams));
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
   const setVideoRecorderRef = useRef<MediaRecorder | null>(null);
   const setVideoUrlRef = useRef<string>('');
   const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
+
+  // レップカウント用
+  const repCounterRef = useRef<HTMLDivElement | null>(null);
 
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
@@ -72,6 +79,9 @@ export default function BodyTrack2d() {
   const handleReset = () => {
     // 描画
     canvasImageData.current = null;
+    // reset fixOutlier state
+    fixOutlierRef.current.reset();
+    fixWorldOutlierRef.current.reset();
     // トレーニングデータ
     setSetRecord(resetSet());
     setRef.current = resetSet();
@@ -125,16 +135,14 @@ export default function BodyTrack2d() {
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
         if (prevPoseRef.current != null) {
-          const fixedLandmarks = fixOutlierOfLandmarkList(
+          const fixedLandmarks = fixOutlierRef.current.fixOutlierOfLandmarkList(
             prevPoseRef.current.landmarks,
             rawCurrentPose.landmarks,
-            fixOutlierParams,
           );
           currentPose.landmarks = fixedLandmarks;
-          const fixedWorldLandmarks = fixOutlierOfLandmarkList(
+          const fixedWorldLandmarks = fixWorldOutlierRef.current.fixOutlierOfLandmarkList(
             prevPoseRef.current.worldLandmarks,
             rawCurrentPose.worldLandmarks,
-            fixWorldOutlierPrams,
           );
           currentPose.worldLandmarks = fixedWorldLandmarks;
         }
@@ -197,6 +205,11 @@ export default function BodyTrack2d() {
           // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
           // TODO: アンマウント前にまとめて行うほうがスマート
           setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
+
+          // レップカウントを更新
+          if (repCounterRef.current) {
+            repCounterRef.current.innerHTML = setRef.current.reps.length.toString();
+          }
         }
 
         // pose estimationの結果を描画
@@ -225,9 +238,7 @@ export default function BodyTrack2d() {
         setPhase((prevPhase) => prevPhase + 1);
       }
 
-      // レップカウントを表示
-      canvasCtx.fillText(setRef.current.reps.length.toString(), 50, 50);
-      // canvasCtx.scale(0.5, 0.5);
+      // HELPME: いらないかも（repCount描画の名残り）
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -243,6 +254,10 @@ export default function BodyTrack2d() {
       poseGrid.setCameraAngle();
     }
 
+    if (repCounterRef.current !== null) {
+      repCounterRef.current.innerHTML = '0';
+    }
+
     // このコンポーネントのアンマウント時に実行される
     // FIXME: 最初にもよばれる
     return () => {
@@ -255,7 +270,6 @@ export default function BodyTrack2d() {
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
       setSetRecord((_) => setRef.current);
-      // FIXME: 次のマウントのほうがアンマウントよりも早いので、この処理はレポートのコンポーネントに反映されない
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);
@@ -281,6 +295,7 @@ export default function BodyTrack2d() {
           margin: 'auto',
         }}
       />
+      <div ref={repCounterRef} />
       <div
         className="square-box"
         style={{

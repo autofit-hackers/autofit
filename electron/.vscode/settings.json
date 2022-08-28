@@ -9,7 +9,12 @@
   "javascript.validate.enable": false,
   "javascript.format.enable": false,
   "typescript.format.enable": false,
-  "editor.codeActionsOnSave": ["source.organizeImports", "source.fixAll.eslint"],
+  "editor.codeActionsOnSave": [
+    "source.organizeImports",
+    "source.fixAll.eslint",
+    "source.fixAll.tslint",
+    "source.fixAll"
+  ],
   "eslint.format.enable": false,
 
   "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -51,7 +56,7 @@
     "**/.cache": true,
     "**/*.meta": true,
     "**/.DS_Store": true,
-    "node_modules": false,
+    "node_modules": true,
     "**/*.exe": true,
     "**/*.dll": true,
     "**/*.onnx": true
@@ -114,6 +119,7 @@
     "echarts",
     "esbuild",
     "HANDTIP",
+    "HELPME",
     "Kinect",
     "linewidth",
     "mediapipe",
@@ -123,5 +129,6 @@
     "streamsaver",
     "UNBINNED",
     "uttr"
-  ]
+  ],
+  "color-picker.languages": ["typescript"]
 }

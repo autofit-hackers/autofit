@@ -7,9 +7,9 @@ export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
-  readonly description: { minus: string; normal: string; plus: string };
+  readonly shortDescription: { minus: string; normal: string; plus: string };
+  readonly longDescription: { minus: string; plus: string };
   readonly voice: { minus: string; normal: string; plus: string };
-  readonly summaryDescription: { minus: string; plus: string };
   readonly reason?: string;
   readonly recommendMenu?: string[];
   readonly importance?: number;
@@ -22,6 +22,8 @@ export type FormInstructionItem = {
 export type FormEvaluationResult = {
   name: string;
   descriptionsForEachRep: string[];
+  shortSummary: string;
+  longSummary: string;
   overallComment: string;
   eachRepErrors: number[];
   score: number;
@@ -43,20 +45,20 @@ const squatDepth: FormInstructionItem = {
   id: 0,
   name: 'Squat depth',
   label: 'しゃがむ深さ',
-  description: {
-    minus: '腰を太ももが平行になるまで落としましょう。痛みが起きる場合はバーベルを軽くしてみましょう。',
+  shortDescription: {
+    minus: 'しゃがみが浅いです。',
     normal: 'ちょうどよい深さで腰を落とせています。この調子。',
-    plus: '腰を落としすぎているようです。悪いことではありませんが、一般的なスクワットでは、太ももが水平になるところまで腰を落とせば十分です。',
+    plus: '腰を落としすぎているようです。',
+  },
+  longDescription: {
+    minus:
+      'しゃがみが浅い傾向にあります。せっかく筋トレをしているのに、しゃがみが浅すぎると負荷が減ってしまってもったいないので、腰を太ももが平行になるまで落としましょう。',
+    plus: '腰を落としすぎているようです。悪いことではありませんが、深く腰を落としすぎると膝への負担が大きくなるので、太ももが水平になるところまで腰を落とすと良いでしょう。',
   },
   voice: {
     minus: '腰を太ももが平行になるまで落としましょう。',
     normal: 'ちょうどよい深さで腰を落とせています。この調子。',
     plus: '腰は太ももが床と平行になるところまで落とせば十分です。',
-  },
-  summaryDescription: {
-    minus:
-      'しゃがみが浅い傾向にあります。せっかく筋トレをしているのに、しゃがみが浅すぎると負荷が減ってしまってもったいないので、腰を太ももが平行になるまで落としましょう。',
-    plus: '腰を落としすぎているようです。悪いことではありませんが、深く腰を落としすぎると膝への負担が大きくなるので、太ももが水平になるところまで腰を落とすと良いでしょう。',
   },
   importance: 0.5,
   poseGridCameraAngle: { theta: 90, phi: 0 },
@@ -116,28 +118,28 @@ const squatDepth: FormInstructionItem = {
 const kneeInAndOut: FormInstructionItem = {
   id: 1,
   name: 'Knee in and out',
-  label: 'ひざの内旋・外旋',
-  description: {
-    minus: '膝が内側に入りすぎています。膝を痛める可能性があるので、足と太ももが平行になるようにしましょう。',
+  label: 'ひざの開き',
+  shortDescription: {
+    minus: '膝が内側に入りすぎています。',
     normal: '足の向きと太ももの向きが一致していて、とても良いです。',
-    plus: '膝を外側に出そうとしすぎているようです。もう少しだけ膝の力を抜いてください。',
+    plus: '膝を外側に出そうとしすぎているようです。',
+  },
+  longDescription: {
+    minus:
+      '膝が内側に入りすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。どうしても力が入らない場合はスタンス幅を狭めてみるといいかもしれません。',
+    plus: '膝を外側に出そうとしすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。',
   },
   voice: {
     minus: '膝が内側に入りすぎています。',
     normal: '足の向きと太ももの向きが一致していて、とても良いです。',
     plus: '膝を外側に出そうとしすぎているようです。',
   },
-  summaryDescription: {
-    minus:
-      '膝が内側に入りすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。どうしても力が入らない場合はスタンス幅を狭めてみるといいかもしれません。',
-    plus: '膝を外側に出そうとしすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。',
-  },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluateFrom: (rep: Rep) => {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const thresholds = { upper: 15, middle: 0, lower: -15 };
+    const thresholds = { upper: 30, middle: 10, lower: -5 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
@@ -185,19 +187,19 @@ const stanceWidth: FormInstructionItem = {
   id: 2,
   name: 'Stance width',
   label: '足の幅',
-  description: {
-    minus: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
+  shortDescription: {
+    minus: '足の幅が狭すぎます。',
     normal: '足の幅はバッチリです。',
-    plus: '足の幅が広すぎます。肩幅より少し広い程度に狭めてみましょう。',
+    plus: '足の幅が広すぎます。',
+  },
+  longDescription: {
+    minus: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
+    plus: '足の幅が広すぎます。しゃがんだ時に膝に負担がかかる恐れがあるので、肩幅より少し広い程度に狭めましょう。',
   },
   voice: {
     minus: '足の幅が狭すぎます。足は肩幅より少し広い程度に開きましょう。',
     normal: '足の幅はバッチリです。',
     plus: '足の幅が広すぎます。肩幅より少し広い程度に狭めてみましょう。',
-  },
-  summaryDescription: {
-    minus: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
-    plus: '足の幅が広すぎます。しゃがんだ時に膝に負担がかかる恐れがあるので、肩幅より少し広い程度に狭めましょう。',
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
@@ -219,20 +221,20 @@ const kneeFrontAndBack: FormInstructionItem = {
   id: 3,
   name: 'Knee front and back',
   label: '膝の前後位置',
-  description: {
-    minus: 'お尻を引きすぎているようです。つま先の上までは膝を出しても大丈夫です。',
-    normal: 'ちょうど良い膝の曲げ方です。その調子で重心を足の真上で保ちましょう。',
-    plus: '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が超えすぎないように注意しましょう。',
+  shortDescription: {
+    minus: 'お尻を引きすぎているようです。',
+    normal: 'ちょうど良い膝の曲げ方です',
+    plus: '膝が前に出過ぎています。',
+  },
+  longDescription: {
+    minus:
+      'お尻を後ろに引きすぎているようです。膝がつま先より後ろにくると後ろ重心になり、バランスが悪くなります。つま先の上までは膝を出しても大丈夫なので、無理のない姿勢でスクワットしましょう。',
+    plus: '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。',
   },
   voice: {
     minus: 'お尻を引きすぎです。',
     normal: 'ちょうど良い膝の曲げ方です。',
     plus: '膝が前に出過ぎています。',
-  },
-  summaryDescription: {
-    minus:
-      'お尻を後ろに引きすぎているようです。膝がつま先より後ろにくると後ろ重心になり、バランスが悪くなります。つま先の上までは膝を出しても大丈夫なので、無理のない姿勢でスクワットしましょう。',
-    plus: '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。',
   },
   poseGridCameraAngle: { theta: 90, phi: 0 },
   evaluateFrom: (rep: Rep) => {
@@ -255,29 +257,37 @@ const kneeFrontAndBack: FormInstructionItem = {
 const squatVelocity: FormInstructionItem = {
   id: 4,
   name: 'Speed',
-  label: 'フォーム速度',
-  description: {
-    minus: 'スクワットのペースが速いです。もう少しゆっくりの速度で効かせましょう。',
+  label: '速度',
+  shortDescription: {
+    minus: 'スクワットのペースが速いです。',
     normal: 'いい速さでスクワットできています。',
-    plus: '少しペースが遅いです。効かせることも重要ですが、効率よく筋力を発揮するため、テンポ良く立ち上がれるようにしましょう。',
+    plus: '少しペースが遅いです。',
+  },
+  longDescription: {
+    minus:
+      'スクワットのペースが速いです。ペースが速すぎると反動を使ってしまう上、関節に負担がかかります。もう少しゆっくりの速度で筋肉に効かせるイメージを持ちましょう。目安は、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるくらいです。',
+    plus: '少しペースが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるようにしましょう。',
   },
   voice: {
     minus: '少し速いです。もう少しゆっくり。',
     normal: 'いい速さです。',
     plus: '少しペースが遅いです。もう少しテンポ良く。',
   },
-  summaryDescription: {
-    minus:
-      'スクワットのペースが速いです。ペースが速すぎると反動を使ってしまう上、関節に負担がかかります。もう少しゆっくりの速度で筋肉に効かせるイメージを持ちましょう。目安は、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるくらいです。',
-    plus: '少しペースが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるようにしましょう。',
-  },
   poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluateFrom: (rep: Rep) => {
     // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
     // TODO: Topの姿勢で停止することがあるので、durationを取得する範囲を再考する必要あり。
     const fps = 25;
-    const thresholds = { upper: 5.2, middle: 3.8, lower: 3.3 };
-    const repDuration = rep.form.length / fps;
+    // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
+    const thresholds = { upper: 3.0, middle: 2.2, lower: 1.6 };
+    if (
+      rep.keyframesIndex === undefined ||
+      rep.keyframesIndex.ascendingMiddle === undefined ||
+      rep.keyframesIndex.descendingMiddle === undefined
+    ) {
+      throw new Error('keyframesIndex is undefined');
+    }
+    const repDuration = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
 
     return calculateError(thresholds, repDuration);
   },
