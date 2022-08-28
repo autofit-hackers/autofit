@@ -181,7 +181,6 @@ export default function BodyTrack2d() {
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           console.log('rep end', repRef.current);
-          console.log('height', repState.current.standingHeight);
 
           // 動画撮影を停止し、配列に保存する
           if (repVideoRecorderRef.current) {
