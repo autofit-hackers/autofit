@@ -18,6 +18,16 @@ export type FormInstructionItem = {
   readonly generateGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
 };
 
+export type FormEvaluationResult = {
+  name: string;
+  descriptionsForEachRep: string[];
+  overallComment: string;
+  eachRepErrors: number[];
+  score: number;
+  bestRepIndex: number;
+  worstRepIndex: number;
+};
+
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
 // TODO: better name for "value" parameter

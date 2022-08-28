@@ -3,12 +3,18 @@ import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
-import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
+import {
+  appendPoseToForm,
+  calculateKeyframes,
+  calculateRepFormErrorScore,
+  getTopPose,
+  Rep,
+  resetRep,
+} from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
-import { resetSet, Set } from '../training_data/set';
+import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { fixOutlierOfLandmarkList, FixOutlierParams } from '../utils/fixOutlier';
