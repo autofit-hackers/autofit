@@ -9,6 +9,7 @@ import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import {
   getAngle,
+  getDistance,
   heightInWorld,
   kinectToMediapipe,
   KINECT_POSE_CONNECTIONS,
@@ -36,40 +37,59 @@ import {
 } from './atoms';
 import RealtimeChart from './ui-components/RealtimeChart';
 
-export type EvaluatedFrames = {
-  topToe: number;
-  openingOfKnees: number[];
-  openingOfToes: number[];
-  kneePositionsZ: number[];
+export type FrameEvaluateParams = {
+  threshold: { upper: number; center: number; lower: number };
+  targetArray: number[];
+  baselineArray: number[];
 };
 
-// const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: EvaluatedFrames): EvaluatedFrames => {
-//   const { openingOfKnees, openingOfToes, kneePositionsZ } = evaluatedFrames;
-//   const openingOfKnee = normalizeAngle(
-//     getAngle(currentPose?.worldLandmarks[KJ.HIP_LEFT], currentPose?.worldLandmarks[KJ.KNEE_LEFT]).zx -
-//       getAngle(currentPose?.worldLandmarks[KJ.HIP_RIGHT], currentPose?.worldLandmarks[KJ.KNEE_RIGHT]).zx,
-//     true,
-//   );
-//   const openingOfToe = normalizeAngle(
-//     getAngle(currentPose?.worldLandmarks[KJ.ANKLE_LEFT], currentPose?.worldLandmarks[KJ.FOOT_LEFT]).zx -
-//       getAngle(currentPose?.worldLandmarks[KJ.ANKLE_RIGHT], currentPose?.worldLandmarks[KJ.FOOT_RIGHT]).zx,
-//     true,
-//   );
-//   let topToe = 0;
-//   if (prevRep.keyframesIndex.top !== undefined) {
-//     const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
-//     topToe =
-//       getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
-//       getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
-//   }
+export type EvaluatedFrames = {
+  kneeInAndOut: FrameEvaluateParams;
+  kneeFrontAndBack: FrameEvaluateParams;
+};
 
-//   return {
-//     topToe,
-//     openingOfKnees: openingOfKnees.concat([openingOfKnee]),
-//     openingOfToes: openingOfToes.concat([openingOfToe]),
-//     kneePositionsZ: kneePositionsZ.concat([0]),
-//   };
-// };
+const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: EvaluatedFrames): EvaluatedFrames => {
+  // kneeInAndOut
+  const openingOfKnee = normalizeAngle(
+    getAngle(currentPose.worldLandmarks[KJ.HIP_LEFT], currentPose.worldLandmarks[KJ.KNEE_LEFT]).zx -
+      getAngle(currentPose.worldLandmarks[KJ.HIP_RIGHT], currentPose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
+    true,
+  );
+  const openingOfToe = normalizeAngle(
+    getAngle(currentPose.worldLandmarks[KJ.ANKLE_LEFT], currentPose.worldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(currentPose.worldLandmarks[KJ.ANKLE_RIGHT], currentPose.worldLandmarks[KJ.FOOT_RIGHT]).zx,
+    true,
+  );
+
+  let topToe = 0;
+  if (prevRep !== undefined && prevRep.keyframesIndex !== undefined && prevRep.keyframesIndex.top !== undefined) {
+    const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
+    topToe =
+      getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+  }
+  const kneeInAndOutData: FrameEvaluateParams = {
+    threshold: { upper: topToe + 40, center: topToe + 20, lower: topToe + 10 },
+    targetArray: evaluatedFrames.kneeInAndOut.targetArray.concat([openingOfKnee]),
+    baselineArray: evaluatedFrames.kneeInAndOut.baselineArray.concat([openingOfToe]),
+  };
+
+  let kneeFrontDiff = 0;
+  if (prevRep !== undefined && prevRep.keyframesIndex !== undefined && prevRep.keyframesIndex.top !== undefined) {
+    const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
+    kneeFrontDiff = getDistance(currentPose.worldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
+  }
+  const kneeFrontAndBackData: FrameEvaluateParams = {
+    threshold: { upper: +150, center: +0, lower: -150 },
+    targetArray: evaluatedFrames.kneeFrontAndBack.targetArray.concat([kneeFrontDiff]),
+    baselineArray: evaluatedFrames.kneeFrontAndBack.baselineArray.concat([kneeFrontDiff]),
+  };
+
+  return {
+    kneeInAndOut: kneeInAndOutData,
+    kneeFrontAndBack: kneeFrontAndBackData,
+  };
+};
 
 export default function BodyTrack2d() {
   // 描画
@@ -118,13 +138,23 @@ export default function BodyTrack2d() {
   const formDebugRef = useRef<HTMLDivElement>(null);
   const [echartsData, setEchartsData] = useState<number[]>([]);
   const [barData, setBarData] = useState<number[]>([]);
-  const [threshData, setThreshData] = useState<number>(0);
-  // const evaluatedFrameRef = useRef<EvaluatedFrames>({
-  //   topToe: 0,
-  //   openingOfKnees: [],
-  //   openingOfToes: [],
-  //   kneePositionsZ: [],
-  // });
+  const [threshData, setThreshData] = useState<{ upper: number; center: number; lower: number }>({
+    upper: 0,
+    lower: 0,
+    center: 0,
+  });
+  const evaluatedFrameRef = useRef<EvaluatedFrames>({
+    kneeInAndOut: {
+      threshold: { upper: 0, center: 0, lower: 0 },
+      targetArray: [],
+      baselineArray: [],
+    },
+    kneeFrontAndBack: {
+      threshold: { upper: 0, center: 0, lower: 0 },
+      targetArray: [],
+      baselineArray: [],
+    },
+  });
 
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
@@ -240,6 +270,13 @@ export default function BodyTrack2d() {
         // 現フレームの推定Poseをレップのフォームに追加
         repRef.current = appendPoseToForm(repRef.current, currentPose);
 
+        // グラフを更新
+        evaluatedFrameRef.current = evaluateFrame(
+          currentPose,
+          setRef.current.reps[setRef.current.reps.length - 1],
+          evaluatedFrameRef.current,
+        );
+
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           console.log('rep end', repRef.current);
@@ -353,43 +390,10 @@ export default function BodyTrack2d() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      if (prevPoseRef.current) {
-        const openingOfKnee = normalizeAngle(
-          getAngle(prevPoseRef.current?.worldLandmarks[KJ.HIP_LEFT], prevPoseRef.current?.worldLandmarks[KJ.KNEE_LEFT])
-            .zx -
-            getAngle(
-              prevPoseRef.current?.worldLandmarks[KJ.HIP_RIGHT],
-              prevPoseRef.current?.worldLandmarks[KJ.KNEE_RIGHT],
-            ).zx,
-          true,
-        );
-        const openingOfToe = normalizeAngle(
-          getAngle(
-            prevPoseRef.current?.worldLandmarks[KJ.ANKLE_LEFT],
-            prevPoseRef.current?.worldLandmarks[KJ.FOOT_LEFT],
-          ).zx -
-            getAngle(
-              prevPoseRef.current?.worldLandmarks[KJ.ANKLE_RIGHT],
-              prevPoseRef.current?.worldLandmarks[KJ.FOOT_RIGHT],
-            ).zx,
-          true,
-        );
-        const currentRepCnt = setRef.current.reps.length - 1;
-        let topToe = 0;
-        if (currentRepCnt > 0) {
-          const currentRep = setRef.current.reps[currentRepCnt];
-          if (currentRep.keyframesIndex.top !== undefined) {
-            const topWorldLandmarks = currentRep.form[currentRep.keyframesIndex.top].worldLandmarks as Landmark[];
-            topToe =
-              getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
-              getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
-          }
-        }
-
-        setEchartsData(echartsData.concat([openingOfKnee]));
-        setBarData(barData.concat([openingOfToe]));
-        setThreshData(topToe);
-      }
+      const chartData = evaluatedFrameRef.current.kneeFrontAndBack;
+      setEchartsData(chartData.targetArray);
+      setBarData(chartData.baselineArray);
+      setThreshData(chartData.threshold);
     }, 100);
 
     return () => clearInterval(timer);
@@ -416,6 +420,28 @@ export default function BodyTrack2d() {
           margin: 'auto',
         }}
       />
+      <div
+        className="square-box"
+        style={{
+          zIndex: 2,
+          position: 'relative',
+          width: '30vw',
+          height: '30vw',
+        }}
+      >
+        <div
+          className="pose-grid-container"
+          ref={gridDivRef}
+          style={{
+            position: 'relative',
+            height: '100%',
+            width: '100%',
+            top: 0,
+            left: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        />
+      </div>
       <div ref={repCounterRef} />
       {isDebugMode ? <div ref={formDebugRef} /> : null}
 

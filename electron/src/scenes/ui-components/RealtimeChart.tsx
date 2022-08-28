@@ -1,6 +1,10 @@
 import ReactECharts from 'echarts-for-react';
 
-function RealtimeChart(props: { data: number[]; bar: number[]; thresh: number }) {
+function RealtimeChart(props: {
+  data: number[];
+  bar: number[];
+  thresh: { upper: number; center: number; lower: number };
+}) {
   const { data, bar, thresh } = props;
 
   const op = {
@@ -8,13 +12,13 @@ function RealtimeChart(props: { data: number[]; bar: number[]; thresh: number })
     xAxis: {
       type: 'category',
       data: data.map((v, i) => i),
-      min: data.length - 51,
+      min: data.length - 101,
       max: data.length - 1,
     },
     yAxis: {
       type: 'value',
-      min: thresh,
-      max: thresh + 60,
+      min: thresh.lower,
+      max: thresh.upper + 60,
     },
     legend: { data: ['ももの角度', '足の角度'] },
     series: [
@@ -26,9 +30,9 @@ function RealtimeChart(props: { data: number[]; bar: number[]; thresh: number })
         smooth: true,
         markLine: {
           data: [
-            { yAxis: 40 + thresh, name: '上限', lineStyle: { color: 'red' } },
-            { yAxis: 20 + thresh, name: '適正', lineStyle: { color: 'green' } },
-            { yAxis: 10 + thresh, name: '下限', lineStyle: { color: 'red' } },
+            { yAxis: thresh.upper, name: '上限', lineStyle: { color: 'red' } },
+            { yAxis: thresh.center, name: '適正', lineStyle: { color: 'green' } },
+            { yAxis: thresh.lower, name: '下限', lineStyle: { color: 'red' } },
           ],
         },
       },

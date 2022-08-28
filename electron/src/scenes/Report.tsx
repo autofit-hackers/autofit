@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Slider, Stack, Typography } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -93,6 +93,17 @@ export default function IntervalReport() {
                 <Card>
                   <CardContent sx={cardSx}>
                     <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+                    <Slider
+                      defaultValue={displayedRepIndex}
+                      min={0}
+                      max={setRecord.reps.length - 1}
+                      onChange={(event: Event, newValue: number | number[]) => {
+                        if (typeof newValue === 'number') {
+                          setDisplayedRepIndex(newValue);
+                        }
+                      }}
+                      track={false}
+                    />
                   </CardContent>
                 </Card>
               </Grid>

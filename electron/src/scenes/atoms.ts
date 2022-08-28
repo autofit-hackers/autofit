@@ -17,4 +17,4 @@ export const kinectAtom = atom<typeof KinectAzure>(new KinectAzure());
 
 export const playSoundAtom = atom<boolean>(false);
 
-export const formDebugAtom = atom<boolean>(true);
+export const formDebugAtom = atom<boolean>(false);
