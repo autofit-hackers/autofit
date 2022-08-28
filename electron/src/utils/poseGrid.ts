@@ -175,6 +175,7 @@ export class PoseGrid {
     this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
+    this.setCameraAngle();
   }
 
   /**
