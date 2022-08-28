@@ -1,6 +1,6 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
 import { Landmark } from '@mediapipe/pose';
-import { Button } from '@mui/material';
+import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -44,8 +44,7 @@ export type FrameEvaluateParams = {
 };
 
 export type EvaluatedFrames = {
-  kneeInAndOut: FrameEvaluateParams;
-  kneeFrontAndBack: FrameEvaluateParams;
+  [key: string]: FrameEvaluateParams;
 };
 
 const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: EvaluatedFrames): EvaluatedFrames => {
@@ -80,7 +79,7 @@ const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: Evaluat
     kneeFrontDiff = getDistance(currentPose.worldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
   }
   const kneeFrontAndBackData: FrameEvaluateParams = {
-    threshold: { upper: +150, center: +0, lower: -150 },
+    threshold: { upper: 150, center: 0, lower: -150 },
     targetArray: evaluatedFrames.kneeFrontAndBack.targetArray.concat([kneeFrontDiff]),
     baselineArray: evaluatedFrames.kneeFrontAndBack.baselineArray.concat([kneeFrontDiff]),
   };
@@ -155,6 +154,7 @@ export default function BodyTrack2d() {
       baselineArray: [],
     },
   });
+  const [evalItemName, setEvalItemName] = useState<string>('kneeInAndOut');
 
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
@@ -185,6 +185,10 @@ export default function BodyTrack2d() {
     setRepVideoUrls([]);
     setVideoUrlRef.current = '';
     playTrainingStartSound(playSound);
+    // グラフ
+    setEchartsData([]);
+    setBarData([]);
+    setThreshData({ upper: 0, center: 0, lower: 0 });
   };
 
   // 毎kinect更新時に実行される
@@ -390,11 +394,11 @@ export default function BodyTrack2d() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const chartData = evaluatedFrameRef.current.kneeFrontAndBack;
+      const chartData = evaluatedFrameRef.current[evalItemName];
       setEchartsData(chartData.targetArray);
       setBarData(chartData.baselineArray);
       setThreshData(chartData.threshold);
-    }, 100);
+    }, 40);
 
     return () => clearInterval(timer);
   });
@@ -411,9 +415,10 @@ export default function BodyTrack2d() {
         ref={canvasRef}
         className="main_canvas"
         style={{
+          width: '90vw',
           position: 'relative',
           zIndex: 1,
-          top: 0,
+          top: '5vw',
           right: 0,
           bottom: 0,
           left: 0,
@@ -424,9 +429,11 @@ export default function BodyTrack2d() {
         className="square-box"
         style={{
           zIndex: 2,
-          position: 'relative',
+          position: 'absolute',
           width: '30vw',
           height: '30vw',
+          top: '78vw',
+          left: '63vw',
         }}
       >
         <div
@@ -442,7 +449,10 @@ export default function BodyTrack2d() {
           }}
         />
       </div>
-      <div ref={repCounterRef} />
+      <div
+        ref={repCounterRef}
+        style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
+      />
       {isDebugMode ? <div ref={formDebugRef} /> : null}
 
       <RealtimeChart data={echartsData} bar={barData} thresh={threshData} />
@@ -453,6 +463,19 @@ export default function BodyTrack2d() {
       >
         reset
       </Button>
+      <RadioGroup
+        row
+        aria-labelledby="error-group"
+        name="error-buttons-group"
+        value={evalItemName}
+        onChange={(e, v) => {
+          setEvalItemName(v);
+        }}
+      >
+        {Object.keys(evaluatedFrameRef.current).map((name) => (
+          <FormControlLabel key={name} value={name} control={<Radio />} label={name} />
+        ))}
+      </RadioGroup>
     </>
   );
 }

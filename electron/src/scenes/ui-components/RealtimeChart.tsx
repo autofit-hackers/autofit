@@ -44,7 +44,7 @@ function RealtimeChart(props: {
     ],
   };
 
-  return <ReactECharts option={op} style={{ marginTop: 10 }} />;
+  return <ReactECharts option={op} style={{ marginTop: 10, height: '60vw', backgroundColor: 'white' }} />;
 }
 
 export default RealtimeChart;
