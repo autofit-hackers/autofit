@@ -1,3 +1,4 @@
+import type { GuidelineSymbols } from '../utils/poseGrid';
 import { heightInWorld, Pose } from './pose';
 import type { FormInstructionItem } from '../coaching/formInstructionItems';
 
@@ -14,6 +15,7 @@ export type Rep = {
   keyframesIndex: KeyframesIndex;
   videoUrl: string;
   formErrorScores: number[];
+  guidelineSymbolsList: GuidelineSymbols[];
 };
 
 export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
@@ -32,6 +34,7 @@ export const resetRep = (repIndex: number): Rep => ({
   },
   videoUrl: '',
   formErrorScores: [],
+  guidelineSymbolsList: [],
 });
 
 export const calculateKeyframes = (prevRep: Rep): Rep => {
@@ -112,6 +115,9 @@ export const calculateRepFormErrorScore = (prevRep: Rep, instructionItems: FormI
 
   instructionItems.forEach((instructionItem) => {
     rep.formErrorScores[instructionItem.id] = instructionItem.evaluateFrom(rep);
+    rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
+      ? instructionItem.getGuidelineSymbols(rep)
+      : ({} as GuidelineSymbols);
   });
 
   return rep;

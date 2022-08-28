@@ -3,8 +3,10 @@ import { LandmarkConnectionArray, NormalizedLandmarkList } from '@mediapipe/pose
 import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import {
   BufferGeometry,
+  Camera,
   Color,
   CylinderGeometry,
+  OrthographicCamera,
   GridHelper,
   Group,
   LineBasicMaterial,
@@ -49,8 +51,8 @@ export type CameraAngle = {
 
 export type PoseGridConfig = {
   backgroundColor: number;
-  cameraDistance: number;
-  cameraFov: number;
+  camera: { useOrthographic: boolean; distance: number; fov: number };
+  gridPlane: { size: number; divisions: number; y: number };
   connectionColor: number;
   connectionWidth: number;
   landmarkColor: number;
@@ -59,8 +61,8 @@ export type PoseGridConfig = {
 
 const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   backgroundColor: 0,
-  cameraDistance: 200,
-  cameraFov: 75,
+  camera: { useOrthographic: true, distance: 200, fov: 75 },
+  gridPlane: { size: 200, divisions: 10, y: -93 },
   connectionWidth: 4,
   connectionColor: 0x00ffff,
   landmarkSize: 2,
@@ -68,12 +70,13 @@ const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
 };
 
 export class PoseGrid {
-  poseGridConfig: PoseGridConfig;
+  config: PoseGridConfig;
   parentBox: DOMRect;
   disposeQueue: Array<BufferGeometry>;
   removeQueue: Array<Object3D>;
+  canvas: HTMLCanvasElement;
   container: HTMLDivElement;
-  camera: PerspectiveCamera;
+  camera: Camera;
   renderer: WebGLRenderer;
   scene: Scene;
   orbitControls: OrbitControls;
@@ -83,25 +86,31 @@ export class PoseGrid {
   connectionMaterial: Material;
   connectionGroup: Group;
   cylinderGroup: Group;
+  guidelineGroup: Group;
 
-  constructor(parent: HTMLElement, poseGridConfig = DEFAULT_POSE_GRID_CONFIG) {
-    this.poseGridConfig = poseGridConfig;
+  constructor(parent: HTMLElement, config = DEFAULT_POSE_GRID_CONFIG) {
+    this.config = config;
     this.disposeQueue = [];
     this.removeQueue = [];
     this.container = document.createElement('div');
     this.container.classList.add('viewer-widget-js');
-    const canvas: HTMLCanvasElement = document.createElement('canvas');
-    this.container.appendChild(canvas);
+    this.canvas = document.createElement('canvas');
+    this.container.appendChild(this.canvas);
     parent.appendChild(this.container);
     this.parentBox = parent.getBoundingClientRect();
-    this.camera = new PerspectiveCamera(
-      this.poseGridConfig.cameraFov,
-      this.parentBox.width / this.parentBox.height,
-      1,
-    );
+    if (this.config.camera.useOrthographic) {
+      this.camera = new OrthographicCamera(
+        -this.config.camera.distance * 0.7,
+        this.config.camera.distance * 0.7,
+        this.config.camera.distance * 0.7,
+        -this.config.camera.distance * 0.7,
+      );
+    } else {
+      this.camera = new PerspectiveCamera(this.config.camera.fov, this.parentBox.width / this.parentBox.height, 1);
+    }
     this.camera.lookAt(new Vector3());
-    this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
-    this.renderer.setClearColor(new Color(this.poseGridConfig.backgroundColor), 0.5);
+    this.renderer = new WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true });
+    this.renderer.setClearColor(new Color(this.config.backgroundColor), 0.5);
     this.renderer.setSize(Math.floor(this.parentBox.width), Math.floor(this.parentBox.height));
     window.addEventListener(
       'resize',
@@ -113,24 +122,27 @@ export class PoseGrid {
       },
     );
     this.scene = new Scene();
-    this.orbitControls = new OrbitControls(this.camera, canvas);
+    this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
 
-    this.landmarkMaterial = new MeshBasicMaterial({ color: this.poseGridConfig.landmarkColor });
-    this.landmarkGeometry = new SphereGeometry(this.poseGridConfig.landmarkSize);
+    this.landmarkMaterial = new MeshBasicMaterial({ color: this.config.landmarkColor });
+    this.landmarkGeometry = new SphereGeometry(this.config.landmarkSize);
     this.connectionMaterial = new LineBasicMaterial({
-      color: this.poseGridConfig.connectionColor,
-      linewidth: this.poseGridConfig.connectionWidth,
+      color: this.config.connectionColor,
+      linewidth: this.config.connectionWidth,
     });
 
-    const gridPlane = new GridHelper(300, 10);
-    gridPlane.translateY(-93); // translate grid plane on foot height
+    const { size, divisions, y } = this.config.gridPlane;
+    const gridPlane = new GridHelper(size, divisions);
+    gridPlane.translateY(y); // translate grid plane on foot height
 
     this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
     this.scene.add(this.landmarkGroup);
     this.cylinderGroup = new Group();
+    this.guidelineGroup = new Group();
+    this.scene.add(this.guidelineGroup);
     this.connectionGroup = new Group();
     this.scene.add(this.connectionGroup);
     this.requestFrame();
@@ -149,6 +161,23 @@ export class PoseGrid {
     });
   }
 
+  changeCameraType(): void {
+    if (this.camera instanceof PerspectiveCamera) {
+      this.camera = new OrthographicCamera(
+        -this.config.camera.distance * 0.7,
+        this.config.camera.distance * 0.7,
+        this.config.camera.distance * 0.7,
+        -this.config.camera.distance * 0.7,
+      );
+    } else {
+      this.camera = new PerspectiveCamera(this.config.camera.fov, this.parentBox.width / this.parentBox.height, 1);
+    }
+    this.orbitControls = new OrbitControls(this.camera, this.canvas);
+    this.orbitControls.enableDamping = true;
+    this.orbitControls.dampingFactor = 0.2;
+    this.setCameraAngle();
+  }
+
   /**
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
@@ -158,9 +187,9 @@ export class PoseGrid {
     const { theta, phi } = cameraAngle;
     const thetaRad = (theta * Math.PI) / 180;
     const phiRad = (phi * Math.PI) / 180;
-    this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * this.poseGridConfig.cameraDistance;
-    this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * this.poseGridConfig.cameraDistance;
-    this.camera.position.y = Math.cos(thetaRad) * this.poseGridConfig.cameraDistance;
+    this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * this.config.camera.distance;
+    this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * this.config.camera.distance;
+    this.camera.position.y = Math.cos(thetaRad) * this.config.camera.distance;
     this.camera.lookAt(new Vector3());
   }
 
@@ -172,8 +201,6 @@ export class PoseGrid {
     connections: LandmarkConnectionArray,
     guideSymbols?: GuidelineSymbols,
   ): void {
-    this.connectionGroup.clear();
-    this.cylinderGroup.clear();
     this.clearResources();
     this.drawConnections(landmarks, connections);
     const meshLength: number = this.landmarkGroup.children.length;
@@ -197,6 +224,8 @@ export class PoseGrid {
   }
 
   clearResources(): void {
+    this.connectionGroup.clear();
+    this.cylinderGroup.clear();
     this.removeQueue.forEach((object3D): void => {
       if (object3D.parent) object3D.parent.remove(object3D);
     });
@@ -215,16 +244,25 @@ export class PoseGrid {
     }
   }
 
-  drawLine(guideLinePair: LineEndPoints): void {
-    const color: Material = this.connectionMaterial;
-    const from = landmarkToVector3(guideLinePair.from);
-    const to = landmarkToVector3(guideLinePair.to);
+  drawLine(lineEndPoints: LineEndPoints, color: Color = new Color(0xff0000)): void {
+    const material = new MeshBasicMaterial({ color });
+    const { from, to } = lineEndPoints;
     const lines: Array<Vector3> = [from, to];
     const geometry: BufferGeometry = new BufferGeometry().setFromPoints(lines);
-    this.disposeQueue.push(geometry);
-    const wireFrame: LineSegments = new LineSegments(geometry, color);
-    this.removeQueue.push(wireFrame);
-    this.connectionGroup.add(wireFrame);
+    const wireFrame: LineSegments = new LineSegments(geometry, material);
+    this.guidelineGroup.add(wireFrame);
+  }
+
+  drawLineEndPoints(lineEndPoints: LineEndPoints, color: Color = new Color(0xff0000)): void {
+    const material = new MeshBasicMaterial({ color });
+    const sphereGeometry = new SphereGeometry(this.config.landmarkSize);
+
+    const lineEndPointArray: Array<Vector3> = [lineEndPoints.from, lineEndPoints.to];
+    lineEndPointArray.forEach((point): void => {
+      const sphere: Mesh = new Mesh(sphereGeometry, material);
+      sphere.position.copy(point);
+      this.guidelineGroup.add(sphere);
+    });
   }
 
   drawCylinder(from: Vector3, to: Vector3): void {
@@ -241,6 +279,7 @@ export class PoseGrid {
     if ('lines' in guidelineSymbols) {
       guidelineSymbols.lines?.forEach((linePair) => {
         this.drawLine(linePair);
+        this.drawLineEndPoints(linePair);
       });
     }
   }

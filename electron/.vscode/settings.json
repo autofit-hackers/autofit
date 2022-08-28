@@ -48,6 +48,7 @@
     "**/images": true,
     "**/movies": true
   },
+  // File Explorerの非表示項目を指定
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -56,11 +57,12 @@
     "**/.cache": true,
     "**/*.meta": true,
     "**/.DS_Store": true,
-    "node_modules": true,
+    "node_modules": false,
     "**/*.exe": true,
     "**/*.dll": true,
     "**/*.onnx": true
   },
+  // ワークスペース検索から除外
   "search.exclude": {
     ".git": true,
     ".eslintcache": true,

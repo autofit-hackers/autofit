@@ -16,7 +16,7 @@ export type FormInstructionItem = {
   readonly poseGridCameraAngle: CameraAngle;
   // TODO: 以下２つはまとめてもいいかも
   readonly evaluateFrom: (rep: Rep) => number;
-  readonly generateGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
+  readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
 };
 
 export type FormEvaluationResult = {
@@ -81,7 +81,7 @@ const squatDepth: FormInstructionItem = {
 
     return calculateError(thresholds, meanThighAngleFromSide);
   },
-  generateGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
     const thresholds = { upper: 90, middle: 80, lower: 60 };
     const guidelineSymbols: GuidelineSymbols = {};
     const bottomPose = getBottomPose(rep);
@@ -90,11 +90,11 @@ const squatDepth: FormInstructionItem = {
     }
 
     const kneeY = (bottomPose.worldLandmarks[KJ.KNEE_RIGHT].y + bottomPose.worldLandmarks[KJ.KNEE_LEFT].y) / 2;
-    const thighLengthFromSide =
-      (getDistance(bottomPose.worldLandmarks[KJ.HIP_LEFT], bottomPose.worldLandmarks[KJ.HIP_RIGHT]).yz +
-        getDistance(bottomPose.worldLandmarks[KJ.KNEE_LEFT], bottomPose.worldLandmarks[KJ.KNEE_RIGHT]).yz) /
+    const averageThighLengthFromSide =
+      (getDistance(bottomPose.worldLandmarks[KJ.HIP_LEFT], bottomPose.worldLandmarks[KJ.KNEE_LEFT]).yz +
+        getDistance(bottomPose.worldLandmarks[KJ.HIP_RIGHT], bottomPose.worldLandmarks[KJ.KNEE_RIGHT]).yz) /
       2;
-    const idealHipY = kneeY + thighLengthFromSide * Math.sin(((thresholds.middle - 90) * Math.PI) / 180);
+    const idealHipY = kneeY + averageThighLengthFromSide * Math.sin(((thresholds.middle - 90) * Math.PI) / 180);
     const idealLeftHip = {
       x: bottomPose.worldLandmarks[KJ.HIP_LEFT].x,
       y: idealHipY,
@@ -106,10 +106,7 @@ const squatDepth: FormInstructionItem = {
       z: bottomPose.worldLandmarks[KJ.HIP_RIGHT].z,
     };
 
-    guidelineSymbols.lines = [
-      { from: landmarkToVector3(bottomPose.worldLandmarks[KJ.KNEE_LEFT]), to: landmarkToVector3(idealLeftHip) },
-      { from: landmarkToVector3(bottomPose.worldLandmarks[KJ.KNEE_RIGHT]), to: landmarkToVector3(idealRightHip) },
-    ];
+    guidelineSymbols.lines = [{ from: landmarkToVector3(idealRightHip), to: landmarkToVector3(idealLeftHip) }];
 
     return guidelineSymbols;
   },
@@ -154,7 +151,7 @@ const kneeInAndOut: FormInstructionItem = {
 
     return calculateError(thresholds, error);
   },
-  generateGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
     // const thresholds = { upper: 15, middle: 0, lower: -15 };
     const guidelineSymbols: GuidelineSymbols = {};
 
@@ -164,6 +161,7 @@ const kneeInAndOut: FormInstructionItem = {
       return guidelineSymbols;
     }
 
+    // TODO: implement guideline symbols calculation
     // const leftHip = bottomWorldLandmarks[KJ.HIP_LEFT];
     // const leftThighLength = getDistance(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).xyz;
     // const leftFootAngle = getAngle(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).zx;
