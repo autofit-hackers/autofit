@@ -90,6 +90,8 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
       name: instructionItem.name,
       shortSummary: '',
       longSummary: '',
+      descriptionsForEachRep: [],
+      overallComment: '',
       eachRepErrors: [],
       score: 0,
       bestRepIndex: 0,
