@@ -5,6 +5,7 @@ import {
   NormalizedLandmark,
   NormalizedLandmarkList,
 } from '@mediapipe/pose';
+import { Vector3 } from 'three';
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
@@ -79,11 +80,14 @@ export const kinectToMediapipe = (
     };
 
     // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
+    // woldLandmarksはmmからcm単位に変換する
     if (rotation) {
       mediapipePoseWorld[i] = {
-        x: kinectPoses[i].cameraX,
-        y: kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB),
-        z: kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB),
+        x: kinectPoses[i].cameraX / 10,
+        y: (kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB)) / 10,
+        // a user stands about 1.7m away from the camera (kinect)
+        // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
+        z: (kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB)) / 10 - 170,
       };
     } else {
       mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
@@ -114,9 +118,9 @@ export const getAngle = (start: Landmark, end: Landmark) => {
   const z = end.z - start.z;
 
   return {
-    xy: (Math.atan2(y, x) * 180) / Math.PI,
-    yz: (Math.atan2(z, y) * 180) / Math.PI,
-    zx: (Math.atan2(x, -z) * 180) / Math.PI,
+    xy: (Math.atan2(y, x) * 180) / Math.PI, // x軸となす角度
+    yz: (Math.atan2(z, y) * 180) / Math.PI, // y軸となす角度
+    zx: (Math.atan2(x, -z) * 180) / Math.PI, // z軸となす角度
   };
 };
 
@@ -150,15 +154,4 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   visibility: normalizedLandmark.visibility,
 });
 
-export type GridDelta = { x: number; y: number; z: number };
-
-export const translateLandmarkList = (landmarkList: LandmarkList, delta: GridDelta): LandmarkList =>
-  landmarkList.map(
-    (landmark: Landmark) =>
-      ({
-        x: landmark.x + delta.x,
-        y: landmark.y + delta.y,
-        z: landmark.z + delta.z,
-        visibility: landmark.visibility,
-      } as Landmark),
-  );
+export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, -point.z);

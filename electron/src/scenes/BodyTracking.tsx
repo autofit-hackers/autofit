@@ -3,18 +3,23 @@ import { Button } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
-import { calculateRepFormErrorScore, recordFormEvaluationResult } from '../coaching/formInstruction';
-import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
+import {
+  appendPoseToForm,
+  calculateKeyframes,
+  calculateRepFormErrorScore,
+  getTopPose,
+  Rep,
+  resetRep,
+} from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
-import { resetSet, Set } from '../training_data/set';
+import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
-import { GuideLinePair, PoseGrid } from '../utils/poseGrid';
+import { PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 
@@ -176,7 +181,6 @@ export default function BodyTrack2d() {
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           console.log('rep end', repRef.current);
-          console.log('height', repState.current.standingHeight);
 
           // 動画撮影を停止し、配列に保存する
           if (repVideoRecorderRef.current) {
@@ -219,18 +223,9 @@ export default function BodyTrack2d() {
           lineWidth: 4,
         });
 
-        // 描画するガイドラインの定義
-        let lines: GuideLinePair[] = [];
-        if (setRef.current.reps.length > 0 && formInstructionItemsQWS[1].showGuideline !== undefined) {
-          lines = formInstructionItemsQWS[3].showGuideline?.(
-            setRef.current.reps[setRef.current.reps.length - 1],
-            currentPose,
-          ) as GuideLinePair[];
-        }
-
         // PoseGridの描画
         if (poseGrid) {
-          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS, [], { lines });
+          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
       } else {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
