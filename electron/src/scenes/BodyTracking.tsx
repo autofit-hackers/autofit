@@ -40,7 +40,6 @@ import RealtimeChart from './ui-components/RealtimeChart';
 export type FrameEvaluateParams = {
   threshold: { upper: number; center: number; lower: number };
   targetArray: number[];
-  baselineArray: number[];
 };
 
 export type EvaluatedFrames = {
@@ -54,11 +53,6 @@ const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: Evaluat
       getAngle(currentPose.worldLandmarks[KJ.HIP_RIGHT], currentPose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
     true,
   );
-  const openingOfToe = normalizeAngle(
-    getAngle(currentPose.worldLandmarks[KJ.ANKLE_LEFT], currentPose.worldLandmarks[KJ.FOOT_LEFT]).zx -
-      getAngle(currentPose.worldLandmarks[KJ.ANKLE_RIGHT], currentPose.worldLandmarks[KJ.FOOT_RIGHT]).zx,
-    true,
-  );
 
   let topToe = 0;
   if (prevRep !== undefined && prevRep.keyframesIndex !== undefined && prevRep.keyframesIndex.top !== undefined) {
@@ -70,7 +64,6 @@ const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: Evaluat
   const kneeInAndOutData: FrameEvaluateParams = {
     threshold: { upper: topToe + 40, center: topToe + 20, lower: topToe + 10 },
     targetArray: evaluatedFrames.kneeInAndOut.targetArray.concat([openingOfKnee]),
-    baselineArray: evaluatedFrames.kneeInAndOut.baselineArray.concat([openingOfToe]),
   };
 
   let kneeFrontDiff = 0;
@@ -81,7 +74,6 @@ const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: Evaluat
   const kneeFrontAndBackData: FrameEvaluateParams = {
     threshold: { upper: 150, center: 0, lower: -150 },
     targetArray: evaluatedFrames.kneeFrontAndBack.targetArray.concat([kneeFrontDiff]),
-    baselineArray: evaluatedFrames.kneeFrontAndBack.baselineArray.concat([kneeFrontDiff]),
   };
 
   return {
@@ -136,7 +128,6 @@ export default function BodyTrack2d() {
   // form debug
   const formDebugRef = useRef<HTMLDivElement>(null);
   const [echartsData, setEchartsData] = useState<number[]>([]);
-  const [barData, setBarData] = useState<number[]>([]);
   const [threshData, setThreshData] = useState<{ upper: number; center: number; lower: number }>({
     upper: 0,
     lower: 0,
@@ -146,12 +137,10 @@ export default function BodyTrack2d() {
     kneeInAndOut: {
       threshold: { upper: 0, center: 0, lower: 0 },
       targetArray: [],
-      baselineArray: [],
     },
     kneeFrontAndBack: {
       threshold: { upper: 0, center: 0, lower: 0 },
       targetArray: [],
-      baselineArray: [],
     },
   });
   const [evalItemName, setEvalItemName] = useState<string>('kneeInAndOut');
@@ -187,7 +176,6 @@ export default function BodyTrack2d() {
     playTrainingStartSound(playSound);
     // グラフ
     setEchartsData([]);
-    setBarData([]);
     setThreshData({ upper: 0, center: 0, lower: 0 });
   };
 
@@ -397,7 +385,6 @@ export default function BodyTrack2d() {
     const timer = setInterval(() => {
       const chartData = evaluatedFrameRef.current[evalItemName];
       setEchartsData(chartData.targetArray);
-      setBarData(chartData.baselineArray);
       setThreshData(chartData.threshold);
     }, 40);
 
@@ -456,7 +443,7 @@ export default function BodyTrack2d() {
       />
       {isDebugMode ? <div ref={formDebugRef} /> : null}
 
-      <RealtimeChart data={echartsData} bar={barData} thresh={threshData} />
+      <RealtimeChart data={echartsData} thresh={threshData} />
       <Button
         onClick={() => {
           setEchartsData([]);

@@ -1,11 +1,7 @@
 import ReactECharts from 'echarts-for-react';
 
-function RealtimeChart(props: {
-  data: number[];
-  bar: number[];
-  thresh: { upper: number; center: number; lower: number };
-}) {
-  const { data, bar, thresh } = props;
+function RealtimeChart(props: { data: number[]; thresh: { upper: number; center: number; lower: number } }) {
+  const { data, thresh } = props;
 
   const op = {
     innerHeight: '100vh',
@@ -35,11 +31,6 @@ function RealtimeChart(props: {
             { yAxis: thresh.lower, name: '下限', lineStyle: { color: 'red' } },
           ],
         },
-      },
-      {
-        name: '足の角度',
-        data: bar,
-        type: 'line',
       },
     ],
   };
