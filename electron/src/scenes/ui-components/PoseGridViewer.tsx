@@ -8,10 +8,10 @@ function PoseGridViewer(props: {
   cameraPosition: CameraAngle;
 }) {
   const { gridDivRef, poseGridRef, cameraPosition } = props;
-  const [checked, setChecked] = useState(poseGridRef.current?.config.camera.useOrthographic);
+  const [useOrthographic, setUseOrthographic] = useState(poseGridRef.current?.config.camera.useOrthographic);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
+  const handleCameraTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUseOrthographic(event.target.checked);
     poseGridRef.current?.changeCameraType();
   };
 
@@ -51,8 +51,8 @@ function PoseGridViewer(props: {
         Reset Camera Position
       </Button>
       <Switch
-        checked={checked}
-        onChange={handleChange}
+        checked={useOrthographic}
+        onChange={handleCameraTypeChange}
         inputProps={{ 'aria-label': 'controlled' }}
         sx={{ position: 'absolute', top: 0, right: 0, textAlign: 'center', zIndex: 2 }}
       />
