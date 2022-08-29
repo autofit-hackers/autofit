@@ -27,7 +27,6 @@ import KJ from '../utils/kinectJoints';
 import { GuideLinePair, PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import {
-  formDebugAtom,
   formInstructionItemsAtom,
   kinectAtom,
   phaseAtom,
@@ -35,7 +34,7 @@ import {
   repVideoUrlsAtom,
   setRecordAtom,
 } from './atoms';
-import RealtimeChart from './ui-components/RealtimeChart';
+import RealtimeChart, { ManuallyAddingChart } from './ui-components/RealtimeChart';
 
 export type FrameEvaluateParams = {
   threshold: { upper: number; center: number; lower: number };
@@ -82,6 +81,20 @@ const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: Evaluat
   };
 };
 
+const getOpeningOfKnee = (pose: Pose): number =>
+  normalizeAngle(
+    getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).zx -
+      getAngle(pose.worldLandmarks[KJ.HIP_RIGHT], pose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
+    true,
+  );
+
+const getOpeningOfToe = (pose: Pose): number =>
+  normalizeAngle(
+    getAngle(pose.worldLandmarks[KJ.ANKLE_LEFT], pose.worldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(pose.worldLandmarks[KJ.ANKLE_RIGHT], pose.worldLandmarks[KJ.FOOT_RIGHT]).zx,
+    true,
+  );
+
 export default function BodyTrack2d() {
   // 描画
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -104,7 +117,6 @@ export default function BodyTrack2d() {
   const upperThreshold = 0.95;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [playSound] = useAtom(playSoundAtom);
-  const [isDebugMode] = useAtom(formDebugAtom);
 
   // settings to treat outliers in pose estimation
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 2.0, maxConsecutiveOutlierCount: 10 };
@@ -144,6 +156,8 @@ export default function BodyTrack2d() {
     },
   });
   const [evalItemName, setEvalItemName] = useState<string>('kneeInAndOut');
+  const [knee, setKnee] = useState<number[]>([]);
+  const [toe, setToe] = useState<number[]>([]);
 
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
@@ -177,6 +191,8 @@ export default function BodyTrack2d() {
     // グラフ
     setEchartsData([]);
     setThreshData({ upper: 0, center: 0, lower: 0 });
+    setKnee([]);
+    setToe([]);
   };
 
   // 毎kinect更新時に実行される
@@ -399,6 +415,16 @@ export default function BodyTrack2d() {
       <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
         RESET TRAINING
       </Button>
+      <Button
+        onClick={() => {
+          if (prevPoseRef.current) {
+            setKnee(knee.concat([getOpeningOfKnee(prevPoseRef.current)]));
+            setToe(toe.concat([getOpeningOfToe(prevPoseRef.current)]));
+          }
+        }}
+      >
+        ADD Data to CSV
+      </Button>
       <canvas
         ref={canvasRef}
         className="main_canvas"
@@ -441,7 +467,7 @@ export default function BodyTrack2d() {
         ref={repCounterRef}
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
-      {isDebugMode ? <div ref={formDebugRef} /> : null}
+      {/* {isDebugMode ? <div ref={formDebugRef} /> : null} */}
 
       <RealtimeChart data={echartsData} thresh={threshData} />
       <Button
@@ -464,6 +490,7 @@ export default function BodyTrack2d() {
           <FormControlLabel key={name} value={name} control={<Radio />} label={name} />
         ))}
       </RadioGroup>
+      <ManuallyAddingChart data={[knee, toe]} />
     </>
   );
 }

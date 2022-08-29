@@ -16,7 +16,7 @@ function RealtimeChart(props: { data: number[]; thresh: { upper: number; center:
       min: (thresh.lower - thresh.center) * 2 + thresh.center,
       max: (thresh.upper - thresh.center) * 2 + thresh.center,
     },
-    legend: { data: ['ももの角度', '足の角度'] },
+    legend: { data: ['ももの角度'] },
     series: [
       {
         name: 'ももの角度',
@@ -35,7 +35,46 @@ function RealtimeChart(props: { data: number[]; thresh: { upper: number; center:
     ],
   };
 
-  return <ReactECharts option={op} style={{ marginTop: 10, height: '60vw', backgroundColor: 'white' }} />;
+  return <ReactECharts option={op} style={{ marginTop: '10vw', height: '60vw', backgroundColor: 'white' }} />;
 }
 
 export default RealtimeChart;
+
+export function ManuallyAddingChart(props: { data: number[][] }) {
+  const { data } = props;
+
+  const op = {
+    innerHeight: '100vh',
+    xAxis: {
+      type: 'category',
+    },
+    yAxis: {
+      type: 'value',
+    },
+    legend: { data: ['もも', '足'] },
+    series: [
+      {
+        name: 'もも',
+        data: data[0],
+        type: 'line',
+        itemStyle: { normal: { color: 'red' } },
+        smooth: true,
+        markLine: {
+          data: [{ type: 'average', name: '平均' }],
+        },
+      },
+      {
+        name: '足',
+        data: data[1],
+        type: 'line',
+        itemStyle: { normal: { color: 'blue' } },
+        smooth: true,
+        markLine: {
+          data: [{ type: 'average', name: '平均' }],
+        },
+      },
+    ],
+  };
+
+  return <ReactECharts option={op} style={{ marginTop: 100, height: '60vw', backgroundColor: 'white' }} />;
+}
