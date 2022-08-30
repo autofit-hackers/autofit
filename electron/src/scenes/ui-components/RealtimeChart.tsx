@@ -40,7 +40,7 @@ function RealtimeChart(props: { data: number[]; thresh: { upper: number; center:
 
 export default RealtimeChart;
 
-export function ManuallyAddingChart(props: { data: number[][] }) {
+export function ManuallyAddableChart(props: { data: number[][] }) {
   const { data } = props;
 
   const op = {

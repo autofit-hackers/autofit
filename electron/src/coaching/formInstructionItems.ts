@@ -1,4 +1,4 @@
-import { landmarkToVector3, getAngle, getDistance, normalizeAngle, Pose } from '../training_data/pose';
+import { getAngle, getDistance, landmarkToVector3, normalizeAngle, Pose } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import KJ from '../utils/kinectJoints';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';

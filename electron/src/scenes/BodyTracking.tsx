@@ -1,19 +1,11 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
-import { Landmark } from '@mediapipe/pose';
 import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { EvaluatedFrames, evaluateFrame, getOpeningOfKnee, getOpeningOfToe } from '../coaching/FormInstructionDebug';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
-import {
-  getAngle,
-  getDistance,
-  heightInWorld,
-  kinectToMediapipe,
-  KINECT_POSE_CONNECTIONS,
-  normalizeAngle,
-  Pose,
-} from '../training_data/pose';
+import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import {
   appendPoseToForm,
   calculateKeyframes,
@@ -28,7 +20,6 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { exportData } from '../utils/exporter';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
-import KJ from '../utils/kinectJoints';
 import { PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import {
@@ -39,66 +30,7 @@ import {
   repVideoUrlsAtom,
   setRecordAtom,
 } from './atoms';
-import RealtimeChart, { ManuallyAddingChart } from './ui-components/RealtimeChart';
-
-export type FrameEvaluateParams = {
-  threshold: { upper: number; center: number; lower: number };
-  targetArray: number[];
-};
-
-export type EvaluatedFrames = {
-  [key: string]: FrameEvaluateParams;
-};
-
-const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: EvaluatedFrames): EvaluatedFrames => {
-  // kneeInAndOut
-  const openingOfKnee = normalizeAngle(
-    getAngle(currentPose.worldLandmarks[KJ.HIP_LEFT], currentPose.worldLandmarks[KJ.KNEE_LEFT]).zx -
-      getAngle(currentPose.worldLandmarks[KJ.HIP_RIGHT], currentPose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
-    true,
-  );
-
-  let topToe = 0;
-  if (prevRep !== undefined && prevRep.keyframesIndex !== undefined && prevRep.keyframesIndex.top !== undefined) {
-    const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
-    topToe =
-      getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
-      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
-  }
-  const kneeInAndOutData: FrameEvaluateParams = {
-    threshold: { upper: topToe + 40, center: topToe + 20, lower: topToe + 10 },
-    targetArray: evaluatedFrames.kneeInAndOut.targetArray.concat([openingOfKnee]),
-  };
-
-  let kneeFrontDiff = 0;
-  if (prevRep !== undefined && prevRep.keyframesIndex !== undefined && prevRep.keyframesIndex.top !== undefined) {
-    const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
-    kneeFrontDiff = getDistance(currentPose.worldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
-  }
-  const kneeFrontAndBackData: FrameEvaluateParams = {
-    threshold: { upper: 150, center: 0, lower: -150 },
-    targetArray: evaluatedFrames.kneeFrontAndBack.targetArray.concat([kneeFrontDiff]),
-  };
-
-  return {
-    kneeInAndOut: kneeInAndOutData,
-    kneeFrontAndBack: kneeFrontAndBackData,
-  };
-};
-
-const getOpeningOfKnee = (pose: Pose): number =>
-  normalizeAngle(
-    getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).zx -
-      getAngle(pose.worldLandmarks[KJ.HIP_RIGHT], pose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
-    true,
-  );
-
-const getOpeningOfToe = (pose: Pose): number =>
-  normalizeAngle(
-    getAngle(pose.worldLandmarks[KJ.ANKLE_LEFT], pose.worldLandmarks[KJ.FOOT_LEFT]).zx -
-      getAngle(pose.worldLandmarks[KJ.ANKLE_RIGHT], pose.worldLandmarks[KJ.FOOT_RIGHT]).zx,
-    true,
-  );
+import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
 
 export default function BodyTrack2d() {
   // 描画
@@ -485,7 +417,7 @@ export default function BodyTrack2d() {
           <FormControlLabel key={name} value={name} control={<Radio />} label={name} />
         ))}
       </RadioGroup>
-      <ManuallyAddingChart data={[knee, toe]} />
+      <ManuallyAddableChart data={[knee, toe]} />
     </>
   );
 }
