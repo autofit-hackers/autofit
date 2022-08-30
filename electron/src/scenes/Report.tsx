@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { stopKinect } from '../utils/kinect';
-import { GuidelineSymbols, PoseGrid } from '../utils/poseGrid';
+import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, playSoundAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
@@ -19,7 +19,7 @@ export default function IntervalReport() {
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
-    selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
+    setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex,
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -49,15 +49,9 @@ export default function IntervalReport() {
       selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
     );
     if (poseGridRef.current !== null) {
-      poseGridRef.current.setCameraAngle(
-        selectedInstructionIndex >= 0
-          ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-          : formInstructionItems[0].poseGridCameraAngle,
-      );
+      poseGridRef.current.setCameraAngle(formInstructionItems[selectedInstructionIndex].poseGridCameraAngle);
       poseGridRef.current.drawGuideline(
-        selectedInstructionIndex >= 0
-          ? setRecord.reps[displayedRepIndex].guidelineSymbolsList[selectedInstructionIndex]
-          : ({} as GuidelineSymbols),
+        setRecord.reps[displayedRepIndex].guidelineSymbolsList[selectedInstructionIndex],
       );
     }
   }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
