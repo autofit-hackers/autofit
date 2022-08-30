@@ -1,4 +1,4 @@
-import { landmarkToVector3, getAngle, getDistance, Pose, KJ } from '../training_data/pose';
+import { landmarkToVector3, getAngle, getDistance, Pose, KJ, getCenter } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
@@ -234,8 +234,9 @@ const stanceWidth: FormInstructionItem = {
 
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const idealFootWidth = thresholds.middle * shoulderWidth;
-    const idealLeftFootX = topWorldLandmarks[KJ.PELVIS].x - idealFootWidth / 2;
-    const idealRightFootX = topWorldLandmarks[KJ.PELVIS].x + idealFootWidth / 2;
+    const ankleCenter = getCenter(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]);
+    const idealLeftFootX = ankleCenter.x - idealFootWidth / 2;
+    const idealRightFootX = ankleCenter.x + idealFootWidth / 2;
     const leftFoot = topWorldLandmarks[KJ.FOOT_LEFT];
     const rightFoot = topWorldLandmarks[KJ.FOOT_RIGHT];
 
