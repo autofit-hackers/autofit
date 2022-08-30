@@ -1,4 +1,5 @@
-import { Button } from '@mui/material';
+import { Button, Switch } from '@mui/material';
+import { useState } from 'react';
 import { CameraAngle, PoseGrid } from '../../utils/poseGrid';
 
 function PoseGridViewer(props: {
@@ -7,6 +8,12 @@ function PoseGridViewer(props: {
   cameraPosition: CameraAngle;
 }) {
   const { gridDivRef, poseGridRef, cameraPosition } = props;
+  const [useOrthographic, setUseOrthographic] = useState(poseGridRef.current?.config.camera.useOrthographic);
+
+  const handleCameraTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUseOrthographic(event.target.checked);
+    poseGridRef.current?.changeCameraType();
+  };
 
   return (
     <div
@@ -43,6 +50,12 @@ function PoseGridViewer(props: {
       >
         Reset Camera Position
       </Button>
+      <Switch
+        checked={useOrthographic}
+        onChange={handleCameraTypeChange}
+        inputProps={{ 'aria-label': 'controlled' }}
+        sx={{ position: 'absolute', top: 0, right: 0, textAlign: 'center', zIndex: 2 }}
+      />
     </div>
   );
 }

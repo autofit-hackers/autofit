@@ -1,7 +1,7 @@
-import { getAngle, getDistance, normalizeAngle, Pose } from '../training_data/pose';
+import { landmarkToVector3, getAngle, getDistance, normalizeAngle, Pose } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import KJ from '../utils/kinectJoints';
-import { CameraAngle, GuideLinePair } from '../utils/poseGrid';
+import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
 export type FormInstructionItem = {
   readonly id: number;
@@ -14,18 +14,31 @@ export type FormInstructionItem = {
   readonly recommendMenu?: string[];
   readonly importance?: number;
   readonly poseGridCameraAngle: CameraAngle;
-  readonly evaluate: (rep: Rep) => number;
-  readonly showGuideline?: (prevRep: Rep, currPose?: Pose) => GuideLinePair[];
+  // TODO: 以下２つはまとめてもいいかも
+  readonly evaluateFrom: (rep: Rep) => number;
+  readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
+};
+
+export type FormEvaluationResult = {
+  name: string;
+  descriptionsForEachRep: string[];
+  shortSummary: string;
+  longSummary: string;
+  overallComment: string;
+  eachRepErrors: number[];
+  score: number;
+  bestRepIndex: number;
+  worstRepIndex: number;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
-const normalizeError = (threshold: { upper: number; middle: number; lower: number }, error: number): number => {
-  if (error < threshold.middle) {
-    return (error - threshold.middle) / (threshold.middle - threshold.lower);
+const calculateError = (thresholds: { upper: number; middle: number; lower: number }, value: number): number => {
+  if (value < thresholds.middle) {
+    return (value - thresholds.middle) / (thresholds.middle - thresholds.lower);
   }
 
-  return (error - threshold.middle) / (threshold.upper - threshold.middle);
+  return (value - thresholds.middle) / (thresholds.upper - thresholds.middle);
 };
 
 const squatDepth: FormInstructionItem = {
@@ -49,17 +62,53 @@ const squatDepth: FormInstructionItem = {
   },
   importance: 0.5,
   poseGridCameraAngle: { theta: 90, phi: 0 },
-  evaluate: (rep: Rep) => {
-    const pose = getBottomPose(rep);
-    const threshold = { upper: 90, middle: 80, lower: 60 };
-    if (pose === undefined) {
+  evaluateFrom: (rep: Rep) => {
+    const bottomPose = getBottomPose(rep);
+    const thresholds = { upper: 90, middle: 80, lower: 60 };
+    if (bottomPose === undefined) {
       return 0.0;
     }
-    // errorはbottomの太ももの水平面との角度を計算。値は正で、約90度
-    // TODO: 右足も考慮
-    const error = -getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).yz;
+    // bottomの太ももとy軸との角度を計算。値は正。
+    const leftThighAngleFromSide = -getAngle(
+      bottomPose.worldLandmarks[KJ.HIP_LEFT],
+      bottomPose.worldLandmarks[KJ.KNEE_LEFT],
+    ).yz;
+    const rightThighAngleFromSide = -getAngle(
+      bottomPose.worldLandmarks[KJ.HIP_RIGHT],
+      bottomPose.worldLandmarks[KJ.KNEE_RIGHT],
+    ).yz;
+    const meanThighAngleFromSide = (leftThighAngleFromSide + rightThighAngleFromSide) / 2;
 
-    return normalizeError(threshold, error);
+    return calculateError(thresholds, meanThighAngleFromSide);
+  },
+  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+    const thresholds = { upper: 90, middle: 80, lower: 60 };
+    const guidelineSymbols: GuidelineSymbols = {};
+    const bottomPose = getBottomPose(rep);
+    if (bottomPose === undefined) {
+      return guidelineSymbols;
+    }
+
+    const kneeY = (bottomPose.worldLandmarks[KJ.KNEE_RIGHT].y + bottomPose.worldLandmarks[KJ.KNEE_LEFT].y) / 2;
+    const averageThighLengthFromSide =
+      (getDistance(bottomPose.worldLandmarks[KJ.HIP_LEFT], bottomPose.worldLandmarks[KJ.KNEE_LEFT]).yz +
+        getDistance(bottomPose.worldLandmarks[KJ.HIP_RIGHT], bottomPose.worldLandmarks[KJ.KNEE_RIGHT]).yz) /
+      2;
+    const idealHipY = kneeY + averageThighLengthFromSide * Math.sin(((thresholds.middle - 90) * Math.PI) / 180);
+    const idealLeftHip = {
+      x: bottomPose.worldLandmarks[KJ.HIP_LEFT].x,
+      y: idealHipY,
+      z: bottomPose.worldLandmarks[KJ.HIP_LEFT].z,
+    };
+    const idealRightHip = {
+      x: bottomPose.worldLandmarks[KJ.HIP_RIGHT].x,
+      y: idealHipY,
+      z: bottomPose.worldLandmarks[KJ.HIP_RIGHT].z,
+    };
+
+    guidelineSymbols.lines = [{ from: landmarkToVector3(idealRightHip), to: landmarkToVector3(idealLeftHip) }];
+
+    return guidelineSymbols;
   },
 };
 
@@ -84,10 +133,10 @@ const kneeInAndOut: FormInstructionItem = {
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluate: (rep: Rep) => {
+  evaluateFrom: (rep: Rep) => {
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const threshold = { upper: 40, middle: 25, lower: 10 };
+    const thresholds = { upper: 40, middle: 25, lower: 10 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
@@ -102,18 +151,34 @@ const kneeInAndOut: FormInstructionItem = {
     );
     const error = openingOfKnee - openingOfToe;
 
-    return normalizeError(threshold, error);
+    return calculateError(thresholds, error);
   },
-  showGuideline(rep: Rep) {
+  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+    // const thresholds = { upper: 15, middle: 0, lower: -15 };
+    const guidelineSymbols: GuidelineSymbols = {};
+
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    // const threshold = { upper: 15, middle: 0, lower: -15 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
-      return [];
+      return guidelineSymbols;
     }
-    const line: GuideLinePair = { from: bottomWorldLandmarks[KJ.FOOT_LEFT], to: topWorldLandmarks[KJ.FOOT_RIGHT] };
 
-    return [line];
+    // TODO: implement guideline symbols calculation
+    // const leftHip = bottomWorldLandmarks[KJ.HIP_LEFT];
+    // const leftThighLength = getDistance(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).xyz;
+    // const leftFootAngle = getAngle(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).zx;
+    // const idealKnee =
+
+    // const rightHip = bottomWorldLandmarks[KJ.HIP_RIGHT];
+    // const rightThighLength = getDistance(rightHip, bottomWorldLandmarks[KJ.KNEE_RIGHT]).xyz;
+    // const rightFootAngle = getAngle(rightHip, bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
+
+    // guidelineSymbols.lines = [
+    //   { from: landmarkToVector3(bottomPose.worldLandmarks[KJ.KNEE_LEFT]), to: landmarkToVector3(idealLeftHip) },
+    //   { from: landmarkToVector3(bottomPose.worldLandmarks[KJ.KNEE_RIGHT]), to: landmarkToVector3(idealRightHip) },
+    // ];
+
+    return guidelineSymbols;
   },
 };
 
@@ -138,9 +203,9 @@ const stanceWidth: FormInstructionItem = {
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluate: (rep: Rep) => {
+  evaluateFrom: (rep: Rep) => {
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const threshold = { upper: 2, middle: 1.4, lower: 1 };
+    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
     if (topWorldLandmarks === undefined) {
       return 0.0;
     }
@@ -148,7 +213,7 @@ const stanceWidth: FormInstructionItem = {
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const error = footWidth / shoulderWidth;
 
-    return normalizeError(threshold, error);
+    return calculateError(thresholds, error);
   },
 };
 
@@ -172,45 +237,20 @@ const kneeFrontAndBack: FormInstructionItem = {
     plus: '膝が前に出過ぎています。',
   },
   poseGridCameraAngle: { theta: 90, phi: 0 },
-  evaluate: (rep: Rep) => {
+  evaluateFrom: (rep: Rep) => {
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
-    const threshold = { upper: 150, middle: 10, lower: -10 };
+    const thresholds = { upper: 15, middle: 1, lower: -1 };
     if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
       return 0.0;
     }
-    // TODO: 左足も考慮する
-    const error = getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
 
-    return normalizeError(threshold, error);
-  },
-  showGuideline(rep: Rep, currPose?: Pose) {
-    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
-    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    if (currPose === undefined) {
-      return [];
-    }
-    const currentWorldLandmarks = currPose.worldLandmarks;
-    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
-      return [];
-    }
-    const from = {
-      x: currentWorldLandmarks[KJ.KNEE_LEFT].x,
-      y: currentWorldLandmarks[KJ.KNEE_LEFT].y,
-      z: bottomWorldLandmarks[KJ.FOOT_LEFT].z - 100,
-    };
-    const to = {
-      x: currentWorldLandmarks[KJ.KNEE_RIGHT].x,
-      y: currentWorldLandmarks[KJ.KNEE_RIGHT].y,
-      z: bottomWorldLandmarks[KJ.FOOT_RIGHT].z - 100,
-    };
+    const kneeFootDistanceZ =
+      (getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z +
+        getDistance(bottomWorldLandmarks[KJ.KNEE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).z) /
+      2;
 
-    const line: GuideLinePair = { from, to };
-
-    // console.log(getDistance(bottomWorldLandmarks[KJ.KNEE_LEFT], bottomWorldLandmarks[KJ.FOOT_LEFT]));
-    // , { from: bottomWorldLandmarks[KJ.KNEE_LEFT], to: bottomWorldLandmarks[KJ.KNEE_RIGHT] }
-
-    return [line];
+    return calculateError(thresholds, kneeFootDistanceZ);
   },
 };
 
@@ -234,11 +274,13 @@ const squatVelocity: FormInstructionItem = {
     plus: '少しペースが遅いです。もう少しテンポ良く。',
   },
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluate: (rep: Rep) => {
-    // FIXME: fpsを取得する必要がある。一旦25でハードコードしている。
+
+  evaluateFrom: (rep: Rep) => {
+    // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
+    // TODO: Topの姿勢で停止することがあるので、durationを取得する範囲を再考する必要あり。
     const fps = 25;
     // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
-    const threshold = { upper: 3.0, middle: 2.2, lower: 1.6 };
+    const thresholds = { upper: 3.0, middle: 2.2, lower: 1.6 };
     if (
       rep.keyframesIndex === undefined ||
       rep.keyframesIndex.ascendingMiddle === undefined ||
@@ -246,9 +288,9 @@ const squatVelocity: FormInstructionItem = {
     ) {
       throw new Error('keyframesIndex is undefined');
     }
-    const error = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
+    const repDuration = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
 
-    return normalizeError(threshold, error);
+    return calculateError(thresholds, repDuration);
   },
 };
 

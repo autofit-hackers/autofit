@@ -1,7 +1,7 @@
 import ErrorIcon from '@mui/icons-material/Error';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import { Card, CardActionArea, CardContent, Chip, Stack, Typography } from '@mui/material';
-import { FormEvaluationResult } from '../../training_data/set';
+import { FormEvaluationResult } from '../../coaching/formInstructionItems';
 
 function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;
@@ -12,6 +12,7 @@ function GoodChip(props: { isGood: boolean }) {
   return isGood ? goodChip : badChip;
 }
 
+// FIXME: resolve key missing warning
 function InstructionSummaryCard(props: {
   isGood: boolean;
   description: string;

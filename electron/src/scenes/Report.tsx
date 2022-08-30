@@ -1,9 +1,9 @@
-import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Slider, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Stack, Typography } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
-import { PoseGrid } from '../utils/poseGrid';
+import { GuidelineSymbols, PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
@@ -16,7 +16,7 @@ export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
-  const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(-1);
+  const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
     selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
   );
@@ -50,8 +50,13 @@ export default function IntervalReport() {
           ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
           : formInstructionItems[0].poseGridCameraAngle,
       );
+      poseGridRef.current.drawGuideline(
+        selectedInstructionIndex >= 0
+          ? setRecord.reps[displayedRepIndex].guidelineSymbolsList[selectedInstructionIndex]
+          : ({} as GuidelineSymbols),
+      );
     }
-  }, [formInstructionItems, selectedInstructionIndex, setRecord]);
+  }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
 
   // radar chart config and state
   const radarChartIndicators = formInstructionItems.map((instruction) => ({
@@ -68,83 +73,72 @@ export default function IntervalReport() {
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
-        <Box
-          component="main"
-          sx={{
-            backgroundColor: (theme) =>
-              theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
-            flexGrow: 1,
-            height: '100vh',
-            overflow: 'auto',
-          }}
-        >
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
-              おつかれさまでした。フォーム分析の結果です。
-            </Typography>
-            <Grid container spacing={3}>
-              {/* 撮影したRGB映像 */}
-              <Grid item xs={6} alignItems="stretch">
-                <Card>
-                  <CardContent sx={cardSx}>
-                    <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
-                    <Slider
-                      defaultValue={displayedRepIndex}
-                      min={0}
-                      max={setRecord.reps.length - 1}
-                      onChange={(event: Event, newValue: number | number[]) => {
-                        if (typeof newValue === 'number') {
-                          setDisplayedRepIndex(newValue);
-                        }
-                      }}
-                      track={false}
-                    />
-                  </CardContent>
-                </Card>
-              </Grid>
-              {/* トレーニングの3D表示 */}
-              <Grid item xs={6} alignItems="stretch">
-                <Card>
-                  <CardContent sx={cardSx}>
-                    <PoseGridViewer
-                      gridDivRef={gridDivRef}
-                      poseGridRef={poseGridRef}
-                      cameraPosition={
-                        selectedInstructionIndex >= 0
-                          ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                          : formInstructionItems[0].poseGridCameraAngle
-                      }
-                    />
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12}>
-                <Card>
-                  <CardContent sx={cardSx}>
-                    <CardHeader title="総評" titleTypographyProps={{ fontWeight: 'bold' }} />
-                    <Typography variant="h6">{setRecord.summary.description}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={5}>
-                <Stack spacing={3}>
-                  <TotalScore score={setRecord.summary.totalScore} />
-                  {/* スコアのレーダーチャート */}
-                  <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
-                </Stack>
-              </Grid>
-              {/* フォーム評価の説明文 */}
-              <Grid item xs={7}>
-                <InstructionSummaryCards
-                  formEvaluationResults={setRecord.formEvaluationResults}
-                  selectedInstructionIndex={selectedInstructionIndex}
-                  setSelectedInstructionIndex={setSelectedInstructionIndex}
-                />
-              </Grid>
+
+      <Box
+        component="main"
+        sx={{
+          display: 'flex',
+          backgroundColor: (theme) =>
+            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+          flexGrow: 1,
+          height: '100vh',
+          overflow: 'auto',
+        }}
+      >
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+            おつかれさまでした。フォーム分析の結果です。
+          </Typography>
+          <Grid container spacing={3}>
+            {/* 撮影したRGB映像 */}
+            <Grid item xs={6} alignItems="stretch">
+              <Card>
+                <CardContent sx={cardSx}>
+                  <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+                </CardContent>
+              </Card>
             </Grid>
-          </Container>
-        </Box>
+            {/* トレーニングの3D表示 */}
+            <Grid item xs={6} alignItems="stretch">
+              <Card>
+                <CardContent sx={cardSx}>
+                  <PoseGridViewer
+                    gridDivRef={gridDivRef}
+                    poseGridRef={poseGridRef}
+                    cameraPosition={
+                      selectedInstructionIndex >= 0
+                        ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
+                        : formInstructionItems[0].poseGridCameraAngle
+                    }
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12}>
+              <Card>
+                <CardContent sx={cardSx}>
+                  <CardHeader title="総評" titleTypographyProps={{ fontWeight: 'bold' }} />
+                  <Typography variant="h6">{setRecord.summary.description}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={5}>
+              <Stack spacing={3}>
+                <TotalScore score={setRecord.summary.totalScore} />
+                {/* スコアのレーダーチャート */}
+                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+              </Stack>
+            </Grid>
+            {/* フォーム評価の説明文 */}
+            <Grid item xs={7}>
+              <InstructionSummaryCards
+                formEvaluationResults={setRecord.formEvaluationResults}
+                selectedInstructionIndex={selectedInstructionIndex}
+                setSelectedInstructionIndex={setSelectedInstructionIndex}
+              />
+            </Grid>
+          </Grid>
+        </Container>
       </Box>
     </ThemeProvider>
   );
