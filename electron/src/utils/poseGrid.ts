@@ -20,28 +20,48 @@ import {
   SphereGeometry,
   Vector3,
   WebGLRenderer,
+  DoubleSide,
+  PlaneGeometry,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { KINECT_POSE_CONNECTIONS, landmarkToVector3 } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
 
+// TODO: オブジェクトごとに色を設定できるようにする
 export type LineEndPoints = {
   from: Vector3;
   to: Vector3;
+  showEndPoints: boolean;
 };
 
 type SquareCorners = {
-  1: Vector3;
-  2: Vector3;
-  3: Vector3;
-  4: Vector3;
+  topLeft: Vector3;
+  topRight: Vector3;
+  bottomLeft: Vector3;
+  bottomRight: Vector3;
+};
+
+type Square = {
+  width: number;
+  height: number;
+  center: Vector3;
+};
+
+export const cornerPointsToSquare = (corners: SquareCorners): Square => {
+  const { topLeft, topRight, bottomRight } = corners;
+  const width = topLeft.distanceTo(topRight);
+  const height = topRight.distanceTo(bottomRight);
+  const center = new Vector3().addVectors(topLeft, bottomRight).divideScalar(2);
+
+  return { width, height, center };
 };
 
 export type GuidelineSymbols = {
+  points?: Vector3[];
   lines?: LineEndPoints[];
   spheres?: Vector3[];
-  squares?: SquareCorners[]; // should have 4 points
+  squares?: SquareCorners[];
 };
 
 export type CameraAngle = {
@@ -246,6 +266,15 @@ export class PoseGrid {
     }
   }
 
+  drawPoint(point: Vector3, color: Color = new Color(0xff0000)): void {
+    const material = new MeshBasicMaterial({ color });
+    const sphereGeometry = new SphereGeometry(this.config.landmarkSize);
+
+    const sphere = new Mesh(sphereGeometry, material);
+    sphere.position.copy(point);
+    this.guidelineGroup.add(sphere);
+  }
+
   drawLine(lineEndPoints: LineEndPoints, color: Color = new Color(0xff0000)): void {
     const material = new MeshBasicMaterial({ color });
     const { from, to } = lineEndPoints;
@@ -267,6 +296,15 @@ export class PoseGrid {
     });
   }
 
+  drawSquare(squareCorners: SquareCorners, color: Color = new Color(0xff0000)): void {
+    const { width, height, center } = cornerPointsToSquare(squareCorners);
+    const geometry = new PlaneGeometry(width, height);
+    const material = new MeshBasicMaterial({ color, side: DoubleSide });
+    const squareMesh = new Mesh(geometry, material);
+    squareMesh.position.set(center.x, center.y, center.z);
+    this.guidelineGroup.add(squareMesh);
+  }
+
   drawCylinder(from: Vector3, to: Vector3): void {
     const center = from.add(to).multiplyScalar(0.5);
     const distance = from.distanceTo(to);
@@ -278,10 +316,21 @@ export class PoseGrid {
   }
 
   drawGuideline(guidelineSymbols: GuidelineSymbols): void {
+    this.guidelineGroup.clear();
+    if ('points' in guidelineSymbols) {
+      guidelineSymbols.points?.forEach((point): void => {
+        this.drawPoint(point);
+      });
+    }
     if ('lines' in guidelineSymbols) {
       guidelineSymbols.lines?.forEach((linePair) => {
         this.drawLine(linePair);
-        this.drawLineEndPoints(linePair);
+        if (linePair.showEndPoints) this.drawLineEndPoints(linePair);
+      });
+    }
+    if ('squares' in guidelineSymbols) {
+      guidelineSymbols.squares?.forEach((squareCorners) => {
+        this.drawSquare(squareCorners);
       });
     }
   }
