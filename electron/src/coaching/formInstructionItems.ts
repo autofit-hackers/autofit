@@ -1,6 +1,5 @@
-import { landmarkToVector3, getAngle, getDistance, Pose } from '../training_data/pose';
+import { landmarkToVector3, getAngle, getDistance, Pose, KJ } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
-import KJ from '../utils/kinectJoints';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
 export type FormInstructionItem = {
@@ -106,7 +105,9 @@ const squatDepth: FormInstructionItem = {
       z: bottomPose.worldLandmarks[KJ.HIP_RIGHT].z,
     };
 
-    guidelineSymbols.lines = [{ from: landmarkToVector3(idealRightHip), to: landmarkToVector3(idealLeftHip) }];
+    guidelineSymbols.lines = [
+      { from: landmarkToVector3(idealRightHip), to: landmarkToVector3(idealLeftHip), showEndPoints: true },
+    ];
 
     return guidelineSymbols;
   },
@@ -152,8 +153,8 @@ const kneeInAndOut: FormInstructionItem = {
     return calculateError(thresholds, error);
   },
   getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
-    // const thresholds = { upper: 15, middle: 0, lower: -15 };
     const guidelineSymbols: GuidelineSymbols = {};
+    const thresholds = { upper: 30, middle: 10, lower: -5 };
 
     const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
@@ -161,20 +162,28 @@ const kneeInAndOut: FormInstructionItem = {
       return guidelineSymbols;
     }
 
-    // TODO: implement guideline symbols calculation
-    // const leftHip = bottomWorldLandmarks[KJ.HIP_LEFT];
-    // const leftThighLength = getDistance(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).xyz;
-    // const leftFootAngle = getAngle(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).zx;
-    // const idealKnee =
+    const openingOfToe =
+      getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+    const idealThighAngle = (thresholds.middle + openingOfToe) / 2;
 
-    // const rightHip = bottomWorldLandmarks[KJ.HIP_RIGHT];
-    // const rightThighLength = getDistance(rightHip, bottomWorldLandmarks[KJ.KNEE_RIGHT]).xyz;
-    // const rightFootAngle = getAngle(rightHip, bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
+    const leftHip = bottomWorldLandmarks[KJ.HIP_LEFT];
+    const leftThighLength = getDistance(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).xyz;
+    const idealLeftKnee = {
+      x: leftHip.x + leftThighLength * Math.sin((idealThighAngle * Math.PI) / 180),
+      y: bottomWorldLandmarks[KJ.KNEE_LEFT].y,
+      z: leftHip.z - leftThighLength * Math.cos((idealThighAngle * Math.PI) / 180),
+    };
 
-    // guidelineSymbols.lines = [
-    //   { from: landmarkToVector3(bottomPose.worldLandmarks[KJ.KNEE_LEFT]), to: landmarkToVector3(idealLeftHip) },
-    //   { from: landmarkToVector3(bottomPose.worldLandmarks[KJ.KNEE_RIGHT]), to: landmarkToVector3(idealRightHip) },
-    // ];
+    const rightHip = bottomWorldLandmarks[KJ.HIP_RIGHT];
+    const rightThighLength = getDistance(rightHip, bottomWorldLandmarks[KJ.KNEE_RIGHT]).xyz;
+    const idealRightKnee = {
+      x: rightHip.x - rightThighLength * Math.sin((idealThighAngle * Math.PI) / 180),
+      y: bottomWorldLandmarks[KJ.KNEE_RIGHT].y,
+      z: rightHip.z - rightThighLength * Math.cos((idealThighAngle * Math.PI) / 180),
+    };
+
+    guidelineSymbols.points = [landmarkToVector3(idealLeftKnee), landmarkToVector3(idealRightKnee)];
 
     return guidelineSymbols;
   },
@@ -209,9 +218,33 @@ const stanceWidth: FormInstructionItem = {
     }
     const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
-    const error = footWidth / shoulderWidth;
+    const footShoulderWidthRatio = footWidth / shoulderWidth;
 
-    return calculateError(thresholds, error);
+    return calculateError(thresholds, footShoulderWidthRatio);
+  },
+  // FIXME: 座標変換が直感的ではない(landmarkToVector3でyzの正負を反転しているため、直接Vectorを生成した場合と挙動が異なる)
+  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
+    const guidelineSymbols: GuidelineSymbols = {};
+
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    if (topWorldLandmarks === undefined) {
+      return guidelineSymbols;
+    }
+
+    const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
+    const idealFootWidth = thresholds.middle * shoulderWidth;
+    const idealLeftFootX = topWorldLandmarks[KJ.PELVIS].x - idealFootWidth / 2;
+    const idealRightFootX = topWorldLandmarks[KJ.PELVIS].x + idealFootWidth / 2;
+    const leftFoot = topWorldLandmarks[KJ.FOOT_LEFT];
+    const rightFoot = topWorldLandmarks[KJ.FOOT_RIGHT];
+
+    guidelineSymbols.points = [
+      landmarkToVector3({ x: idealLeftFootX, y: leftFoot.y, z: leftFoot.z }),
+      landmarkToVector3({ x: idealRightFootX, y: rightFoot.y, z: rightFoot.z }),
+    ];
+
+    return guidelineSymbols;
   },
 };
 
@@ -250,6 +283,39 @@ const kneeFrontAndBack: FormInstructionItem = {
 
     return calculateError(thresholds, kneeFootDistanceZ);
   },
+  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+    const thresholds = { upper: 15, middle: 1, lower: -1 };
+    const guidelineSymbols: GuidelineSymbols = {};
+
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
+    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
+      return guidelineSymbols;
+    }
+
+    const topFootZ = (topWorldLandmarks[KJ.FOOT_RIGHT].z + topWorldLandmarks[KJ.FOOT_LEFT].z) / 2;
+    const bottomLeftKnee = bottomWorldLandmarks[KJ.KNEE_LEFT];
+    const bottomRightKnee = bottomWorldLandmarks[KJ.KNEE_RIGHT];
+    const idealBottomKneeZ = topFootZ - thresholds.middle;
+
+    guidelineSymbols.lines = [
+      {
+        from: landmarkToVector3({
+          x: bottomLeftKnee.x,
+          y: (bottomLeftKnee.y + bottomRightKnee.y) / 2,
+          z: idealBottomKneeZ,
+        }),
+        to: landmarkToVector3({
+          x: bottomRightKnee.x,
+          y: (bottomLeftKnee.y + bottomRightKnee.y) / 2,
+          z: idealBottomKneeZ,
+        }),
+        showEndPoints: true,
+      },
+    ];
+
+    return guidelineSymbols;
+  },
 };
 
 const squatVelocity: FormInstructionItem = {
@@ -274,9 +340,7 @@ const squatVelocity: FormInstructionItem = {
   poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluateFrom: (rep: Rep) => {
     // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
-    // TODO: Topの姿勢で停止することがあるので、durationを取得する範囲を再考する必要あり。
     const fps = 25;
-    // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
     const thresholds = { upper: 3.0, middle: 2.2, lower: 1.6 };
     if (
       rep.keyframesIndex === undefined ||

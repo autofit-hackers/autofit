@@ -191,4 +191,5 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   visibility: normalizedLandmark.visibility,
 });
 
-export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, -point.z);
+// TODO: 座標の正負を反転させない
+export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, point.z);
