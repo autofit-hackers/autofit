@@ -161,7 +161,7 @@ export const getAngle = (start: Landmark, end: Landmark) => {
   };
 };
 
-export const midpointBetween = (
+export const getCenter = (
   p1: NormalizedLandmark | Landmark,
   p2: NormalizedLandmark | Landmark,
 ): NormalizedLandmark | Landmark => ({
@@ -172,14 +172,14 @@ export const midpointBetween = (
 
 export const heightInFrame = (pose: Pose): number => {
   const neck = pose.landmarks[3];
-  const ankle = midpointBetween(pose.landmarks[20], pose.landmarks[24]);
+  const ankle = getCenter(pose.landmarks[20], pose.landmarks[24]);
 
   return getDistance(neck, ankle).xy;
 };
 
 export const heightInWorld = (pose: Pose): number => {
   const neckWorld = pose.worldLandmarks[3];
-  const ankleWorld = midpointBetween(pose.worldLandmarks[20], pose.worldLandmarks[24]);
+  const ankleWorld = getCenter(pose.worldLandmarks[20], pose.worldLandmarks[24]);
 
   return getDistance(neckWorld, ankleWorld).xy;
 };
