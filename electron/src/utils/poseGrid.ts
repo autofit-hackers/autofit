@@ -22,6 +22,7 @@ import {
   WebGLRenderer,
   DoubleSide,
   PlaneGeometry,
+  Matrix3,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { KINECT_POSE_CONNECTIONS, landmarkToVector3 } from '../training_data/pose';
@@ -49,7 +50,27 @@ type Square = {
 };
 
 export const cornerPointsToSquare = (corners: SquareCorners): Square => {
-  const { topLeft, topRight, bottomRight } = corners;
+  const { topLeft, topRight, bottomLeft, bottomRight } = corners;
+  // Check that the given 4 points are on the same plane
+  const topLeftToBottomRight = new Vector3().subVectors(bottomRight, topLeft);
+  const topLeftToBottomLeft = new Vector3().subVectors(bottomLeft, topLeft);
+  const topLeftToTopRight = new Vector3().subVectors(topRight, topLeft);
+
+  const matrix = new Matrix3().set(
+    topLeftToBottomRight.x,
+    topLeftToBottomRight.y,
+    topLeftToBottomRight.z,
+    topLeftToBottomLeft.x,
+    topLeftToBottomLeft.y,
+    topLeftToBottomLeft.z,
+    topLeftToTopRight.x,
+    topLeftToTopRight.y,
+    topLeftToTopRight.z,
+  );
+  if (matrix.determinant() !== 0) {
+    console.error('The given 4 points are not on the same plane');
+  }
+
   const width = topLeft.distanceTo(topRight);
   const height = topRight.distanceTo(bottomRight);
   const center = new Vector3().addVectors(topLeft, bottomRight).divideScalar(2);
