@@ -114,10 +114,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     // 各レップに対する表示テキストの決定
     evaluationResult.shortSummary = decideShortSummary(evaluationResult.eachRepErrors, instructionItem);
 
-    // セット全体に対する指導項目ごとの表示テキストを決定
-    evaluationResult.shortSummary = decideShortSummary(eachRepErrorsAbs, instructionItem);
-
-    // セット全体に対する総評の決定
+    // 各指導項目に対するセット全体の評価分の決定
     evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrors, instructionItem);
 
     set.formEvaluationResults[instructionItem.id] = evaluationResult;
