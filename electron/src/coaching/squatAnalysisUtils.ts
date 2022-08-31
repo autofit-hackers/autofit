@@ -1,5 +1,4 @@
-import { getAngle, normalizeAngle, Pose } from '../training_data/pose';
-import KJ from '../utils/kinectJoints';
+import { getAngle, KJ, normalizeAngle, Pose } from '../training_data/pose';
 
 export const getOpeningOfKnee = (pose: Pose): number =>
   normalizeAngle(
