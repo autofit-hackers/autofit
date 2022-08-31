@@ -108,11 +108,7 @@ export default function IntervalReport() {
                   <PoseGridViewer
                     gridDivRef={gridDivRef}
                     poseGridRef={poseGridRef}
-                    cameraPosition={
-                      selectedInstructionIndex >= 0
-                        ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                        : formInstructionItems[0].poseGridCameraAngle
-                    }
+                    cameraPosition={formInstructionItems[selectedInstructionIndex].poseGridCameraAngle}
                   />
                 </CardContent>
               </Card>
