@@ -14,7 +14,7 @@ import {
   calculateRepFormErrorScore,
   getTopPose,
   Rep,
-  resetRep,
+  resetRep
 } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
@@ -30,7 +30,7 @@ import {
   phaseAtom,
   playSoundAtom,
   repVideoUrlsAtom,
-  setRecordAtom,
+  setRecordAtom
 } from './atoms';
 import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
 
@@ -109,7 +109,6 @@ export default function BodyTrack2d() {
     fixOutlierRef.current.reset();
     fixWorldOutlierRef.current.reset();
     // トレーニングデータ
-    setSetRecord(resetSet());
     setRef.current = resetSet();
     repRef.current = resetRep(0);
     repState.current = resetRepState();
@@ -248,8 +247,11 @@ export default function BodyTrack2d() {
           repState.current = resetRepState();
 
           // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-          // TODO: アンマウント前にまとめて行うほうがスマート
-          setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
+          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems);
+          setRef.current.formEvaluationResults.forEach((item, index) => {
+            setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
+          });
+          setSetRecord(setRef.current);
 
           // レップカウントを更新
           if (repCounterRef.current) {
@@ -322,12 +324,6 @@ export default function BodyTrack2d() {
       if (setVideoRecorderRef.current != null && setVideoRecorderRef.current.state === 'recording') {
         setVideoRecorderRef.current.stop();
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
-      setRef.current.formEvaluationResults.forEach((item, index) => {
-        setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
-      });
-      setSetRecord((_) => setRef.current);
     };
   }, []);
 
