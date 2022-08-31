@@ -142,12 +142,12 @@ const kneeInAndOut: FormInstructionItem = {
   name: 'Knee in and out',
   label: 'ひざの開き',
   shortDescription: {
-    minus: { first: '膝を', second: 'cmほど外側に押し出してください。' },
+    minus: { first: '膝が', second: '度ほど内側に入っています。つま先とひざの向きを揃えるようにしてください。' },
     normal: {
       first: '足の向きと太ももの向きが一致していて、とても良いです。',
       second: '',
     },
-    plus: { first: '膝が', second: 'cmほど外に出すぎてしまっています。' },
+    plus: { first: '膝が', second: '度ほど開いています。つま先とひざの向きを揃えるようにしてください。' },
   },
   longDescription: {
     minus:
@@ -205,6 +205,24 @@ const kneeInAndOut: FormInstructionItem = {
     // ];
 
     return guidelineSymbols;
+  },
+  getCoordinateErrorFromIdeal: (rep: Rep): number => {
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    const thresholds = { upper: 30, middle: 10, lower: -5 };
+    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
+      return 0.0;
+    }
+    // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
+    const openingOfKnee =
+      getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
+      getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
+    const openingOfToe =
+      getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+    const errorInt = Math.round((openingOfKnee - openingOfToe - thresholds.middle) / 2);
+
+    return errorInt;
   },
 };
 
