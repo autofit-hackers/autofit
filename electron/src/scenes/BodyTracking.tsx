@@ -35,7 +35,7 @@ export default function BodyTrack2d() {
   const [kinect] = useAtom(kinectAtom);
 
   // トレーニングデータ
-  const [setRecord, setSetRecord] = useAtom(setRecordAtom);
+  const [, setSetRecord] = useAtom(setRecordAtom);
   const setRef = useRef<Set>(resetSet());
   const repRef = useRef<Rep>(resetRep(0));
   const repState = useRef<RepState>(resetRepState());
@@ -76,17 +76,13 @@ export default function BodyTrack2d() {
     }
   };
 
-  console.log('body tracking', setRecord);
-
   const handleReset = () => {
-    console.log('before reset', setRecord);
     // 描画
     canvasImageData.current = null;
     // reset fixOutlier state
     fixOutlierRef.current.reset();
     fixWorldOutlierRef.current.reset();
     // トレーニングデータ
-    setSetRecord(resetSet());
     setRef.current = resetSet();
     repRef.current = resetRep(0);
     repState.current = resetRepState();
@@ -96,7 +92,8 @@ export default function BodyTrack2d() {
     setRepVideoUrls([]);
     setVideoUrlRef.current = '';
     playTrainingStartSound();
-    console.log('after reset', setRecord);
+
+    if (repCounterRef.current) repCounterRef.current.innerText = '0';
   };
 
   // 毎kinect更新時に実行される
@@ -207,8 +204,8 @@ export default function BodyTrack2d() {
           repState.current = resetRepState();
 
           // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-          // TODO: アンマウント前にまとめて行うほうがスマート
-          setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
+          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems);
+          setSetRecord(setRef.current);
 
           // レップカウントを更新
           if (repCounterRef.current) {
@@ -272,9 +269,6 @@ export default function BodyTrack2d() {
       if (setVideoRecorderRef.current != null && setVideoRecorderRef.current.state === 'recording') {
         setVideoRecorderRef.current.stop();
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setSetRecord((_) => setRef.current);
-      setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
     };
   }, []);
 
