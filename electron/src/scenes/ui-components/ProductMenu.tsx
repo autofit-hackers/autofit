@@ -2,7 +2,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { FormControlLabel, IconButton, Menu, styled, Switch } from '@mui/material';
 import { useAtom } from 'jotai';
 import React from 'react';
-import { playSoundAtom } from '../atoms';
+import { formDebugAtom, playSoundAtom } from '../atoms';
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
@@ -70,6 +70,25 @@ function PlaySoundSwitch() {
   );
 }
 
+function FormInstructionDebugModeSwitch() {
+  const [isDebugMode, setDebugMode] = useAtom(formDebugAtom);
+
+  return (
+    <FormControlLabel
+      control={
+        <Switch
+          checked={isDebugMode}
+          onChange={() => {
+            setDebugMode(!isDebugMode);
+          }}
+        />
+      }
+      label="DebugForm"
+      sx={{ marginLeft: '0.5rem' }}
+    />
+  );
+}
+
 const ITEM_HEIGHT = 48;
 function ProductMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -110,6 +129,7 @@ function ProductMenu() {
         }}
       >
         <PlaySoundSwitch />
+        <FormInstructionDebugModeSwitch />
       </Menu>
     </div>
   );

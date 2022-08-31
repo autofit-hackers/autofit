@@ -128,6 +128,8 @@ export class PoseGrid {
   connectionGroup: Group;
   cylinderGroup: Group;
   guidelineGroup: Group;
+  isAutoRotating: boolean;
+  phiForAutoRotation: number;
 
   constructor(parent: HTMLElement, config = DEFAULT_POSE_GRID_CONFIG) {
     this.config = config;
@@ -177,6 +179,10 @@ export class PoseGrid {
     const { size, divisions, y } = this.config.gridPlane;
     const gridPlane = new GridHelper(size, divisions);
     gridPlane.translateY(y); // translate grid plane on foot height
+
+    // カメラ自動回転
+    this.isAutoRotating = false;
+    this.phiForAutoRotation = 0;
 
     this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
@@ -261,6 +267,12 @@ export class PoseGrid {
     // ガイドラインの描画
     if (guideSymbols) {
       this.drawGuideline(guideSymbols);
+    }
+
+    // カメラの回転;
+    if (this.isAutoRotating) {
+      this.phiForAutoRotation += 0.7;
+      this.setCameraAngle({ theta: 90, phi: this.phiForAutoRotation });
     }
 
     this.requestFrame();
