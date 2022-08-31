@@ -116,7 +116,7 @@ export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionI
   const rep: Rep = prevRep;
 
   instructionItems.forEach((instructionItem) => {
-    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateFrom(rep);
+    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep);
     rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal
       ? instructionItem.getCoordinateErrorFromIdeal(rep)
       : 0;

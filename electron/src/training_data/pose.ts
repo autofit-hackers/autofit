@@ -53,7 +53,7 @@ export const KINECT_POSE_CONNECTIONS: LandmarkConnectionArray = [
 export type Pose = {
   landmarks: NormalizedLandmarkList;
   worldLandmarks: LandmarkList;
-  timeStamp: number; // UNIX time(ms単位)
+  timestamp: number; // UNIX time(ms単位)
 };
 
 export const kinectToMediapipe = (
@@ -74,7 +74,7 @@ export const kinectToMediapipe = (
   }>,
   canvas: HTMLCanvasElement,
   rotation: boolean,
-  timeStamp: number,
+  timestamp: number,
 ): Pose => {
   const mediapipePose: NormalizedLandmarkList = [];
   const mediapipePoseWorld: LandmarkList = [];
@@ -101,7 +101,7 @@ export const kinectToMediapipe = (
     }
   }
 
-  return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld, timeStamp };
+  return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld, timestamp };
 };
 
 export const getDistance = (start: Landmark, end: Landmark) => ({

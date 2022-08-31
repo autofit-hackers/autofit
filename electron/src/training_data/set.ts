@@ -33,21 +33,23 @@ const decideShortSummary = (
     eachRepErrorScores.reduce((num1: number, num2: number) => num1 + num2, 0) / eachRepErrorScores.length;
 
   if (errorScore <= -1) {
-    const minusCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
-    const averageMinusCoordinateError =
-      minusCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) / minusCoordinateErrorList.length;
+    const negativeCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
+    const averageNegativeCoordinateError =
+      negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) /
+      negativeCoordinateErrorList.length;
     shortSummary =
-      instructionItem.shortDescription.minus.first +
-      Math.abs(averageMinusCoordinateError).toString() +
-      instructionItem.shortDescription.minus.second;
+      instructionItem.shortDescription.negative.first +
+      Math.abs(averageNegativeCoordinateError).toString() +
+      instructionItem.shortDescription.negative.second;
   } else if (errorScore >= 1) {
-    const plusCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
-    const averagePlusCoordinateError =
-      plusCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) / plusCoordinateErrorList.length;
+    const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
+    const averagePositiveCoordinateError =
+      positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) /
+      positiveCoordinateErrorList.length;
     shortSummary =
-      instructionItem.shortDescription.plus.first +
-      averagePlusCoordinateError.toString() +
-      instructionItem.shortDescription.plus.second;
+      instructionItem.shortDescription.positive.first +
+      averagePositiveCoordinateError.toString() +
+      instructionItem.shortDescription.positive.second;
   } else {
     shortSummary = instructionItem.shortDescription.normal.first + instructionItem.shortDescription.normal.second;
   }
@@ -61,9 +63,9 @@ const decideLongSummary = (eachRepErrors: number[], instructionItem: FormInstruc
   const errorSum = eachRepErrors.reduce((acc, err) => acc + err, 0);
   let summary = '';
   if (errorSum <= 0) {
-    summary = instructionItem.longDescription.minus;
+    summary = instructionItem.longDescription.negative;
   } else {
-    summary = instructionItem.longDescription.plus;
+    summary = instructionItem.longDescription.positive;
   }
 
   return summary;
