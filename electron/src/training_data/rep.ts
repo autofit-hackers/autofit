@@ -111,6 +111,8 @@ export const getDescendingMiddlePose = (rep: Rep): Pose | undefined => {
   return undefined;
 };
 
+export const getLastPose = (rep: Rep): Pose => rep.form[rep.form.length - 1];
+
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
 export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
   const rep: Rep = prevRep;
