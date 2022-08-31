@@ -266,9 +266,12 @@ const kneeFrontAndBack: FormInstructionItem = {
   name: 'Knee front and back',
   label: '膝の前後位置',
   shortDescription: {
-    minus: { first: '膝の位置を', second: 'cmほど前に出してください。' },
-    normal: { first: '膝の前後位置はバッチリです。', second: '' },
-    plus: { first: '膝を', second: 'cmほど後ろに引いてください' },
+    minus: { first: 'お尻をあと', second: 'cmほど前に出してください。膝がつま先の少し前に来るように意識しましょう。' },
+    normal: { first: '膝とお尻の前後位置はバッチリです。', second: '' },
+    plus: {
+      first: 'お尻をあと',
+      second: 'cmほど後ろに引いてください。膝がつま先の少し前に来るように意識しましょう。',
+    },
   },
   longDescription: {
     minus:
@@ -295,6 +298,23 @@ const kneeFrontAndBack: FormInstructionItem = {
       2;
 
     return calculateError(thresholds, kneeFootDistanceZ);
+  },
+  getCoordinateErrorFromIdeal(rep: Rep): number {
+    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
+    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
+    const thresholds = { upper: 15, middle: 1, lower: -1 };
+    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
+      return 0.0;
+    }
+
+    const kneeFootDistanceZ =
+      (getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z +
+        getDistance(bottomWorldLandmarks[KJ.KNEE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).z) /
+      2;
+
+    const errorInt = Math.round(kneeFootDistanceZ - thresholds.middle);
+
+    return errorInt;
   },
 };
 
@@ -327,9 +347,9 @@ const squatVelocity: FormInstructionItem = {
   evaluateFrom: (rep: Rep) => {
     // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
     // TODO: Topの姿勢で停止することがあるので、durationを取得する範囲を再考する必要あり。
+    // TODO: エキセントリックとコンセントリックで分けたい。
     const fps = 25;
-    // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
-    const thresholds = { upper: 3.0, middle: 2.2, lower: 1.6 };
+    const thresholds = { upper: 3.0, middle: 2.2, lower: 1.6 }; // 以前は{ upper: 5.2, middle: 3.8, lower: 3.3 }
     if (
       rep.keyframesIndex === undefined ||
       rep.keyframesIndex.ascendingMiddle === undefined ||
@@ -337,9 +357,9 @@ const squatVelocity: FormInstructionItem = {
     ) {
       throw new Error('keyframesIndex is undefined');
     }
-    const repDuration = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
+    const halfRepDuration = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
 
-    return calculateError(thresholds, repDuration);
+    return calculateError(thresholds, halfRepDuration);
   },
 };
 
