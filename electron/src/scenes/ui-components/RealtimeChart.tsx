@@ -1,6 +1,7 @@
 import ReactECharts from 'echarts-for-react';
+import { GraphThreshold } from '../../coaching/FormInstructionDebug';
 
-function RealtimeChart(props: { data: number[]; thresh: { upper: number; center: number; lower: number } }) {
+function RealtimeChart(props: { data: number[]; thresh: GraphThreshold }) {
   const { data, thresh } = props;
 
   const op = {
@@ -8,13 +9,13 @@ function RealtimeChart(props: { data: number[]; thresh: { upper: number; center:
     xAxis: {
       type: 'category',
       data: data.map((v, i) => i),
-      min: data.length - 101,
+      min: data.length - 301,
       max: data.length - 1,
     },
     yAxis: {
       type: 'value',
-      min: (thresh.lower - thresh.center) * 2 + thresh.center,
-      max: (thresh.upper - thresh.center) * 2 + thresh.center,
+      min: (thresh.lower - thresh.middle) * 2 + thresh.middle,
+      max: (thresh.upper - thresh.middle) * 2 + thresh.middle,
     },
     legend: { data: ['ももの角度'] },
     series: [
@@ -27,7 +28,7 @@ function RealtimeChart(props: { data: number[]; thresh: { upper: number; center:
         markLine: {
           data: [
             { yAxis: thresh.upper, name: '上限', lineStyle: { color: 'red' } },
-            { yAxis: thresh.center, name: '適正', lineStyle: { color: 'green' } },
+            { yAxis: thresh.middle, name: '適正', lineStyle: { color: 'green' } },
             { yAxis: thresh.lower, name: '下限', lineStyle: { color: 'red' } },
           ],
         },

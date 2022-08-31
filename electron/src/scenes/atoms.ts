@@ -4,7 +4,7 @@ import { resetSet, Set } from '../training_data/set';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const KinectAzure = require('kinect-azure');
 
-export const phaseAtom = atom<number>(0);
+export const phaseAtom = atom<number>(1);
 
 export const repVideoUrlsAtom = atom<string[]>([]);
 

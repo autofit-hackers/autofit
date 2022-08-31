@@ -3,7 +3,9 @@ import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { EvaluatedFrames, evaluateFrame, getOpeningOfKnee, getOpeningOfToe } from '../coaching/FormInstructionDebug';
+import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
+import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
+import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import {
@@ -74,25 +76,17 @@ export default function BodyTrack2d() {
   // レップカウント用
   const repCounterRef = useRef<HTMLDivElement | null>(null);
 
-  // form debug
-  const formDebugRef = useRef<HTMLDivElement>(null);
-  const [echartsData, setEchartsData] = useState<number[]>([]);
-  const [threshData, setThreshData] = useState<{ upper: number; center: number; lower: number }>({
+  // リアルタイムグラフ用
+  const evaluatedFrameRef = useRef<EvaluatedFrames>([]);
+  const [realtimeCartData, setRealtimeCartData] = useState<number[]>([]);
+  const [threshData, setThreshData] = useState<GraphThreshold>({
     upper: 0,
     lower: 0,
-    center: 0,
+    middle: 0,
   });
-  const evaluatedFrameRef = useRef<EvaluatedFrames>({
-    kneeInAndOut: {
-      threshold: { upper: 0, center: 0, lower: 0 },
-      targetArray: [],
-    },
-    kneeFrontAndBack: {
-      threshold: { upper: 0, center: 0, lower: 0 },
-      targetArray: [],
-    },
-  });
-  const [evalItemName, setEvalItemName] = useState<string>('kneeInAndOut');
+  const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(0);
+
+  // form debug
   const [knee, setKnee] = useState<number[]>([]);
   const [toe, setToe] = useState<number[]>([]);
 
@@ -126,8 +120,8 @@ export default function BodyTrack2d() {
     setVideoUrlRef.current = '';
     playTrainingStartSound(playSound);
     // グラフ
-    setEchartsData([]);
-    setThreshData({ upper: 0, center: 0, lower: 0 });
+    setRealtimeCartData([]);
+    setThreshData({ upper: 0, middle: 0, lower: 0 });
     setKnee([]);
     setToe([]);
   };
@@ -216,11 +210,10 @@ export default function BodyTrack2d() {
         repRef.current = appendPoseToForm(repRef.current, currentPose);
 
         // グラフを更新
-        evaluatedFrameRef.current = evaluateFrame(
-          currentPose,
-          setRef.current.reps[setRef.current.reps.length - 1],
-          evaluatedFrameRef.current,
-        );
+        evaluatedFrameRef.current.forEach((item, index) => {
+          const evaluateCallback = formInstructionItemsQWS[index].calculateRealtimeValue;
+          item.evaluatedValues.push(evaluateCallback(currentPose));
+        });
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
@@ -234,6 +227,15 @@ export default function BodyTrack2d() {
           // 完了したレップのフォームを分析・評価
           repRef.current = calculateKeyframes(repRef.current);
           repRef.current = calculateRepFormErrorScore(repRef.current, formInstructionItems);
+
+          // グラフの更新
+          const topPose = getTopPose(repRef.current);
+          if (topPose !== undefined) {
+            evaluatedFrameRef.current.forEach((item, index) => {
+              const threshold = formInstructionItemsQWS[index].calculateRealtimeThreshold(topPose);
+              evaluatedFrameRef.current[index].threshold = threshold;
+            });
+          }
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           setRef.current.reps = [...setRef.current.reps, repRef.current];
@@ -252,12 +254,6 @@ export default function BodyTrack2d() {
           // レップカウントを更新
           if (repCounterRef.current) {
             repCounterRef.current.innerHTML = setRef.current.reps.length.toString();
-          }
-          if (formDebugRef.current) {
-            formDebugRef.current.innerHTML = setRef.current.formEvaluationResults.reduce(
-              (acc, cur) => `${acc}<pre>${cur.name}:\t${cur.shortSummary}</pre>`,
-              '',
-            );
           }
         }
 
@@ -308,6 +304,14 @@ export default function BodyTrack2d() {
       repCounterRef.current.innerHTML = '0';
     }
 
+    if (evaluatedFrameRef.current !== null) {
+      evaluatedFrameRef.current = formInstructionItemsQWS.map((item) => ({
+        name: item.name,
+        threshold: { upper: 0, lower: 0, middle: 0 },
+        evaluatedValues: [],
+      }));
+    }
+
     // このコンポーネントのアンマウント時に実行される
     // FIXME: 最初にもよばれる
     return () => {
@@ -326,10 +330,12 @@ export default function BodyTrack2d() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const chartData = evaluatedFrameRef.current[evalItemName];
-      setEchartsData(chartData.targetArray);
-      setThreshData(chartData.threshold);
-    }, 40);
+      const chartData = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].evaluatedValues;
+      const thresh = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].threshold;
+      // TODO: setRealtimeCartData(chartData) と書きたいが、リアルタイム更新されなくなる
+      setRealtimeCartData([chartData[0]].concat(chartData));
+      setThreshData(thresh);
+    }, 10);
 
     return () => clearInterval(timer);
   });
@@ -394,27 +400,19 @@ export default function BodyTrack2d() {
         ref={repCounterRef}
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
-      {/* {isDebugMode ? <div ref={formDebugRef} /> : null} */}
 
-      <RealtimeChart data={echartsData} thresh={threshData} />
-      <Button
-        onClick={() => {
-          setEchartsData([]);
-        }}
-      >
-        reset
-      </Button>
+      <RealtimeChart data={realtimeCartData} thresh={threshData} />
       <RadioGroup
         row
         aria-labelledby="error-group"
         name="error-buttons-group"
-        value={evalItemName}
+        value={displayingInstructionIndexOnGraph}
         onChange={(e, v) => {
-          setEvalItemName(v);
+          setDisplayingInstructionIndexOnGraph(v as unknown as number);
         }}
       >
-        {Object.keys(evaluatedFrameRef.current).map((name) => (
-          <FormControlLabel key={name} value={name} control={<Radio />} label={name} />
+        {evaluatedFrameRef.current.map((item, index: number) => (
+          <FormControlLabel key={item.name} value={index} control={<Radio />} label={item.name} />
         ))}
       </RadioGroup>
       <ManuallyAddableChart data={[knee, toe]} />

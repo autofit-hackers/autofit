@@ -1,67 +1,14 @@
-import { Landmark } from '@mediapipe/pose';
 import ReactECharts from 'echarts-for-react';
-import { getAngle, getDistance, normalizeAngle, Pose } from '../training_data/pose';
-import { Rep } from '../training_data/rep';
-import KJ from '../utils/kinectJoints';
+
+export type GraphThreshold = { upper: number; middle: number; lower: number };
 
 export type FrameEvaluateParams = {
-  threshold: { upper: number; center: number; lower: number };
-  targetArray: number[];
+  name: string;
+  threshold: GraphThreshold;
+  evaluatedValues: number[];
 };
 
-export type EvaluatedFrames = {
-  [key: string]: FrameEvaluateParams;
-};
-
-export const evaluateFrame = (currentPose: Pose, prevRep: Rep, evaluatedFrames: EvaluatedFrames): EvaluatedFrames => {
-  // kneeInAndOut
-  const openingOfKnee = normalizeAngle(
-    getAngle(currentPose.worldLandmarks[KJ.HIP_LEFT], currentPose.worldLandmarks[KJ.KNEE_LEFT]).zx -
-      getAngle(currentPose.worldLandmarks[KJ.HIP_RIGHT], currentPose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
-    true,
-  );
-
-  let topToe = 0;
-  if (prevRep !== undefined && prevRep.keyframesIndex !== undefined && prevRep.keyframesIndex.top !== undefined) {
-    const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
-    topToe =
-      getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
-      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
-  }
-  const kneeInAndOutData: FrameEvaluateParams = {
-    threshold: { upper: topToe + 40, center: topToe + 20, lower: topToe + 10 },
-    targetArray: evaluatedFrames.kneeInAndOut.targetArray.concat([openingOfKnee]),
-  };
-
-  let kneeFrontDiff = 0;
-  if (prevRep !== undefined && prevRep.keyframesIndex !== undefined && prevRep.keyframesIndex.top !== undefined) {
-    const topWorldLandmarks = prevRep.form[prevRep.keyframesIndex.top].worldLandmarks as Landmark[];
-    kneeFrontDiff = getDistance(currentPose.worldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z;
-  }
-  const kneeFrontAndBackData: FrameEvaluateParams = {
-    threshold: { upper: 150, center: 0, lower: -150 },
-    targetArray: evaluatedFrames.kneeFrontAndBack.targetArray.concat([kneeFrontDiff]),
-  };
-
-  return {
-    kneeInAndOut: kneeInAndOutData,
-    kneeFrontAndBack: kneeFrontAndBackData,
-  };
-};
-
-export const getOpeningOfKnee = (pose: Pose): number =>
-  normalizeAngle(
-    getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).zx -
-      getAngle(pose.worldLandmarks[KJ.HIP_RIGHT], pose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
-    true,
-  );
-
-export const getOpeningOfToe = (pose: Pose): number =>
-  normalizeAngle(
-    getAngle(pose.worldLandmarks[KJ.ANKLE_LEFT], pose.worldLandmarks[KJ.FOOT_LEFT]).zx -
-      getAngle(pose.worldLandmarks[KJ.ANKLE_RIGHT], pose.worldLandmarks[KJ.FOOT_RIGHT]).zx,
-    true,
-  );
+export type EvaluatedFrames = FrameEvaluateParams[];
 
 export function ManuallyAddableChart(props: { data: number[][] }) {
   const { data } = props;
