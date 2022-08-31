@@ -275,6 +275,21 @@ const stanceWidth: FormInstructionItem = {
 
     return calculateError(thresholds, error);
   },
+  getCoordinateErrorFromIdeal(rep: Rep): number {
+    const topPose = getTopPose(rep);
+    if (topPose === undefined) {
+      console.warn('kneeInAndOut: bottomPose or topPose is undefined');
+
+      return 0;
+    }
+    const topWorldLandmarks = topPose.worldLandmarks;
+    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
+    const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
+    const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
+    const errorInt = Math.round(footWidth / shoulderWidth - thresholds.middle);
+
+    return errorInt;
+  },
 };
 
 const kneeFrontAndBack: FormInstructionItem = {
