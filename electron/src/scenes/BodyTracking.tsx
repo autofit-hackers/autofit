@@ -323,8 +323,11 @@ export default function BodyTrack2d() {
         setVideoRecorderRef.current.stop();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      setSetRecord((_) => setRef.current);
       setSetRecord((prevSetRecord) => recordFormEvaluationResult(prevSetRecord, formInstructionItems));
+      setRef.current.formEvaluationResults.forEach((item, index) => {
+        setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
+      });
+      setSetRecord((_) => setRef.current);
     };
   }, []);
 
@@ -401,7 +404,7 @@ export default function BodyTrack2d() {
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
 
-      <RealtimeChart data={realtimeCartData} thresh={threshData} />
+      <RealtimeChart data={realtimeCartData} thresh={threshData} realtimeUpdate size="large" />
       <RadioGroup
         row
         aria-labelledby="error-group"

@@ -1,23 +1,32 @@
 import ReactECharts from 'echarts-for-react';
 import { GraphThreshold } from '../../coaching/FormInstructionDebug';
 
-function RealtimeChart(props: { data: number[]; thresh: GraphThreshold }) {
-  const { data, thresh } = props;
+function RealtimeChart(props: {
+  data: number[];
+  thresh: GraphThreshold;
+  realtimeUpdate: boolean;
+  size: 'large' | 'small';
+}) {
+  const { data, thresh, realtimeUpdate, size } = props;
 
   const op = {
     innerHeight: '100vh',
-    xAxis: {
-      type: 'category',
-      data: data.map((v, i) => i),
-      min: data.length - 301,
-      max: data.length - 1,
-    },
-    yAxis: {
-      type: 'value',
-      min: (thresh.lower - thresh.middle) * 2 + thresh.middle,
-      max: (thresh.upper - thresh.middle) * 2 + thresh.middle,
-    },
-    legend: { data: ['ももの角度'] },
+    xAxis: realtimeUpdate
+      ? {
+          type: 'category',
+          data: data.map((v, i) => i),
+          min: data.length - 301,
+          max: data.length - 1,
+        }
+      : { type: 'category' },
+    yAxis: realtimeUpdate
+      ? {
+          type: 'value',
+          min: (thresh.lower - thresh.middle) * 2 + thresh.middle,
+          max: (thresh.upper - thresh.middle) * 2 + thresh.middle,
+        }
+      : { type: 'value' },
+    // legend: realtimeUpdate ? { data: ['ももの角度'] } : {},
     series: [
       {
         name: 'ももの角度',
@@ -36,7 +45,16 @@ function RealtimeChart(props: { data: number[]; thresh: GraphThreshold }) {
     ],
   };
 
-  return <ReactECharts option={op} style={{ marginTop: '10vw', height: '60vw', backgroundColor: 'white' }} />;
+  return (
+    <ReactECharts
+      option={op}
+      style={{
+        marginTop: size === 'large' ? '10vw' : '0',
+        height: size === 'large' ? '60vw' : '30vw',
+        backgroundColor: 'white',
+      }}
+    />
+  );
 }
 
 export default RealtimeChart;

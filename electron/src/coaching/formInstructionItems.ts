@@ -1,6 +1,7 @@
-import { landmarkToVector3, getAngle, getDistance, Pose, KJ, getCenter, heightInWorld } from '../training_data/pose';
+import { getAngle, getCenter, getDistance, heightInWorld, KJ, landmarkToVector3, Pose } from '../training_data/pose';
 import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
+import { FrameEvaluateParams } from './FormInstructionDebug';
 import { getOpeningOfKnee, getOpeningOfToe, getThighAngleFromSide } from './squatAnalysisUtils';
 
 export type FormInstructionItem = {
@@ -31,6 +32,7 @@ export type FormEvaluationResult = {
   score: number;
   bestRepIndex: number;
   worstRepIndex: number;
+  evaluatedValuesPerFrame?: FrameEvaluateParams;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -66,7 +68,7 @@ const squatDepth: FormInstructionItem = {
   poseGridCameraAngle: { theta: 90, phi: 0 },
   evaluateFrom: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
-    const thresholds = { upper: 90, middle: 80, lower: 60 };
+    const thresholds = { upper: 100, middle: 80, lower: 60 };
     if (bottomPose === undefined) {
       return 0.0;
     }

@@ -9,6 +9,7 @@ import futuristicTheme, { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
+import RealtimeChart from './ui-components/RealtimeChart';
 import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
 
@@ -27,6 +28,9 @@ export default function IntervalReport() {
   // PoseGrid用
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
+
+  console.log(setRecord);
+  console.log(setRecord.formEvaluationResults[displayedRepIndex].evaluatedValuesPerFrame, selectedInstructionIndex);
 
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
@@ -112,7 +116,19 @@ export default function IntervalReport() {
               <Card>
                 <CardContent sx={cardSx}>
                   <CardHeader title="総評" titleTypographyProps={{ fontWeight: 'bold' }} />
-                  <Typography variant="h6">{setRecord.summary.description}</Typography>
+                  {setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame !== undefined ? (
+                    <RealtimeChart
+                      data={
+                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame
+                          ?.evaluatedValues
+                      }
+                      thresh={
+                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame?.threshold
+                      }
+                      realtimeUpdate={false}
+                      size="small"
+                    />
+                  ) : null}
                 </CardContent>
               </Card>
             </Grid>
