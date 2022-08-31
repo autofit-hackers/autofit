@@ -1,4 +1,4 @@
-import { getDescendingMiddlePose, getBottomPose, getTopPose, Rep, getAscendingMiddlePose } from '../training_data/rep';
+import { getBottomPose, getLastPose, getTopPose, Rep } from '../training_data/rep';
 import { landmarkToVector3, getAngle, getDistance, Pose } from '../training_data/pose';
 import KJ from '../utils/kinectJoints';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
@@ -389,14 +389,15 @@ const squatVelocity: FormInstructionItem = {
   },
   poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluateForm: (rep: Rep) => {
-    // TODO: エキセントリックとコンセントリックで分けたい。
-    const thresholds = { upper: 3000, middle: 2200, lower: 1600 }; // ミリ秒
-    const descendingMiddlePose = getDescendingMiddlePose(rep);
-    const ascendingMiddlePose = getAscendingMiddlePose(rep);
-    if (descendingMiddlePose === undefined || ascendingMiddlePose === undefined) {
+    // TODO: エキセントリックも実装したい。
+    // TODO: 閾値を再設定
+    const thresholds = { upper: 3000, middle: 1500, lower: 1000 }; // ミリ秒
+    const bottomPose = getBottomPose(rep);
+    const lastPose = getLastPose(rep);
+    if (bottomPose === undefined || lastPose === undefined) {
       throw new Error('descendingMiddlePose or ascendingMiddlePose is undefined');
     }
-    const halfRepDuration = ascendingMiddlePose.timestamp - descendingMiddlePose.timestamp;
+    const halfRepDuration = lastPose.timestamp - bottomPose.timestamp;
 
     return calculateError(thresholds, halfRepDuration);
   },
