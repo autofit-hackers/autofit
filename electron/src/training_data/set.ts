@@ -73,12 +73,12 @@ const decideLongSummary = (eachRepErrors: number[], instructionItem: FormInstruc
 
 // セット全体に対する指導項目スコアを100点満点で算出する
 // TODO: Scoreの算出手法を再考する
-const calculateScore = (eachRepErrorsAbs: number[]) => {
+const calculateItemScore = (eachRepErrorsAbs: number[]) => {
   const numberOfSuccessfulReps = eachRepErrorsAbs.filter((errorAbs) => errorAbs < 1).length;
   const numberOfTotalReps = eachRepErrorsAbs.length;
-  const score = (numberOfSuccessfulReps / numberOfTotalReps) * 100;
+  const itemScore = (numberOfSuccessfulReps / numberOfTotalReps) * 100;
 
-  return score;
+  return itemScore;
 };
 
 // 表示する総評テキストの選択
@@ -132,7 +132,7 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
 
     // セット全体に対する指導項目スコアを算出する
-    evaluationResult.score = calculateScore(eachRepErrorsAbs);
+    evaluationResult.score = calculateItemScore(eachRepErrorsAbs);
 
     // 各レップに対する表示テキストの決定
     evaluationResult.shortSummary = decideShortSummary(
