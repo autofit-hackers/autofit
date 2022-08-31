@@ -21,16 +21,35 @@ export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
 });
 
 // 各レップに対する表示テキストの決定
-const decideShortSummary = (eachRepErrors: number[], instructionItem: FormInstructionItem): string => {
+const decideShortSummary = (
+  eachRepErrorScores: number[],
+  eachRepCoordinateErrors: number[],
+  instructionItem: FormInstructionItem,
+): string => {
   let shortSummary = '';
-  // 平均errorの値でテキストを決定
-  const error = eachRepErrors.reduce((num1: number, num2: number) => num1 + num2, 0) / eachRepErrors.length;
-  if (error <= -1) {
-    shortSummary = instructionItem.shortDescription.minus;
-  } else if (error >= 1) {
-    shortSummary = instructionItem.shortDescription.plus;
+  // 平均error scoreの値でテキストを決定
+  // FIXME: good/badの表示とロジックを合わせる
+  const errorScore =
+    eachRepErrorScores.reduce((num1: number, num2: number) => num1 + num2, 0) / eachRepErrorScores.length;
+
+  if (errorScore <= -1) {
+    const minusCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
+    const averageMinusCoordinateError =
+      minusCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) / minusCoordinateErrorList.length;
+    shortSummary =
+      instructionItem.shortDescription.minus.first +
+      Math.abs(averageMinusCoordinateError).toString() +
+      instructionItem.shortDescription.minus.second;
+  } else if (errorScore >= 1) {
+    const plusCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
+    const averagePlusCoordinateError =
+      plusCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) / plusCoordinateErrorList.length;
+    shortSummary =
+      instructionItem.shortDescription.plus.first +
+      averagePlusCoordinateError.toString() +
+      instructionItem.shortDescription.plus.second;
   } else {
-    shortSummary = instructionItem.shortDescription.normal;
+    shortSummary = instructionItem.shortDescription.normal.first + instructionItem.shortDescription.normal.second;
   }
 
   return shortSummary;
@@ -92,7 +111,8 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
       longSummary: '',
       descriptionsForEachRep: [],
       overallComment: '',
-      eachRepErrors: [],
+      eachRepErrorScores: [],
+      eachRepCoordinateErrors: [],
       score: 0,
       bestRepIndex: 0,
       worstRepIndex: 0,
@@ -100,11 +120,12 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
     set.reps.forEach((rep) => {
-      evaluationResult.eachRepErrors[rep.index] = rep.formErrorScores[instructionItem.id];
+      evaluationResult.eachRepErrorScores[rep.index] = rep.formErrorScores[instructionItem.id];
+      evaluationResult.eachRepCoordinateErrors[rep.index] = rep.coordinateErrors[instructionItem.id];
     });
 
     // エラーの絶対値が最大/最小となるレップのインデックスを記録する
-    const eachRepErrorsAbs = evaluationResult.eachRepErrors.map((error) => Math.abs(error));
+    const eachRepErrorsAbs = evaluationResult.eachRepErrorScores.map((error) => Math.abs(error));
     evaluationResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
     evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
 
@@ -112,10 +133,14 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     evaluationResult.score = calculateScore(eachRepErrorsAbs);
 
     // 各レップに対する表示テキストの決定
-    evaluationResult.shortSummary = decideShortSummary(evaluationResult.eachRepErrors, instructionItem);
+    evaluationResult.shortSummary = decideShortSummary(
+      evaluationResult.eachRepErrorScores,
+      evaluationResult.eachRepCoordinateErrors,
+      instructionItem,
+    );
 
     // 各指導項目に対するセット全体の評価分の決定
-    evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrors, instructionItem);
+    evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrorScores, instructionItem);
 
     set.formEvaluationResults[instructionItem.id] = evaluationResult;
   });

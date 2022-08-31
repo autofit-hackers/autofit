@@ -16,6 +16,7 @@ import VideoPlayer from './ui-components/VideoPlayer';
 export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
+  console.log('setRecord', setRecord);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(

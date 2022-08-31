@@ -15,6 +15,7 @@ export type Rep = {
   keyframesIndex: KeyframesIndex;
   videoUrl: string;
   formErrorScores: number[];
+  coordinateErrors: number[];
   guidelineSymbolsList: GuidelineSymbols[];
 };
 
@@ -33,6 +34,7 @@ export const resetRep = (repIndex: number): Rep => ({
     descendingMiddle: undefined,
   },
   videoUrl: '',
+  coordinateErrors: [],
   formErrorScores: [],
   guidelineSymbolsList: [],
 });
@@ -110,11 +112,14 @@ export const getDescendingMiddlePose = (rep: Rep): Pose | undefined => {
 };
 
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
-export const calculateRepFormErrorScore = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
+export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
   const rep: Rep = prevRep;
 
   instructionItems.forEach((instructionItem) => {
     rep.formErrorScores[instructionItem.id] = instructionItem.evaluateFrom(rep);
+    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal
+      ? instructionItem.getCoordinateErrorFromIdeal(rep)
+      : 0;
     rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
       ? instructionItem.getGuidelineSymbols(rep)
       : ({} as GuidelineSymbols);

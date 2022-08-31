@@ -8,7 +8,7 @@ import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from 
 import {
   appendPoseToForm,
   calculateKeyframes,
-  calculateRepFormErrorScore,
+  evaluateRepForm,
   getTopPose,
   Rep,
   resetRep,
@@ -189,7 +189,7 @@ export default function BodyTrack2d() {
 
           // 完了したレップのフォームを分析・評価
           repRef.current = calculateKeyframes(repRef.current);
-          repRef.current = calculateRepFormErrorScore(repRef.current, formInstructionItems);
+          repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           setRef.current.reps = [...setRef.current.reps, repRef.current];

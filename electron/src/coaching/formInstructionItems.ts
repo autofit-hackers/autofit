@@ -3,20 +3,24 @@ import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import KJ from '../utils/kinectJoints';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
+type Description = { first: string; second: string };
+
+// TODO: クラスにしたほうが扱いやすいかも
 export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
-  readonly shortDescription: { minus: string; normal: string; plus: string };
+  readonly shortDescription: { minus: Description; normal: Description; plus: Description };
   readonly longDescription: { minus: string; plus: string };
   readonly voice: { minus: string; normal: string; plus: string };
   readonly reason?: string;
   readonly recommendMenu?: string[];
   readonly importance?: number;
   readonly poseGridCameraAngle: CameraAngle;
-  // TODO: 以下２つはまとめてもいいかも
+  // TODO: 以下の関数は共通する処理が多いのでうまくまとめる
   readonly evaluateFrom: (rep: Rep) => number;
   readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
+  readonly getCoordinateErrorFromIdeal?: (rep: Rep) => number;
 };
 
 export type FormEvaluationResult = {
@@ -25,7 +29,8 @@ export type FormEvaluationResult = {
   shortSummary: string;
   longSummary: string;
   overallComment: string;
-  eachRepErrors: number[];
+  eachRepErrorScores: number[];
+  eachRepCoordinateErrors: number[];
   score: number;
   bestRepIndex: number;
   worstRepIndex: number;
@@ -46,9 +51,9 @@ const squatDepth: FormInstructionItem = {
   name: 'Squat depth',
   label: 'しゃがむ深さ',
   shortDescription: {
-    minus: 'しゃがみが浅いです。',
-    normal: 'ちょうどよい深さで腰を落とせています。この調子。',
-    plus: '腰を落としすぎているようです。',
+    minus: { first: '', second: 'cmほどしゃがみが浅いです。太ももが水平になるまで腰を落としてください' },
+    normal: { first: 'ちょうどよい深さで腰を落とせています。この調子。', second: '' },
+    plus: { first: '', second: 'cmほどしゃがみが深いです。太ももが水平になる角度で腰を止めてください。' },
   },
   longDescription: {
     minus:
@@ -62,8 +67,10 @@ const squatDepth: FormInstructionItem = {
   },
   importance: 0.5,
   poseGridCameraAngle: { theta: 90, phi: 0 },
+  // しゃがみが深いほど角度は大きい
   evaluateFrom: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
+    // TODO: 浅いほうを厳しく、深いほうを甘くする
     const thresholds = { upper: 90, middle: 80, lower: 60 };
     if (bottomPose === undefined) {
       return 0.0;
@@ -110,6 +117,24 @@ const squatDepth: FormInstructionItem = {
 
     return guidelineSymbols;
   },
+  getCoordinateErrorFromIdeal: (rep: Rep): number => {
+    const thresholds = { upper: 90, middle: 80, lower: 60 };
+    const bottomPose = getBottomPose(rep);
+    if (bottomPose === undefined) {
+      return 0;
+    }
+
+    const kneeY = (bottomPose.worldLandmarks[KJ.KNEE_RIGHT].y + bottomPose.worldLandmarks[KJ.KNEE_LEFT].y) / 2;
+    const averageThighLengthFromSide =
+      (getDistance(bottomPose.worldLandmarks[KJ.HIP_LEFT], bottomPose.worldLandmarks[KJ.KNEE_LEFT]).yz +
+        getDistance(bottomPose.worldLandmarks[KJ.HIP_RIGHT], bottomPose.worldLandmarks[KJ.KNEE_RIGHT]).yz) /
+      2;
+    const idealHipY = kneeY + averageThighLengthFromSide * Math.sin(((thresholds.middle - 90) * Math.PI) / 180);
+    const realHipY = (bottomPose.worldLandmarks[KJ.HIP_LEFT].y + bottomPose.worldLandmarks[KJ.HIP_RIGHT].y) / 2;
+    const errorInt = Math.round(realHipY - idealHipY);
+
+    return errorInt;
+  },
 };
 
 const kneeInAndOut: FormInstructionItem = {
@@ -117,9 +142,12 @@ const kneeInAndOut: FormInstructionItem = {
   name: 'Knee in and out',
   label: 'ひざの開き',
   shortDescription: {
-    minus: '膝が内側に入りすぎています。',
-    normal: '足の向きと太ももの向きが一致していて、とても良いです。',
-    plus: '膝を外側に出そうとしすぎているようです。',
+    minus: { first: '膝を', second: 'cmほど外側に押し出してください。' },
+    normal: {
+      first: '足の向きと太ももの向きが一致していて、とても良いです。',
+      second: '',
+    },
+    plus: { first: '膝が', second: 'cmほど外に出すぎてしまっています。' },
   },
   longDescription: {
     minus:
@@ -186,9 +214,9 @@ const stanceWidth: FormInstructionItem = {
   name: 'Stance width',
   label: '足の幅',
   shortDescription: {
-    minus: '足の幅が狭すぎます。',
-    normal: '足の幅はバッチリです。',
-    plus: '足の幅が広すぎます。',
+    minus: { first: '足の幅を', second: 'cmほど広くしてください。' },
+    normal: { first: '足の幅はバッチリです。', second: '' },
+    plus: { first: '足の幅を', second: 'cmほど狭くしてください' },
   },
   longDescription: {
     minus: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
@@ -220,9 +248,9 @@ const kneeFrontAndBack: FormInstructionItem = {
   name: 'Knee front and back',
   label: '膝の前後位置',
   shortDescription: {
-    minus: 'お尻を引きすぎているようです。',
-    normal: 'ちょうど良い膝の曲げ方です',
-    plus: '膝が前に出過ぎています。',
+    minus: { first: '膝の位置を', second: 'cmほど前に出してください。' },
+    normal: { first: '膝の前後位置はバッチリです。', second: '' },
+    plus: { first: '膝を', second: 'cmほど後ろに引いてください' },
   },
   longDescription: {
     minus:
@@ -257,9 +285,15 @@ const squatVelocity: FormInstructionItem = {
   name: 'Speed',
   label: '速度',
   shortDescription: {
-    minus: 'スクワットのペースが速いです。',
-    normal: 'いい速さでスクワットできています。',
-    plus: '少しペースが遅いです。',
+    minus: {
+      first: '１レップに約',
+      second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
+    },
+    normal: { first: '速度はバッチリです。', second: '' },
+    plus: {
+      first: '１レップに約',
+      second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
+    },
   },
   longDescription: {
     minus:
