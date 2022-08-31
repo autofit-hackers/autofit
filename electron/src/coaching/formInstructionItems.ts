@@ -367,20 +367,20 @@ const squatVelocity: FormInstructionItem = {
   label: '速度',
   shortDescription: {
     negative: {
-      first: '１レップに約',
+      first: '立ち上がるのに約',
       second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
     },
     normal: { first: '速度はバッチリです。', second: '' },
     positive: {
-      first: '１レップに約',
+      first: '立ち上がるのに約',
       second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
     },
   },
   longDescription: {
     negative:
-      'スクワットのペースが速いです。ペースが速すぎると反動を使ってしまう上、関節に負担がかかります。もう少しゆっくりの速度で筋肉に効かせるイメージを持ちましょう。目安は、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるくらいです。',
+      'スクワットのペースが速いです。ペースが速すぎると反動を使ってしまう上、関節に負担がかかります。もう少しゆっくりの速度で筋肉に効かせるイメージを持ちましょう。目安は1〜2秒かけて立ち上がるくらいです。',
     positive:
-      '少しペースが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるようにしましょう。',
+      '立ち上がるスピードが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、1〜2秒かけて立ち上がるようにしましょう。',
   },
   voice: {
     negative: '少し速いです。もう少しゆっくり。',
@@ -400,6 +400,20 @@ const squatVelocity: FormInstructionItem = {
     const halfRepDuration = lastPose.timestamp - bottomPose.timestamp;
 
     return calculateError(thresholds, halfRepDuration);
+  },
+  getCoordinateErrorFromIdeal(rep: Rep): number {
+    const bottomPose = getBottomPose(rep);
+    const lastPose = getLastPose(rep);
+    if (bottomPose === undefined || lastPose === undefined) {
+      console.warn('squatVelocity: bottomPose or lastPose is undefined');
+
+      return 0;
+    }
+    const halfRepDuration = lastPose.timestamp - bottomPose.timestamp;
+
+    const errorInt = parseFloat(halfRepDuration.toFixed(1)); // 小数点第二位までを切り捨てる
+
+    return errorInt;
   },
 };
 
