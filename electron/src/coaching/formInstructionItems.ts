@@ -1,5 +1,5 @@
+import { getDescendingMiddlePose, getBottomPose, getTopPose, Rep, getAscendingMiddlePose } from '../training_data/rep';
 import { landmarkToVector3, getAngle, getDistance, Pose } from '../training_data/pose';
-import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import KJ from '../utils/kinectJoints';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
@@ -345,19 +345,14 @@ const squatVelocity: FormInstructionItem = {
   },
   poseGridCameraAngle: { theta: 90, phi: 270 },
   evaluateFrom: (rep: Rep) => {
-    // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
-    // TODO: Topの姿勢で停止することがあるので、durationを取得する範囲を再考する必要あり。
     // TODO: エキセントリックとコンセントリックで分けたい。
-    const fps = 25;
-    const thresholds = { upper: 3.0, middle: 2.2, lower: 1.6 }; // 以前は{ upper: 5.2, middle: 3.8, lower: 3.3 }
-    if (
-      rep.keyframesIndex === undefined ||
-      rep.keyframesIndex.ascendingMiddle === undefined ||
-      rep.keyframesIndex.descendingMiddle === undefined
-    ) {
-      throw new Error('keyframesIndex is undefined');
+    const thresholds = { upper: 3000, middle: 2200, lower: 1600 }; // ミリ秒
+    const descendingMiddlePose = getDescendingMiddlePose(rep);
+    const ascendingMiddlePose = getAscendingMiddlePose(rep);
+    if (descendingMiddlePose === undefined || ascendingMiddlePose === undefined) {
+      throw new Error('descendingMiddlePose or ascendingMiddlePose is undefined');
     }
-    const halfRepDuration = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
+    const halfRepDuration = ascendingMiddlePose.timeStamp - descendingMiddlePose.timeStamp;
 
     return calculateError(thresholds, halfRepDuration);
   },
