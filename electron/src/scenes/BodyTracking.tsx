@@ -35,7 +35,7 @@ export default function BodyTrack2d() {
   const [kinect] = useAtom(kinectAtom);
 
   // トレーニングデータ
-  const [, setSetRecord] = useAtom(setRecordAtom);
+  const [setRecord, setSetRecord] = useAtom(setRecordAtom);
   const setRef = useRef<Set>(resetSet());
   const repRef = useRef<Rep>(resetRep(0));
   const repState = useRef<RepState>(resetRepState());
@@ -76,7 +76,10 @@ export default function BodyTrack2d() {
     }
   };
 
+  console.log('body tracking', setRecord);
+
   const handleReset = () => {
+    console.log('before reset', setRecord);
     // 描画
     canvasImageData.current = null;
     // reset fixOutlier state
@@ -93,6 +96,7 @@ export default function BodyTrack2d() {
     setRepVideoUrls([]);
     setVideoUrlRef.current = '';
     playTrainingStartSound();
+    console.log('after reset', setRecord);
   };
 
   // 毎kinect更新時に実行される
