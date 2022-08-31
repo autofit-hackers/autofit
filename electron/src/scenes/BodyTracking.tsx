@@ -134,6 +134,7 @@ export default function BodyTrack2d() {
           data.bodyFrame.bodies[0].skeleton.joints,
           canvasRef.current,
           true,
+          new Date().getTime(),
         );
 
         // 外れ値処理
