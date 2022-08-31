@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { stopKinect } from '../utils/kinect';
-import { GuidelineSymbols, PoseGrid } from '../utils/poseGrid';
+import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, playSoundAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
@@ -16,10 +16,11 @@ import VideoPlayer from './ui-components/VideoPlayer';
 export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
+  console.log('report ', setRecord);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
-    selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
+    setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex,
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -45,19 +46,11 @@ export default function IntervalReport() {
   // TODO: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
   useEffect(() => {
-    setDisplayedRepIndex(
-      selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
-    );
+    setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
     if (poseGridRef.current !== null) {
-      poseGridRef.current.setCameraAngle(
-        selectedInstructionIndex >= 0
-          ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-          : formInstructionItems[0].poseGridCameraAngle,
-      );
+      poseGridRef.current.setCameraAngle(formInstructionItems[selectedInstructionIndex].poseGridCameraAngle);
       poseGridRef.current.drawGuideline(
-        selectedInstructionIndex >= 0
-          ? setRecord.reps[displayedRepIndex].guidelineSymbolsList[selectedInstructionIndex]
-          : ({} as GuidelineSymbols),
+        setRecord.reps[displayedRepIndex].guidelineSymbolsList[selectedInstructionIndex],
       );
     }
   }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
@@ -108,11 +101,7 @@ export default function IntervalReport() {
                   <PoseGridViewer
                     gridDivRef={gridDivRef}
                     poseGridRef={poseGridRef}
-                    cameraPosition={
-                      selectedInstructionIndex >= 0
-                        ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                        : formInstructionItems[0].poseGridCameraAngle
-                    }
+                    cameraPosition={formInstructionItems[selectedInstructionIndex].poseGridCameraAngle}
                   />
                 </CardContent>
               </Card>

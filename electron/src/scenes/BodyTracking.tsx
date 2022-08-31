@@ -8,7 +8,7 @@ import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from 
 import {
   appendPoseToForm,
   calculateKeyframes,
-  calculateRepFormErrorScore,
+  evaluateRepForm,
   getTopPose,
   Rep,
   resetRep,
@@ -35,7 +35,7 @@ export default function BodyTrack2d() {
   const [kinect] = useAtom(kinectAtom);
 
   // トレーニングデータ
-  const [, setSetRecord] = useAtom(setRecordAtom);
+  const [setRecord, setSetRecord] = useAtom(setRecordAtom);
   const setRef = useRef<Set>(resetSet());
   const repRef = useRef<Rep>(resetRep(0));
   const repState = useRef<RepState>(resetRepState());
@@ -76,7 +76,10 @@ export default function BodyTrack2d() {
     }
   };
 
+  console.log('body tracking', setRecord);
+
   const handleReset = () => {
+    console.log('before reset', setRecord);
     // 描画
     canvasImageData.current = null;
     // reset fixOutlier state
@@ -93,6 +96,7 @@ export default function BodyTrack2d() {
     setRepVideoUrls([]);
     setVideoUrlRef.current = '';
     playTrainingStartSound();
+    console.log('after reset', setRecord);
   };
 
   // 毎kinect更新時に実行される
@@ -130,6 +134,7 @@ export default function BodyTrack2d() {
           data.bodyFrame.bodies[0].skeleton.joints,
           canvasRef.current,
           true,
+          new Date().getTime(),
         );
 
         // 外れ値処理
@@ -189,7 +194,7 @@ export default function BodyTrack2d() {
 
           // 完了したレップのフォームを分析・評価
           repRef.current = calculateKeyframes(repRef.current);
-          repRef.current = calculateRepFormErrorScore(repRef.current, formInstructionItems);
+          repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           setRef.current.reps = [...setRef.current.reps, repRef.current];

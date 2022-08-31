@@ -1,22 +1,26 @@
+import { getDescendingMiddlePose, getBottomPose, getTopPose, Rep, getAscendingMiddlePose } from '../training_data/rep';
 import { landmarkToVector3, getAngle, getDistance, Pose } from '../training_data/pose';
-import { getBottomPose, getTopPose, Rep } from '../training_data/rep';
 import KJ from '../utils/kinectJoints';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
+type Description = { first: string; second: string };
+
+// TODO: クラスにしたほうが扱いやすいかも
 export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
-  readonly shortDescription: { minus: string; normal: string; plus: string };
-  readonly longDescription: { minus: string; plus: string };
-  readonly voice: { minus: string; normal: string; plus: string };
+  readonly shortDescription: { negative: Description; normal: Description; positive: Description };
+  readonly longDescription: { negative: string; positive: string };
+  readonly voice: { negative: string; normal: string; positive: string };
   readonly reason?: string;
   readonly recommendMenu?: string[];
   readonly importance?: number;
   readonly poseGridCameraAngle: CameraAngle;
-  // TODO: 以下２つはまとめてもいいかも
-  readonly evaluateFrom: (rep: Rep) => number;
+  // TODO: 以下の関数は共通する処理が多いのでうまくまとめる
+  readonly evaluateForm: (rep: Rep) => number;
   readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
+  readonly getCoordinateErrorFromIdeal?: (rep: Rep) => number;
 };
 
 export type FormEvaluationResult = {
@@ -25,7 +29,8 @@ export type FormEvaluationResult = {
   shortSummary: string;
   longSummary: string;
   overallComment: string;
-  eachRepErrors: number[];
+  eachRepErrorScores: number[];
+  eachRepCoordinateErrors: number[];
   score: number;
   bestRepIndex: number;
   worstRepIndex: number;
@@ -46,24 +51,27 @@ const squatDepth: FormInstructionItem = {
   name: 'Squat depth',
   label: 'しゃがむ深さ',
   shortDescription: {
-    minus: 'しゃがみが浅いです。',
-    normal: 'ちょうどよい深さで腰を落とせています。この調子。',
-    plus: '腰を落としすぎているようです。',
+    negative: { first: '', second: 'cmほどしゃがみが浅いです。太ももが水平になるまで腰を落としてください' },
+    normal: { first: 'ちょうどよい深さで腰を落とせています。この調子。', second: '' },
+    positive: { first: '', second: 'cmほどしゃがみが深いです。太ももが水平になる角度で腰を止めてください。' },
   },
   longDescription: {
-    minus:
+    negative:
       'しゃがみが浅い傾向にあります。せっかく筋トレをしているのに、しゃがみが浅すぎると負荷が減ってしまってもったいないので、腰を太ももが平行になるまで落としましょう。',
-    plus: '腰を落としすぎているようです。悪いことではありませんが、深く腰を落としすぎると膝への負担が大きくなるので、太ももが水平になるところまで腰を落とすと良いでしょう。',
+    positive:
+      '腰を落としすぎているようです。悪いことではありませんが、深く腰を落としすぎると膝への負担が大きくなるので、太ももが水平になるところまで腰を落とすと良いでしょう。',
   },
   voice: {
-    minus: '腰を太ももが平行になるまで落としましょう。',
+    negative: '腰を太ももが平行になるまで落としましょう。',
     normal: 'ちょうどよい深さで腰を落とせています。この調子。',
-    plus: '腰は太ももが床と平行になるところまで落とせば十分です。',
+    positive: '腰は太ももが床と平行になるところまで落とせば十分です。',
   },
   importance: 0.5,
   poseGridCameraAngle: { theta: 90, phi: 0 },
-  evaluateFrom: (rep: Rep) => {
+  // しゃがみが深いほど角度は大きい
+  evaluateForm: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
+    // TODO: 浅いほうを厳しく、深いほうを甘くする
     const thresholds = { upper: 90, middle: 80, lower: 60 };
     if (bottomPose === undefined) {
       return 0.0;
@@ -110,6 +118,24 @@ const squatDepth: FormInstructionItem = {
 
     return guidelineSymbols;
   },
+  getCoordinateErrorFromIdeal: (rep: Rep): number => {
+    const thresholds = { upper: 90, middle: 80, lower: 60 };
+    const bottomPose = getBottomPose(rep);
+    if (bottomPose === undefined) {
+      return 0;
+    }
+
+    const kneeY = (bottomPose.worldLandmarks[KJ.KNEE_RIGHT].y + bottomPose.worldLandmarks[KJ.KNEE_LEFT].y) / 2;
+    const averageThighLengthFromSide =
+      (getDistance(bottomPose.worldLandmarks[KJ.HIP_LEFT], bottomPose.worldLandmarks[KJ.KNEE_LEFT]).yz +
+        getDistance(bottomPose.worldLandmarks[KJ.HIP_RIGHT], bottomPose.worldLandmarks[KJ.KNEE_RIGHT]).yz) /
+      2;
+    const idealHipY = kneeY + averageThighLengthFromSide * Math.sin(((thresholds.middle - 90) * Math.PI) / 180);
+    const realHipY = (bottomPose.worldLandmarks[KJ.HIP_LEFT].y + bottomPose.worldLandmarks[KJ.HIP_RIGHT].y) / 2;
+    const errorInt = Math.round(realHipY - idealHipY);
+
+    return errorInt;
+  },
 };
 
 const kneeInAndOut: FormInstructionItem = {
@@ -117,29 +143,37 @@ const kneeInAndOut: FormInstructionItem = {
   name: 'Knee in and out',
   label: 'ひざの開き',
   shortDescription: {
-    minus: '膝が内側に入りすぎています。',
-    normal: '足の向きと太ももの向きが一致していて、とても良いです。',
-    plus: '膝を外側に出そうとしすぎているようです。',
+    negative: { first: '膝が', second: '度ほど内側に入っています。つま先とひざの向きを揃えるようにしてください。' },
+    normal: {
+      first: '足の向きと太ももの向きが一致していて、とても良いです。',
+      second: '',
+    },
+    positive: { first: '膝が', second: '度ほど開いています。つま先とひざの向きを揃えるようにしてください。' },
   },
   longDescription: {
-    minus:
+    negative:
       '膝が内側に入りすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。どうしても力が入らない場合はスタンス幅を狭めてみるといいかもしれません。',
-    plus: '膝を外側に出そうとしすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。',
+    positive:
+      '膝を外側に出そうとしすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。',
   },
   voice: {
-    minus: '膝が内側に入りすぎています。',
+    negative: '膝が内側に入りすぎています。',
     normal: '足の向きと太ももの向きが一致していて、とても良いです。',
-    plus: '膝を外側に出そうとしすぎているようです。',
+    positive: '膝を外側に出そうとしすぎているようです。',
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluateFrom: (rep: Rep) => {
-    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
-    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const thresholds = { upper: 30, middle: 10, lower: -5 };
-    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
-      return 0.0;
+  evaluateForm: (rep: Rep) => {
+    const bottomPose = getBottomPose(rep);
+    const topPose = getTopPose(rep);
+    if (bottomPose === undefined || topPose === undefined) {
+      console.warn('kneeInAndOut: bottomPose or topPose is undefined');
+
+      return 0;
     }
+    const bottomWorldLandmarks = bottomPose.worldLandmarks;
+    const topWorldLandmarks = topPose.worldLandmarks;
+    const thresholds = { upper: 30, middle: 10, lower: -5 };
     // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
     const openingOfKnee =
       getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
@@ -155,9 +189,11 @@ const kneeInAndOut: FormInstructionItem = {
     // const thresholds = { upper: 15, middle: 0, lower: -15 };
     const guidelineSymbols: GuidelineSymbols = {};
 
-    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
-    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
+    const bottomPose = getBottomPose(rep);
+    const topPose = getTopPose(rep);
+    if (bottomPose === undefined || topPose === undefined) {
+      console.warn('kneeInAndOut: bottomPose or topPose is undefined');
+
       return guidelineSymbols;
     }
 
@@ -178,6 +214,29 @@ const kneeInAndOut: FormInstructionItem = {
 
     return guidelineSymbols;
   },
+  getCoordinateErrorFromIdeal: (rep: Rep): number => {
+    const bottomPose = getBottomPose(rep);
+    const topPose = getTopPose(rep);
+    if (bottomPose === undefined || topPose === undefined) {
+      console.warn('kneeInAndOut: bottomPose or topPose is undefined');
+
+      return 0;
+    }
+    const bottomWorldLandmarks = bottomPose.worldLandmarks;
+    const topWorldLandmarks = topPose.worldLandmarks;
+
+    // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
+    const thresholds = { upper: 30, middle: 10, lower: -5 };
+    const openingOfKnee =
+      getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
+      getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
+    const openingOfToe =
+      getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+    const errorInt = Math.round((openingOfKnee - openingOfToe - thresholds.middle) / 2);
+
+    return errorInt;
+  },
 };
 
 // 足の幅
@@ -186,27 +245,30 @@ const stanceWidth: FormInstructionItem = {
   name: 'Stance width',
   label: '足の幅',
   shortDescription: {
-    minus: '足の幅が狭すぎます。',
-    normal: '足の幅はバッチリです。',
-    plus: '足の幅が広すぎます。',
+    negative: { first: '足の幅を', second: 'cmほど広くしてください。' },
+    normal: { first: '足の幅はバッチリです。', second: '' },
+    positive: { first: '足の幅を', second: 'cmほど狭くしてください' },
   },
   longDescription: {
-    minus: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
-    plus: '足の幅が広すぎます。しゃがんだ時に膝に負担がかかる恐れがあるので、肩幅より少し広い程度に狭めましょう。',
+    negative: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
+    positive: '足の幅が広すぎます。しゃがんだ時に膝に負担がかかる恐れがあるので、肩幅より少し広い程度に狭めましょう。',
   },
   voice: {
-    minus: '足の幅が狭すぎます。足は肩幅より少し広い程度に開きましょう。',
+    negative: '足の幅が狭すぎます。足は肩幅より少し広い程度に開きましょう。',
     normal: '足の幅はバッチリです。',
-    plus: '足の幅が広すぎます。肩幅より少し広い程度に狭めてみましょう。',
+    positive: '足の幅が広すぎます。肩幅より少し広い程度に狭めてみましょう。',
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluateFrom: (rep: Rep) => {
-    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
-    if (topWorldLandmarks === undefined) {
-      return 0.0;
+  evaluateForm: (rep: Rep) => {
+    const topPose = getTopPose(rep);
+    if (topPose === undefined) {
+      console.warn('kneeInAndOut: bottomPose or topPose is undefined');
+
+      return 0;
     }
+    const topWorldLandmarks = topPose.worldLandmarks;
+    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
     const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const error = footWidth / shoulderWidth;
@@ -220,28 +282,39 @@ const kneeFrontAndBack: FormInstructionItem = {
   name: 'Knee front and back',
   label: '膝の前後位置',
   shortDescription: {
-    minus: 'お尻を引きすぎているようです。',
-    normal: 'ちょうど良い膝の曲げ方です',
-    plus: '膝が前に出過ぎています。',
+    negative: {
+      first: 'お尻をあと',
+      second: 'cmほど前に出してください。膝がつま先の少し前に来るように意識しましょう。',
+    },
+    normal: { first: '膝とお尻の前後位置はバッチリです。', second: '' },
+    positive: {
+      first: 'お尻をあと',
+      second: 'cmほど後ろに引いてください。膝がつま先の少し前に来るように意識しましょう。',
+    },
   },
   longDescription: {
-    minus:
+    negative:
       'お尻を後ろに引きすぎているようです。膝がつま先より後ろにくると後ろ重心になり、バランスが悪くなります。つま先の上までは膝を出しても大丈夫なので、無理のない姿勢でスクワットしましょう。',
-    plus: '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。',
+    positive:
+      '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。',
   },
   voice: {
-    minus: 'お尻を引きすぎです。',
+    negative: 'お尻を引きすぎです。',
     normal: 'ちょうど良い膝の曲げ方です。',
-    plus: '膝が前に出過ぎています。',
+    positive: '膝が前に出過ぎています。',
   },
   poseGridCameraAngle: { theta: 90, phi: 0 },
-  evaluateFrom: (rep: Rep) => {
-    const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
-    const bottomWorldLandmarks = getBottomPose(rep)?.worldLandmarks;
-    const thresholds = { upper: 15, middle: 1, lower: -1 };
-    if (bottomWorldLandmarks === undefined || topWorldLandmarks === undefined) {
-      return 0.0;
+  evaluateForm: (rep: Rep) => {
+    const bottomPose = getBottomPose(rep);
+    const topPose = getTopPose(rep);
+    if (bottomPose === undefined || topPose === undefined) {
+      console.warn('kneeInAndOut: bottomPose or topPose is undefined');
+
+      return 0;
     }
+    const bottomWorldLandmarks = bottomPose.worldLandmarks;
+    const topWorldLandmarks = topPose.worldLandmarks;
+    const thresholds = { upper: 15, middle: 1, lower: -1 };
 
     const kneeFootDistanceZ =
       (getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z +
@@ -250,6 +323,27 @@ const kneeFrontAndBack: FormInstructionItem = {
 
     return calculateError(thresholds, kneeFootDistanceZ);
   },
+  getCoordinateErrorFromIdeal(rep: Rep): number {
+    const bottomPose = getBottomPose(rep);
+    const topPose = getTopPose(rep);
+    if (bottomPose === undefined || topPose === undefined) {
+      console.warn('kneeInAndOut: bottomPose or topPose is undefined');
+
+      return 0;
+    }
+    const bottomWorldLandmarks = bottomPose.worldLandmarks;
+    const topWorldLandmarks = topPose.worldLandmarks;
+
+    const thresholds = { upper: 15, middle: 1, lower: -1 };
+    const kneeFootDistanceZ =
+      (getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z +
+        getDistance(bottomWorldLandmarks[KJ.KNEE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).z) /
+      2;
+
+    const errorInt = Math.round(kneeFootDistanceZ - thresholds.middle);
+
+    return errorInt;
+  },
 };
 
 const squatVelocity: FormInstructionItem = {
@@ -257,37 +351,39 @@ const squatVelocity: FormInstructionItem = {
   name: 'Speed',
   label: '速度',
   shortDescription: {
-    minus: 'スクワットのペースが速いです。',
-    normal: 'いい速さでスクワットできています。',
-    plus: '少しペースが遅いです。',
+    negative: {
+      first: '１レップに約',
+      second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
+    },
+    normal: { first: '速度はバッチリです。', second: '' },
+    positive: {
+      first: '１レップに約',
+      second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
+    },
   },
   longDescription: {
-    minus:
+    negative:
       'スクワットのペースが速いです。ペースが速すぎると反動を使ってしまう上、関節に負担がかかります。もう少しゆっくりの速度で筋肉に効かせるイメージを持ちましょう。目安は、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるくらいです。',
-    plus: '少しペースが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるようにしましょう。',
+    positive:
+      '少しペースが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるようにしましょう。',
   },
   voice: {
-    minus: '少し速いです。もう少しゆっくり。',
+    negative: '少し速いです。もう少しゆっくり。',
     normal: 'いい速さです。',
-    plus: '少しペースが遅いです。もう少しテンポ良く。',
+    positive: '少しペースが遅いです。もう少しテンポ良く。',
   },
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluateFrom: (rep: Rep) => {
-    // TODO: fpsを取得する必要がある。一旦25でハードコードしている。
-    // TODO: Topの姿勢で停止することがあるので、durationを取得する範囲を再考する必要あり。
-    const fps = 25;
-    // const threshold = { upper: 5.2, middle: 3.8, lower: 3.3 };
-    const thresholds = { upper: 3.0, middle: 2.2, lower: 1.6 };
-    if (
-      rep.keyframesIndex === undefined ||
-      rep.keyframesIndex.ascendingMiddle === undefined ||
-      rep.keyframesIndex.descendingMiddle === undefined
-    ) {
-      throw new Error('keyframesIndex is undefined');
+  evaluateForm: (rep: Rep) => {
+    // TODO: エキセントリックとコンセントリックで分けたい。
+    const thresholds = { upper: 3000, middle: 2200, lower: 1600 }; // ミリ秒
+    const descendingMiddlePose = getDescendingMiddlePose(rep);
+    const ascendingMiddlePose = getAscendingMiddlePose(rep);
+    if (descendingMiddlePose === undefined || ascendingMiddlePose === undefined) {
+      throw new Error('descendingMiddlePose or ascendingMiddlePose is undefined');
     }
-    const repDuration = (rep.keyframesIndex.ascendingMiddle - rep.keyframesIndex.descendingMiddle) / fps;
+    const halfRepDuration = ascendingMiddlePose.timestamp - descendingMiddlePose.timestamp;
 
-    return calculateError(thresholds, repDuration);
+    return calculateError(thresholds, halfRepDuration);
   },
 };
 

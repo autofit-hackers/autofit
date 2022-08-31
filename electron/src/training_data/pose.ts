@@ -50,6 +50,12 @@ export const KINECT_POSE_CONNECTIONS: LandmarkConnectionArray = [
   [30, 31],
 ];
 
+export type Pose = {
+  landmarks: NormalizedLandmarkList;
+  worldLandmarks: LandmarkList;
+  timestamp: number; // UNIX time(ms単位)
+};
+
 export const kinectToMediapipe = (
   kinectPoses: Array<{
     cameraX: number;
@@ -68,7 +74,8 @@ export const kinectToMediapipe = (
   }>,
   canvas: HTMLCanvasElement,
   rotation: boolean,
-): { landmarks: NormalizedLandmarkList; worldLandmarks: LandmarkList } => {
+  timestamp: number,
+): Pose => {
   const mediapipePose: NormalizedLandmarkList = [];
   const mediapipePoseWorld: LandmarkList = [];
   const depthToRGB = (Math.PI * 6) / 180.0;
@@ -94,12 +101,7 @@ export const kinectToMediapipe = (
     }
   }
 
-  return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld };
-};
-
-export type Pose = {
-  landmarks: NormalizedLandmarkList;
-  worldLandmarks: LandmarkList;
+  return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld, timestamp };
 };
 
 export const getDistance = (start: Landmark, end: Landmark) => ({
