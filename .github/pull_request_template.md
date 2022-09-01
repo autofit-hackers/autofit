@@ -29,8 +29,10 @@
 
 ## 動作確認手順
 
-`yarn 
-yarn start`
+``
+yarn 
+yarn start
+``
 
 
 ## 結果（画像または動画）
