@@ -1,14 +1,26 @@
 import { Card, CardContent } from '@mui/material';
 import { graphic } from 'echarts';
 import ReactECharts from 'echarts-for-react';
+import { FormEvaluationResult, FormInstructionItem } from '../../coaching/formInstructionItems';
 import { cardSx } from '../themes';
 
-export type RadarChartIndicators = { name: string; max: number }[];
-export type RadarChartSeries = { name: string; value: number[] }[];
-type RadarChartProps = { indicators: RadarChartIndicators; series: RadarChartSeries; style: React.CSSProperties };
-
-function RadarChart(radarChartProps: RadarChartProps) {
-  const { indicators, series, style } = radarChartProps;
+function RadarChart(props: {
+  formInstructionItems: FormInstructionItem[];
+  formEvaluationResults: FormEvaluationResult[];
+  style: React.CSSProperties;
+}) {
+  const { formInstructionItems, formEvaluationResults, style } = props;
+  const indicators = formInstructionItems.map((instruction) => ({
+    name: instruction.label,
+    max: 100,
+  }));
+  const series = [
+    {
+      // レーダーチャートの見栄えのため、スコアの最小を20/100とする
+      value: formEvaluationResults.map((result) => Math.max(result.score, 20)),
+      name: '今回のセット',
+    },
+  ];
   const legends: string[] = series.map((row) => row.name);
   const option = {
     radar: {

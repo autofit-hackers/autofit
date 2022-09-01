@@ -37,7 +37,6 @@ export const startKinect = (
 };
 
 export const stopKinect = (kinect: typeof KinectAzure): void => {
-  console.log('Stopping', kinect);
   if (kinect) {
     console.log('closing the kinect');
     kinect

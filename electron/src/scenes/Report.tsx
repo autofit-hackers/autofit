@@ -4,24 +4,25 @@ import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
+import { formInstructionItemsAtom, kinectAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
 import RealtimeChart from './ui-components/RealtimeChart';
+import SaveButton from './ui-components/SaveButton';
 import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
 
 export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
-  console.log('report ', setRecord);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
     setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex,
   );
+  const [repVideoUrls] = useAtom(repVideoUrlsAtom);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
@@ -29,9 +30,6 @@ export default function IntervalReport() {
   // PoseGrid用
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
-
-  console.log(setRecord);
-  console.log(setRecord.formEvaluationResults[displayedRepIndex].evaluatedValuesPerFrame, selectedInstructionIndex);
 
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
@@ -55,19 +53,6 @@ export default function IntervalReport() {
     }
   }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
 
-  // radar chart config and state
-  const radarChartIndicators = formInstructionItems.map((instruction) => ({
-    name: instruction.label,
-    max: 100,
-  }));
-  const radarChartSeries = [
-    {
-      // レーダーチャートの見栄えのため、スコアの最小を20/100とする
-      value: setRecord.formEvaluationResults.map((result) => Math.max(result.score, 20)),
-      name: '今回のセット',
-    },
-  ];
-
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
@@ -84,9 +69,12 @@ export default function IntervalReport() {
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
-            おつかれさまでした。フォーム分析の結果です。
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+              おつかれさまでした。フォーム分析の結果です。
+            </Typography>
+            <SaveButton object={setRecord} videoUrls={repVideoUrls} />
+          </Box>
           <Grid container spacing={3}>
             {/* 撮影したRGB映像 */}
             <Grid item xs={6} alignItems="stretch">
@@ -132,7 +120,11 @@ export default function IntervalReport() {
               <Stack spacing={3}>
                 <TotalScore score={setRecord.summary.totalScore} />
                 {/* スコアのレーダーチャート */}
-                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+                <RadarChart
+                  formInstructionItems={formInstructionItems}
+                  formEvaluationResults={setRecord.formEvaluationResults}
+                  style={{}}
+                />
               </Stack>
             </Grid>
             {/* フォーム評価の説明文 */}
