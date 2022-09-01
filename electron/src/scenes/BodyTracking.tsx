@@ -14,7 +14,7 @@ import {
   calculateRepFormErrorScore,
   getTopPose,
   Rep,
-  resetRep
+  resetRep,
 } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
@@ -30,7 +30,7 @@ import {
   phaseAtom,
   playSoundAtom,
   repVideoUrlsAtom,
-  setRecordAtom
+  setRecordAtom,
 } from './atoms';
 import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
 
@@ -78,7 +78,7 @@ export default function BodyTrack2d() {
 
   // リアルタイムグラフ用
   const evaluatedFrameRef = useRef<EvaluatedFrames>([]);
-  const [realtimeCartData, setRealtimeCartData] = useState<number[]>([]);
+  const [realtimeChartData, setRealtimeChartData] = useState<number[]>([]);
   const [threshData, setThreshData] = useState<GraphThreshold>({
     upper: 0,
     lower: 0,
@@ -119,7 +119,10 @@ export default function BodyTrack2d() {
     setVideoUrlRef.current = '';
     playTrainingStartSound(playSound);
     // グラフ
-    setRealtimeCartData([]);
+    evaluatedFrameRef.current.forEach((frame, idx) => {
+      evaluatedFrameRef.current[idx].evaluatedValues = [];
+    });
+    setRealtimeChartData([]);
     setThreshData({ upper: 0, middle: 0, lower: 0 });
     setKnee([]);
     setToe([]);
@@ -247,7 +250,7 @@ export default function BodyTrack2d() {
           repState.current = resetRepState();
 
           // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems);
+          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems, evaluatedFrameRef.current);
           setRef.current.formEvaluationResults.forEach((item, index) => {
             setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
           });
@@ -332,7 +335,7 @@ export default function BodyTrack2d() {
       const chartData = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].evaluatedValues;
       const thresh = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].threshold;
       // TODO: setRealtimeCartData(chartData) と書きたいが、リアルタイム更新されなくなる
-      setRealtimeCartData([chartData[0]].concat(chartData));
+      setRealtimeChartData([chartData[0]].concat(chartData));
       setThreshData(thresh);
     }, 10);
 
@@ -400,7 +403,7 @@ export default function BodyTrack2d() {
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
 
-      <RealtimeChart data={realtimeCartData} thresh={threshData} realtimeUpdate size="large" />
+      <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
       <RadioGroup
         row
         aria-labelledby="error-group"

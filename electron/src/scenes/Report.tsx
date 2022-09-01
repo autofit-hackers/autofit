@@ -64,7 +64,7 @@ export default function IntervalReport() {
   const radarChartSeries = [
     {
       // レーダーチャートの見栄えのため、スコアの最小を20/100とする
-      value: setRecord.formEvaluationResults.map((result) => Math.min(result.score, 20)),
+      value: setRecord.formEvaluationResults.map((result) => Math.max(result.score, 20)),
       name: '今回のセット',
     },
   ];
@@ -121,10 +121,10 @@ export default function IntervalReport() {
                     <RealtimeChart
                       data={
                         setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame
-                          ?.evaluatedValues
+                          .evaluatedValues
                       }
                       thresh={
-                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame?.threshold
+                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame.threshold
                       }
                       realtimeUpdate={false}
                       size="small"

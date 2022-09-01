@@ -1,5 +1,6 @@
+import type { FormEvaluationResult, FormInstructionItem } from '../coaching/formInstructionItems';
+import { FrameEvaluateParams } from '../coaching/FormInstructionDebug';
 import { Rep } from './rep';
-import type { FormInstructionItem, FormEvaluationResult } from '../coaching/formInstructionItems';
 
 export type SetSummary = {
   weight?: number;
@@ -82,10 +83,15 @@ const selectDisplayedSummary = (set: Set) => {
 };
 
 // セット変数に各指導項目の評価結果を追加する
-export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormInstructionItem[]): Set => {
-  const set: Set = prevSet;
+// TODO: ここでevaluatedValuesPerFrameを追加することで白トビバグを解決しているが本当は好ましくない
+export const recordFormEvaluationResult = (
+  set: Set,
+  instructionItems: FormInstructionItem[],
+  evaluatedValuesPerFrame: FrameEvaluateParams[],
+): Set => {
+  const setCopy: Set = set;
 
-  instructionItems.forEach((instructionItem) => {
+  instructionItems.forEach((instructionItem, index) => {
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
       shortSummary: '',
@@ -96,10 +102,11 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
       score: 0,
       bestRepIndex: 0,
       worstRepIndex: 0,
+      evaluatedValuesPerFrame: evaluatedValuesPerFrame[index],
     };
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
-    set.reps.forEach((rep) => {
+    setCopy.reps.forEach((rep) => {
       evaluationResult.eachRepErrors[rep.index] = rep.formErrorScores[instructionItem.id];
     });
 
@@ -120,17 +127,18 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     // セット全体に対する総評の決定
     evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrors, instructionItem);
 
-    set.formEvaluationResults[instructionItem.id] = evaluationResult;
+    setCopy.formEvaluationResults[instructionItem.id] = evaluationResult;
   });
 
   // セットに対する総評の決定
-  set.summary.description = selectDisplayedSummary(set);
+  setCopy.summary.description = selectDisplayedSummary(setCopy);
 
   // セットの合計得点を計算
-  set.summary.totalScore = Math.round(
-    set.formEvaluationResults.map((result) => result.score).reduce((num1: number, num2: number) => num1 + num2, 0) /
-      set.formEvaluationResults.length,
+  setCopy.summary.totalScore = Math.round(
+    setCopy.formEvaluationResults
+      .map((result) => result.score)
+      .reduce((num1: number, num2: number) => num1 + num2, 0) / setCopy.formEvaluationResults.length,
   );
 
-  return set;
+  return setCopy;
 };
