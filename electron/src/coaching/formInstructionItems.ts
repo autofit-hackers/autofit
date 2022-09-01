@@ -23,6 +23,7 @@ export type FormInstructionItem = {
   readonly getCoordinateErrorFromIdeal?: (rep: Rep) => number;
 };
 
+// TODO: けっこうごちゃごちゃしてきました。用語の定義をしっかりするところから始めましょう。
 export type FormEvaluationResult = {
   name: string;
   descriptionsForEachRep: string[];
@@ -34,6 +35,8 @@ export type FormEvaluationResult = {
   score: number;
   bestRepIndex: number;
   worstRepIndex: number;
+  bestRepError: number;
+  worstRepError: number;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）

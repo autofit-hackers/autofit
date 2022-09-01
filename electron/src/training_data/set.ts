@@ -21,30 +21,29 @@ export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
 });
 
 // 各レップに対する表示テキストの決定
+// TODO: 役割が多すぎるので、複数の関数に分割する
 const decideShortSummary = (
-  eachRepErrorScores: number[],
+  itemScore: number,
+  worstRepError: number,
   eachRepCoordinateErrors: number[],
   instructionItem: FormInstructionItem,
 ): string => {
   let shortSummary = '';
-  // 平均error scoreの値でテキストを決定
-  // FIXME: good/badの表示とロジックを合わせる
-  const errorScore =
-    eachRepErrorScores.reduce((num1: number, num2: number) => num1 + num2, 0) / eachRepErrorScores.length;
 
-  if (errorScore <= -1) {
+  // itemScoreが60点以下(bad表示)の場合は修正テキストを表示。ポジネガはもっともエラーが大きかったレップをもとに決定。
+  if (itemScore <= 60 && worstRepError <= -1.0) {
     const negativeCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
     const averageNegativeCoordinateError =
-      negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) /
+      negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
       negativeCoordinateErrorList.length;
     shortSummary =
       instructionItem.shortDescription.negative.first +
       Math.abs(averageNegativeCoordinateError).toString() +
       instructionItem.shortDescription.negative.second;
-  } else if (errorScore >= 1) {
+  } else if (itemScore <= 60 && worstRepError >= 1.0) {
     const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
     const averagePositiveCoordinateError =
-      positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2) /
+      positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
       positiveCoordinateErrorList.length;
     shortSummary =
       instructionItem.shortDescription.positive.first +
@@ -103,8 +102,8 @@ const selectDisplayedSummary = (set: Set) => {
 };
 
 // セット変数に各指導項目の評価結果を追加する
-export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormInstructionItem[]): Set => {
-  const set: Set = prevSet;
+export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstructionItem[]): Set => {
+  const setCopy: Set = set;
 
   instructionItems.forEach((instructionItem) => {
     const evaluationResult: FormEvaluationResult = {
@@ -118,6 +117,8 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
       score: 0,
       bestRepIndex: 0,
       worstRepIndex: 0,
+      bestRepError: 0,
+      worstRepError: 0,
     };
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
@@ -130,13 +131,16 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     const eachRepErrorsAbs = evaluationResult.eachRepErrorScores.map((error) => Math.abs(error));
     evaluationResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
     evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
+    evaluationResult.bestRepError = evaluationResult.eachRepErrorScores[evaluationResult.bestRepIndex];
+    evaluationResult.worstRepError = evaluationResult.eachRepErrorScores[evaluationResult.worstRepIndex];
 
     // セット全体に対する指導項目スコアを算出する
     evaluationResult.score = calculateItemScore(eachRepErrorsAbs);
 
     // 各レップに対する表示テキストの決定
     evaluationResult.shortSummary = decideShortSummary(
-      evaluationResult.eachRepErrorScores,
+      evaluationResult.score,
+      evaluationResult.worstRepError,
       evaluationResult.eachRepCoordinateErrors,
       instructionItem,
     );
@@ -144,17 +148,18 @@ export const recordFormEvaluationResult = (prevSet: Set, instructionItems: FormI
     // 各指導項目に対するセット全体の評価分の決定
     evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrorScores, instructionItem);
 
-    set.formEvaluationResults[instructionItem.id] = evaluationResult;
+    setCopy.formEvaluationResults[instructionItem.id] = evaluationResult;
   });
 
   // セットに対する総評の決定
-  set.summary.description = selectDisplayedSummary(set);
+  setCopy.summary.description = selectDisplayedSummary(setCopy);
 
   // セットの合計得点を計算
-  set.summary.totalScore = Math.round(
-    set.formEvaluationResults.map((result) => result.score).reduce((num1: number, num2: number) => num1 + num2, 0) /
-      set.formEvaluationResults.length,
+  setCopy.summary.totalScore = Math.round(
+    setCopy.formEvaluationResults
+      .map((result) => result.score)
+      .reduce((num1: number, num2: number) => num1 + num2, 0) / setCopy.formEvaluationResults.length,
   );
 
-  return set;
+  return setCopy;
 };
