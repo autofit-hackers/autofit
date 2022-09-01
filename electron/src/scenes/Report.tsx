@@ -16,7 +16,6 @@ import VideoPlayer from './ui-components/VideoPlayer';
 export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
-  console.log('report ', setRecord);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
@@ -29,9 +28,6 @@ export default function IntervalReport() {
   // PoseGrid用
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
-
-  console.log(setRecord);
-  console.log(setRecord.formEvaluationResults[displayedRepIndex].evaluatedValuesPerFrame, selectedInstructionIndex);
 
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
@@ -54,19 +50,6 @@ export default function IntervalReport() {
       );
     }
   }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
-
-  // radar chart config and state
-  const radarChartIndicators = formInstructionItems.map((instruction) => ({
-    name: instruction.label,
-    max: 100,
-  }));
-  const radarChartSeries = [
-    {
-      // レーダーチャートの見栄えのため、スコアの最小を20/100とする
-      value: setRecord.formEvaluationResults.map((result) => Math.max(result.score, 20)),
-      name: '今回のセット',
-    },
-  ];
 
   return (
     <ThemeProvider theme={futuristicTheme}>
@@ -132,7 +115,11 @@ export default function IntervalReport() {
               <Stack spacing={3}>
                 <TotalScore score={setRecord.summary.totalScore} />
                 {/* スコアのレーダーチャート */}
-                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+                <RadarChart
+                  formInstructionItems={formInstructionItems}
+                  formEvaluationResults={setRecord.formEvaluationResults}
+                  style={{}}
+                />
               </Stack>
             </Grid>
             {/* フォーム評価の説明文 */}
