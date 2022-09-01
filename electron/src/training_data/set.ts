@@ -32,7 +32,7 @@ const decideShortSummary = (
   let shortSummary = '';
 
   // itemScoreが60点以下(bad表示)の場合は修正テキストを表示。ポジネガはもっともエラーが大きかったレップをもとに決定。
-  if (itemScore <= 60 && worstRepError <= -1.0) {
+  if (itemScore <= 60 && worstRepError <= 0) {
     const negativeCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
     const averageNegativeCoordinateError =
       negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
@@ -41,7 +41,7 @@ const decideShortSummary = (
       instructionItem.shortDescription.negative.beforeNumber +
       Math.abs(averageNegativeCoordinateError).toString() +
       instructionItem.shortDescription.negative.afterNumber;
-  } else if (itemScore <= 60 && worstRepError >= 1.0) {
+  } else if (itemScore <= 60 && worstRepError >= 0) {
     const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
     const averagePositiveCoordinateError =
       positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
