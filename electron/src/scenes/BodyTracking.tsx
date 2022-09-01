@@ -84,7 +84,7 @@ export default function BodyTrack2d() {
     lower: 0,
     middle: 0,
   });
-  const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(0);
+  const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(4);
 
   // form debug
   const [knee, setKnee] = useState<number[]>([]);
@@ -404,6 +404,8 @@ export default function BodyTrack2d() {
       />
 
       <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
+
+      {/* // フォームデバッグ用 */}
       <RadioGroup
         row
         aria-labelledby="error-group"

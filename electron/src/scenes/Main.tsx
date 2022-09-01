@@ -30,19 +30,7 @@ export default function TrainingMain() {
           <BodyTrack2d />
         </>
       )}
-      {phase === 2 && (
-        <>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setPhase(1);
-            }}
-          >
-            Back to Training
-          </Button>
-          <IntervalReport />
-        </>
-      )}
+      {phase === 2 && <IntervalReport />}
     </>
   );
 }

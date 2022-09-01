@@ -1,10 +1,11 @@
-import { Box, Card, CardContent, CardHeader, CssBaseline, Grid, Stack, Typography } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Box, Card, CardContent, CssBaseline, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { Container, ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, setRecordAtom } from './atoms';
+import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import futuristicTheme, { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
@@ -31,6 +32,8 @@ export default function IntervalReport() {
 
   console.log(setRecord);
   console.log(setRecord.formEvaluationResults[displayedRepIndex].evaluatedValuesPerFrame, selectedInstructionIndex);
+
+  const [, setPhase] = useAtom(phaseAtom);
 
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {
@@ -85,9 +88,22 @@ export default function IntervalReport() {
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
-            おつかれさまでした。フォーム分析の結果です。
-          </Typography>
+          <Stack direction="row" justifyContent="center" alignItems="flex-start" spacing={2}>
+            <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+              おつかれさまでした。フォーム分析の結果です。
+            </Typography>
+            <IconButton
+              aria-label="reset-camera-angle"
+              color="primary"
+              onClick={() => {
+                setPhase(1);
+              }}
+              sx={{ zIndex: 2 }}
+            >
+              <CheckCircleIcon />
+            </IconButton>
+          </Stack>
+
           <Grid container spacing={3}>
             {/* 撮影したRGB映像 */}
             <Grid item xs={6} alignItems="stretch">
@@ -116,7 +132,6 @@ export default function IntervalReport() {
             <Grid item xs={12}>
               <Card>
                 <CardContent sx={cardSx}>
-                  <CardHeader title="総評" titleTypographyProps={{ fontWeight: 'bold' }} />
                   {setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame !== undefined ? (
                     <RealtimeChart
                       data={

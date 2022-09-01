@@ -1,4 +1,5 @@
-import { Button, Switch } from '@mui/material';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import { IconButton, Switch } from '@mui/material';
 import { useState } from 'react';
 import { CameraAngle, PoseGrid } from '../../utils/poseGrid';
 
@@ -23,7 +24,7 @@ function PoseGridViewer(props: {
         position: 'relative',
         // TODO: Resolve hardcoded value
         width: '100%',
-        height: '528px',
+        height: '408px', // 528px
         // FIXME: height はピクセル指定しないと正しく表示されない
       }}
     >
@@ -39,17 +40,18 @@ function PoseGridViewer(props: {
           width: '100%',
         }}
       />
-      <Button
+      <IconButton
+        aria-label="reset-camera-angle"
+        color="primary"
         onClick={() => {
           if (poseGridRef.current !== null) {
             poseGridRef.current.setCameraAngle(cameraPosition);
           }
         }}
-        variant="contained"
-        sx={{ position: 'absolute', top: 0, textAlign: 'center', zIndex: 2 }}
+        sx={{ zIndex: 2 }}
       >
-        Reset Camera Position
-      </Button>
+        <RotateLeftIcon />
+      </IconButton>
       <Switch
         checked={useOrthographic}
         onChange={handleCameraTypeChange}
