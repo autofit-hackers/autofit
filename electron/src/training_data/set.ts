@@ -37,20 +37,21 @@ const decideShortSummary = (
       negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
       negativeCoordinateErrorList.length;
     shortSummary =
-      instructionItem.shortDescription.negative.first +
+      instructionItem.shortDescription.negative.beforeNumber +
       Math.abs(averageNegativeCoordinateError).toString() +
-      instructionItem.shortDescription.negative.second;
+      instructionItem.shortDescription.negative.afterNumber;
   } else if (itemScore <= 60 && worstRepError >= 1.0) {
     const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
     const averagePositiveCoordinateError =
       positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
       positiveCoordinateErrorList.length;
     shortSummary =
-      instructionItem.shortDescription.positive.first +
+      instructionItem.shortDescription.positive.beforeNumber +
       averagePositiveCoordinateError.toString() +
-      instructionItem.shortDescription.positive.second;
+      instructionItem.shortDescription.positive.afterNumber;
   } else {
-    shortSummary = instructionItem.shortDescription.normal.first + instructionItem.shortDescription.normal.second;
+    shortSummary =
+      instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
   }
 
   return shortSummary;

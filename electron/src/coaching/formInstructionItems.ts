@@ -3,7 +3,7 @@ import { landmarkToVector3, getAngle, getDistance, Pose } from '../training_data
 import KJ from '../utils/kinectJoints';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 
-type Description = { first: string; second: string };
+type Description = { beforeNumber: string; afterNumber: string };
 
 // TODO: クラスにしたほうが扱いやすいかも
 export type FormInstructionItem = {
@@ -54,9 +54,15 @@ const squatDepth: FormInstructionItem = {
   name: 'Squat depth',
   label: 'しゃがむ深さ',
   shortDescription: {
-    negative: { first: '', second: 'cmほどしゃがみが浅いです。太ももが水平になるまで腰を落としてください' },
-    normal: { first: 'ちょうどよい深さで腰を落とせています。この調子。', second: '' },
-    positive: { first: '', second: 'cmほどしゃがみが深いです。太ももが水平になる角度で腰を止めてください。' },
+    negative: {
+      beforeNumber: '',
+      afterNumber: 'cmほどしゃがみが浅いです。太ももが水平になるまで腰を落としてください',
+    },
+    normal: { beforeNumber: 'ちょうどよい深さで腰を落とせています。この調子。', afterNumber: '' },
+    positive: {
+      beforeNumber: '',
+      afterNumber: 'cmほどしゃがみが深いです。太ももが水平になる角度で腰を止めてください。',
+    },
   },
   longDescription: {
     negative:
@@ -146,12 +152,18 @@ const kneeInAndOut: FormInstructionItem = {
   name: 'Knee in and out',
   label: 'ひざの開き',
   shortDescription: {
-    negative: { first: '膝が', second: '度ほど内側に入っています。つま先とひざの向きを揃えるようにしてください。' },
-    normal: {
-      first: '足の向きと太ももの向きが一致していて、とても良いです。',
-      second: '',
+    negative: {
+      beforeNumber: '膝が',
+      afterNumber: '度ほど内側に入っています。つま先とひざの向きを揃えるようにしてください。',
     },
-    positive: { first: '膝が', second: '度ほど開いています。つま先とひざの向きを揃えるようにしてください。' },
+    normal: {
+      beforeNumber: '足の向きと太ももの向きが一致していて、とても良いです。',
+      afterNumber: '',
+    },
+    positive: {
+      beforeNumber: '膝が',
+      afterNumber: '度ほど開いています。つま先とひざの向きを揃えるようにしてください。',
+    },
   },
   longDescription: {
     negative:
@@ -248,9 +260,9 @@ const stanceWidth: FormInstructionItem = {
   name: 'Stance width',
   label: '足の幅',
   shortDescription: {
-    negative: { first: '足の幅を', second: 'cmほど広くしてください。' },
-    normal: { first: '足の幅はバッチリです。', second: '' },
-    positive: { first: '足の幅を', second: 'cmほど狭くしてください' },
+    negative: { beforeNumber: '足の幅を', afterNumber: 'cmほど広くしてください。' },
+    normal: { beforeNumber: '足の幅はバッチリです。', afterNumber: '' },
+    positive: { beforeNumber: '足の幅を', afterNumber: 'cmほど狭くしてください' },
   },
   longDescription: {
     negative: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
@@ -301,13 +313,13 @@ const kneeFrontAndBack: FormInstructionItem = {
   label: '膝の前後位置',
   shortDescription: {
     negative: {
-      first: 'お尻をあと',
-      second: 'cmほど前に出してください。膝がつま先の少し前に来るように意識しましょう。',
+      beforeNumber: 'お尻をあと',
+      afterNumber: 'cmほど前に出してください。膝がつま先の少し前に来るように意識しましょう。',
     },
-    normal: { first: '膝とお尻の前後位置はバッチリです。', second: '' },
+    normal: { beforeNumber: '膝とお尻の前後位置はバッチリです。', afterNumber: '' },
     positive: {
-      first: 'お尻をあと',
-      second: 'cmほど後ろに引いてください。膝がつま先の少し前に来るように意識しましょう。',
+      beforeNumber: 'お尻をあと',
+      afterNumber: 'cmほど後ろに引いてください。膝がつま先の少し前に来るように意識しましょう。',
     },
   },
   longDescription: {
@@ -370,13 +382,13 @@ const squatVelocity: FormInstructionItem = {
   label: '速度',
   shortDescription: {
     negative: {
-      first: '立ち上がるのに約',
-      second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
+      beforeNumber: '立ち上がるのに約',
+      afterNumber: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
     },
-    normal: { first: '速度はバッチリです。', second: '' },
+    normal: { beforeNumber: '速度はバッチリです。', afterNumber: '' },
     positive: {
-      first: '立ち上がるのに約',
-      second: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
+      beforeNumber: '立ち上がるのに約',
+      afterNumber: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
     },
   },
   longDescription: {
@@ -422,4 +434,3 @@ const squatVelocity: FormInstructionItem = {
 
 // 指導項目を追加したらここにもかく
 export const formInstructionItemsQWS = [squatDepth, kneeInAndOut, stanceWidth, kneeFrontAndBack, squatVelocity];
-export const formInstructionItemsEmpty = [];
