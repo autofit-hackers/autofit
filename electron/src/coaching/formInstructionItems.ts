@@ -345,7 +345,7 @@ const stanceWidth: FormInstructionItem = {
     const thresholds = { upper: 2, middle: 1.4, lower: 1 };
     const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
-    const errorInt = Math.round(footWidth / shoulderWidth - thresholds.middle);
+    const errorInt = Math.round(footWidth - thresholds.middle * shoulderWidth);
 
     return errorInt;
   },
@@ -490,7 +490,7 @@ const squatVelocity: FormInstructionItem = {
   evaluateForm: (rep: Rep) => {
     // TODO: エキセントリックも実装したい。
     // TODO: 閾値を再設定
-    const thresholds = { upper: 3000, middle: 1500, lower: 1000 }; // ミリ秒
+    const thresholds = { upper: 2500, middle: 1500, lower: 500 }; // ミリ秒
     const bottomPose = getBottomPose(rep);
     const lastPose = getLastPose(rep);
     if (bottomPose === undefined || lastPose === undefined) {
@@ -511,7 +511,6 @@ const squatVelocity: FormInstructionItem = {
     const halfRepDuration = (lastPose.timestamp - bottomPose.timestamp) / 1000; // ミリ秒 -> 秒に変換
 
     const error = parseFloat(halfRepDuration.toFixed(1)); // 小数点第一位まで取得
-    console.log('squatVelocity: error', error);
 
     return error;
   },
