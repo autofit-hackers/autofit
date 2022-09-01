@@ -1,6 +1,5 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
 import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
-import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
@@ -14,25 +13,25 @@ import {
   evaluateRepForm,
   getTopPose,
   Rep,
-  resetRep
+  resetRep,
 } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
-import { exportData } from '../utils/exporter';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
+import { startCapturingRepVideo } from '../utils/recordVideo';
 import {
   formInstructionItemsAtom,
   kinectAtom,
   phaseAtom,
   playSoundAtom,
   repVideoUrlsAtom,
-  setRecordAtom
+  setRecordAtom,
 } from './atoms';
 import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
+import SaveButton from './ui-components/SaveButton';
 
 export default function BodyTrack2d() {
   // 描画
@@ -69,9 +68,7 @@ export default function BodyTrack2d() {
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
-  const setVideoRecorderRef = useRef<MediaRecorder | null>(null);
-  const setVideoUrlRef = useRef<string>('');
-  const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
+  const [repVideoUrls, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
 
   // レップカウント用
   const repCounterRef = useRef<HTMLDivElement | null>(null);
@@ -90,18 +87,6 @@ export default function BodyTrack2d() {
   const [knee, setKnee] = useState<number[]>([]);
   const [toe, setToe] = useState<number[]>([]);
 
-  const handleSave = () => {
-    const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
-    exportData(setRef.current.reps);
-    // セット映像の録画を停止する
-    if (setVideoUrlRef.current === '' && setVideoRecorderRef.current != null) {
-      setVideoRecorderRef.current.stop();
-      setTimeout(() => {
-        void downloadVideo(setVideoUrlRef.current, `${now}.mp4`);
-      }, 1000);
-    }
-  };
-
   const handleReset = () => {
     // 描画
     canvasImageData.current = null;
@@ -114,9 +99,7 @@ export default function BodyTrack2d() {
     repState.current = resetRepState();
     // 映像保存
     repVideoRecorderRef.current = null;
-    setVideoRecorderRef.current = null;
     setRepVideoUrls([]);
-    setVideoUrlRef.current = '';
     playTrainingStartSound(playSound);
     // グラフ
     evaluatedFrameRef.current.forEach((frame, idx) => {
@@ -150,10 +133,6 @@ export default function BodyTrack2d() {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
-        // セット映像の記録を開始
-        if (setVideoRecorderRef.current == null) {
-          setVideoRecorderRef.current = startCapturingSetVideo(canvasRef.current, setVideoUrlRef);
-        }
       } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
@@ -222,7 +201,6 @@ export default function BodyTrack2d() {
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
-
           // 動画撮影を停止し、配列に保存する
           if (repVideoRecorderRef.current) {
             repVideoRecorderRef.current.stop();
@@ -322,12 +300,9 @@ export default function BodyTrack2d() {
     // このコンポーネントのアンマウント時に実行される
     // FIXME: 最初にもよばれる
     return () => {
+      // レップとして保存されていない映像は破棄する
       if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {
-        repVideoRecorderRef.current.stop();
-      }
-      // セット映像の録画を停止する
-      if (setVideoRecorderRef.current != null && setVideoRecorderRef.current.state === 'recording') {
-        setVideoRecorderRef.current.stop();
+        repVideoRecorderRef.current = null;
       }
     };
   }, []);
@@ -346,9 +321,7 @@ export default function BodyTrack2d() {
 
   return (
     <>
-      <Button onClick={handleSave} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
-        SAVE
-      </Button>
+      <SaveButton object={setRef.current} videoUrls={repVideoUrls} />
       <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
         RESET TRAINING
       </Button>
@@ -404,7 +377,6 @@ export default function BodyTrack2d() {
         ref={repCounterRef}
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
-
       <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
       <RadioGroup
         row
