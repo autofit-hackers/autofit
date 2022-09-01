@@ -113,6 +113,7 @@ export const recordFormEvaluationResult = (
   const setCopy: Set = set;
 
   instructionItems.forEach((instructionItem, index) => {
+    // TODO: set変数を生成した時点で指導項目の個数分の要素をもつ配列を格納しておく -> resetSet()
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
       shortSummary: '',

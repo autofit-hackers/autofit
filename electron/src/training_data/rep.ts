@@ -119,9 +119,7 @@ export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionI
 
   instructionItems.forEach((instructionItem) => {
     rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep);
-    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal
-      ? instructionItem.getCoordinateErrorFromIdeal(rep)
-      : 0;
+    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(rep);
     rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
       ? instructionItem.getGuidelineSymbols(rep)
       : ({} as GuidelineSymbols);

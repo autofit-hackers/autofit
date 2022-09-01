@@ -23,7 +23,7 @@ export type FormInstructionItem = {
   readonly calculateRealtimeValue: (evaluatedPose: Pose) => number;
   readonly calculateRealtimeThreshold: (criteriaPose: Pose) => { upper: number; middle: number; lower: number };
   readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
-  readonly getCoordinateErrorFromIdeal?: (rep: Rep) => number;
+  readonly getCoordinateErrorFromIdeal: (rep: Rep) => number;
 };
 
 // TODO: けっこうごちゃごちゃしてきました。用語の定義をしっかりするところから始めましょう。
@@ -152,7 +152,7 @@ const kneeInAndOut: FormInstructionItem = {
   label: 'ひざの開き',
   shortDescription: {
     negative: {
-      beforeNumber: '膝が',
+      beforeNumber: '膝が適切な角度より',
       afterNumber: '度ほど内側に入っています。つま先とひざの向きを揃えるようにしてください。',
     },
     normal: {
@@ -160,8 +160,8 @@ const kneeInAndOut: FormInstructionItem = {
       afterNumber: '',
     },
     positive: {
-      beforeNumber: '膝が',
-      afterNumber: '度ほど開いています。つま先とひざの向きを揃えるようにしてください。',
+      beforeNumber: '膝が適切な角度より',
+      afterNumber: '度ほど大きく開いています。つま先とひざの向きを揃えるようにしてください。',
     },
   },
   longDescription: {
@@ -466,8 +466,8 @@ const squatVelocity: FormInstructionItem = {
   label: '速度',
   shortDescription: {
     negative: {
-      beforeNumber: '立ち上がるのに約',
-      afterNumber: '秒かかっています。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
+      beforeNumber: '立ち上がるのが約',
+      afterNumber: '秒と少し速いです。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がってください。',
     },
     normal: { beforeNumber: '速度はバッチリです。', afterNumber: '' },
     positive: {
@@ -508,11 +508,12 @@ const squatVelocity: FormInstructionItem = {
 
       return 0;
     }
-    const halfRepDuration = lastPose.timestamp - bottomPose.timestamp;
+    const halfRepDuration = (lastPose.timestamp - bottomPose.timestamp) / 1000; // ミリ秒 -> 秒に変換
 
-    const errorInt = parseFloat(halfRepDuration.toFixed(1)); // 小数点第二位までを切り捨てる
+    const error = parseFloat(halfRepDuration.toFixed(1)); // 小数点第一位まで取得
+    console.log('squatVelocity: error', error);
 
-    return errorInt;
+    return error;
   },
   calculateRealtimeValue: (evaluatedPose) => heightInWorld(evaluatedPose),
   calculateRealtimeThreshold: (criteriaPose) => {
