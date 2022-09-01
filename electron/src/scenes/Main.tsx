@@ -1,6 +1,7 @@
 import { Button } from '@mui/material';
 import { useAtom } from 'jotai';
-import { phaseAtom } from './atoms';
+import { playTrainingEndSound } from '../coaching/voiceGuidance';
+import { phaseAtom, playSoundAtom } from './atoms';
 import BodyTrack2d from './BodyTracking';
 import IntervalReport from './Report';
 import StartPage from './StartPage';
@@ -8,6 +9,7 @@ import ProductMenu from './ui-components/ProductMenu';
 
 export default function TrainingMain() {
   const [phase, setPhase] = useAtom(phaseAtom);
+  const [playSound] = useAtom(playSoundAtom);
 
   return (
     <>
@@ -19,6 +21,7 @@ export default function TrainingMain() {
             variant="contained"
             onClick={() => {
               setPhase(2);
+              playTrainingEndSound(playSound);
             }}
             sx={{ zIndex: 2 }}
           >
@@ -29,7 +32,12 @@ export default function TrainingMain() {
       )}
       {phase === 2 && (
         <>
-          <Button variant="contained" onClick={() => setPhase(1)}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setPhase(1);
+            }}
+          >
             Back to Training
           </Button>
           <IntervalReport />

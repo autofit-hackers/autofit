@@ -1,8 +1,11 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
-import { Button } from '@mui/material';
+import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
+import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
+import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
 import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import {
@@ -21,7 +24,15 @@ import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
-import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
+import {
+  formInstructionItemsAtom,
+  kinectAtom,
+  phaseAtom,
+  playSoundAtom,
+  repVideoUrlsAtom,
+  setRecordAtom,
+} from './atoms';
+import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
 
 export default function BodyTrack2d() {
   // 描画
@@ -44,10 +55,11 @@ export default function BodyTrack2d() {
   const lowerThreshold = 0.8; // TODO: temporarily hard coded
   const upperThreshold = 0.95;
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
+  const [playSound] = useAtom(playSoundAtom);
 
   // settings to treat outliers in pose estimation
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 2.0, maxConsecutiveOutlierCount: 10 };
-  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 200, maxConsecutiveOutlierCount: 10 };
+  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
 
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
@@ -63,6 +75,20 @@ export default function BodyTrack2d() {
 
   // レップカウント用
   const repCounterRef = useRef<HTMLDivElement | null>(null);
+
+  // リアルタイムグラフ用
+  const evaluatedFrameRef = useRef<EvaluatedFrames>([]);
+  const [realtimeChartData, setRealtimeChartData] = useState<number[]>([]);
+  const [threshData, setThreshData] = useState<GraphThreshold>({
+    upper: 0,
+    lower: 0,
+    middle: 0,
+  });
+  const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(0);
+
+  // form debug
+  const [knee, setKnee] = useState<number[]>([]);
+  const [toe, setToe] = useState<number[]>([]);
 
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
@@ -91,7 +117,15 @@ export default function BodyTrack2d() {
     setVideoRecorderRef.current = null;
     setRepVideoUrls([]);
     setVideoUrlRef.current = '';
-    playTrainingStartSound();
+    playTrainingStartSound(playSound);
+    // グラフ
+    evaluatedFrameRef.current.forEach((frame, idx) => {
+      evaluatedFrameRef.current[idx].evaluatedValues = [];
+    });
+    setRealtimeChartData([]);
+    setThreshData({ upper: 0, middle: 0, lower: 0 });
+    setKnee([]);
+    setToe([]);
 
     if (repCounterRef.current) repCounterRef.current.innerText = '0';
   };
@@ -180,6 +214,12 @@ export default function BodyTrack2d() {
         // 現フレームの推定Poseをレップのフォームに追加
         repRef.current = appendPoseToForm(repRef.current, currentPose);
 
+        // グラフを更新
+        evaluatedFrameRef.current.forEach((item, index) => {
+          const evaluateCallback = formInstructionItemsQWS[index].calculateRealtimeValue;
+          item.evaluatedValues.push(evaluateCallback(currentPose));
+        });
+
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           console.log('rep end', repRef.current);
@@ -193,18 +233,30 @@ export default function BodyTrack2d() {
           repRef.current = calculateKeyframes(repRef.current);
           repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
 
+          // グラフの更新
+          const topPose = getTopPose(repRef.current);
+          if (topPose !== undefined) {
+            evaluatedFrameRef.current.forEach((item, index) => {
+              const threshold = formInstructionItemsQWS[index].calculateRealtimeThreshold(topPose);
+              evaluatedFrameRef.current[index].threshold = threshold;
+            });
+          }
+
           // 完了したレップの情報をセットに追加し、レップをリセットする
           setRef.current.reps = [...setRef.current.reps, repRef.current];
           repRef.current = resetRep(setRef.current.reps.length);
 
           // レップカウントを読み上げる
-          playRepCountSound(setRef.current.reps.length);
+          playRepCountSound(setRef.current.reps.length, playSound);
 
           // RepStateの初期化
           repState.current = resetRepState();
 
           // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems);
+          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems, evaluatedFrameRef.current);
+          setRef.current.formEvaluationResults.forEach((item, index) => {
+            setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
+          });
           setSetRecord(setRef.current);
 
           // レップカウントを更新
@@ -253,10 +305,19 @@ export default function BodyTrack2d() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current);
       poseGrid.setCameraAngle();
+      poseGrid.isAutoRotating = true;
     }
 
     if (repCounterRef.current !== null) {
       repCounterRef.current.innerHTML = '0';
+    }
+
+    if (evaluatedFrameRef.current !== null) {
+      evaluatedFrameRef.current = formInstructionItemsQWS.map((item) => ({
+        name: item.name,
+        threshold: { upper: 0, lower: 0, middle: 0 },
+        evaluatedValues: [],
+      }));
     }
 
     // このコンポーネントのアンマウント時に実行される
@@ -272,6 +333,18 @@ export default function BodyTrack2d() {
     };
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const chartData = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].evaluatedValues;
+      const thresh = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].threshold;
+      // TODO: setRealtimeCartData(chartData) と書きたいが、リアルタイム更新されなくなる
+      setRealtimeChartData([chartData[0]].concat(chartData));
+      setThreshData(thresh);
+    }, 10);
+
+    return () => clearInterval(timer);
+  });
+
   return (
     <>
       <Button onClick={handleSave} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
@@ -280,20 +353,30 @@ export default function BodyTrack2d() {
       <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
         RESET TRAINING
       </Button>
+      <Button
+        onClick={() => {
+          if (prevPoseRef.current) {
+            setKnee(knee.concat([getOpeningOfKnee(prevPoseRef.current)]));
+            setToe(toe.concat([getOpeningOfToe(prevPoseRef.current)]));
+          }
+        }}
+      >
+        ADD Data to CSV
+      </Button>
       <canvas
         ref={canvasRef}
         className="main_canvas"
         style={{
-          position: 'absolute',
+          width: '90vw',
+          position: 'relative',
           zIndex: 1,
-          top: 0,
+          top: '5vw',
           right: 0,
           bottom: 0,
           left: 0,
           margin: 'auto',
         }}
       />
-      <div ref={repCounterRef} />
       <div
         className="square-box"
         style={{
@@ -301,13 +384,15 @@ export default function BodyTrack2d() {
           position: 'absolute',
           width: '30vw',
           height: '30vw',
+          top: '78vw',
+          left: '63vw',
         }}
       >
         <div
           className="pose-grid-container"
           ref={gridDivRef}
           style={{
-            position: 'absolute',
+            position: 'relative',
             height: '100%',
             width: '100%',
             top: 0,
@@ -316,6 +401,26 @@ export default function BodyTrack2d() {
           }}
         />
       </div>
+      <div
+        ref={repCounterRef}
+        style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
+      />
+
+      <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
+      <RadioGroup
+        row
+        aria-labelledby="error-group"
+        name="error-buttons-group"
+        value={displayingInstructionIndexOnGraph}
+        onChange={(e, v) => {
+          setDisplayingInstructionIndexOnGraph(v as unknown as number);
+        }}
+      >
+        {evaluatedFrameRef.current.map((item, index: number) => (
+          <FormControlLabel key={item.name} value={index} control={<Radio />} label={item.name} />
+        ))}
+      </RadioGroup>
+      <ManuallyAddableChart data={[knee, toe]} />
     </>
   );
 }

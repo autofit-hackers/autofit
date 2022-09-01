@@ -1,5 +1,6 @@
+import type { FormEvaluationResult, FormInstructionItem } from '../coaching/formInstructionItems';
+import { FrameEvaluateParams } from '../coaching/FormInstructionDebug';
 import { Rep } from './rep';
-import type { FormInstructionItem, FormEvaluationResult } from '../coaching/formInstructionItems';
 
 export type SetSummary = {
   weight?: number;
@@ -103,10 +104,15 @@ const selectDisplayedSummary = (set: Set) => {
 };
 
 // セット変数に各指導項目の評価結果を追加する
-export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstructionItem[]): Set => {
+// TODO: ここでevaluatedValuesPerFrameを追加することで白トビバグを解決しているが本当は好ましくない
+export const recordFormEvaluationResult = (
+  set: Set,
+  instructionItems: FormInstructionItem[],
+  evaluatedValuesPerFrame: FrameEvaluateParams[],
+): Set => {
   const setCopy: Set = set;
 
-  instructionItems.forEach((instructionItem) => {
+  instructionItems.forEach((instructionItem, index) => {
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
       shortSummary: '',
@@ -118,6 +124,7 @@ export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstr
       score: 0,
       bestRepIndex: 0,
       worstRepIndex: 0,
+      evaluatedValuesPerFrame: evaluatedValuesPerFrame[index],
       bestRepError: 0,
       worstRepError: 0,
     };

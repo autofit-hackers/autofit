@@ -20,28 +20,69 @@ import {
   SphereGeometry,
   Vector3,
   WebGLRenderer,
+  DoubleSide,
+  PlaneGeometry,
+  Matrix3,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { KINECT_POSE_CONNECTIONS, landmarkToVector3 } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
 
+// TODO: オブジェクトごとに色を設定できるようにする
 export type LineEndPoints = {
   from: Vector3;
   to: Vector3;
+  showEndPoints: boolean;
 };
 
 type SquareCorners = {
-  1: Vector3;
-  2: Vector3;
-  3: Vector3;
-  4: Vector3;
+  topLeft: Vector3;
+  topRight: Vector3;
+  bottomLeft: Vector3;
+  bottomRight: Vector3;
+};
+
+type Square = {
+  width: number;
+  height: number;
+  center: Vector3;
+};
+
+export const cornerPointsToSquare = (corners: SquareCorners): Square => {
+  const { topLeft, topRight, bottomLeft, bottomRight } = corners;
+  // Check that the given 4 points are on the same plane
+  const topLeftToBottomRight = new Vector3().subVectors(bottomRight, topLeft);
+  const topLeftToBottomLeft = new Vector3().subVectors(bottomLeft, topLeft);
+  const topLeftToTopRight = new Vector3().subVectors(topRight, topLeft);
+
+  const matrix = new Matrix3().set(
+    topLeftToBottomRight.x,
+    topLeftToBottomRight.y,
+    topLeftToBottomRight.z,
+    topLeftToBottomLeft.x,
+    topLeftToBottomLeft.y,
+    topLeftToBottomLeft.z,
+    topLeftToTopRight.x,
+    topLeftToTopRight.y,
+    topLeftToTopRight.z,
+  );
+  if (matrix.determinant() !== 0) {
+    console.error('The given 4 points are not on the same plane');
+  }
+
+  const width = topLeft.distanceTo(topRight);
+  const height = topRight.distanceTo(bottomRight);
+  const center = new Vector3().addVectors(topLeft, bottomRight).divideScalar(2);
+
+  return { width, height, center };
 };
 
 export type GuidelineSymbols = {
+  points?: Vector3[];
   lines?: LineEndPoints[];
   spheres?: Vector3[];
-  squares?: SquareCorners[]; // should have 4 points
+  squares?: SquareCorners[];
 };
 
 export type CameraAngle = {
@@ -87,6 +128,8 @@ export class PoseGrid {
   connectionGroup: Group;
   cylinderGroup: Group;
   guidelineGroup: Group;
+  isAutoRotating: boolean;
+  phiForAutoRotation: number;
 
   constructor(parent: HTMLElement, config = DEFAULT_POSE_GRID_CONFIG) {
     this.config = config;
@@ -136,6 +179,10 @@ export class PoseGrid {
     const { size, divisions, y } = this.config.gridPlane;
     const gridPlane = new GridHelper(size, divisions);
     gridPlane.translateY(y); // translate grid plane on foot height
+
+    // カメラ自動回転
+    this.isAutoRotating = false;
+    this.phiForAutoRotation = 0;
 
     this.scene.add(gridPlane);
     this.landmarkGroup = new Group();
@@ -222,6 +269,12 @@ export class PoseGrid {
       this.drawGuideline(guideSymbols);
     }
 
+    // カメラの回転;
+    if (this.isAutoRotating) {
+      this.phiForAutoRotation += 0.7;
+      this.setCameraAngle({ theta: 90, phi: this.phiForAutoRotation });
+    }
+
     this.requestFrame();
   }
 
@@ -246,6 +299,15 @@ export class PoseGrid {
     }
   }
 
+  drawPoint(point: Vector3, color: Color = new Color(0xff0000)): void {
+    const material = new MeshBasicMaterial({ color });
+    const sphereGeometry = new SphereGeometry(this.config.landmarkSize);
+
+    const sphere = new Mesh(sphereGeometry, material);
+    sphere.position.copy(point);
+    this.guidelineGroup.add(sphere);
+  }
+
   drawLine(lineEndPoints: LineEndPoints, color: Color = new Color(0xff0000)): void {
     const material = new MeshBasicMaterial({ color });
     const { from, to } = lineEndPoints;
@@ -267,6 +329,15 @@ export class PoseGrid {
     });
   }
 
+  drawSquare(squareCorners: SquareCorners, color: Color = new Color(0xff0000)): void {
+    const { width, height, center } = cornerPointsToSquare(squareCorners);
+    const geometry = new PlaneGeometry(width, height);
+    const material = new MeshBasicMaterial({ color, side: DoubleSide });
+    const squareMesh = new Mesh(geometry, material);
+    squareMesh.position.set(center.x, center.y, center.z);
+    this.guidelineGroup.add(squareMesh);
+  }
+
   drawCylinder(from: Vector3, to: Vector3): void {
     const center = from.add(to).multiplyScalar(0.5);
     const distance = from.distanceTo(to);
@@ -278,10 +349,21 @@ export class PoseGrid {
   }
 
   drawGuideline(guidelineSymbols: GuidelineSymbols): void {
+    this.guidelineGroup.clear();
+    if ('points' in guidelineSymbols) {
+      guidelineSymbols.points?.forEach((point): void => {
+        this.drawPoint(point);
+      });
+    }
     if ('lines' in guidelineSymbols) {
       guidelineSymbols.lines?.forEach((linePair) => {
         this.drawLine(linePair);
-        this.drawLineEndPoints(linePair);
+        if (linePair.showEndPoints) this.drawLineEndPoints(linePair);
+      });
+    }
+    if ('squares' in guidelineSymbols) {
+      guidelineSymbols.squares?.forEach((squareCorners) => {
+        this.drawSquare(squareCorners);
       });
     }
   }
