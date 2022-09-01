@@ -22,16 +22,37 @@ export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
 });
 
 // 各レップに対する表示テキストの決定
-const decideShortSummary = (eachRepErrors: number[], instructionItem: FormInstructionItem): string => {
+// TODO: 役割が多すぎるので、複数の関数に分割する
+const decideShortSummary = (
+  itemScore: number,
+  worstRepError: number,
+  eachRepCoordinateErrors: number[],
+  instructionItem: FormInstructionItem,
+): string => {
   let shortSummary = '';
-  // 平均errorの値でテキストを決定
-  const error = eachRepErrors.reduce((num1: number, num2: number) => num1 + num2, 0) / eachRepErrors.length;
-  if (error <= -1) {
-    shortSummary = instructionItem.shortDescription.minus;
-  } else if (error >= 1) {
-    shortSummary = instructionItem.shortDescription.plus;
+
+  // itemScoreが60点以下(bad表示)の場合は修正テキストを表示。ポジネガはもっともエラーが大きかったレップをもとに決定。
+  if (itemScore <= 60 && worstRepError <= 0) {
+    const negativeCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
+    const averageNegativeCoordinateError =
+      negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
+      negativeCoordinateErrorList.length;
+    shortSummary =
+      instructionItem.shortDescription.negative.beforeNumber +
+      Math.abs(averageNegativeCoordinateError).toString() +
+      instructionItem.shortDescription.negative.afterNumber;
+  } else if (itemScore <= 60 && worstRepError >= 0) {
+    const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
+    const averagePositiveCoordinateError =
+      positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
+      positiveCoordinateErrorList.length;
+    shortSummary =
+      instructionItem.shortDescription.positive.beforeNumber +
+      averagePositiveCoordinateError.toString() +
+      instructionItem.shortDescription.positive.afterNumber;
   } else {
-    shortSummary = instructionItem.shortDescription.normal;
+    shortSummary =
+      instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
   }
 
   return shortSummary;
@@ -43,9 +64,9 @@ const decideLongSummary = (eachRepErrors: number[], instructionItem: FormInstruc
   const errorSum = eachRepErrors.reduce((acc, err) => acc + err, 0);
   let summary = '';
   if (errorSum <= 0) {
-    summary = instructionItem.longDescription.minus;
+    summary = instructionItem.longDescription.negative;
   } else {
-    summary = instructionItem.longDescription.plus;
+    summary = instructionItem.longDescription.positive;
   }
 
   return summary;
@@ -53,12 +74,12 @@ const decideLongSummary = (eachRepErrors: number[], instructionItem: FormInstruc
 
 // セット全体に対する指導項目スコアを100点満点で算出する
 // TODO: Scoreの算出手法を再考する
-const calculateScore = (eachRepErrorsAbs: number[]) => {
+const calculateItemScore = (eachRepErrorsAbs: number[]) => {
   const numberOfSuccessfulReps = eachRepErrorsAbs.filter((errorAbs) => errorAbs < 1).length;
   const numberOfTotalReps = eachRepErrorsAbs.length;
-  const score = (numberOfSuccessfulReps / numberOfTotalReps) * 100;
+  const itemScore = (numberOfSuccessfulReps / numberOfTotalReps) * 100;
 
-  return score;
+  return itemScore;
 };
 
 // 表示する総評テキストの選択
@@ -92,40 +113,49 @@ export const recordFormEvaluationResult = (
   const setCopy: Set = set;
 
   instructionItems.forEach((instructionItem, index) => {
+    // TODO: set変数を生成した時点で指導項目の個数分の要素をもつ配列を格納しておく -> resetSet()
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
       shortSummary: '',
       longSummary: '',
       descriptionsForEachRep: [],
       overallComment: '',
-      eachRepErrors: [],
+      eachRepErrorScores: [],
+      eachRepCoordinateErrors: [],
       score: 0,
       bestRepIndex: 0,
       worstRepIndex: 0,
       evaluatedValuesPerFrame: evaluatedValuesPerFrame[index],
+      bestRepError: 0,
+      worstRepError: 0,
     };
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
-    setCopy.reps.forEach((rep) => {
-      evaluationResult.eachRepErrors[rep.index] = rep.formErrorScores[instructionItem.id];
+    set.reps.forEach((rep) => {
+      evaluationResult.eachRepErrorScores[rep.index] = rep.formErrorScores[instructionItem.id];
+      evaluationResult.eachRepCoordinateErrors[rep.index] = rep.coordinateErrors[instructionItem.id];
     });
 
     // エラーの絶対値が最大/最小となるレップのインデックスを記録する
-    const eachRepErrorsAbs = evaluationResult.eachRepErrors.map((error) => Math.abs(error));
+    const eachRepErrorsAbs = evaluationResult.eachRepErrorScores.map((error) => Math.abs(error));
     evaluationResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
     evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
+    evaluationResult.bestRepError = evaluationResult.eachRepErrorScores[evaluationResult.bestRepIndex];
+    evaluationResult.worstRepError = evaluationResult.eachRepErrorScores[evaluationResult.worstRepIndex];
 
     // セット全体に対する指導項目スコアを算出する
-    evaluationResult.score = calculateScore(eachRepErrorsAbs);
+    evaluationResult.score = calculateItemScore(eachRepErrorsAbs);
 
     // 各レップに対する表示テキストの決定
-    evaluationResult.shortSummary = decideShortSummary(evaluationResult.eachRepErrors, instructionItem);
+    evaluationResult.shortSummary = decideShortSummary(
+      evaluationResult.score,
+      evaluationResult.worstRepError,
+      evaluationResult.eachRepCoordinateErrors,
+      instructionItem,
+    );
 
-    // セット全体に対する指導項目ごとの表示テキストを決定
-    evaluationResult.shortSummary = decideShortSummary(eachRepErrorsAbs, instructionItem);
-
-    // セット全体に対する総評の決定
-    evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrors, instructionItem);
+    // 各指導項目に対するセット全体の評価分の決定
+    evaluationResult.longSummary = decideLongSummary(evaluationResult.eachRepErrorScores, instructionItem);
 
     setCopy.formEvaluationResults[instructionItem.id] = evaluationResult;
   });

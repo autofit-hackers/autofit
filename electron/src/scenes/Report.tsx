@@ -16,6 +16,7 @@ import VideoPlayer from './ui-components/VideoPlayer';
 export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
+  console.log('report ', setRecord);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
@@ -45,9 +46,7 @@ export default function IntervalReport() {
   // TODO: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
   useEffect(() => {
-    setDisplayedRepIndex(
-      selectedInstructionIndex >= 0 ? setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex : 0,
-    );
+    setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
     if (poseGridRef.current !== null) {
       poseGridRef.current.setCameraAngle(formInstructionItems[selectedInstructionIndex].poseGridCameraAngle);
       poseGridRef.current.drawGuideline(
@@ -104,11 +103,7 @@ export default function IntervalReport() {
                   <PoseGridViewer
                     gridDivRef={gridDivRef}
                     poseGridRef={poseGridRef}
-                    cameraPosition={
-                      selectedInstructionIndex >= 0
-                        ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                        : formInstructionItems[0].poseGridCameraAngle
-                    }
+                    cameraPosition={formInstructionItems[selectedInstructionIndex].poseGridCameraAngle}
                   />
                 </CardContent>
               </Card>

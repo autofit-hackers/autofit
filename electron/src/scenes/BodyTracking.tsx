@@ -11,7 +11,7 @@ import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from 
 import {
   appendPoseToForm,
   calculateKeyframes,
-  calculateRepFormErrorScore,
+  evaluateRepForm,
   getTopPose,
   Rep,
   resetRep,
@@ -126,6 +126,8 @@ export default function BodyTrack2d() {
     setThreshData({ upper: 0, middle: 0, lower: 0 });
     setKnee([]);
     setToe([]);
+
+    if (repCounterRef.current) repCounterRef.current.innerText = '0';
   };
 
   // 毎kinect更新時に実行される
@@ -163,6 +165,7 @@ export default function BodyTrack2d() {
           data.bodyFrame.bodies[0].skeleton.joints,
           canvasRef.current,
           true,
+          new Date().getTime(),
         );
 
         // 外れ値処理
@@ -228,7 +231,7 @@ export default function BodyTrack2d() {
 
           // 完了したレップのフォームを分析・評価
           repRef.current = calculateKeyframes(repRef.current);
-          repRef.current = calculateRepFormErrorScore(repRef.current, formInstructionItems);
+          repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
 
           // グラフの更新
           const topPose = getTopPose(repRef.current);
