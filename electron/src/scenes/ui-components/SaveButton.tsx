@@ -3,17 +3,17 @@ import { IconButton } from '@mui/material';
 import dayjs from 'dayjs';
 import { downloadVideo } from '../../utils/recordVideo';
 
-export const exportJson = (data: object, now: string) => {
-  const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
-  const link = document.createElement('a');
-  link.href = jsonString;
-  link.download = `setRecord_${now}.json`;
-
-  link.click();
-};
-
 function SaveButton(props: { object: object; videoUrls: string[] }) {
   const { object, videoUrls } = props;
+
+  const exportJson = (data: object, now: string) => {
+    const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
+    const link = document.createElement('a');
+    link.href = jsonString;
+    link.download = `setRecord_${now}.json`;
+
+    link.click();
+  };
 
   // TODO: 映像を保存する際にURL個数分のダイアログが出る
   const handleSave = () => {
