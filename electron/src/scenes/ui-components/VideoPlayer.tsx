@@ -8,7 +8,7 @@ import { PoseGrid } from '../../utils/poseGrid';
 import { repVideoUrlsAtom, setRecordAtom } from '../atoms';
 
 function VideoPlayer(props: { displayedRepIndex: number; poseGridRef: React.MutableRefObject<PoseGrid | null> }) {
-  const videoRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
+  const videoPlayerRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
   const { displayedRepIndex, poseGridRef } = props;
   const [repVideoUrls] = useAtom(repVideoUrlsAtom);
   const [setRecord] = useAtom(setRecordAtom);
@@ -17,7 +17,7 @@ function VideoPlayer(props: { displayedRepIndex: number; poseGridRef: React.Muta
   return (
     <Paper>
       <ReactPlayer
-        ref={videoRef}
+        ref={videoPlayerRef}
         url={repVideoUrls[displayedRepIndex]}
         id="RepVideo"
         playing
@@ -28,7 +28,7 @@ function VideoPlayer(props: { displayedRepIndex: number; poseGridRef: React.Muta
         onReady={() => {
           if (poseGridRef.current) {
             // PoseGridをレップ映像に同期させる
-            poseGridRef.current.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex);
+            poseGridRef.current.startSynchronizingToVideo(videoPlayerRef, setRecord, displayedRepIndex);
           }
         }}
       />
