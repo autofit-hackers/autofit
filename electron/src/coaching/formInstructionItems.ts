@@ -32,7 +32,7 @@ export type FormEvaluationResult = {
   score: number;
   bestRepIndex: number;
   worstRepIndex: number;
-  evaluatedValuesPerFrame?: FrameEvaluateParams;
+  evaluatedValuesPerFrame: FrameEvaluateParams;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）

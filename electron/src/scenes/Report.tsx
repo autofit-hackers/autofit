@@ -121,10 +121,10 @@ export default function IntervalReport() {
                     <RealtimeChart
                       data={
                         setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame
-                          ?.evaluatedValues
+                          .evaluatedValues
                       }
                       thresh={
-                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame?.threshold
+                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame.threshold
                       }
                       realtimeUpdate={false}
                       size="small"

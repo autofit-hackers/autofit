@@ -14,7 +14,7 @@ import {
   calculateRepFormErrorScore,
   getTopPose,
   Rep,
-  resetRep
+  resetRep,
 } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
@@ -30,7 +30,7 @@ import {
   phaseAtom,
   playSoundAtom,
   repVideoUrlsAtom,
-  setRecordAtom
+  setRecordAtom,
 } from './atoms';
 import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
 
@@ -247,7 +247,7 @@ export default function BodyTrack2d() {
           repState.current = resetRepState();
 
           // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems);
+          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems, evaluatedFrameRef.current);
           setRef.current.formEvaluationResults.forEach((item, index) => {
             setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
           });
