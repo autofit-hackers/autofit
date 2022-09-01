@@ -16,7 +16,6 @@ import VideoPlayer from './ui-components/VideoPlayer';
 export default function IntervalReport() {
   // セット記録用
   const [setRecord] = useAtom(setRecordAtom);
-  console.log('report ', setRecord);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [selectedInstructionIndex, setSelectedInstructionIndex] = useState(0);
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
@@ -29,9 +28,6 @@ export default function IntervalReport() {
   // PoseGrid用
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   const poseGridRef = useRef<PoseGrid | null>(null);
-
-  console.log(setRecord);
-  console.log(setRecord.formEvaluationResults[displayedRepIndex].evaluatedValuesPerFrame, selectedInstructionIndex);
 
   // Reportコンポーネントマウント時にKinectを停止し、PoseGridを作成する
   useEffect(() => {

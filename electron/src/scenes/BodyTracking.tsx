@@ -14,7 +14,7 @@ import {
   evaluateRepForm,
   getTopPose,
   Rep,
-  resetRep,
+  resetRep
 } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
@@ -30,7 +30,7 @@ import {
   phaseAtom,
   playSoundAtom,
   repVideoUrlsAtom,
-  setRecordAtom,
+  setRecordAtom
 } from './atoms';
 import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
 
@@ -222,7 +222,6 @@ export default function BodyTrack2d() {
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
-          console.log('rep end', repRef.current);
 
           // 動画撮影を停止し、配列に保存する
           if (repVideoRecorderRef.current) {
