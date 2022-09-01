@@ -82,10 +82,12 @@ export default function IntervalReport() {
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
-            おつかれさまでした。フォーム分析の結果です。
-          </Typography>
-          <SaveButton object={setRecord} videoUrls={repVideoUrls} />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+              おつかれさまでした。フォーム分析の結果です。
+            </Typography>
+            <SaveButton object={setRecord} videoUrls={repVideoUrls} />
+          </Box>
           <Grid container spacing={3}>
             {/* 撮影したRGB映像 */}
             <Grid item xs={6} alignItems="stretch">

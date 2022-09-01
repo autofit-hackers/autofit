@@ -1,4 +1,5 @@
-import { Button } from '@mui/material';
+import SaveAsIcon from '@mui/icons-material/SaveAs';
+import { IconButton } from '@mui/material';
 import dayjs from 'dayjs';
 import { downloadVideo } from '../../utils/recordVideo';
 
@@ -14,7 +15,7 @@ export const exportJson = (data: object, now: string) => {
 function SaveButton(props: { object: object; videoUrls: string[] }) {
   const { object, videoUrls } = props;
 
-  // TODO: レップ映像を保存する際に回数分のダイアログが出る
+  // TODO: 映像を保存する際にURL個数分のダイアログが出る
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
     exportJson(object, now);
@@ -24,9 +25,9 @@ function SaveButton(props: { object: object; videoUrls: string[] }) {
   };
 
   return (
-    <Button onClick={handleSave} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
-      Save Training Data
-    </Button>
+    <IconButton onClick={handleSave}>
+      <SaveAsIcon />
+    </IconButton>
   );
 }
 
