@@ -51,19 +51,6 @@ export default function IntervalReport() {
     }
   }, [displayedRepIndex, formInstructionItems, selectedInstructionIndex, setRecord]);
 
-  // radar chart config and state
-  const radarChartIndicators = formInstructionItems.map((instruction) => ({
-    name: instruction.label,
-    max: 100,
-  }));
-  const radarChartSeries = [
-    {
-      // レーダーチャートの見栄えのため、スコアの最小を20/100とする
-      value: setRecord.formEvaluationResults.map((result) => Math.max(result.score, 20)),
-      name: '今回のセット',
-    },
-  ];
-
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
@@ -128,7 +115,11 @@ export default function IntervalReport() {
               <Stack spacing={3}>
                 <TotalScore score={setRecord.summary.totalScore} />
                 {/* スコアのレーダーチャート */}
-                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+                <RadarChart
+                  formInstructionItems={formInstructionItems}
+                  formEvaluationResults={setRecord.formEvaluationResults}
+                  style={{}}
+                />
               </Stack>
             </Grid>
             {/* フォーム評価の説明文 */}
