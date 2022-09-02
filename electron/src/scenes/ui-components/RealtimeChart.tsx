@@ -51,7 +51,6 @@ function RealtimeChart(props: {
       style={{
         marginTop: size === 'large' ? '10vw' : '0',
         height: size === 'large' ? '50vw' : '30vw',
-        backgroundColor: 'white',
       }}
     />
   );

@@ -1,5 +1,5 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Box, Card, CardContent, Grid, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { Container } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
@@ -129,6 +129,10 @@ export default function IntervalReport() {
           <Grid item xs={12}>
             <Card>
               <CardContent sx={cardSx}>
+                <CardHeader
+                  title={formInstructionItems[selectedInstructionIndex].label}
+                  titleTypographyProps={{ fontWeight: 'bold' }}
+                />
                 {setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame !== undefined ? (
                   <RealtimeChart
                     data={
