@@ -7,14 +7,23 @@ export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
 type RadarChartProps = { indicators: RadarChartIndicators; series: RadarChartSeries; style: React.CSSProperties };
 
+// TODO: 応急処置
+export const escapeHiddenText = (name: string): string => {
+  if (name === 'ひざの開き') {
+    return '膝の\n開き';
+  }
+
+  return name;
+};
+
 function RadarChart(radarChartProps: RadarChartProps) {
   const { indicators, series, style } = radarChartProps;
-  const legends: string[] = series.map((row) => row.name);
+  const legends: string[] = series.map((row) => escapeHiddenText(row.name));
   const option = {
     radar: {
       indicator: indicators,
       axisName: {
-        formatter: '【{value}】',
+        formatter: '{value}',
         color: '#428BD4',
       },
     },

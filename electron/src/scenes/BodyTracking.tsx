@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
 import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
-import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
+import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import {
   appendPoseToForm,
@@ -55,6 +55,7 @@ export default function BodyTrack2d() {
   // settings
   const lowerThreshold = 0.8; // TODO: temporarily hard coded
   const upperThreshold = 0.95;
+
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [playSound] = useAtom(playSoundAtom);
 
@@ -347,21 +348,22 @@ export default function BodyTrack2d() {
 
   return (
     <>
-      <Button onClick={handleSave} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
-        SAVE
-      </Button>
-      <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
-        RESET TRAINING
+      <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3 }}>
+        トレーニング開始
       </Button>
       <Button
+        variant="contained"
         onClick={() => {
-          if (prevPoseRef.current) {
-            setKnee(knee.concat([getOpeningOfKnee(prevPoseRef.current)]));
-            setToe(toe.concat([getOpeningOfToe(prevPoseRef.current)]));
-          }
+          setPhase(2);
+          playTrainingEndSound(playSound);
         }}
+        sx={{ zIndex: 3, ml: 3 }}
+        disabled={setRef.current.reps.length === 0}
       >
-        ADD Data to CSV
+        トレーニング終了
+      </Button>
+      <Button onClick={handleSave} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
+        SAVE
       </Button>
       <canvas
         ref={canvasRef}
@@ -411,6 +413,16 @@ export default function BodyTrack2d() {
       {/* // フォームデバッグ用 */}
       {isDebugMode ? (
         <>
+          <Button
+            onClick={() => {
+              if (prevPoseRef.current) {
+                setKnee(knee.concat([getOpeningOfKnee(prevPoseRef.current)]));
+                setToe(toe.concat([getOpeningOfToe(prevPoseRef.current)]));
+              }
+            }}
+          >
+            ADD Data to CSV
+          </Button>
           <RadioGroup
             row
             aria-labelledby="error-group"

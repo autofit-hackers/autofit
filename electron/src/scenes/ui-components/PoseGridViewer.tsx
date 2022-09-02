@@ -9,7 +9,7 @@ function PoseGridViewer(props: {
   cameraPosition: CameraAngle;
 }) {
   const { gridDivRef, poseGridRef, cameraPosition } = props;
-  const [useOrthographic, setUseOrthographic] = useState(poseGridRef.current?.config.camera.useOrthographic);
+  const [useOrthographic, setUseOrthographic] = useState(true);
 
   const handleCameraTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUseOrthographic(event.target.checked);

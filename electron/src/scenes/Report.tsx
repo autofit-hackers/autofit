@@ -1,15 +1,15 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Box, Card, CardContent, CssBaseline, Grid, IconButton, Stack, Typography } from '@mui/material';
-import { Container, ThemeProvider } from '@mui/system';
+import { Box, Card, CardContent, Grid, IconButton, Stack, Typography } from '@mui/material';
+import { Container } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
-import futuristicTheme, { cardSx } from './themes';
+import { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
-import RadarChart from './ui-components/RadarChart';
+import RadarChart, { escapeHiddenText } from './ui-components/RadarChart';
 import RealtimeChart from './ui-components/RealtimeChart';
 import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
@@ -61,7 +61,7 @@ export default function IntervalReport() {
 
   // radar chart config and state
   const radarChartIndicators = formInstructionItems.map((instruction) => ({
-    name: instruction.label,
+    name: escapeHiddenText(instruction.label),
     max: 100,
   }));
   const radarChartSeries = [
@@ -73,99 +73,94 @@ export default function IntervalReport() {
   ];
 
   return (
-    <ThemeProvider theme={futuristicTheme}>
-      <CssBaseline />
+    <Box
+      component="main"
+      sx={{
+        display: 'flex',
+        backgroundColor: (theme) =>
+          theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+        flexGrow: 1,
+        height: '100vh',
+        overflow: 'auto',
+      }}
+    >
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Stack direction="row" justifyContent="left" alignItems="flex-start" spacing={2}>
+          <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+            おつかれさまでした。フォーム分析の結果です。
+          </Typography>
+          <IconButton
+            aria-label="reset-camera-angle"
+            color="primary"
+            onClick={() => {
+              setPhase(1);
+            }}
+            sx={{ zIndex: 2 }}
+          >
+            <CheckCircleIcon />
+          </IconButton>
+        </Stack>
 
-      <Box
-        component="main"
-        sx={{
-          display: 'flex',
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
-          flexGrow: 1,
-          height: '100vh',
-          overflow: 'auto',
-        }}
-      >
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Stack direction="row" justifyContent="center" alignItems="flex-start" spacing={2}>
-            <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
-              おつかれさまでした。フォーム分析の結果です。
-            </Typography>
-            <IconButton
-              aria-label="reset-camera-angle"
-              color="primary"
-              onClick={() => {
-                setPhase(1);
-              }}
-              sx={{ zIndex: 2 }}
-            >
-              <CheckCircleIcon />
-            </IconButton>
-          </Stack>
-
-          <Grid container spacing={3}>
-            {/* 撮影したRGB映像 */}
-            <Grid item xs={6} alignItems="stretch">
-              <Card>
-                <CardContent sx={cardSx}>
-                  <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
-                </CardContent>
-              </Card>
-            </Grid>
-            {/* トレーニングの3D表示 */}
-            <Grid item xs={6} alignItems="stretch">
-              <Card>
-                <CardContent sx={cardSx}>
-                  <PoseGridViewer
-                    gridDivRef={gridDivRef}
-                    poseGridRef={poseGridRef}
-                    cameraPosition={
-                      selectedInstructionIndex >= 0
-                        ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
-                        : formInstructionItems[0].poseGridCameraAngle
-                    }
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12}>
-              <Card>
-                <CardContent sx={cardSx}>
-                  {setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame !== undefined ? (
-                    <RealtimeChart
-                      data={
-                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame
-                          .evaluatedValues
-                      }
-                      thresh={
-                        setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame.threshold
-                      }
-                      realtimeUpdate={false}
-                      size="small"
-                    />
-                  ) : null}
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={5}>
-              <Stack spacing={3}>
-                <TotalScore score={setRecord.summary.totalScore} />
-                {/* スコアのレーダーチャート */}
-                <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
-              </Stack>
-            </Grid>
-            {/* フォーム評価の説明文 */}
-            <Grid item xs={7}>
-              <InstructionSummaryCards
-                formEvaluationResults={setRecord.formEvaluationResults}
-                selectedInstructionIndex={selectedInstructionIndex}
-                setSelectedInstructionIndex={setSelectedInstructionIndex}
-              />
-            </Grid>
+        <Grid container spacing={3}>
+          {/* 撮影したRGB映像 */}
+          <Grid item xs={6} alignItems="stretch">
+            <Card>
+              <CardContent sx={cardSx}>
+                <VideoPlayer displayedRepIndex={displayedRepIndex} poseGridRef={poseGridRef} />
+              </CardContent>
+            </Card>
           </Grid>
-        </Container>
-      </Box>
-    </ThemeProvider>
+          {/* トレーニングの3D表示 */}
+          <Grid item xs={6} alignItems="stretch">
+            <Card>
+              <CardContent sx={cardSx}>
+                <PoseGridViewer
+                  gridDivRef={gridDivRef}
+                  poseGridRef={poseGridRef}
+                  cameraPosition={
+                    selectedInstructionIndex >= 0
+                      ? formInstructionItems[selectedInstructionIndex].poseGridCameraAngle
+                      : formInstructionItems[0].poseGridCameraAngle
+                  }
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent sx={cardSx}>
+                {setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame !== undefined ? (
+                  <RealtimeChart
+                    data={
+                      setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame.evaluatedValues
+                    }
+                    thresh={
+                      setRecord.formEvaluationResults[selectedInstructionIndex].evaluatedValuesPerFrame.threshold
+                    }
+                    realtimeUpdate={false}
+                    size="small"
+                  />
+                ) : null}
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={5}>
+            <Stack spacing={3}>
+              <TotalScore score={setRecord.summary.totalScore} />
+              {/* スコアのレーダーチャート */}
+              <RadarChart indicators={radarChartIndicators} series={radarChartSeries} style={{}} />
+            </Stack>
+          </Grid>
+          {/* フォーム評価の説明文 */}
+          <Grid item xs={7}>
+            <InstructionSummaryCards
+              formEvaluationResults={setRecord.formEvaluationResults}
+              selectedInstructionIndex={selectedInstructionIndex}
+              setSelectedInstructionIndex={setSelectedInstructionIndex}
+            />
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 }

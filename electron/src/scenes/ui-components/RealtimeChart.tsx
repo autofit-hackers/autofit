@@ -50,7 +50,7 @@ function RealtimeChart(props: {
       option={op}
       style={{
         marginTop: size === 'large' ? '10vw' : '0',
-        height: size === 'large' ? '60vw' : '30vw',
+        height: size === 'large' ? '50vw' : '30vw',
         backgroundColor: 'white',
       }}
     />
