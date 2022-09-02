@@ -20,7 +20,7 @@ import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set'
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
-import { PoseGrid } from '../utils/poseGrid';
+import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { startCapturingRepVideo } from '../utils/recordVideo';
 import {
   formInstructionItemsAtom,
@@ -280,7 +280,10 @@ export default function BodyTrack2d() {
     startKinect(kinect, onResults);
     if (!poseGrid && gridDivRef.current !== null) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      poseGrid = new PoseGrid(gridDivRef.current);
+      poseGrid = new PoseGrid(gridDivRef.current, {
+        ...DEFAULT_POSE_GRID_CONFIG,
+        camera: { useOrthographic: false, distance: 200, fov: 75 },
+      });
       poseGrid.setCameraAngle();
       poseGrid.isAutoRotating = true;
     }
