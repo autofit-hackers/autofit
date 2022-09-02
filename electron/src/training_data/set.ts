@@ -21,18 +21,17 @@ export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
   reps: [...prevSet.reps, rep],
 });
 
-// 各レップに対する表示テキストの決定
-// TODO: 役割が多すぎるので、複数の関数に分割する
-const decideShortSummary = (
-  itemScore: number,
-  worstRepError: number,
+const judgeWhetherSetIsGoodForEachInstruction = (itemScore: number, threshold = 50): boolean => itemScore >= threshold;
+
+const decideShortSummaryForEachInstruction = (
+  isGood: boolean,
+  isPositiveError: boolean,
   eachRepCoordinateErrors: number[],
   instructionItem: FormInstructionItem,
 ): string => {
   let shortSummary = '';
 
-  // itemScoreが60点以下(bad表示)の場合は修正テキストを表示。ポジネガはもっともエラーが大きかったレップをもとに決定。
-  if (itemScore <= 60 && worstRepError <= 0) {
+  if (!isGood && !isPositiveError) {
     const negativeCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
     const averageNegativeCoordinateError =
       negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
@@ -41,7 +40,7 @@ const decideShortSummary = (
       instructionItem.shortDescription.negative.beforeNumber +
       Math.abs(Math.round(averageNegativeCoordinateError)).toString() +
       instructionItem.shortDescription.negative.afterNumber;
-  } else if (itemScore <= 60 && worstRepError >= 0) {
+  } else if (!isGood && isPositiveError) {
     const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
     const averagePositiveCoordinateError =
       positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
@@ -116,6 +115,7 @@ export const recordFormEvaluationResult = (
     // TODO: set変数を生成した時点で指導項目の個数分の要素をもつ配列を格納しておく -> resetSet()
     const evaluationResult: FormEvaluationResult = {
       name: instructionItem.name,
+      isGood: true,
       shortSummary: '',
       longSummary: '',
       descriptionsForEachRep: [],
@@ -146,10 +146,13 @@ export const recordFormEvaluationResult = (
     // セット全体に対する指導項目スコアを算出する
     evaluationResult.score = calculateItemScore(eachRepErrorsAbs);
 
+    // 各指導項目について、セット全体のgood/badを判定する
+    evaluationResult.isGood = judgeWhetherSetIsGoodForEachInstruction(evaluationResult.score);
+
     // 各レップに対する表示テキストの決定
-    evaluationResult.shortSummary = decideShortSummary(
-      evaluationResult.score,
-      evaluationResult.worstRepError,
+    evaluationResult.shortSummary = decideShortSummaryForEachInstruction(
+      evaluationResult.isGood,
+      evaluationResult.worstRepError >= 0,
       evaluationResult.eachRepCoordinateErrors,
       instructionItem,
     );

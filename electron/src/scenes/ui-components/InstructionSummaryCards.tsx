@@ -51,8 +51,7 @@ function InstructionSummaryCards(props: {
     <Stack spacing={3}>
       {formEvaluationResults.map((formEvaluationResult, itemIndex) => (
         <InstructionSummaryCard
-          // FIXME: logic and threshold
-          isGood={formEvaluationResult.score > 50}
+          isGood={formEvaluationResult.isGood}
           description={formEvaluationResult.shortSummary}
           itemIndex={itemIndex}
           setSelectedInstructionIndex={setSelectedInstructionIndex}
