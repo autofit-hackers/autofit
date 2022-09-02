@@ -289,11 +289,10 @@ export default function BodyTrack2d() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { useOrthographic: false, distance: 200, fov: 75 },
+        camera: { projectionMode: 'perspective', distance: 200, fov: 75 },
       });
       poseGrid.setCameraAngle();
       poseGrid.isAutoRotating = true;
-      poseGrid.config.camera.useOrthographic = false;
     }
 
     if (repCounterRef.current !== null) {

@@ -105,6 +105,7 @@ export function InTrainingChart(props: { data: number[] }) {
     xAxis: {
       type: 'category',
       data: data.map((v, i) => i),
+      // 最新300個のデータを表示する
       min: data.length - 301,
       max: data.length - 1,
     },
