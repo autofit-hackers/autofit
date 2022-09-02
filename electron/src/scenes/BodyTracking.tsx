@@ -330,7 +330,6 @@ export default function BodyTrack2d() {
     <>
       <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3 }}>
         トレーニング開始
-        <SaveButton object={setRef.current} videoUrls={repVideoUrls} />
       </Button>
       <Button
         variant="contained"
@@ -343,6 +342,7 @@ export default function BodyTrack2d() {
       >
         トレーニング終了
       </Button>
+      <SaveButton object={setRef.current} videoUrls={repVideoUrls} />
 
       <canvas
         ref={canvasRef}
