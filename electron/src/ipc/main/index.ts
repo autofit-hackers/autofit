@@ -44,6 +44,7 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
+    kiosk: true
   });
 
   win.webContents.openDevTools({ mode: 'right' });
