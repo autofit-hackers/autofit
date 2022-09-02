@@ -507,9 +507,9 @@ const squatVelocity: FormInstructionItem = {
 
       return 0;
     }
-    const timeToStandUP = (lastPose.timestamp - bottomPose.timestamp) / 1000; // ミリ秒 -> 秒に変換
+    const timeToStandUp = (lastPose.timestamp - bottomPose.timestamp) / 1000; // ミリ秒 -> 秒に変換
 
-    const error = parseFloat(timeToStandUP.toFixed(1)); // 小数点第一位まで取得
+    const error = parseFloat(timeToStandUp.toFixed(1)); // 小数点第一位まで取得
 
     return error;
   },

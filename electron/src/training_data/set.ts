@@ -36,15 +36,19 @@ const decideShortSummaryForEachInstruction = (
       instructionItem.shortDescription.negative.beforeNumber +
       Math.abs(worstRepCoordinateError).toString() +
       instructionItem.shortDescription.negative.afterNumber;
-  } else if (!isGood && worstRepErrorScore > 0) {
+
+    return shortSummary;
+  }
+  if (!isGood && worstRepErrorScore > 0) {
     shortSummary =
       instructionItem.shortDescription.positive.beforeNumber +
       worstRepCoordinateError.toString() +
       instructionItem.shortDescription.positive.afterNumber;
-  } else {
-    shortSummary =
-      instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
+
+    return shortSummary;
   }
+  shortSummary =
+    instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
 
   return shortSummary;
 };
