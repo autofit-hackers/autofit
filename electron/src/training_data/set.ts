@@ -21,7 +21,7 @@ export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
   reps: [...prevSet.reps, rep],
 });
 
-const decideIsSetGoodForEachInstruction = (itemScore: number, threshold = 50): boolean => itemScore >= threshold;
+const judgeWhetherSetIsGoodForEachInstruction = (itemScore: number, threshold = 50): boolean => itemScore >= threshold;
 
 const decideShortSummaryForEachInstruction = (
   isGood: boolean,
@@ -147,7 +147,7 @@ export const recordFormEvaluationResult = (
     evaluationResult.score = calculateItemScore(eachRepErrorsAbs);
 
     // 各指導項目について、セット全体のgood/badを判定する
-    evaluationResult.isGood = decideIsSetGoodForEachInstruction(evaluationResult.score);
+    evaluationResult.isGood = judgeWhetherSetIsGoodForEachInstruction(evaluationResult.score);
 
     // 各レップに対する表示テキストの決定
     evaluationResult.shortSummary = decideShortSummaryForEachInstruction(
