@@ -305,6 +305,7 @@ export default function BodyTrack2d() {
       poseGrid = new PoseGrid(gridDivRef.current);
       poseGrid.setCameraAngle();
       poseGrid.isAutoRotating = true;
+      poseGrid.config.camera.useOrthographic = false;
     }
 
     if (repCounterRef.current !== null) {
