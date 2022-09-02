@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
 import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
 import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
-import { playRepCountSound, playTrainingStartSound } from '../coaching/voiceGuidance';
+import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import {
   appendPoseToForm,
@@ -23,6 +23,7 @@ import { startKinect } from '../utils/kinect';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { startCapturingRepVideo } from '../utils/recordVideo';
 import {
+  formDebugAtom,
   formInstructionItemsAtom,
   kinectAtom,
   phaseAtom,
@@ -30,7 +31,8 @@ import {
   repVideoUrlsAtom,
   setRecordAtom,
 } from './atoms';
-import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
+import RealtimeChart, { InTrainingChart, ManuallyAddableChart } from './ui-components/RealtimeChart';
+
 import SaveButton from './ui-components/SaveButton';
 
 export default function BodyTrack2d() {
@@ -53,6 +55,7 @@ export default function BodyTrack2d() {
   // settings
   const lowerThreshold = 0.8; // TODO: temporarily hard coded
   const upperThreshold = 0.95;
+
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const [playSound] = useAtom(playSoundAtom);
 
@@ -81,9 +84,12 @@ export default function BodyTrack2d() {
     lower: 0,
     middle: 0,
   });
-  const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(0);
+  const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(4);
+  const bodyHeightRef = useRef<number[]>([]);
+  const [bodyHightChartData, setBodyHightChartData] = useState<number[]>([]);
 
   // form debug
+  const [isDebugMode] = useAtom(formDebugAtom);
   const [knee, setKnee] = useState<number[]>([]);
   const [toe, setToe] = useState<number[]>([]);
 
@@ -198,6 +204,7 @@ export default function BodyTrack2d() {
           const evaluateCallback = formInstructionItemsQWS[index].calculateRealtimeValue;
           item.evaluatedValues.push(evaluateCallback(currentPose));
         });
+        bodyHeightRef.current.push(heightInWorld(currentPose));
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
@@ -210,7 +217,7 @@ export default function BodyTrack2d() {
           repRef.current = calculateKeyframes(repRef.current);
           repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
 
-          // グラフの更新
+          // グラフのthresh更新
           const topPose = getTopPose(repRef.current);
           if (topPose !== undefined) {
             evaluatedFrameRef.current.forEach((item, index) => {
@@ -282,7 +289,7 @@ export default function BodyTrack2d() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { useOrthographic: false, distance: 200, fov: 75 },
+        camera: { projectionMode: 'perspective', distance: 200, fov: 75 },
       });
       poseGrid.setCameraAngle();
       poseGrid.isAutoRotating = true;
@@ -312,11 +319,7 @@ export default function BodyTrack2d() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const chartData = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].evaluatedValues;
-      const thresh = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].threshold;
-      // TODO: setRealtimeCartData(chartData) と書きたいが、リアルタイム更新されなくなる
-      setRealtimeChartData([chartData[0]].concat(chartData));
-      setThreshData(thresh);
+      setBodyHightChartData([bodyHeightRef.current[0]].concat(bodyHeightRef.current));
     }, 10);
 
     return () => clearInterval(timer);
@@ -324,20 +327,22 @@ export default function BodyTrack2d() {
 
   return (
     <>
-      <SaveButton object={setRef.current} videoUrls={repVideoUrls} />
-      <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3, ml: 3 }}>
-        RESET TRAINING
+      <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3 }}>
+        トレーニング開始
       </Button>
       <Button
+        variant="contained"
         onClick={() => {
-          if (prevPoseRef.current) {
-            setKnee(knee.concat([getOpeningOfKnee(prevPoseRef.current)]));
-            setToe(toe.concat([getOpeningOfToe(prevPoseRef.current)]));
-          }
+          setPhase(2);
+          playTrainingEndSound(playSound);
         }}
+        sx={{ zIndex: 3, ml: 3 }}
+        disabled={setRef.current.reps.length === 0}
       >
-        ADD Data to CSV
+        トレーニング終了
       </Button>
+      <SaveButton object={setRef.current} videoUrls={repVideoUrls} />
+
       <canvas
         ref={canvasRef}
         className="main_canvas"
@@ -380,21 +385,39 @@ export default function BodyTrack2d() {
         ref={repCounterRef}
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
-      <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
-      <RadioGroup
-        row
-        aria-labelledby="error-group"
-        name="error-buttons-group"
-        value={displayingInstructionIndexOnGraph}
-        onChange={(e, v) => {
-          setDisplayingInstructionIndexOnGraph(v as unknown as number);
-        }}
-      >
-        {evaluatedFrameRef.current.map((item, index: number) => (
-          <FormControlLabel key={item.name} value={index} control={<Radio />} label={item.name} />
-        ))}
-      </RadioGroup>
-      <ManuallyAddableChart data={[knee, toe]} />
+
+      {/* // フォームデバッグ用 */}
+      {isDebugMode ? (
+        <>
+          <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
+          <Button
+            onClick={() => {
+              if (prevPoseRef.current) {
+                setKnee(knee.concat([getOpeningOfKnee(prevPoseRef.current)]));
+                setToe(toe.concat([getOpeningOfToe(prevPoseRef.current)]));
+              }
+            }}
+          >
+            ADD Data to CSV
+          </Button>
+          <RadioGroup
+            row
+            aria-labelledby="error-group"
+            name="error-buttons-group"
+            value={displayingInstructionIndexOnGraph}
+            onChange={(e, v) => {
+              setDisplayingInstructionIndexOnGraph(v as unknown as number);
+            }}
+          >
+            {evaluatedFrameRef.current.map((item, index: number) => (
+              <FormControlLabel key={item.name} value={index} control={<Radio />} label={item.name} />
+            ))}
+          </RadioGroup>
+          <ManuallyAddableChart data={[knee, toe]} />
+        </>
+      ) : (
+        <InTrainingChart data={bodyHightChartData} />
+      )}
     </>
   );
 }

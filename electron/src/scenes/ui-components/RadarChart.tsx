@@ -4,6 +4,18 @@ import ReactECharts from 'echarts-for-react';
 import { FormEvaluationResult, FormInstructionItem } from '../../coaching/formInstructionItems';
 import { cardSx } from '../themes';
 
+export type RadarChartIndicators = { name: string; max: number }[];
+export type RadarChartSeries = { name: string; value: number[] }[];
+
+// TODO: 応急処置なので本来は自動改行にすべし
+export const escapeHiddenText = (name: string): string => {
+  if (name === 'ひざの開き') {
+    return '膝の\n開き';
+  }
+
+  return name;
+};
+
 function RadarChart(props: {
   formInstructionItems: FormInstructionItem[];
   formEvaluationResults: FormEvaluationResult[];
@@ -11,7 +23,7 @@ function RadarChart(props: {
 }) {
   const { formInstructionItems, formEvaluationResults, style } = props;
   const indicators = formInstructionItems.map((instruction) => ({
-    name: instruction.label,
+    name: escapeHiddenText(instruction.label),
     max: 100,
   }));
   const series = [
@@ -26,7 +38,7 @@ function RadarChart(props: {
     radar: {
       indicator: indicators,
       axisName: {
-        formatter: '【{value}】',
+        formatter: '{value}',
         color: '#428BD4',
       },
     },
