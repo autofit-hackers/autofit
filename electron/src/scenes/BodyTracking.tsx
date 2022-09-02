@@ -25,6 +25,7 @@ import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { downloadVideo, startCapturingRepVideo, startCapturingSetVideo } from '../utils/recordVideo';
 import {
+  formDebugAtom,
   formInstructionItemsAtom,
   kinectAtom,
   phaseAtom,
@@ -87,6 +88,7 @@ export default function BodyTrack2d() {
   const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(4);
 
   // form debug
+  const [isDebugMode] = useAtom(formDebugAtom);
   const [knee, setKnee] = useState<number[]>([]);
   const [toe, setToe] = useState<number[]>([]);
 
@@ -406,20 +408,24 @@ export default function BodyTrack2d() {
       <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
 
       {/* // フォームデバッグ用 */}
-      <RadioGroup
-        row
-        aria-labelledby="error-group"
-        name="error-buttons-group"
-        value={displayingInstructionIndexOnGraph}
-        onChange={(e, v) => {
-          setDisplayingInstructionIndexOnGraph(v as unknown as number);
-        }}
-      >
-        {evaluatedFrameRef.current.map((item, index: number) => (
-          <FormControlLabel key={item.name} value={index} control={<Radio />} label={item.name} />
-        ))}
-      </RadioGroup>
-      <ManuallyAddableChart data={[knee, toe]} />
+      {isDebugMode ? (
+        <>
+          <RadioGroup
+            row
+            aria-labelledby="error-group"
+            name="error-buttons-group"
+            value={displayingInstructionIndexOnGraph}
+            onChange={(e, v) => {
+              setDisplayingInstructionIndexOnGraph(v as unknown as number);
+            }}
+          >
+            {evaluatedFrameRef.current.map((item, index: number) => (
+              <FormControlLabel key={item.name} value={index} control={<Radio />} label={item.name} />
+            ))}
+          </RadioGroup>
+          <ManuallyAddableChart data={[knee, toe]} />
+        </>
+      ) : null}
     </>
   );
 }
