@@ -29,28 +29,23 @@ const decideShortSummaryForEachInstruction = (
   worstRepCoordinateError: number,
   instructionItem: FormInstructionItem,
 ): string => {
-  let shortSummary = '';
+  if (isGood) {
+    return instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
+  }
 
-  if (!isGood && worstRepErrorScore < 0) {
-    shortSummary =
+  if (worstRepErrorScore < 0) {
+    return (
       instructionItem.shortDescription.negative.beforeNumber +
       Math.abs(worstRepCoordinateError).toString() +
-      instructionItem.shortDescription.negative.afterNumber;
-
-    return shortSummary;
+      instructionItem.shortDescription.negative.afterNumber
+    );
   }
-  if (!isGood && worstRepErrorScore > 0) {
-    shortSummary =
-      instructionItem.shortDescription.positive.beforeNumber +
-      worstRepCoordinateError.toString() +
-      instructionItem.shortDescription.positive.afterNumber;
 
-    return shortSummary;
-  }
-  shortSummary =
-    instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
-
-  return shortSummary;
+  return (
+    instructionItem.shortDescription.positive.beforeNumber +
+    worstRepCoordinateError.toString() +
+    instructionItem.shortDescription.positive.afterNumber
+  );
 };
 
 // 各指導項目についてセットに対する総評の決定
