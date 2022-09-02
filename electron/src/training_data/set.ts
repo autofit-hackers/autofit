@@ -25,36 +25,27 @@ const judgeWhetherSetIsGoodForEachInstruction = (itemScore: number, threshold = 
 
 const decideShortSummaryForEachInstruction = (
   isGood: boolean,
-  isPositiveError: boolean,
-  eachRepCoordinateErrors: number[],
+  worstRepErrorScore: number,
+  worstRepCoordinateError: number,
   instructionItem: FormInstructionItem,
 ): string => {
-  let shortSummary = '';
-
-  if (!isGood && !isPositiveError) {
-    const negativeCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error <= 1);
-    const averageNegativeCoordinateError =
-      negativeCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
-      negativeCoordinateErrorList.length;
-    shortSummary =
-      instructionItem.shortDescription.negative.beforeNumber +
-      Math.abs(Math.round(averageNegativeCoordinateError)).toString() +
-      instructionItem.shortDescription.negative.afterNumber;
-  } else if (!isGood && isPositiveError) {
-    const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
-    const averagePositiveCoordinateError =
-      positiveCoordinateErrorList.reduce((num1: number, num2: number) => num1 + num2, 0) /
-      positiveCoordinateErrorList.length;
-    shortSummary =
-      instructionItem.shortDescription.positive.beforeNumber +
-      Math.round(averagePositiveCoordinateError).toString() +
-      instructionItem.shortDescription.positive.afterNumber;
-  } else {
-    shortSummary =
-      instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
+  if (isGood) {
+    return instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
   }
 
-  return shortSummary;
+  if (worstRepErrorScore < 0) {
+    return (
+      instructionItem.shortDescription.negative.beforeNumber +
+      Math.abs(worstRepCoordinateError).toString() +
+      instructionItem.shortDescription.negative.afterNumber
+    );
+  }
+
+  return (
+    instructionItem.shortDescription.positive.beforeNumber +
+    worstRepCoordinateError.toString() +
+    instructionItem.shortDescription.positive.afterNumber
+  );
 };
 
 // 各指導項目についてセットに対する総評の決定
@@ -126,8 +117,6 @@ export const recordFormEvaluationResult = (
       bestRepIndex: 0,
       worstRepIndex: 0,
       evaluatedValuesPerFrame: evaluatedValuesPerFrame[index],
-      bestRepError: 0,
-      worstRepError: 0,
     };
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
@@ -140,8 +129,6 @@ export const recordFormEvaluationResult = (
     const eachRepErrorsAbs = evaluationResult.eachRepErrorScores.map((error) => Math.abs(error));
     evaluationResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
     evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
-    evaluationResult.bestRepError = evaluationResult.eachRepErrorScores[evaluationResult.bestRepIndex];
-    evaluationResult.worstRepError = evaluationResult.eachRepErrorScores[evaluationResult.worstRepIndex];
 
     // セット全体に対する指導項目スコアを算出する
     evaluationResult.score = calculateItemScore(eachRepErrorsAbs);
@@ -152,8 +139,8 @@ export const recordFormEvaluationResult = (
     // 各レップに対する表示テキストの決定
     evaluationResult.shortSummary = decideShortSummaryForEachInstruction(
       evaluationResult.isGood,
-      evaluationResult.worstRepError >= 0,
-      evaluationResult.eachRepCoordinateErrors,
+      evaluationResult.eachRepErrorScores[evaluationResult.worstRepIndex],
+      evaluationResult.eachRepCoordinateErrors[evaluationResult.worstRepIndex],
       instructionItem,
     );
 
