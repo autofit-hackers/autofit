@@ -40,8 +40,6 @@ export type FormEvaluationResult = {
   bestRepIndex: number;
   worstRepIndex: number;
   evaluatedValuesPerFrame: FrameEvaluateParams;
-  bestRepError: number;
-  worstRepError: number;
 };
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
@@ -497,9 +495,9 @@ const squatVelocity: FormInstructionItem = {
     if (bottomPose === undefined || lastPose === undefined) {
       throw new Error('descendingMiddlePose or ascendingMiddlePose is undefined');
     }
-    const halfRepDuration = lastPose.timestamp - bottomPose.timestamp;
+    const timeToStandUp = lastPose.timestamp - bottomPose.timestamp;
 
-    return calculateError(thresholds, halfRepDuration);
+    return calculateError(thresholds, timeToStandUp);
   },
   getCoordinateErrorFromIdeal(rep: Rep): number {
     const bottomPose = getBottomPose(rep);
@@ -509,9 +507,9 @@ const squatVelocity: FormInstructionItem = {
 
       return 0;
     }
-    const halfRepDuration = (lastPose.timestamp - bottomPose.timestamp) / 1000; // ミリ秒 -> 秒に変換
+    const timeToStandUP = (lastPose.timestamp - bottomPose.timestamp) / 1000; // ミリ秒 -> 秒に変換
 
-    const error = parseFloat(halfRepDuration.toFixed(1)); // 小数点第一位まで取得
+    const error = parseFloat(timeToStandUP.toFixed(1)); // 小数点第一位まで取得
 
     return error;
   },
