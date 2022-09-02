@@ -33,7 +33,7 @@ import {
   repVideoUrlsAtom,
   setRecordAtom,
 } from './atoms';
-import RealtimeChart, { ManuallyAddableChart } from './ui-components/RealtimeChart';
+import RealtimeChart, { InTrainingChart, ManuallyAddableChart } from './ui-components/RealtimeChart';
 
 export default function BodyTrack2d() {
   // 描画
@@ -87,6 +87,8 @@ export default function BodyTrack2d() {
     middle: 0,
   });
   const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(4);
+  const bodyHeightRef = useRef<number[]>([]);
+  const [bodyHightChartData, setBodyHightChartData] = useState<number[]>([]);
 
   // form debug
   const [isDebugMode] = useAtom(formDebugAtom);
@@ -219,6 +221,7 @@ export default function BodyTrack2d() {
           const evaluateCallback = formInstructionItemsQWS[index].calculateRealtimeValue;
           item.evaluatedValues.push(evaluateCallback(currentPose));
         });
+        bodyHeightRef.current.push(heightInWorld(currentPose));
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
@@ -233,7 +236,7 @@ export default function BodyTrack2d() {
           repRef.current = calculateKeyframes(repRef.current);
           repRef.current = calculateRepFormErrorScore(repRef.current, formInstructionItems);
 
-          // グラフの更新
+          // グラフのthresh更新
           const topPose = getTopPose(repRef.current);
           if (topPose !== undefined) {
             evaluatedFrameRef.current.forEach((item, index) => {
@@ -336,11 +339,7 @@ export default function BodyTrack2d() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const chartData = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].evaluatedValues;
-      const thresh = evaluatedFrameRef.current[displayingInstructionIndexOnGraph].threshold;
-      // TODO: setRealtimeCartData(chartData) と書きたいが、リアルタイム更新されなくなる
-      setRealtimeChartData([chartData[0]].concat(chartData));
-      setThreshData(thresh);
+      setBodyHightChartData([bodyHeightRef.current[0]].concat(bodyHeightRef.current));
     }, 10);
 
     return () => clearInterval(timer);
@@ -407,12 +406,12 @@ export default function BodyTrack2d() {
         ref={repCounterRef}
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
-
-      <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
+      <InTrainingChart data={bodyHightChartData} />
 
       {/* // フォームデバッグ用 */}
       {isDebugMode ? (
         <>
+          <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
           <Button
             onClick={() => {
               if (prevPoseRef.current) {

@@ -96,3 +96,31 @@ export function ManuallyAddableChart(props: { data: number[][] }) {
 
   return <ReactECharts option={op} style={{ marginTop: 100, height: '60vw', backgroundColor: 'white' }} />;
 }
+
+export function InTrainingChart(props: { data: number[] }) {
+  const { data } = props;
+
+  const op = {
+    // innerHeight: '100vh',
+    xAxis: {
+      type: 'category',
+      data: data.map((v, i) => i),
+      min: data.length - 301,
+      max: data.length - 1,
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series: [
+      {
+        name: 'height',
+        data,
+        type: 'line',
+        itemStyle: { normal: { color: 'blue' } },
+        smooth: true,
+      },
+    ],
+  };
+
+  return <ReactECharts option={op} style={{ marginTop: '10vw', height: '50vw' }} />;
+}
