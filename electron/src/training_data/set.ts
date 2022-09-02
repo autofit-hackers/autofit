@@ -39,7 +39,7 @@ const decideShortSummary = (
       negativeCoordinateErrorList.length;
     shortSummary =
       instructionItem.shortDescription.negative.beforeNumber +
-      Math.abs(averageNegativeCoordinateError).toString() +
+      Math.abs(Math.round(averageNegativeCoordinateError)).toString() +
       instructionItem.shortDescription.negative.afterNumber;
   } else if (itemScore <= 60 && worstRepError >= 0) {
     const positiveCoordinateErrorList = eachRepCoordinateErrors.filter((error) => error >= 1);
@@ -48,7 +48,7 @@ const decideShortSummary = (
       positiveCoordinateErrorList.length;
     shortSummary =
       instructionItem.shortDescription.positive.beforeNumber +
-      averagePositiveCoordinateError.toString() +
+      Math.round(averagePositiveCoordinateError).toString() +
       instructionItem.shortDescription.positive.afterNumber;
   } else {
     shortSummary =
