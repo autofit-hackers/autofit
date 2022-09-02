@@ -406,7 +406,6 @@ export default function BodyTrack2d() {
         ref={repCounterRef}
         style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
       />
-      <InTrainingChart data={bodyHightChartData} />
 
       {/* // フォームデバッグ用 */}
       {isDebugMode ? (
@@ -437,7 +436,9 @@ export default function BodyTrack2d() {
           </RadioGroup>
           <ManuallyAddableChart data={[knee, toe]} />
         </>
-      ) : null}
+      ) : (
+        <InTrainingChart data={bodyHightChartData} />
+      )}
     </>
   );
 }
