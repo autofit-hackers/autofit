@@ -100,7 +100,7 @@ export type PoseGridConfig = {
   landmarkSize: number;
 };
 
-const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
+export const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   backgroundColor: 0,
   camera: { useOrthographic: true, distance: 200, fov: 75 },
   gridPlane: { size: 200, divisions: 10, y: -93 },
@@ -132,7 +132,7 @@ export class PoseGrid {
   phiForAutoRotation: number;
 
   constructor(parent: HTMLElement, config = DEFAULT_POSE_GRID_CONFIG) {
-    this.config = config;
+    this.config = { ...DEFAULT_POSE_GRID_CONFIG, ...config };
     this.disposeQueue = [];
     this.removeQueue = [];
     this.container = document.createElement('div');

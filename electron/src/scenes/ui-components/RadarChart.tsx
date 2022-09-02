@@ -1,11 +1,11 @@
 import { Card, CardContent } from '@mui/material';
 import { graphic } from 'echarts';
 import ReactECharts from 'echarts-for-react';
+import { FormEvaluationResult, FormInstructionItem } from '../../coaching/formInstructionItems';
 import { cardSx } from '../themes';
 
 export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
-type RadarChartProps = { indicators: RadarChartIndicators; series: RadarChartSeries; style: React.CSSProperties };
 
 // TODO: 応急処置
 export const escapeHiddenText = (name: string): string => {
@@ -16,9 +16,24 @@ export const escapeHiddenText = (name: string): string => {
   return name;
 };
 
-function RadarChart(radarChartProps: RadarChartProps) {
-  const { indicators, series, style } = radarChartProps;
-  const legends: string[] = series.map((row) => escapeHiddenText(row.name));
+function RadarChart(props: {
+  formInstructionItems: FormInstructionItem[];
+  formEvaluationResults: FormEvaluationResult[];
+  style: React.CSSProperties;
+}) {
+  const { formInstructionItems, formEvaluationResults, style } = props;
+  const indicators = formInstructionItems.map((instruction) => ({
+    name: escapeHiddenText(instruction.label),
+    max: 100,
+  }));
+  const series = [
+    {
+      // レーダーチャートの見栄えのため、スコアの最小を20/100とする
+      value: formEvaluationResults.map((result) => Math.max(result.score, 20)),
+      name: '今回のセット',
+    },
+  ];
+  const legends: string[] = series.map((row) => row.name);
   const option = {
     radar: {
       indicator: indicators,
