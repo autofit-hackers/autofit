@@ -26,10 +26,11 @@ export type FormInstructionItem = {
   readonly getCoordinateErrorFromIdeal: (rep: Rep) => number;
 };
 
-// TODO: けっこうごちゃごちゃしてきました。用語の定義をしっかりするところから始めましょう。
+// TODO: けっこうごちゃごちゃしてきました。整理しましょう。
 export type FormEvaluationResult = {
   name: string;
   descriptionsForEachRep: string[];
+  isGood: boolean;
   shortSummary: string;
   longSummary: string;
   overallComment: string;
