@@ -16,8 +16,10 @@ export default function InstructionItemExpression(props: {
   const { title, image, imagePosition, isGood, fixedDescription, resultDescription } = props;
 
   return (
-    <Card sx={{ display: 'flex' }}>
-      {imagePosition === 'left' ? <CardMedia component="img" height="100%" image={image} alt={title} /> : null}
+    <Card sx={{ display: 'flex', borderRadius: 5, borderWidth: 2, boxShadow: 0, alignItems: 'center' }}>
+      {imagePosition === 'left' ? (
+        <CardMedia component="img" sx={{ height: '40vw' }} image={image} alt={title} />
+      ) : null}
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         <CardContent>
           <GoodChip isGood={isGood} />
@@ -32,7 +34,9 @@ export default function InstructionItemExpression(props: {
           </Typography>
         </CardContent>
       </Box>
-      {imagePosition === 'right' ? <CardMedia component="img" height="100%" image={image} alt={title} /> : null}
+      {imagePosition === 'right' ? (
+        <CardMedia component="img" sx={{ height: '35vw' }} image={image} alt={title} />
+      ) : null}
     </Card>
   );
 }

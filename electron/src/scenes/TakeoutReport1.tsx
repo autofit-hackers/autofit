@@ -39,7 +39,7 @@ export default function TakeoutReport1() {
     if (!poseGridRef.current && gridDivRef.current !== null) {
       poseGridRef.current = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { useOrthographic: false, distance: 200, fov: 75 },
+        camera: { projectionMode: 'perspective', distance: 200, fov: 75 },
       });
       poseGridRef.current.setCameraAngle({
         theta: 80,
@@ -61,8 +61,7 @@ export default function TakeoutReport1() {
         component="main"
         sx={{
           display: 'flex',
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+          backgroundColor: 'white',
           flexGrow: 1,
           height: '100vh',
           overflow: 'auto',
