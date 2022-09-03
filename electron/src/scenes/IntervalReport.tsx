@@ -1,4 +1,5 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PrintIcon from '@mui/icons-material/Print';
 import { Box, Card, CardContent, CardHeader, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { Container } from '@mui/system';
 import { useAtom } from 'jotai';
@@ -83,6 +84,16 @@ export default function IntervalReport() {
             sx={{ zIndex: 2 }}
           >
             <CheckCircleIcon />
+          </IconButton>
+          <IconButton
+            aria-label="print-take-out-report"
+            color="primary"
+            onClick={() => {
+              setPhase(3);
+            }}
+            sx={{ zIndex: 2 }}
+          >
+            <PrintIcon />
           </IconButton>
         </Stack>
 
