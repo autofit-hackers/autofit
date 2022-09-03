@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
 import BodyTrack2d from './BodyTracking';
 import StartPage from './StartPage';
-import TakeoutReport from './TakeOutReports';
+import TakeoutReports from './TakeOutReports';
 import futuristicTheme from './themes';
 import ProductMenu from './ui-components/ProductMenu';
 
@@ -17,7 +17,7 @@ export default function TrainingMain() {
       <ProductMenu />
       {phase === 0 && <StartPage />}
       {phase === 1 && <BodyTrack2d />}
-      {phase === 2 && <TakeoutReport />}
+      {phase === 2 && <TakeoutReports />}
     </ThemeProvider>
   );
 }
