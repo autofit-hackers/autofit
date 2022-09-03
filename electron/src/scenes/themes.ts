@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material';
 import HinaGoogleFont from '../../resources/font/GenShinGothic-Regular.ttf';
 
 const futuristicTheme = createTheme({
-  typography: { fontSize: 14, fontFamily: 'Raleway, Arial' },
+  typography: { fontSize: 14, fontFamily: 'Arial' },
   palette: {
     mode: 'light',
     primary: {

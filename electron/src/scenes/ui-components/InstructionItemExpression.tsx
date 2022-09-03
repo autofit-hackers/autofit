@@ -20,7 +20,7 @@ export default function InstructionItemExpression(props: {
   return (
     <Card sx={takeoutCardSx}>
       {imagePosition === 'left' ? (
-        <CardMedia component="img" sx={{ height: '40vw' }} image={image} alt={title} />
+        <CardMedia component="img" sx={{ height: '35vw' }} image={image} alt={title} />
       ) : null}
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         <CardContent>
