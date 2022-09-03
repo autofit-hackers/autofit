@@ -108,19 +108,15 @@ const squatDepth: FormInstructionItem = {
         getDistance(bottomPose.worldLandmarks[KJ.HIP_RIGHT], bottomPose.worldLandmarks[KJ.KNEE_RIGHT]).yz) /
       2;
     const idealHipY = kneeY + averageThighLengthFromSide * Math.sin(((thresholds.middle - 90) * Math.PI) / 180);
-    const idealLeftHip = {
-      x: bottomPose.worldLandmarks[KJ.HIP_LEFT].x,
-      y: idealHipY,
-      z: bottomPose.worldLandmarks[KJ.HIP_LEFT].z,
-    };
-    const idealRightHip = {
-      x: bottomPose.worldLandmarks[KJ.HIP_RIGHT].x,
-      y: idealHipY,
-      z: bottomPose.worldLandmarks[KJ.HIP_RIGHT].z,
-    };
+    const pelvis = bottomPose.worldLandmarks[KJ.PELVIS];
+    const bottomKneeZ = (bottomPose.worldLandmarks[KJ.KNEE_LEFT].z + bottomPose.worldLandmarks[KJ.KNEE_RIGHT].z) / 2;
 
     guidelineSymbols.lines = [
-      { from: landmarkToVector3(idealRightHip), to: landmarkToVector3(idealLeftHip), showEndPoints: true },
+      {
+        from: landmarkToVector3({ x: pelvis.x, y: idealHipY, z: pelvis.z + 10 }),
+        to: landmarkToVector3({ x: pelvis.x, y: idealHipY, z: bottomKneeZ }),
+        showEndPoints: false,
+      },
     ];
 
     return guidelineSymbols;
@@ -221,7 +217,7 @@ const kneeInAndOut: FormInstructionItem = {
     const leftThighLength = getDistance(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).xyz;
     const idealLeftKnee = {
       x: leftHip.x + leftThighLength * Math.sin((idealThighAngle * Math.PI) / 180),
-      y: bottomWorldLandmarks[KJ.KNEE_LEFT].y,
+      y: (bottomWorldLandmarks[KJ.KNEE_LEFT].y + bottomWorldLandmarks[KJ.KNEE_RIGHT].y) / 2,
       z: leftHip.z - leftThighLength * Math.cos((idealThighAngle * Math.PI) / 180),
     };
 
@@ -229,11 +225,22 @@ const kneeInAndOut: FormInstructionItem = {
     const rightThighLength = getDistance(rightHip, bottomWorldLandmarks[KJ.KNEE_RIGHT]).xyz;
     const idealRightKnee = {
       x: rightHip.x - rightThighLength * Math.sin((idealThighAngle * Math.PI) / 180),
-      y: bottomWorldLandmarks[KJ.KNEE_RIGHT].y,
+      y: (bottomWorldLandmarks[KJ.KNEE_LEFT].y + bottomWorldLandmarks[KJ.KNEE_RIGHT].y) / 2,
       z: rightHip.z - rightThighLength * Math.cos((idealThighAngle * Math.PI) / 180),
     };
 
-    guidelineSymbols.points = [landmarkToVector3(idealLeftKnee), landmarkToVector3(idealRightKnee)];
+    guidelineSymbols.lines = [
+      {
+        from: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y - 50 }),
+        to: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y + 50 }),
+        showEndPoints: false,
+      },
+      {
+        from: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y - 50 }),
+        to: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y + 50 }),
+        showEndPoints: false,
+      },
+    ];
 
     return guidelineSymbols;
   },
@@ -315,10 +322,19 @@ const stanceWidth: FormInstructionItem = {
     const idealRightFootX = ankleCenter.x + idealFootWidth / 2;
     const leftFoot = topWorldLandmarks[KJ.FOOT_LEFT];
     const rightFoot = topWorldLandmarks[KJ.FOOT_RIGHT];
+    const shoulderY = (topWorldLandmarks[KJ.SHOULDER_LEFT].y + topWorldLandmarks[KJ.SHOULDER_RIGHT].y) / 2;
 
-    guidelineSymbols.points = [
-      landmarkToVector3({ x: idealLeftFootX, y: leftFoot.y, z: leftFoot.z }),
-      landmarkToVector3({ x: idealRightFootX, y: rightFoot.y, z: rightFoot.z }),
+    guidelineSymbols.lines = [
+      {
+        from: landmarkToVector3({ x: idealLeftFootX, y: leftFoot.y, z: leftFoot.z }),
+        to: landmarkToVector3({ x: idealLeftFootX, y: shoulderY, z: leftFoot.z }),
+        showEndPoints: false,
+      },
+      {
+        from: landmarkToVector3({ x: idealRightFootX, y: rightFoot.y, z: rightFoot.z }),
+        to: landmarkToVector3({ x: idealRightFootX, y: shoulderY, z: rightFoot.z }),
+        showEndPoints: false,
+      },
     ];
 
     return guidelineSymbols;
@@ -435,20 +451,20 @@ const kneeFrontAndBack: FormInstructionItem = {
     }
 
     const topFootZ = (topWorldLandmarks[KJ.FOOT_RIGHT].z + topWorldLandmarks[KJ.FOOT_LEFT].z) / 2;
-    const bottomLeftKnee = bottomWorldLandmarks[KJ.KNEE_LEFT];
-    const bottomRightKnee = bottomWorldLandmarks[KJ.KNEE_RIGHT];
     const idealBottomKneeZ = topFootZ - thresholds.middle;
+    const pelvis = bottomWorldLandmarks[KJ.PELVIS];
+    const footY = (topWorldLandmarks[KJ.FOOT_RIGHT].y + topWorldLandmarks[KJ.FOOT_LEFT].y) / 2;
 
     guidelineSymbols.lines = [
       {
         from: landmarkToVector3({
-          x: bottomLeftKnee.x,
-          y: (bottomLeftKnee.y + bottomRightKnee.y) / 2,
+          x: pelvis.x,
+          y: footY,
           z: idealBottomKneeZ,
         }),
         to: landmarkToVector3({
-          x: bottomRightKnee.x,
-          y: (bottomLeftKnee.y + bottomRightKnee.y) / 2,
+          x: pelvis.x,
+          y: pelvis.y,
           z: idealBottomKneeZ,
         }),
         showEndPoints: true,
