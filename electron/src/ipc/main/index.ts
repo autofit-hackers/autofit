@@ -47,7 +47,8 @@ async function createWindow() {
     kiosk: true,
   });
 
-  // win.webContents.openDevTools({ mode: 'right' });
+  win.setMenuBarVisibility(false);
+
   if (app.isPackaged) {
     void win.loadFile(indexHtml);
   } else {

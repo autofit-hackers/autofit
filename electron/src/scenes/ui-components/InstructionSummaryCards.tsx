@@ -3,7 +3,7 @@ import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import { Card, CardActionArea, CardContent, Chip, Stack, Typography } from '@mui/material';
 import { FormEvaluationResult } from '../../coaching/formInstructionItems';
 
-function GoodChip(props: { isGood: boolean }) {
+export function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;
 
   const goodChip = <Chip label="Good" color="success" icon={<ThumbUpAltIcon fontSize="small" />} sx={{ mb: 1 }} />;

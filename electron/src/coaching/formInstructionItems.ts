@@ -3,6 +3,11 @@ import { getBottomPose, getLastPose, getTopPose, Rep } from '../training_data/re
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 import { FrameEvaluateParams } from './FormInstructionDebug';
 import { getOpeningOfKnee, getOpeningOfToe, getThighAngleFromSide } from './squatAnalysisUtils';
+import squatDepthImage from '../../resources/images/formInstructionItems/squat-depth.png';
+import kneeInAndOutImage from '../../resources/images/formInstructionItems/knee-in-and-out.png';
+import kneeFrontAndBackImage from '../../resources/images/formInstructionItems/knee-front-and-back.png';
+import stanceWidthImage from '../../resources/images/formInstructionItems/stance-width.png';
+import squatVelocityImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 
 type Description = { beforeNumber: string; afterNumber: string };
 
@@ -11,8 +16,10 @@ export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
+  readonly image: string;
   readonly shortDescription: { negative: Description; normal: Description; positive: Description };
   readonly longDescription: { negative: string; positive: string };
+  readonly fixedDescription: string;
   readonly voice: { negative: string; normal: string; positive: string };
   readonly reason?: string;
   readonly recommendMenu?: string[];
@@ -56,6 +63,7 @@ const squatDepth: FormInstructionItem = {
   id: 0,
   name: 'Squat depth',
   label: 'しゃがむ深さ',
+  image: squatDepthImage,
   shortDescription: {
     negative: {
       beforeNumber: '',
@@ -73,6 +81,8 @@ const squatDepth: FormInstructionItem = {
     positive:
       '腰を落としすぎているようです。悪いことではありませんが、深く腰を落としすぎると膝への負担が大きくなるので、太ももが水平になるところまで腰を落とすと良いでしょう。',
   },
+  fixedDescription:
+    '太ももと床が平行になるまで腰を落としましょう。腰を下ろす途中で背中が丸まってしまう場合は、無理せずに背中が丸まらない位置までにしましょう。しゃがみが浅いと、太ももの裏側やお尻の筋肉への負荷が少なくなってしまいます。',
   voice: {
     negative: '腰を太ももが平行になるまで落としましょう。',
     normal: 'ちょうどよい深さで腰を落とせています。この調子。',
@@ -108,19 +118,15 @@ const squatDepth: FormInstructionItem = {
         getDistance(bottomPose.worldLandmarks[KJ.HIP_RIGHT], bottomPose.worldLandmarks[KJ.KNEE_RIGHT]).yz) /
       2;
     const idealHipY = kneeY + averageThighLengthFromSide * Math.sin(((thresholds.middle - 90) * Math.PI) / 180);
-    const idealLeftHip = {
-      x: bottomPose.worldLandmarks[KJ.HIP_LEFT].x,
-      y: idealHipY,
-      z: bottomPose.worldLandmarks[KJ.HIP_LEFT].z,
-    };
-    const idealRightHip = {
-      x: bottomPose.worldLandmarks[KJ.HIP_RIGHT].x,
-      y: idealHipY,
-      z: bottomPose.worldLandmarks[KJ.HIP_RIGHT].z,
-    };
+    const pelvis = bottomPose.worldLandmarks[KJ.PELVIS];
+    const bottomKneeZ = (bottomPose.worldLandmarks[KJ.KNEE_LEFT].z + bottomPose.worldLandmarks[KJ.KNEE_RIGHT].z) / 2;
 
     guidelineSymbols.lines = [
-      { from: landmarkToVector3(idealRightHip), to: landmarkToVector3(idealLeftHip), showEndPoints: true },
+      {
+        from: landmarkToVector3({ x: pelvis.x, y: idealHipY, z: pelvis.z + 10 }),
+        to: landmarkToVector3({ x: pelvis.x, y: idealHipY, z: bottomKneeZ }),
+        showEndPoints: false,
+      },
     ];
 
     return guidelineSymbols;
@@ -149,6 +155,7 @@ const kneeInAndOut: FormInstructionItem = {
   id: 1,
   name: 'Knee in and out',
   label: 'ひざの開き',
+  image: kneeInAndOutImage,
   shortDescription: {
     negative: {
       beforeNumber: '膝が適切な角度より',
@@ -169,6 +176,8 @@ const kneeInAndOut: FormInstructionItem = {
     positive:
       '膝を外側に出そうとしすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。',
   },
+  fixedDescription:
+    'しゃがみ込むとき、膝とつま先の向きが一致するようにしましょう。膝が内側に入り込んでしまうと、大腿骨の内側と外側にある筋肉の働きを弱めてしまいます。スクワット中、膝を外に押し出す意識を持つと良いでしょう。',
   voice: {
     negative: '膝が内側に入りすぎています。',
     normal: '足の向きと太ももの向きが一致していて、とても良いです。',
@@ -221,7 +230,7 @@ const kneeInAndOut: FormInstructionItem = {
     const leftThighLength = getDistance(leftHip, bottomWorldLandmarks[KJ.KNEE_LEFT]).xyz;
     const idealLeftKnee = {
       x: leftHip.x + leftThighLength * Math.sin((idealThighAngle * Math.PI) / 180),
-      y: bottomWorldLandmarks[KJ.KNEE_LEFT].y,
+      y: (bottomWorldLandmarks[KJ.KNEE_LEFT].y + bottomWorldLandmarks[KJ.KNEE_RIGHT].y) / 2,
       z: leftHip.z - leftThighLength * Math.cos((idealThighAngle * Math.PI) / 180),
     };
 
@@ -229,11 +238,22 @@ const kneeInAndOut: FormInstructionItem = {
     const rightThighLength = getDistance(rightHip, bottomWorldLandmarks[KJ.KNEE_RIGHT]).xyz;
     const idealRightKnee = {
       x: rightHip.x - rightThighLength * Math.sin((idealThighAngle * Math.PI) / 180),
-      y: bottomWorldLandmarks[KJ.KNEE_RIGHT].y,
+      y: (bottomWorldLandmarks[KJ.KNEE_LEFT].y + bottomWorldLandmarks[KJ.KNEE_RIGHT].y) / 2,
       z: rightHip.z - rightThighLength * Math.cos((idealThighAngle * Math.PI) / 180),
     };
 
-    guidelineSymbols.points = [landmarkToVector3(idealLeftKnee), landmarkToVector3(idealRightKnee)];
+    guidelineSymbols.lines = [
+      {
+        from: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y - 15 }),
+        to: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y + 15 }),
+        showEndPoints: false,
+      },
+      {
+        from: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y - 15 }),
+        to: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y + 15 }),
+        showEndPoints: false,
+      },
+    ];
 
     return guidelineSymbols;
   },
@@ -267,6 +287,7 @@ const stanceWidth: FormInstructionItem = {
   id: 2,
   name: 'Stance width',
   label: '足の幅',
+  image: stanceWidthImage,
   shortDescription: {
     negative: { beforeNumber: '足の幅を', afterNumber: 'cmほど広くしてください。' },
     normal: { beforeNumber: '足の幅はバッチリです。', afterNumber: '' },
@@ -276,6 +297,8 @@ const stanceWidth: FormInstructionItem = {
     negative: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
     positive: '足の幅が広すぎます。しゃがんだ時に膝に負担がかかる恐れがあるので、肩幅より少し広い程度に狭めましょう。',
   },
+  fixedDescription:
+    '足幅は、踵の位置が肩幅と同じくらいになるように開きましょう。足幅が狭すぎるとしゃがみが浅くなり、ハムストリングスや内転筋群の動員が弱まります。広すぎると腱や靭帯に過剰な負荷がかかってしまいます。',
   voice: {
     negative: '足の幅が狭すぎます。足は肩幅より少し広い程度に開きましょう。',
     normal: '足の幅はバッチリです。',
@@ -315,10 +338,19 @@ const stanceWidth: FormInstructionItem = {
     const idealRightFootX = ankleCenter.x + idealFootWidth / 2;
     const leftFoot = topWorldLandmarks[KJ.FOOT_LEFT];
     const rightFoot = topWorldLandmarks[KJ.FOOT_RIGHT];
+    const shoulderY = (topWorldLandmarks[KJ.SHOULDER_LEFT].y + topWorldLandmarks[KJ.SHOULDER_RIGHT].y) / 2;
 
-    guidelineSymbols.points = [
-      landmarkToVector3({ x: idealLeftFootX, y: leftFoot.y, z: leftFoot.z }),
-      landmarkToVector3({ x: idealRightFootX, y: rightFoot.y, z: rightFoot.z }),
+    guidelineSymbols.lines = [
+      {
+        from: landmarkToVector3({ x: idealLeftFootX, y: leftFoot.y, z: leftFoot.z }),
+        to: landmarkToVector3({ x: idealLeftFootX, y: shoulderY, z: leftFoot.z }),
+        showEndPoints: false,
+      },
+      {
+        from: landmarkToVector3({ x: idealRightFootX, y: rightFoot.y, z: rightFoot.z }),
+        to: landmarkToVector3({ x: idealRightFootX, y: shoulderY, z: rightFoot.z }),
+        showEndPoints: false,
+      },
     ];
 
     return guidelineSymbols;
@@ -354,6 +386,7 @@ const kneeFrontAndBack: FormInstructionItem = {
   id: 3,
   name: 'Knee front and back',
   label: '膝の前後位置',
+  image: kneeFrontAndBackImage,
   shortDescription: {
     negative: {
       beforeNumber: 'お尻をあと',
@@ -371,6 +404,8 @@ const kneeFrontAndBack: FormInstructionItem = {
     positive:
       '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。',
   },
+  fixedDescription:
+    '足の筋肉をバランスよく鍛えるためには、膝が前に出すぎないように注意すると良いでしょう。膝が前に出すぎると、大腿四頭筋ばかりが動員され、ハムストリングや腓腹筋への負荷が弱くなってしまいます。また、怪我の原因にもなるので注意が必要です。',
   voice: {
     negative: 'お尻を引きすぎです。',
     normal: 'ちょうど良い膝の曲げ方です。',
@@ -435,20 +470,20 @@ const kneeFrontAndBack: FormInstructionItem = {
     }
 
     const topFootZ = (topWorldLandmarks[KJ.FOOT_RIGHT].z + topWorldLandmarks[KJ.FOOT_LEFT].z) / 2;
-    const bottomLeftKnee = bottomWorldLandmarks[KJ.KNEE_LEFT];
-    const bottomRightKnee = bottomWorldLandmarks[KJ.KNEE_RIGHT];
     const idealBottomKneeZ = topFootZ - thresholds.middle;
+    const pelvis = bottomWorldLandmarks[KJ.PELVIS];
+    const footY = (topWorldLandmarks[KJ.FOOT_RIGHT].y + topWorldLandmarks[KJ.FOOT_LEFT].y) / 2;
 
     guidelineSymbols.lines = [
       {
         from: landmarkToVector3({
-          x: bottomLeftKnee.x,
-          y: (bottomLeftKnee.y + bottomRightKnee.y) / 2,
+          x: pelvis.x,
+          y: footY,
           z: idealBottomKneeZ,
         }),
         to: landmarkToVector3({
-          x: bottomRightKnee.x,
-          y: (bottomLeftKnee.y + bottomRightKnee.y) / 2,
+          x: pelvis.x,
+          y: pelvis.y,
           z: idealBottomKneeZ,
         }),
         showEndPoints: true,
@@ -463,6 +498,7 @@ const squatVelocity: FormInstructionItem = {
   id: 4,
   name: 'Speed',
   label: '速度',
+  image: squatVelocityImage,
   shortDescription: {
     negative: {
       beforeNumber: '立ち上がるのが約',
@@ -480,6 +516,8 @@ const squatVelocity: FormInstructionItem = {
     positive:
       '立ち上がるスピードが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、1〜2秒かけて立ち上がるようにしましょう。',
   },
+  fixedDescription:
+    'しゃがんだ反動に頼って立ち上がっていると、筋肉への刺激が軽減してしまいます。反動に頼らず、しゃがみ込むときはゆっくりと、立ち上がるときは素早く動作することを心がけましょう。ただし、動きが速すぎると怪我の原因になるため注意しましょう。',
   voice: {
     negative: '少し速いです。もう少しゆっくり。',
     normal: 'いい速さです。',
