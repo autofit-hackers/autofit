@@ -1,6 +1,7 @@
-import { Box, Card, Grid, Typography } from '@mui/material';
+import { Box, Card, Grid, Stack, Typography } from '@mui/material';
 import { Container } from '@mui/system';
 import { useAtom } from 'jotai';
+import autofitHPQR from '../../resources/images/autofit-hp-qr.png';
 import autofitLogo from '../../resources/images/autofit-logo.png';
 import { formInstructionItemsAtom, setRecordAtom } from './atoms';
 import InstructionItemExpression from './ui-components/InstructionItemExpression';
@@ -50,7 +51,23 @@ export default function TakeoutReport3() {
                 height: '35vw',
               }}
             >
-              <Typography>autofit</Typography>
+              {/* <CardMedia component="img" sx={{ height: '10vw' }} image={autofitHPQR} alt="autofit-hp-qr" /> */}
+              {/* <img src="img" sx={{ height: '10vw' }} image={autofitHPQR} alt="autofit-hp-qr" /> */}
+              <img src={autofitHPQR} alt="autofit" />
+              <Stack spacing={2}>
+                <Typography gutterBottom variant="h5" component="div" fontWeight="bold">
+                  お問い合わせフォーム
+                </Typography>
+                <Typography variant="body1" color="text.primary" fontWeight="500">
+                  autofit はデータの力を駆使して
+                  、誰もが簡単にフリーウェイトをマスターしてマッチョになれる世界の実現を目指しています。
+                  本レポートへのご意見・ご感想はもちろん、
+                  実証実験や指導アルゴリズムの改善にご協力いただけるトレーナーやジム経営者の方、共にプロダクトを開発するエンジニアの方、ご連絡をお待ちしております。
+                </Typography>
+                <Typography variant="body1" color="text.primary" fontWeight="600">
+                  mail: info@autofit.co.jp
+                </Typography>
+              </Stack>
             </Card>
           </Grid>
         </Grid>
