@@ -137,6 +137,7 @@ export default function IntervalReport() {
                 formInstructionItems={formInstructionItems}
                 formEvaluationResults={setRecord.formEvaluationResults}
                 style={{}}
+                sx={cardSx}
               />
             </Stack>
           </Grid>

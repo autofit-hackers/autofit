@@ -151,6 +151,7 @@ export default function TakeoutReport1() {
                 formInstructionItems={formInstructionItems}
                 formEvaluationResults={setRecord.formEvaluationResults}
                 style={{}}
+                sx={{ mb: -2, ...takeoutCardSx }}
               />
             </Grid>
           </Grid>
