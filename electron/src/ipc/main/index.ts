@@ -46,7 +46,6 @@ async function createWindow() {
     },
   });
 
-  win.webContents.openDevTools({ mode: 'right' });
   if (app.isPackaged) {
     void win.loadFile(indexHtml);
   } else {
