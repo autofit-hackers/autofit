@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
@@ -24,14 +24,16 @@ export default function InstructionItemExpression(props: {
       ) : null}
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         <CardContent>
-          <GoodChip isGood={isGood} />
-          <Typography gutterBottom variant="h5" component="div">
-            {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Stack direction="row" spacing={2}>
+            <Typography gutterBottom variant="h5" component="div" fontWeight="bold">
+              {title}
+            </Typography>
+            <GoodChip isGood={isGood} />
+          </Stack>
+          <Typography variant="body1" color="text.primary" fontWeight="500">
             {fixedDescription}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body1" color="text.primary" fontWeight="600">
             {resultDescription}
           </Typography>
         </CardContent>
