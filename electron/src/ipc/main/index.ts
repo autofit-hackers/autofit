@@ -44,7 +44,7 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
-    kiosk: true,
+    kiosk: false,
   });
 
   win.setMenuBarVisibility(false);
