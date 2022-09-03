@@ -50,8 +50,7 @@ function RealtimeChart(props: {
       option={op}
       style={{
         marginTop: size === 'large' ? '10vw' : '0',
-        height: size === 'large' ? '60vw' : '30vw',
-        backgroundColor: 'white',
+        height: size === 'large' ? '50vw' : '30vw',
       }}
     />
   );
@@ -96,4 +95,33 @@ export function ManuallyAddableChart(props: { data: number[][] }) {
   };
 
   return <ReactECharts option={op} style={{ marginTop: 100, height: '60vw', backgroundColor: 'white' }} />;
+}
+
+export function InTrainingChart(props: { data: number[] }) {
+  const { data } = props;
+
+  const op = {
+    // innerHeight: '100vh',
+    xAxis: {
+      type: 'category',
+      data: data.map((v, i) => i),
+      // 最新300個のデータを表示する
+      min: data.length - 301,
+      max: data.length - 1,
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series: [
+      {
+        name: 'height',
+        data,
+        type: 'line',
+        itemStyle: { normal: { color: 'blue' } },
+        smooth: true,
+      },
+    ],
+  };
+
+  return <ReactECharts option={op} style={{ marginTop: '10vw', height: '50vw' }} />;
 }

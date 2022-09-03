@@ -1,4 +1,5 @@
-import { Button, Switch } from '@mui/material';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import { IconButton, Switch } from '@mui/material';
 import { useState } from 'react';
 import { CameraAngle, PoseGrid } from '../../utils/poseGrid';
 
@@ -8,10 +9,10 @@ function PoseGridViewer(props: {
   cameraPosition: CameraAngle;
 }) {
   const { gridDivRef, poseGridRef, cameraPosition } = props;
-  const [useOrthographic, setUseOrthographic] = useState(poseGridRef.current?.config.camera.useOrthographic);
+  const [projectionMode, setProjectionMode] = useState<'perspective' | 'parallel'>('parallel');
 
   const handleCameraTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUseOrthographic(event.target.checked);
+    setProjectionMode(event.target.checked ? 'parallel' : 'perspective');
     poseGridRef.current?.changeCameraType();
   };
 
@@ -22,7 +23,7 @@ function PoseGridViewer(props: {
         zIndex: 2,
         position: 'relative',
         width: '100%',
-        height: '528px',
+        height: '408px',
         // FIXME: height はピクセル指定しないと正しく表示されない
       }}
     >
@@ -38,19 +39,20 @@ function PoseGridViewer(props: {
           width: '100%',
         }}
       />
-      <Button
+      <IconButton
+        aria-label="reset-camera-angle"
+        color="primary"
         onClick={() => {
           if (poseGridRef.current !== null) {
             poseGridRef.current.setCameraAngle(cameraPosition);
           }
         }}
-        variant="contained"
-        sx={{ position: 'absolute', top: 0, textAlign: 'center', zIndex: 2 }}
+        sx={{ zIndex: 2 }}
       >
-        Reset Camera Position
-      </Button>
+        <RotateLeftIcon />
+      </IconButton>
       <Switch
-        checked={useOrthographic}
+        checked={projectionMode === 'parallel'}
         onChange={handleCameraTypeChange}
         inputProps={{ 'aria-label': 'controlled' }}
         sx={{ position: 'absolute', top: 0, right: 0, textAlign: 'center', zIndex: 2 }}

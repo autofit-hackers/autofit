@@ -6,23 +6,23 @@ import {
   Camera,
   Color,
   CylinderGeometry,
-  OrthographicCamera,
+  DoubleSide,
   GridHelper,
   Group,
   LineBasicMaterial,
   LineSegments,
   Material,
+  Matrix3,
   Mesh,
   MeshBasicMaterial,
   Object3D,
+  OrthographicCamera,
   PerspectiveCamera,
+  PlaneGeometry,
   Scene,
   SphereGeometry,
   Vector3,
   WebGLRenderer,
-  DoubleSide,
-  PlaneGeometry,
-  Matrix3,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { KINECT_POSE_CONNECTIONS, landmarkToVector3 } from '../training_data/pose';
@@ -92,7 +92,7 @@ export type CameraAngle = {
 
 export type PoseGridConfig = {
   backgroundColor: number;
-  camera: { useOrthographic: boolean; distance: number; fov: number };
+  camera: { projectionMode: 'perspective' | 'parallel'; distance: number; fov: number };
   gridPlane: { size: number; divisions: number; y: number };
   connectionColor: number;
   connectionWidth: number;
@@ -102,7 +102,7 @@ export type PoseGridConfig = {
 
 export const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   backgroundColor: 0,
-  camera: { useOrthographic: true, distance: 200, fov: 75 },
+  camera: { projectionMode: 'parallel', distance: 200, fov: 75 },
   gridPlane: { size: 200, divisions: 10, y: -93 },
   connectionWidth: 4,
   connectionColor: 0x00ffff,
@@ -141,7 +141,7 @@ export class PoseGrid {
     this.container.appendChild(this.canvas);
     parent.appendChild(this.container);
     this.parentBox = parent.getBoundingClientRect();
-    if (this.config.camera.useOrthographic) {
+    if (this.config.camera.projectionMode === 'parallel') {
       this.camera = new OrthographicCamera(
         -this.config.camera.distance * 0.7,
         this.config.camera.distance * 0.7,
