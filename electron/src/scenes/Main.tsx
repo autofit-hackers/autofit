@@ -3,8 +3,8 @@ import { useAtom } from 'jotai';
 import { playTrainingEndSound } from '../coaching/voiceGuidance';
 import { phaseAtom, playSoundAtom } from './atoms';
 import BodyTrack2d from './BodyTracking';
-import IntervalReport from './Report';
 import StartPage from './StartPage';
+import TakeoutReport2 from './TakeoutReport2';
 import ProductMenu from './ui-components/ProductMenu';
 
 export default function TrainingMain() {
@@ -40,7 +40,7 @@ export default function TrainingMain() {
           >
             Back to Training
           </Button>
-          <IntervalReport />
+          <TakeoutReport2 />
         </>
       )}
     </>

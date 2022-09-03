@@ -21,7 +21,6 @@ function PoseGridViewer(props: {
       style={{
         zIndex: 2,
         position: 'relative',
-        // TODO: Resolve hardcoded value
         width: '100%',
         height: '528px',
         // FIXME: height はピクセル指定しないと正しく表示されない
@@ -35,7 +34,7 @@ function PoseGridViewer(props: {
           zIndex: 1,
           textAlign: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          height: '100%', // TODO: Resolve hardcoded value
+          height: '100%',
           width: '100%',
         }}
       />

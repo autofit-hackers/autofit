@@ -56,7 +56,6 @@ export default function IntervalReport() {
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
-
       <Box
         component="main"
         sx={{
