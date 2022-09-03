@@ -69,6 +69,8 @@ export const cornerPointsToSquare = (corners: SquareCorners): Square => {
   );
   if (matrix.determinant() !== 0) {
     console.error('The given 4 points are not on the same plane');
+
+    return { width: 0, height: 0, center: new Vector3() };
   }
 
   const width = topLeft.distanceTo(topRight);
@@ -299,7 +301,7 @@ export class PoseGrid {
     }
   }
 
-  drawPoint(point: Vector3, color: Color = new Color(0xff0000)): void {
+  drawPoint(point: Vector3, color: Color = new Color('#e53935')): void {
     const material = new MeshBasicMaterial({ color });
     const sphereGeometry = new SphereGeometry(this.config.landmarkSize);
 
@@ -308,7 +310,7 @@ export class PoseGrid {
     this.guidelineGroup.add(sphere);
   }
 
-  drawLine(lineEndPoints: LineEndPoints, color: Color = new Color(0xff0000)): void {
+  drawLine(lineEndPoints: LineEndPoints, color: Color = new Color('#e53935')): void {
     const material = new MeshBasicMaterial({ color });
     const { from, to } = lineEndPoints;
     const lines: Array<Vector3> = [from, to];
@@ -317,7 +319,7 @@ export class PoseGrid {
     this.guidelineGroup.add(wireFrame);
   }
 
-  drawLineEndPoints(lineEndPoints: LineEndPoints, color: Color = new Color(0xff0000)): void {
+  drawLineEndPoints(lineEndPoints: LineEndPoints, color: Color = new Color('#e53935')): void {
     const material = new MeshBasicMaterial({ color });
     const sphereGeometry = new SphereGeometry(this.config.landmarkSize);
 
@@ -329,7 +331,7 @@ export class PoseGrid {
     });
   }
 
-  drawSquare(squareCorners: SquareCorners, color: Color = new Color(0xff0000)): void {
+  drawSquare(squareCorners: SquareCorners, color: Color = new Color('#e53935')): void {
     const { width, height, center } = cornerPointsToSquare(squareCorners);
     const geometry = new PlaneGeometry(width, height);
     const material = new MeshBasicMaterial({ color, side: DoubleSide });
