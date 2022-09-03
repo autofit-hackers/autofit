@@ -9,7 +9,8 @@ import autofitLogo from '../../resources/images/autofit-logo.png';
 import { KINECT_POSE_CONNECTIONS } from '../training_data/pose';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
-import futuristicTheme, { cardSx } from './themes';
+import futuristicTheme from './themes';
+import { takeoutCardSx } from './ui-components/InstructionItemExpression';
 import RadarChart from './ui-components/RadarChart';
 import TotalScore from './ui-components/TotalScore';
 
@@ -63,23 +64,23 @@ export default function TakeoutReport1() {
           display: 'flex',
           backgroundColor: 'white',
           flexGrow: 1,
-          height: '100vh',
+          height: '141vw',
           overflow: 'auto',
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2 }}>
             {/* ページタイトル */}
-            <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
+            <Typography fontSize={30} fontWeight="bold">
               スクワットレポート
             </Typography>
             {/* autofitのロゴ */}
-            <img src={autofitLogo} alt="autofit" width="100" height="100" />
+            <img src={autofitLogo} alt="autofit" width="150px" />
           </Box>
           <Grid container spacing={3}>
             {/* スクワットの説明文 */}
             <Grid item xs={12} alignItems="stretch">
-              <Card sx={cardSx}>
+              <Card sx={takeoutCardSx}>
                 <CardContent>
                   <Typography variant="h5" component="div">
                     ◆スクワットとは
@@ -99,7 +100,7 @@ export default function TakeoutReport1() {
             {/* 撮影したRGB映像のサムネイル */}
             <Grid item xs={6} alignItems="stretch">
               <Card>
-                <CardContent sx={cardSx}>
+                <CardContent sx={takeoutCardSx}>
                   <ReactPlayer
                     ref={videoPlayerRef}
                     url={repVideoUrls[displayedRepIndex]}
@@ -113,14 +114,14 @@ export default function TakeoutReport1() {
             {/* トレーニングの3D表示のサムネイル */}
             <Grid item xs={6} alignItems="stretch">
               <Card>
-                <CardContent sx={cardSx}>
+                <CardContent sx={takeoutCardSx}>
                   <div
                     className="square-box"
                     style={{
                       zIndex: 2,
                       position: 'relative',
                       width: '100%',
-                      height: '528px',
+                      height: '408px',
                       // FIXME: height はピクセル指定しないと正しく表示されない
                     }}
                   >
