@@ -51,8 +51,7 @@ export default function TakeoutReport3() {
                 height: '35vw',
               }}
             >
-              {/* <CardMedia component="img" sx={{ height: '10vw' }} image={autofitHPQR} alt="autofit-hp-qr" /> */}
-              {/* <img src="img" sx={{ height: '10vw' }} image={autofitHPQR} alt="autofit-hp-qr" /> */}
+              {/* autofit HP の QR Code */}
               <img src={autofitHPQR} alt="autofit" />
               <Stack spacing={2}>
                 <Typography gutterBottom variant="h5" component="div" fontWeight="bold">
