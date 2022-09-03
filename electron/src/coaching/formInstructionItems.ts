@@ -3,6 +3,11 @@ import { getAngle, getCenter, getDistance, heightInWorld, KJ, landmarkToVector3,
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 import { FrameEvaluateParams } from './FormInstructionDebug';
 import { getOpeningOfKnee, getOpeningOfToe, getThighAngleFromSide } from './squatAnalysisUtils';
+import squatDepthImage from '../../resources/images/formInstructionItems/squat-depth.png';
+import kneeInAndOutImage from '../../resources/images/formInstructionItems/knee-in-and-out.png';
+import kneeFrontAndBackImage from '../../resources/images/formInstructionItems/knee-front-and-back.png';
+import stanceWidthImage from '../../resources/images/formInstructionItems/stance-width.png';
+import squatVelocityImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 
 type Description = { beforeNumber: string; afterNumber: string };
 
@@ -11,8 +16,10 @@ export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
+  readonly image: string;
   readonly shortDescription: { negative: Description; normal: Description; positive: Description };
   readonly longDescription: { negative: string; positive: string };
+  readonly fixedDescription: string;
   readonly voice: { negative: string; normal: string; positive: string };
   readonly reason?: string;
   readonly recommendMenu?: string[];
@@ -56,6 +63,7 @@ const squatDepth: FormInstructionItem = {
   id: 0,
   name: 'Squat depth',
   label: 'しゃがむ深さ',
+  image: squatDepthImage,
   shortDescription: {
     negative: {
       beforeNumber: '',
@@ -73,6 +81,8 @@ const squatDepth: FormInstructionItem = {
     positive:
       '腰を落としすぎているようです。悪いことではありませんが、深く腰を落としすぎると膝への負担が大きくなるので、太ももが水平になるところまで腰を落とすと良いでしょう。',
   },
+  fixedDescription:
+    '太ももと床が平行になるまで腰を落としましょう。腰を下ろす途中で背中が丸まってしまう場合は、無理せずに背中が丸まらない位置までにしましょう。しゃがみが浅いと、太ももの裏側やお尻の筋肉への負荷が少なくなってしまいます。',
   voice: {
     negative: '腰を太ももが平行になるまで落としましょう。',
     normal: 'ちょうどよい深さで腰を落とせています。この調子。',
@@ -145,6 +155,7 @@ const kneeInAndOut: FormInstructionItem = {
   id: 1,
   name: 'Knee in and out',
   label: 'ひざの開き',
+  image: kneeInAndOutImage,
   shortDescription: {
     negative: {
       beforeNumber: '膝が適切な角度より',
@@ -165,6 +176,8 @@ const kneeInAndOut: FormInstructionItem = {
     positive:
       '膝を外側に出そうとしすぎています。膝を痛める可能性があるので、足と太ももが平行になるように意識しながらしゃがみしましょう。',
   },
+  fixedDescription:
+    'しゃがみ込むとき、膝とつま先の向きが一致するようにしましょう。膝が内側に入り込んでしまうと、大腿骨の内側と外側にある筋肉の働きを弱めてしまいます。スクワット中、膝を外に押し出す意識を持つと良いでしょう。',
   voice: {
     negative: '膝が内側に入りすぎています。',
     normal: '足の向きと太ももの向きが一致していて、とても良いです。',
@@ -274,6 +287,7 @@ const stanceWidth: FormInstructionItem = {
   id: 2,
   name: 'Stance width',
   label: '足の幅',
+  image: stanceWidthImage,
   shortDescription: {
     negative: { beforeNumber: '足の幅を', afterNumber: 'cmほど広くしてください。' },
     normal: { beforeNumber: '足の幅はバッチリです。', afterNumber: '' },
@@ -283,6 +297,8 @@ const stanceWidth: FormInstructionItem = {
     negative: '足の幅が狭すぎます。腰を落としにくくなってしまうので、足は肩幅より少し広い程度に開きましょう。',
     positive: '足の幅が広すぎます。しゃがんだ時に膝に負担がかかる恐れがあるので、肩幅より少し広い程度に狭めましょう。',
   },
+  fixedDescription:
+    '足幅は、踵の位置が肩幅と同じくらいになるように開きましょう。足幅が狭すぎるとしゃがみが浅くなり、ハムストリングスや内転筋群の動員が弱まります。広すぎると腱や靭帯に過剰な負荷がかかってしまいます。',
   voice: {
     negative: '足の幅が狭すぎます。足は肩幅より少し広い程度に開きましょう。',
     normal: '足の幅はバッチリです。',
@@ -370,6 +386,7 @@ const kneeFrontAndBack: FormInstructionItem = {
   id: 3,
   name: 'Knee front and back',
   label: '膝の前後位置',
+  image: kneeFrontAndBackImage,
   shortDescription: {
     negative: {
       beforeNumber: 'お尻をあと',
@@ -387,6 +404,8 @@ const kneeFrontAndBack: FormInstructionItem = {
     positive:
       '膝が前に出過ぎています。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。',
   },
+  fixedDescription:
+    '足の筋肉をバランスよく鍛えるためには、膝が前に出すぎないように注意すると良いでしょう。膝が前に出すぎると、大腿四頭筋ばかりが動員され、ハムストリングや腓腹筋への負荷が弱くなってしまいます。また、怪我の原因にもなるので注意が必要です。',
   voice: {
     negative: 'お尻を引きすぎです。',
     normal: 'ちょうど良い膝の曲げ方です。',
@@ -479,6 +498,7 @@ const squatVelocity: FormInstructionItem = {
   id: 4,
   name: 'Speed',
   label: '速度',
+  image: squatVelocityImage,
   shortDescription: {
     negative: {
       beforeNumber: '立ち上がるのが約',
@@ -496,6 +516,8 @@ const squatVelocity: FormInstructionItem = {
     positive:
       '立ち上がるスピードが遅いです。効かせることも重要ですが、遅すぎる必要はありません。効率よく筋力を発揮するため、1〜2秒かけて立ち上がるようにしましょう。',
   },
+  fixedDescription:
+    'しゃがんだ反動に頼って立ち上がっていると、筋肉への刺激が軽減してしまいます。反動に頼らず、しゃがみ込むときはゆっくりと、立ち上がるときは素早く動作することを心がけましょう。ただし、動きが速すぎると怪我の原因になるため注意しましょう。',
   voice: {
     negative: '少し速いです。もう少しゆっくり。',
     normal: 'いい速さです。',
