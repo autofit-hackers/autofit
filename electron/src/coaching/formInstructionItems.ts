@@ -1,5 +1,5 @@
-import { getBottomPose, getLastPose, getTopPose, Rep } from '../training_data/rep';
 import { getAngle, getCenter, getDistance, heightInWorld, KJ, landmarkToVector3, Pose } from '../training_data/pose';
+import { getBottomPose, getLastPose, getTopPose, Rep } from '../training_data/rep';
 import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 import { FrameEvaluateParams } from './FormInstructionDebug';
 import { getOpeningOfKnee, getOpeningOfToe, getThighAngleFromSide } from './squatAnalysisUtils';
@@ -179,7 +179,7 @@ const kneeInAndOut: FormInstructionItem = {
   evaluateForm: (rep: Rep) => {
     const bottomPose = getBottomPose(rep);
     const topPose = getTopPose(rep);
-    const thresholds = { upper: 30, middle: 10, lower: -5 };
+    const thresholds = { upper: 40, middle: 25, lower: 10 };
     if (bottomPose === undefined || topPose === undefined) {
       console.warn('kneeInAndOut: bottomPose or topPose is undefined');
 

@@ -37,17 +37,17 @@ async function createWindow() {
   win = new BrowserWindow({
     width: 1080,
     height: 1080,
-    title: 'Main window',
+    title: 'autofit',
     icon: join(ROOT_PATH.public, 'favicon.svg'),
     webPreferences: {
       preload,
       nodeIntegration: true,
       contextIsolation: false,
     },
-    kiosk: true
+    kiosk: true,
   });
 
-  win.webContents.openDevTools({ mode: 'right' });
+  // win.webContents.openDevTools({ mode: 'right' });
   if (app.isPackaged) {
     void win.loadFile(indexHtml);
   } else {

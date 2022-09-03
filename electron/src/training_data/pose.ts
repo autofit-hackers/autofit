@@ -163,13 +163,21 @@ export const getAngle = (start: Landmark, end: Landmark) => {
   };
 };
 
-export const normalizeAngle = (angle: number, shouldInferiorAngle = false): number => {
-  let normalizedAngle = angle >= 0 ? angle % 360 : (angle % 360) + 360;
-  if (shouldInferiorAngle && normalizedAngle > 180) {
-    normalizedAngle = 360 - normalizedAngle;
+export const normalizeAngle = (
+  angle: number,
+  mode: 'positive-inferior' | 'permit-negative-inferior' | 'positive-obtuse',
+): number => {
+  if (mode === 'positive-inferior') {
+    return angle >= 0 ? angle : angle + 360;
+  }
+  if (mode === 'positive-obtuse') {
+    return angle >= 0 ? angle % 360 : (angle % 360) + 360;
+  }
+  if (mode === 'permit-negative-inferior') {
+    return angle % 180;
   }
 
-  return normalizedAngle;
+  return angle;
 };
 
 export const getCenter = (

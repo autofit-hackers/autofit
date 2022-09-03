@@ -60,7 +60,7 @@ export default function BodyTrack2d() {
   const [playSound] = useAtom(playSoundAtom);
 
   // settings to treat outliers in pose estimation
-  const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 2.0, maxConsecutiveOutlierCount: 10 };
+  const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 10.01, maxConsecutiveOutlierCount: 10 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
 
   // 外れ値処理の設定
