@@ -453,18 +453,18 @@ const kneeFrontAndBack: FormInstructionItem = {
     const topFootZ = (topWorldLandmarks[KJ.FOOT_RIGHT].z + topWorldLandmarks[KJ.FOOT_LEFT].z) / 2;
     const idealBottomKneeZ = topFootZ - thresholds.middle;
     const pelvis = bottomWorldLandmarks[KJ.PELVIS];
-    const footY = (topWorldLandmarks[KJ.FOOT_RIGHT].y + topWorldLandmarks[KJ.FOOT_LEFT].y) / 2;
+    const bottomKneeY = (bottomWorldLandmarks[KJ.KNEE_RIGHT].y + bottomWorldLandmarks[KJ.KNEE_LEFT].y) / 2;
 
     guidelineSymbols.lines = [
       {
         from: landmarkToVector3({
           x: pelvis.x,
-          y: footY,
+          y: bottomKneeY + 15,
           z: idealBottomKneeZ,
         }),
         to: landmarkToVector3({
           x: pelvis.x,
-          y: pelvis.y,
+          y: bottomKneeY - 15,
           z: idealBottomKneeZ,
         }),
         showEndPoints: true,
