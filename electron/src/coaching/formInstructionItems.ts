@@ -231,13 +231,13 @@ const kneeInAndOut: FormInstructionItem = {
 
     guidelineSymbols.lines = [
       {
-        from: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y - 50 }),
-        to: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y + 50 }),
+        from: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y - 15 }),
+        to: landmarkToVector3({ ...idealLeftKnee, y: idealLeftKnee.y + 15 }),
         showEndPoints: false,
       },
       {
-        from: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y - 50 }),
-        to: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y + 50 }),
+        from: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y - 15 }),
+        to: landmarkToVector3({ ...idealRightKnee, y: idealRightKnee.y + 15 }),
         showEndPoints: false,
       },
     ];
