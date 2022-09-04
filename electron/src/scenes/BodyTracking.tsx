@@ -27,7 +27,6 @@ import {
   formInstructionItemsAtom,
   kinectAtom,
   phaseAtom,
-  playSoundAtom,
   repVideoUrlsAtom,
   setRecordAtom,
 } from './atoms';
@@ -57,7 +56,6 @@ export default function BodyTrack2d() {
   const upperThreshold = 0.95;
 
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
-  const [playSound] = useAtom(playSoundAtom);
 
   // settings to treat outliers in pose estimation
   const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 10.01, maxConsecutiveOutlierCount: 10 };
@@ -106,7 +104,7 @@ export default function BodyTrack2d() {
     // 映像保存
     repVideoRecorderRef.current = null;
     setRepVideoUrls([]);
-    playTrainingStartSound(playSound);
+    playTrainingStartSound();
     // グラフ
     evaluatedFrameRef.current.forEach((frame, idx) => {
       evaluatedFrameRef.current[idx].evaluatedValues = [];
@@ -231,7 +229,7 @@ export default function BodyTrack2d() {
           repRef.current = resetRep(setRef.current.reps.length);
 
           // レップカウントを読み上げる
-          playRepCountSound(setRef.current.reps.length, playSound);
+          playRepCountSound(setRef.current.reps.length); // ここで音声を再生
 
           // RepStateの初期化
           repState.current = resetRepState();
@@ -334,7 +332,7 @@ export default function BodyTrack2d() {
         variant="contained"
         onClick={() => {
           setPhase(2);
-          playTrainingEndSound(playSound);
+          playTrainingEndSound();
         }}
         sx={{ zIndex: 3, ml: 3 }}
         disabled={setRef.current.reps.length === 0}
