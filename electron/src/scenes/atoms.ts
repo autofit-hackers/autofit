@@ -1,5 +1,6 @@
 import { atom } from 'jotai';
-import { FormInstructionItem, formInstructionItemsQWS } from '../coaching/formInstructionItems';
+import formInstructionItemsQWS from '../coaching/formInstructionItems';
+import { FormInstructionItem } from '../coaching/formInstruction';
 import { resetSet, Set } from '../training_data/set';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const KinectAzure = require('kinect-azure');

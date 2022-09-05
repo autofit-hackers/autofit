@@ -1,53 +1,13 @@
-import { getAngle, getCenter, getDistance, heightInWorld, KJ, landmarkToVector3, Pose } from '../training_data/pose';
+import { getAngle, getCenter, getDistance, heightInWorld, KJ, landmarkToVector3 } from '../training_data/pose';
 import { getBottomPose, getLastPose, getTopPose, Rep } from '../training_data/rep';
-import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
-import { FrameEvaluateParams } from './FormInstructionDebug';
+import type { GuidelineSymbols } from '../utils/poseGrid';
 import { getOpeningOfKnee, getOpeningOfToe, getThighAngleFromSide } from './squatAnalysisUtils';
 import squatDepthImage from '../../resources/images/formInstructionItems/squat-depth.png';
 import kneeInAndOutImage from '../../resources/images/formInstructionItems/knee-in-and-out.png';
 import kneeFrontAndBackImage from '../../resources/images/formInstructionItems/knee-front-and-back.png';
 import stanceWidthImage from '../../resources/images/formInstructionItems/stance-width.png';
 import squatVelocityImage from '../../resources/images/formInstructionItems/squat-velocity.png';
-
-type Description = { beforeNumber: string; afterNumber: string };
-
-// TODO: クラスにしたほうが扱いやすいかも
-export type FormInstructionItem = {
-  readonly id: number;
-  readonly name: string;
-  readonly label: string;
-  readonly image: string;
-  readonly shortDescription: { negative: Description; normal: Description; positive: Description };
-  readonly longDescription: { negative: string; positive: string };
-  readonly fixedDescription: string;
-  readonly voice: { negative: string; normal: string; positive: string };
-  readonly reason?: string;
-  readonly recommendMenu?: string[];
-  readonly importance?: number;
-  readonly poseGridCameraAngle: CameraAngle;
-  // TODO: 以下２つはまとめてもいいかも
-  readonly evaluateForm: (rep: Rep) => number;
-  readonly calculateRealtimeValue: (evaluatedPose: Pose) => number;
-  readonly calculateRealtimeThreshold: (criteriaPose: Pose) => { upper: number; middle: number; lower: number };
-  readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
-  readonly getCoordinateErrorFromIdeal: (rep: Rep) => number;
-};
-
-// TODO: けっこうごちゃごちゃしてきました。整理しましょう。
-export type FormEvaluationResult = {
-  name: string;
-  descriptionsForEachRep: string[];
-  isGood: boolean;
-  shortSummary: string;
-  longSummary: string;
-  overallComment: string;
-  eachRepErrorScores: number[];
-  eachRepCoordinateErrors: number[];
-  score: number;
-  bestRepIndex: number;
-  worstRepIndex: number;
-  evaluatedValuesPerFrame: FrameEvaluateParams;
-};
+import { FormInstructionItem } from './formInstruction';
 
 // REF: KinectのLandmarkはこちらを参照（https://drive.google.com/file/d/145cSnW2Qtz2CakgxgD6uwodFkh8HIkwW/view?usp=sharing）
 
@@ -560,4 +520,5 @@ const squatVelocity: FormInstructionItem = {
 };
 
 // 指導項目を追加したらここにもかく
-export const formInstructionItemsQWS = [squatDepth, kneeInAndOut, stanceWidth, kneeFrontAndBack, squatVelocity];
+const formInstructionItemsQWS = [squatDepth, kneeInAndOut, stanceWidth, kneeFrontAndBack, squatVelocity];
+export default formInstructionItemsQWS;

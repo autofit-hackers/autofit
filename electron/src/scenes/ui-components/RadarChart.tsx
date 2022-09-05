@@ -1,7 +1,7 @@
 import { Card, CardContent, SxProps } from '@mui/material';
 import { graphic } from 'echarts';
 import ReactECharts from 'echarts-for-react';
-import { FormEvaluationResult, FormInstructionItem } from '../../coaching/formInstructionItems';
+import { FormEvaluationResult, FormInstructionItem } from '../../coaching/formInstruction';
 
 export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];

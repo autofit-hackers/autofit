@@ -2,21 +2,15 @@ import * as Draw2D from '@mediapipe/drawing_utils';
 import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
-import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
+import formInstructionItemsQWS from '../coaching/formInstructionItems';
 import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
 import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
-import {
-  appendPoseToForm,
-  calculateKeyframes,
-  evaluateRepForm,
-  getTopPose,
-  Rep,
-  resetRep,
-} from '../training_data/rep';
+import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
-import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
+import { resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
