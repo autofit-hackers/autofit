@@ -6,8 +6,7 @@ import { FrameEvaluateParams } from './FormInstructionDebug';
 
 type Description = { beforeNumber: string; afterNumber: string };
 
-// TODO: クラスにしたほうが扱いやすいかも
-export type FormInstructionItem = {
+export interface FormInstructionItem {
   readonly id: number;
   readonly name: string;
   readonly label: string;
@@ -26,7 +25,7 @@ export type FormInstructionItem = {
   readonly calculateRealtimeThreshold: (criteriaPose: Pose) => { upper: number; middle: number; lower: number };
   readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
   readonly getCoordinateErrorFromIdeal: (rep: Rep) => number;
-};
+}
 
 // TODO: けっこうごちゃごちゃしてきました。整理しましょう。
 export type FormEvaluationResult = {
@@ -42,6 +41,17 @@ export type FormEvaluationResult = {
   bestRepIndex: number;
   worstRepIndex: number;
   evaluatedValuesPerFrame: FrameEvaluateParams;
+};
+
+export const calculateError = (
+  thresholds: { upper: number; middle: number; lower: number },
+  value: number,
+): number => {
+  if (value < thresholds.middle) {
+    return (value - thresholds.middle) / (thresholds.middle - thresholds.lower);
+  }
+
+  return (value - thresholds.middle) / (thresholds.upper - thresholds.middle);
 };
 
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する

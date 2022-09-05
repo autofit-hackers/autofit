@@ -4,7 +4,6 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
-import formInstructionItemsQWS from '../coaching/formInstructionItems';
 import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
 import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
@@ -191,7 +190,7 @@ export default function BodyTrack2d() {
 
         // グラフを更新
         evaluatedFrameRef.current.forEach((item, index) => {
-          const evaluateCallback = formInstructionItemsQWS[index].calculateRealtimeValue;
+          const evaluateCallback = formInstructionItems[index].calculateRealtimeValue;
           item.evaluatedValues.push(evaluateCallback(currentPose));
         });
         bodyHeightRef.current.push(heightInWorld(currentPose));
@@ -211,7 +210,7 @@ export default function BodyTrack2d() {
           const topPose = getTopPose(repRef.current);
           if (topPose !== undefined) {
             evaluatedFrameRef.current.forEach((item, index) => {
-              const threshold = formInstructionItemsQWS[index].calculateRealtimeThreshold(topPose);
+              const threshold = formInstructionItems[index].calculateRealtimeThreshold(topPose);
               evaluatedFrameRef.current[index].threshold = threshold;
             });
           }
@@ -290,7 +289,7 @@ export default function BodyTrack2d() {
     }
 
     if (evaluatedFrameRef.current !== null) {
-      evaluatedFrameRef.current = formInstructionItemsQWS.map((item) => ({
+      evaluatedFrameRef.current = formInstructionItems.map((item) => ({
         name: item.name,
         threshold: { upper: 0, lower: 0, middle: 0 },
         evaluatedValues: [],
