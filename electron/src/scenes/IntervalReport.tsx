@@ -6,13 +6,12 @@ import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { stopKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, phaseAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
+import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import { cardSx } from './themes';
 import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
 import RealtimeChart from './ui-components/RealtimeChart';
-import SaveButton from './ui-components/SaveButton';
 import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
 
@@ -24,7 +23,6 @@ export default function IntervalReport() {
   const [displayedRepIndex, setDisplayedRepIndex] = useState<number>(
     setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex,
   );
-  const [repVideoUrls] = useAtom(repVideoUrlsAtom);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
@@ -74,7 +72,6 @@ export default function IntervalReport() {
           <Typography fontSize={30} fontWeight="bold" sx={{ mb: 4 }}>
             おつかれさまでした。フォーム分析の結果です。
           </Typography>
-          <SaveButton object={setRecord} videoUrls={repVideoUrls} />
           <IconButton
             aria-label="reset-camera-angle"
             color="primary"

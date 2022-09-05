@@ -32,8 +32,6 @@ import {
 } from './atoms';
 import RealtimeChart, { InTrainingChart, ManuallyAddableChart } from './ui-components/RealtimeChart';
 
-import SaveButton from './ui-components/SaveButton';
-
 export default function BodyTrack2d() {
   // 描画
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,7 +56,7 @@ export default function BodyTrack2d() {
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
   // settings to treat outliers in pose estimation
-  const fixOutlierParams: FixOutlierParams = { alpha: 0.7, threshold: 10.01, maxConsecutiveOutlierCount: 10 };
+  const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
 
   // 外れ値処理の設定
@@ -69,7 +67,7 @@ export default function BodyTrack2d() {
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
-  const [repVideoUrls, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
+  const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
 
   // レップカウント用
   const repCounterRef = useRef<HTMLDivElement | null>(null);
@@ -269,7 +267,7 @@ export default function BodyTrack2d() {
       }
 
       // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
-      if (setRef.current.reps.length === 5) {
+      if (setRef.current.reps.length === 100) {
         setPhase((prevPhase) => prevPhase + 1);
       }
 
@@ -339,7 +337,6 @@ export default function BodyTrack2d() {
       >
         トレーニング終了
       </Button>
-      <SaveButton object={setRef.current} videoUrls={repVideoUrls} />
 
       <canvas
         ref={canvasRef}
