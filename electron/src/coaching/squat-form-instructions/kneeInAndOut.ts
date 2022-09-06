@@ -1,9 +1,22 @@
-import { getAngle, KJ, getDistance, landmarkToVector3 } from '../../training_data/pose';
+import { getAngle, KJ, getDistance, landmarkToVector3, normalizeAngle, Pose } from '../../training_data/pose';
 import { Rep, getBottomPose, getTopPose } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
-import { FormInstructionItem, calculateError } from '../formInstruction';
-import { getOpeningOfKnee, getOpeningOfToe } from '../squatAnalysisUtils';
+import { FormInstructionItem, calculateError, Thresholds } from '../formInstruction';
 import kneeInAndOutImage from '../../../resources/images/formInstructionItems/knee-in-and-out.png';
+
+export const getOpeningOfKnee = (pose: Pose): number =>
+  normalizeAngle(
+    getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).zx -
+      getAngle(pose.worldLandmarks[KJ.HIP_RIGHT], pose.worldLandmarks[KJ.KNEE_RIGHT]).zx,
+    'positive-inferior',
+  );
+
+export const getOpeningOfToe = (pose: Pose): number =>
+  normalizeAngle(
+    getAngle(pose.worldLandmarks[KJ.ANKLE_LEFT], pose.worldLandmarks[KJ.FOOT_LEFT]).zx -
+      getAngle(pose.worldLandmarks[KJ.ANKLE_RIGHT], pose.worldLandmarks[KJ.FOOT_RIGHT]).zx,
+    'positive-inferior',
+  );
 
 const kneeInAndOut: FormInstructionItem = {
   id: 1,
@@ -39,10 +52,10 @@ const kneeInAndOut: FormInstructionItem = {
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluateForm: (rep: Rep) => {
+  thresholds: { upper: 40, middle: 25, lower: 10 },
+  evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);
     const topPose = getTopPose(rep);
-    const thresholds = { upper: 40, middle: 25, lower: 10 };
     if (bottomPose === undefined || topPose === undefined) {
       console.warn('kneeInAndOut: bottomPose or topPose is undefined');
 
@@ -61,9 +74,8 @@ const kneeInAndOut: FormInstructionItem = {
 
     return { upper: 40 + openingOfToe, middle: 25 + openingOfToe, lower: 10 + openingOfToe };
   },
-  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
+  getGuidelineSymbols: (rep: Rep, thresholds: Thresholds): GuidelineSymbols => {
     const guidelineSymbols: GuidelineSymbols = {};
-    const thresholds = { upper: 30, middle: 10, lower: -5 };
 
     const bottomPose = getBottomPose(rep);
     const topPose = getTopPose(rep);
@@ -111,7 +123,7 @@ const kneeInAndOut: FormInstructionItem = {
 
     return guidelineSymbols;
   },
-  getCoordinateErrorFromIdeal: (rep: Rep): number => {
+  getCoordinateErrorFromIdeal: (rep: Rep, thresholds: Thresholds): number => {
     const bottomPose = getBottomPose(rep);
     const topPose = getTopPose(rep);
     if (bottomPose === undefined || topPose === undefined) {
@@ -119,17 +131,11 @@ const kneeInAndOut: FormInstructionItem = {
 
       return 0;
     }
-    const bottomWorldLandmarks = bottomPose.worldLandmarks;
-    const topWorldLandmarks = topPose.worldLandmarks;
 
     // errorはbottomの膝の開き具合とつま先の開き具合の差。値はニーインの場合負、約0度
-    const thresholds = { upper: 30, middle: 10, lower: -5 };
-    const openingOfKnee =
-      getAngle(bottomWorldLandmarks[KJ.HIP_LEFT], bottomWorldLandmarks[KJ.KNEE_LEFT]).zx -
-      getAngle(bottomWorldLandmarks[KJ.HIP_RIGHT], bottomWorldLandmarks[KJ.KNEE_RIGHT]).zx;
-    const openingOfToe =
-      getAngle(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).zx -
-      getAngle(topWorldLandmarks[KJ.ANKLE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).zx;
+    const openingOfKnee = getOpeningOfKnee(bottomPose);
+    const openingOfToe = getOpeningOfToe(topPose);
+
     const errorInt = Math.round((openingOfKnee - openingOfToe - thresholds.middle) / 2);
 
     return errorInt;

@@ -1,7 +1,7 @@
+import { Thresholds, FormInstructionItem, calculateError } from '../formInstruction';
 import { getDistance, KJ, getCenter, landmarkToVector3 } from '../../training_data/pose';
 import { Rep, getTopPose } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
-import { FormInstructionItem, calculateError } from '../formInstruction';
 import stanceWidthImage from '../../../resources/images/formInstructionItems/stance-width.png';
 
 const stanceWidth: FormInstructionItem = {
@@ -27,7 +27,8 @@ const stanceWidth: FormInstructionItem = {
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluateForm: (rep: Rep) => {
+  thresholds: { upper: 2, middle: 1.4, lower: 1 },
+  evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
       console.warn('kneeInAndOut: bottomPose or topPose is undefined');
@@ -35,7 +36,6 @@ const stanceWidth: FormInstructionItem = {
       return 0;
     }
     const topWorldLandmarks = topPose.worldLandmarks;
-    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
     const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const footShoulderWidthRatio = footWidth / shoulderWidth;
@@ -43,8 +43,7 @@ const stanceWidth: FormInstructionItem = {
     return calculateError(thresholds, footShoulderWidthRatio);
   },
   // FIXME: 座標変換が直感的ではない(landmarkToVector3でyzの正負を反転しているため、直接Vectorを生成した場合と挙動が異なる)
-  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
-    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
+  getGuidelineSymbols: (rep: Rep, thresholds: Thresholds): GuidelineSymbols => {
     const guidelineSymbols: GuidelineSymbols = {};
 
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;
@@ -86,7 +85,7 @@ const stanceWidth: FormInstructionItem = {
 
     return { upper: 2 * shoulderWidth, middle: 1.4 * shoulderWidth, lower: 1 * shoulderWidth };
   },
-  getCoordinateErrorFromIdeal(rep: Rep): number {
+  getCoordinateErrorFromIdeal(rep: Rep, thresholds: Thresholds): number {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
       console.warn('kneeInAndOut: bottomPose or topPose is undefined');
@@ -94,7 +93,6 @@ const stanceWidth: FormInstructionItem = {
       return 0;
     }
     const topWorldLandmarks = topPose.worldLandmarks;
-    const thresholds = { upper: 2, middle: 1.4, lower: 1 };
     const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const errorInt = Math.round(footWidth - thresholds.middle * shoulderWidth);

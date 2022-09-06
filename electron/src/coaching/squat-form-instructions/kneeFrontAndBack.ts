@@ -1,7 +1,7 @@
 import { getDistance, KJ, landmarkToVector3 } from '../../training_data/pose';
 import { Rep, getBottomPose, getTopPose } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
-import { FormInstructionItem, calculateError } from '../formInstruction';
+import { FormInstructionItem, calculateError, Thresholds } from '../formInstruction';
 import kneeFrontAndBackImage from '../../../resources/images/formInstructionItems/knee-front-and-back.png';
 
 const kneeFrontAndBack: FormInstructionItem = {
@@ -34,7 +34,8 @@ const kneeFrontAndBack: FormInstructionItem = {
     positive: '膝が前に出過ぎています。',
   },
   poseGridCameraAngle: { theta: 90, phi: 0 },
-  evaluateForm: (rep: Rep) => {
+  thresholds: { upper: 15, middle: 1, lower: -1 },
+  evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);
     const topPose = getTopPose(rep);
     if (bottomPose === undefined || topPose === undefined) {
@@ -44,7 +45,6 @@ const kneeFrontAndBack: FormInstructionItem = {
     }
     const bottomWorldLandmarks = bottomPose.worldLandmarks;
     const topWorldLandmarks = topPose.worldLandmarks;
-    const thresholds = { upper: 15, middle: 1, lower: -1 };
 
     const kneeFootDistanceZ =
       (getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z +
@@ -53,7 +53,7 @@ const kneeFrontAndBack: FormInstructionItem = {
 
     return calculateError(thresholds, kneeFootDistanceZ);
   },
-  getCoordinateErrorFromIdeal(rep: Rep): number {
+  getCoordinateErrorFromIdeal(rep: Rep, thresholds: Thresholds): number {
     const bottomPose = getBottomPose(rep);
     const topPose = getTopPose(rep);
     if (bottomPose === undefined || topPose === undefined) {
@@ -64,7 +64,6 @@ const kneeFrontAndBack: FormInstructionItem = {
     const bottomWorldLandmarks = bottomPose.worldLandmarks;
     const topWorldLandmarks = topPose.worldLandmarks;
 
-    const thresholds = { upper: 15, middle: 1, lower: -1 };
     const kneeFootDistanceZ =
       (getDistance(bottomWorldLandmarks[KJ.KNEE_RIGHT], topWorldLandmarks[KJ.FOOT_RIGHT]).z +
         getDistance(bottomWorldLandmarks[KJ.KNEE_LEFT], topWorldLandmarks[KJ.FOOT_LEFT]).z) /
@@ -81,8 +80,7 @@ const kneeFrontAndBack: FormInstructionItem = {
 
     return { upper: footZ + 15, middle: footZ + 1, lower: footZ - 1 };
   },
-  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
-    const thresholds = { upper: 15, middle: 1, lower: -1 };
+  getGuidelineSymbols: (rep: Rep, thresholds: Thresholds): GuidelineSymbols => {
     const guidelineSymbols: GuidelineSymbols = {};
 
     const topWorldLandmarks = getTopPose(rep)?.worldLandmarks;

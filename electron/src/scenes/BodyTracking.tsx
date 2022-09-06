@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
-import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
+import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squat-form-instructions/kneeInAndOut';
 import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';

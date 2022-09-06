@@ -1,6 +1,6 @@
+import { Thresholds, FormInstructionItem, calculateError } from '../formInstruction';
 import { heightInWorld } from '../../training_data/pose';
 import { Rep, getBottomPose, getLastPose } from '../../training_data/rep';
-import { FormInstructionItem, calculateError } from '../formInstruction';
 import squatVelocityImage from '../../../resources/images/formInstructionItems/squat-velocity.png';
 
 const squatVelocity: FormInstructionItem = {
@@ -33,10 +33,9 @@ const squatVelocity: FormInstructionItem = {
     positive: '少しペースが遅いです。もう少しテンポ良く。',
   },
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  evaluateForm: (rep: Rep) => {
+  thresholds: { upper: 2500, middle: 1500, lower: 500 }, // ミリ秒
+  evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     // TODO: エキセントリックも実装したい。
-    // TODO: 閾値を再設定
-    const thresholds = { upper: 2500, middle: 1500, lower: 500 }; // ミリ秒
     const bottomPose = getBottomPose(rep);
     const lastPose = getLastPose(rep);
     if (bottomPose === undefined || lastPose === undefined) {

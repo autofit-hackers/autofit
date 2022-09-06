@@ -5,8 +5,10 @@ import type { CameraAngle, GuidelineSymbols } from '../utils/poseGrid';
 import { FrameEvaluateParams } from './FormInstructionDebug';
 
 type Description = { beforeNumber: string; afterNumber: string };
+export type Thresholds = { upper: number; middle: number; lower: number };
 
-export interface FormInstructionItem {
+// TODO: プロパティの整理
+export type FormInstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
@@ -19,15 +21,15 @@ export interface FormInstructionItem {
   readonly recommendMenu?: string[];
   readonly importance?: number;
   readonly poseGridCameraAngle: CameraAngle;
-  // TODO: 以下２つはまとめてもいいかも
-  readonly evaluateForm: (rep: Rep) => number;
+  readonly thresholds: Thresholds;
+  readonly evaluateForm: (rep: Rep, thresholds: Thresholds) => number;
   readonly calculateRealtimeValue: (evaluatedPose: Pose) => number;
-  readonly calculateRealtimeThreshold: (criteriaPose: Pose) => { upper: number; middle: number; lower: number };
-  readonly getGuidelineSymbols?: (rep: Rep, currentPose?: Pose) => GuidelineSymbols;
-  readonly getCoordinateErrorFromIdeal: (rep: Rep) => number;
-}
+  readonly calculateRealtimeThreshold: (criteriaPose: Pose) => Thresholds;
+  readonly getGuidelineSymbols?: (rep: Rep, thresholds: Thresholds) => GuidelineSymbols;
+  readonly getCoordinateErrorFromIdeal: (rep: Rep, thresholds: Thresholds) => number;
+};
 
-// TODO: けっこうごちゃごちゃしてきました。整理しましょう。
+// TODO: プロパティの整理
 export type FormEvaluationResult = {
   name: string;
   descriptionsForEachRep: string[];
@@ -59,10 +61,11 @@ export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionI
   const rep: Rep = prevRep;
 
   instructionItems.forEach((instructionItem) => {
-    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep);
-    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(rep);
+    const { thresholds } = instructionItem;
+    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep, thresholds);
+    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(rep, thresholds);
     rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
-      ? instructionItem.getGuidelineSymbols(rep)
+      ? instructionItem.getGuidelineSymbols(rep, thresholds)
       : ({} as GuidelineSymbols);
   });
 

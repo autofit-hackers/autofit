@@ -1,9 +1,22 @@
-import { calculateError, FormInstructionItem } from '../formInstruction';
+import { calculateError, FormInstructionItem, Thresholds } from '../formInstruction';
 import squatDepthImage from '../../../resources/images/formInstructionItems/squat-depth.png';
-import { KJ, getDistance, landmarkToVector3 } from '../../training_data/pose';
+import { KJ, getDistance, landmarkToVector3, getAngle, normalizeAngle, Pose } from '../../training_data/pose';
 import { Rep, getBottomPose } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
-import { getThighAngleFromSide } from '../squatAnalysisUtils';
+
+const getThighAngleFromSide = (pose: Pose): number => {
+  const leftThighAngleFromSide = normalizeAngle(
+    -getAngle(pose.worldLandmarks[KJ.HIP_LEFT], pose.worldLandmarks[KJ.KNEE_LEFT]).yz,
+    'permit-negative-inferior',
+  );
+  const rightThighAngleFromSide = normalizeAngle(
+    -getAngle(pose.worldLandmarks[KJ.HIP_RIGHT], pose.worldLandmarks[KJ.KNEE_RIGHT]).yz,
+    'permit-negative-inferior',
+  );
+  const meanThighAngleFromSide = (leftThighAngleFromSide + rightThighAngleFromSide) / 2;
+
+  return meanThighAngleFromSide;
+};
 
 const squatDepth: FormInstructionItem = {
   id: 0,
@@ -36,11 +49,11 @@ const squatDepth: FormInstructionItem = {
   },
   importance: 0.5,
   poseGridCameraAngle: { theta: 90, phi: 0 },
+  thresholds: { upper: 100, middle: 80, lower: 60 },
   // しゃがみが深いほど角度は大きい
-  evaluateForm: (rep: Rep) => {
+  evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);
     // TODO: 浅いほうを厳しく、深いほうを甘くする
-    const thresholds = { upper: 100, middle: 80, lower: 60 };
     if (bottomPose === undefined) {
       return 0.0;
     }
@@ -50,8 +63,7 @@ const squatDepth: FormInstructionItem = {
   },
   calculateRealtimeValue: (evaluatedPose) => getThighAngleFromSide(evaluatedPose),
   calculateRealtimeThreshold: () => ({ upper: 90, middle: 80, lower: 60 }),
-  getGuidelineSymbols: (rep: Rep): GuidelineSymbols => {
-    const thresholds = { upper: 90, middle: 80, lower: 60 };
+  getGuidelineSymbols: (rep: Rep, thresholds: Thresholds): GuidelineSymbols => {
     const guidelineSymbols: GuidelineSymbols = {};
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
@@ -77,8 +89,7 @@ const squatDepth: FormInstructionItem = {
 
     return guidelineSymbols;
   },
-  getCoordinateErrorFromIdeal: (rep: Rep): number => {
-    const thresholds = { upper: 90, middle: 80, lower: 60 };
+  getCoordinateErrorFromIdeal: (rep: Rep, thresholds: Thresholds): number => {
     const bottomPose = getBottomPose(rep);
     if (bottomPose === undefined) {
       return 0;
