@@ -159,7 +159,8 @@ export const getAngle = (start: Landmark, end: Landmark) => {
 
   return {
     xy: (Math.atan2(y, x) * 180) / Math.PI, // x軸となす角度
-    yz: (Math.atan2(z, y) * 180) / Math.PI, // y軸となす角度
+    // TODO: ｙ軸の正負変更に併せて負に。要動作確認
+    yz: (Math.atan2(z, -y) * 180) / Math.PI, // y軸となす角度
     zx: (Math.atan2(x, -z) * 180) / Math.PI, // z軸となす角度
   };
 };
@@ -211,5 +212,4 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   visibility: normalizedLandmark.visibility,
 });
 
-// TODO: 座標の正負を反転させない
-export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, point.z);
+export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, point.y, point.z);

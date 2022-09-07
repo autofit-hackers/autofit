@@ -105,7 +105,7 @@ export type PoseGridConfig = {
 export const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   backgroundColor: 0,
   camera: { projectionMode: 'parallel', distance: 200, fov: 75 },
-  gridPlane: { size: 200, divisions: 10, y: -93 },
+  gridPlane: { size: 200, divisions: 10, y: 0 },
   connectionWidth: 4,
   connectionColor: 0x00ffff,
   landmarkSize: 2,
