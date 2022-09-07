@@ -1,6 +1,5 @@
 import type { GuidelineSymbols } from '../utils/poseGrid';
 import { heightInWorld, Pose } from './pose';
-import type { FormInstructionItem } from '../coaching/formInstructionItems';
 
 type KeyframesIndex = {
   top: number | undefined;
@@ -112,18 +111,3 @@ export const getDescendingMiddlePose = (rep: Rep): Pose | undefined => {
 };
 
 export const getLastPose = (rep: Rep): Pose => rep.form[rep.form.length - 1];
-
-// フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
-export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
-  const rep: Rep = prevRep;
-
-  instructionItems.forEach((instructionItem) => {
-    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep);
-    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(rep);
-    rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
-      ? instructionItem.getGuidelineSymbols(rep)
-      : ({} as GuidelineSymbols);
-  });
-
-  return rep;
-};

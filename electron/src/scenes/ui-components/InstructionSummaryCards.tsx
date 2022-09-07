@@ -1,7 +1,7 @@
 import ErrorIcon from '@mui/icons-material/Error';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import { Card, CardActionArea, CardContent, Chip, Stack, Typography } from '@mui/material';
-import { FormEvaluationResult } from '../../coaching/formInstructionItems';
+import { FormEvaluationResult } from '../../coaching/formInstruction';
 
 export function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;

@@ -2,21 +2,14 @@ import * as Draw2D from '@mediapipe/drawing_utils';
 import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
-import { formInstructionItemsQWS } from '../coaching/formInstructionItems';
-import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squatAnalysisUtils';
+import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squat-form-instructions/kneeInAndOut';
 import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
-import {
-  appendPoseToForm,
-  calculateKeyframes,
-  evaluateRepForm,
-  getTopPose,
-  Rep,
-  resetRep,
-} from '../training_data/rep';
+import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
-import { recordFormEvaluationResult, resetSet, Set } from '../training_data/set';
+import { resetSet, Set } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
@@ -197,7 +190,7 @@ export default function BodyTrack2d() {
 
         // グラフを更新
         evaluatedFrameRef.current.forEach((item, index) => {
-          const evaluateCallback = formInstructionItemsQWS[index].calculateRealtimeValue;
+          const evaluateCallback = formInstructionItems[index].calculateRealtimeValue;
           item.evaluatedValues.push(evaluateCallback(currentPose));
         });
         bodyHeightRef.current.push(heightInWorld(currentPose));
@@ -217,7 +210,7 @@ export default function BodyTrack2d() {
           const topPose = getTopPose(repRef.current);
           if (topPose !== undefined) {
             evaluatedFrameRef.current.forEach((item, index) => {
-              const threshold = formInstructionItemsQWS[index].calculateRealtimeThreshold(topPose);
+              const threshold = formInstructionItems[index].calculateRealtimeThreshold(topPose);
               evaluatedFrameRef.current[index].threshold = threshold;
             });
           }
@@ -296,7 +289,7 @@ export default function BodyTrack2d() {
     }
 
     if (evaluatedFrameRef.current !== null) {
-      evaluatedFrameRef.current = formInstructionItemsQWS.map((item) => ({
+      evaluatedFrameRef.current = formInstructionItems.map((item) => ({
         name: item.name,
         threshold: { upper: 0, lower: 0, middle: 0 },
         evaluatedValues: [],
