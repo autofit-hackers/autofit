@@ -127,7 +127,9 @@ export const kinectToMediapipe = (
     if (rotation) {
       mediapipePoseWorld[i] = {
         x: kinectPoses[i].cameraX / 10,
-        y: (kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB)) / 10,
+        // y-axis is downward by default, we translate it upward
+        // align zero plane with the floor by translating landmarks by 93cm
+        y: 93 - (kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB)) / 10,
         // a user stands about 1.7m away from the camera (kinect)
         // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
         z: (kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB)) / 10 - 170,
