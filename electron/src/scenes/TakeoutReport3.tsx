@@ -34,7 +34,7 @@ export default function TakeoutReport3() {
                 title={item.label}
                 image={item.image}
                 imagePosition={index % 2 === 0 ? 'left' : 'right'}
-                isGood={setRecord.formEvaluationResults[index].isGood}
+                isGood={setRecord.formEvaluationResults[index + 3].isGood}
                 fixedDescription={item.fixedDescription}
                 resultDescription={setRecord.formEvaluationResults[index + 3].shortSummary}
               />
