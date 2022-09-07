@@ -6,7 +6,7 @@ import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formIns
 import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
 import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squat-form-instructions/kneeInAndOut';
 import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
-import { heightInWorld, kinectToMediapipe, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import { convertKinectResultsToPose, heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { resetSet, Set } from '../training_data/set';
@@ -134,7 +134,7 @@ export default function BodyTrack2d() {
 
       if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入
-        const rawCurrentPose: Pose = kinectToMediapipe(
+        const rawCurrentPose: Pose = convertKinectResultsToPose(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
           data.bodyFrame.bodies[0].skeleton.joints,
           canvasRef.current,
