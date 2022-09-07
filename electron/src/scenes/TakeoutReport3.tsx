@@ -30,6 +30,7 @@ export default function TakeoutReport3() {
         <Grid container spacing={2}>
           {formInstructionItems.slice(3).map((item, index) => (
             <Grid item xs={12}>
+              {/* 1枚目に表示させた3項目分だけindexを変化させる */}
               <InstructionItemExpression
                 title={item.label}
                 image={item.image}
