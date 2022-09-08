@@ -153,7 +153,7 @@ export class PoseGrid {
     } else {
       this.camera = new PerspectiveCamera(this.config.camera.fov, this.parentBox.width / this.parentBox.height, 1);
     }
-    this.camera.lookAt(new Vector3());
+    this.camera.lookAt(new Vector3(0, 93, 0));
     this.renderer = new WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true });
     this.renderer.setClearColor(new Color(this.config.backgroundColor), 0.5);
     this.renderer.setSize(Math.floor(this.parentBox.width), Math.floor(this.parentBox.height));
@@ -170,6 +170,7 @@ export class PoseGrid {
     this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
+    this.orbitControls.target = new Vector3(0, 93, 0);
 
     this.landmarkMaterial = new MeshBasicMaterial({ color: this.config.landmarkColor });
     this.landmarkGeometry = new SphereGeometry(this.config.landmarkSize);
@@ -212,6 +213,8 @@ export class PoseGrid {
 
   changeCameraType(): void {
     const prevCameraPosition = this.camera.position.clone();
+    console.log(prevCameraPosition);
+    prevCameraPosition.y += 93;
     if (this.camera instanceof PerspectiveCamera) {
       this.camera = new OrthographicCamera(
         -this.config.camera.distance * 0.7,
@@ -225,8 +228,9 @@ export class PoseGrid {
     this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
+    this.orbitControls.target = new Vector3(0, 93, 0);
     this.camera.position.set(prevCameraPosition.x, prevCameraPosition.y, prevCameraPosition.z);
-    this.camera.lookAt(new Vector3());
+    this.camera.lookAt(new Vector3(0, 93, 0));
   }
 
   /**
@@ -240,8 +244,8 @@ export class PoseGrid {
     const phiRad = (phi * Math.PI) / 180;
     this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * this.config.camera.distance;
     this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * this.config.camera.distance;
-    this.camera.position.y = Math.cos(thetaRad) * this.config.camera.distance;
-    this.camera.lookAt(new Vector3());
+    this.camera.position.y = Math.cos(thetaRad) * this.config.camera.distance + 93;
+    this.camera.lookAt(new Vector3(0, 93, 0));
   }
 
   /**
