@@ -95,6 +95,7 @@ export type CameraAngle = {
 export type PoseGridConfig = {
   backgroundColor: number;
   camera: { projectionMode: 'perspective' | 'parallel'; distance: number; fov: number };
+  cameraTarget: Vector3;
   gridPlane: { size: number; divisions: number; y: number };
   connectionColor: number;
   connectionWidth: number;
@@ -105,7 +106,8 @@ export type PoseGridConfig = {
 export const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   backgroundColor: 0,
   camera: { projectionMode: 'parallel', distance: 200, fov: 75 },
-  gridPlane: { size: 200, divisions: 10, y: -93 },
+  cameraTarget: new Vector3(0, 93, 0),
+  gridPlane: { size: 200, divisions: 10, y: 0 },
   connectionWidth: 4,
   connectionColor: 0x00ffff,
   landmarkSize: 2,
@@ -153,7 +155,7 @@ export class PoseGrid {
     } else {
       this.camera = new PerspectiveCamera(this.config.camera.fov, this.parentBox.width / this.parentBox.height, 1);
     }
-    this.camera.lookAt(new Vector3());
+    this.camera.lookAt(this.config.cameraTarget);
     this.renderer = new WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true });
     this.renderer.setClearColor(new Color(this.config.backgroundColor), 0.5);
     this.renderer.setSize(Math.floor(this.parentBox.width), Math.floor(this.parentBox.height));
@@ -170,6 +172,7 @@ export class PoseGrid {
     this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
+    this.orbitControls.target = this.config.cameraTarget;
 
     this.landmarkMaterial = new MeshBasicMaterial({ color: this.config.landmarkColor });
     this.landmarkGeometry = new SphereGeometry(this.config.landmarkSize);
@@ -225,8 +228,9 @@ export class PoseGrid {
     this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.enableDamping = true;
     this.orbitControls.dampingFactor = 0.2;
+    this.orbitControls.target = this.config.cameraTarget;
     this.camera.position.set(prevCameraPosition.x, prevCameraPosition.y, prevCameraPosition.z);
-    this.camera.lookAt(new Vector3());
+    this.camera.lookAt(this.config.cameraTarget);
   }
 
   /**
@@ -240,8 +244,8 @@ export class PoseGrid {
     const phiRad = (phi * Math.PI) / 180;
     this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * this.config.camera.distance;
     this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * this.config.camera.distance;
-    this.camera.position.y = Math.cos(thetaRad) * this.config.camera.distance;
-    this.camera.lookAt(new Vector3());
+    this.camera.position.y = Math.cos(thetaRad) * this.config.camera.distance + this.config.cameraTarget.y;
+    this.camera.lookAt(this.config.cameraTarget);
   }
 
   /**

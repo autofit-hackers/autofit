@@ -92,7 +92,7 @@ export type Pose = {
   timestamp: number; // UNIX time(ms単位)
 };
 
-export const kinectToMediapipe = (
+export const convertKinectResultsToPose = (
   kinectPoses: Array<{
     cameraX: number;
     cameraY: number;
@@ -112,11 +112,11 @@ export const kinectToMediapipe = (
   rotation: boolean,
   timestamp: number,
 ): Pose => {
-  const mediapipePose: NormalizedLandmarkList = [];
-  const mediapipePoseWorld: LandmarkList = [];
+  const landmarks: NormalizedLandmarkList = [];
+  const worldLandmarks: LandmarkList = [];
   const depthToRGB = (Math.PI * 6) / 180.0;
   for (let i = 0; i < kinectPoses.length; i += 1) {
-    mediapipePose[i] = {
+    landmarks[i] = {
       x: kinectPoses[i].colorX / canvas.width - 0.5,
       y: kinectPoses[i].colorY / canvas.height,
       z: 0,
@@ -125,19 +125,21 @@ export const kinectToMediapipe = (
     // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
     // woldLandmarksはmmからcm単位に変換する
     if (rotation) {
-      mediapipePoseWorld[i] = {
+      worldLandmarks[i] = {
         x: kinectPoses[i].cameraX / 10,
-        y: (kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB)) / 10,
+        // y-axis is downward by default, we translate it upward
+        // align zero plane with the floor by translating landmarks by 93cm
+        y: 93 - (kinectPoses[i].cameraY * Math.cos(depthToRGB) + kinectPoses[i].cameraZ * Math.sin(depthToRGB)) / 10,
         // a user stands about 1.7m away from the camera (kinect)
         // we translate worldLandmarks to the center of poseGrid (side view) by translating them by -1.7m
         z: (kinectPoses[i].cameraY * Math.sin(-depthToRGB) + kinectPoses[i].cameraZ * Math.cos(depthToRGB)) / 10 - 170,
       };
     } else {
-      mediapipePoseWorld[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
+      worldLandmarks[i] = { x: kinectPoses[i].cameraX, y: kinectPoses[i].cameraY, z: kinectPoses[i].cameraZ };
     }
   }
 
-  return { landmarks: mediapipePose, worldLandmarks: mediapipePoseWorld, timestamp };
+  return { landmarks, worldLandmarks, timestamp };
 };
 
 export const getDistance = (start: Landmark, end: Landmark) => ({
@@ -157,7 +159,8 @@ export const getAngle = (start: Landmark, end: Landmark) => {
 
   return {
     xy: (Math.atan2(y, x) * 180) / Math.PI, // x軸となす角度
-    yz: (Math.atan2(z, y) * 180) / Math.PI, // y軸となす角度
+    // TODO: ｙ軸の正負変更に併せて負に。要動作確認
+    yz: (Math.atan2(z, -y) * 180) / Math.PI, // y軸となす角度
     zx: (Math.atan2(x, -z) * 180) / Math.PI, // z軸となす角度
   };
 };
@@ -209,5 +212,4 @@ export const copyLandmark = (normalizedLandmark: NormalizedLandmark): Normalized
   visibility: normalizedLandmark.visibility,
 });
 
-// TODO: 座標の正負を反転させない
-export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, -point.y, point.z);
+export const landmarkToVector3 = (point: NormalizedLandmark): Vector3 => new Vector3(point.x, point.y, point.z);
