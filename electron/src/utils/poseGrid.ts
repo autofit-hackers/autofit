@@ -213,8 +213,6 @@ export class PoseGrid {
 
   changeCameraType(): void {
     const prevCameraPosition = this.camera.position.clone();
-    console.log(prevCameraPosition);
-    prevCameraPosition.y += 93;
     if (this.camera instanceof PerspectiveCamera) {
       this.camera = new OrthographicCamera(
         -this.config.camera.distance * 0.7,
