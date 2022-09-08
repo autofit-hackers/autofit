@@ -244,7 +244,7 @@ export class PoseGrid {
     const phiRad = (phi * Math.PI) / 180;
     this.camera.position.x = Math.sin(thetaRad) * Math.cos(phiRad) * this.config.camera.distance;
     this.camera.position.z = Math.sin(thetaRad) * Math.sin(phiRad) * this.config.camera.distance;
-    this.camera.position.y = Math.cos(thetaRad) * this.config.camera.distance + 93;
+    this.camera.position.y = Math.cos(thetaRad) * this.config.camera.distance + this.config.cameraTarget.y;
     this.camera.lookAt(this.config.cameraTarget);
   }
 
