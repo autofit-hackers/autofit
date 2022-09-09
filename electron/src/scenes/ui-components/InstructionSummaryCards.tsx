@@ -12,7 +12,7 @@ export function GoodChip(props: { isGood: boolean }) {
   return isGood ? goodChip : badChip;
 }
 
-// FIXME: resolve key missing warning
+// TODO: resolve key missing warning
 function InstructionSummaryCard(props: {
   isGood: boolean;
   description: string;

@@ -264,7 +264,7 @@ export default function BodyTrack2d() {
         setPhase((prevPhase) => prevPhase + 1);
       }
 
-      // HELPME: いらないかも（repCount描画の名残り）
+      // TODO: いらないかも（repCount描画の名残り）
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,7 +297,7 @@ export default function BodyTrack2d() {
     }
 
     // このコンポーネントのアンマウント時に実行される
-    // FIXME: 最初にもよばれる
+    // TODO: 最初にもよばれる
     return () => {
       // レップとして保存されていない映像は破棄する
       if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {

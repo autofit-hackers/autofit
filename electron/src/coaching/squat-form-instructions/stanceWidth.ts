@@ -42,7 +42,7 @@ const stanceWidth: FormInstructionItem = {
 
     return calculateError(thresholds, footShoulderWidthRatio);
   },
-  // FIXME: 座標変換が直感的ではない(landmarkToVector3でyzの正負を反転しているため、直接Vectorを生成した場合と挙動が異なる)
+  // TODO: 座標変換が直感的ではない(landmarkToVector3でyzの正負を反転しているため、直接Vectorを生成した場合と挙動が異なる)
   getGuidelineSymbols: (rep: Rep, thresholds: Thresholds): GuidelineSymbols => {
     const guidelineSymbols: GuidelineSymbols = {};
 

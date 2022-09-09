@@ -125,7 +125,7 @@ export default function TakeoutReport1() {
                       position: 'relative',
                       width: '100%',
                       height: '408px',
-                      // FIXME: height はピクセル指定しないと正しく表示されない
+                      // TODO: height はピクセル指定しないと正しく表示されない
                     }}
                   >
                     <div

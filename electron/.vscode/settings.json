@@ -77,7 +77,7 @@
   },
 
   // todo-tree
-  "todo-tree.general.tags": ["FIXME", "TODO", "WHY", "HELPME", "XXX", "REF"],
+  "todo-tree.general.tags": ["TODO", "TICKET", "DISCUSS", "REF"],
   "todo-tree.highlights.defaultHighlight": {
     "gutterIcon": true
   },
@@ -87,25 +87,15 @@
       "foreground": "#ff9800",
       "iconColour": "#ff9800"
     },
-    "FIXME": {
-      "icon": "bug",
-      "foreground": "#ff0000",
-      "iconColour": "#ff0000"
-    },
-    "WHY": {
-      "icon": "question",
-      "foreground": "#af69ef",
-      "iconColour": "#af69ef"
-    },
-    "HELPME": {
-      "icon": "comment-discussion",
+    "TICKET": {
+      "icon": "tasklist",
       "foreground": "#00bfff",
       "iconColour": "#00bfff"
     },
-    "XXX": {
-      "icon": "x-circle-fill",
-      "foreground": "#ffff00",
-      "iconColour": "#ffff00"
+    "DISCUSS": {
+      "icon": "comment-discussion",
+      "foreground": "#af69ef",
+      "iconColour": "#af69ef"
     },
     "REF": {
       "icon": "link",
@@ -122,7 +112,6 @@
     "echarts",
     "esbuild",
     "HANDTIP",
-    "HELPME",
     "Kinect",
     "linewidth",
     "mediapipe",
