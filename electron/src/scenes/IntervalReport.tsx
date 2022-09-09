@@ -12,6 +12,7 @@ import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
 import RealtimeChart from './ui-components/RealtimeChart';
+import { AutoSaveButton } from './ui-components/SaveButton';
 import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
 
@@ -92,6 +93,7 @@ export default function IntervalReport() {
           >
             <PrintIcon />
           </IconButton>
+          <AutoSaveButton object={setRecord} videoBlobs={setRecord.repVideoBlobs} />
         </Stack>
 
         <Grid container spacing={3}>

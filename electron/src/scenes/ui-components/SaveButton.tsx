@@ -1,9 +1,11 @@
 import SaveAsIcon from '@mui/icons-material/SaveAs';
 import { IconButton } from '@mui/material';
 import dayjs from 'dayjs';
+import { existsSync, mkdirSync, writeFile } from 'fs';
+import { join } from 'path';
 import { createWriteStream } from 'streamsaver';
 
-function SaveButton(props: { object: object; videoUrls: string[] }) {
+export function SaveButtonWithDialog(props: { object: object; videoUrls: string[] }) {
   const { object, videoUrls } = props;
 
   const exportJson = (data: object, now: string) => {
@@ -27,7 +29,6 @@ function SaveButton(props: { object: object; videoUrls: string[] }) {
     });
   };
 
-  // TODO: 映像を保存する際にURL個数分のダイアログが出る
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
     exportJson(object, now);
@@ -43,4 +44,38 @@ function SaveButton(props: { object: object; videoUrls: string[] }) {
   );
 }
 
-export default SaveButton;
+export function AutoSaveButton(props: { object: object; videoBlobs: Blob[] }) {
+  const { object, videoBlobs } = props;
+
+  const writeJsonToFile = (data: object, dirPath: string, fileName: string) => {
+    const jsonString = JSON.stringify(data, null, 2);
+    writeFile(join(dirPath, fileName), jsonString, (err) => {
+      if (err) throw err;
+    });
+  };
+
+  const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
+    const buffer = await blob.arrayBuffer();
+    writeFile(join(dirPath, fileName), new DataView(buffer), (err) => {
+      if (err) throw err;
+    });
+  };
+
+  const handleSave = () => {
+    const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
+    const dirPath = join(process.cwd(), 'data', now);
+    if (!existsSync(dirPath)) {
+      mkdirSync(dirPath, { recursive: true });
+    }
+    writeJsonToFile(object, dirPath, `training_data.json`);
+    for (let i = 0; i < videoBlobs.length; i += 1) {
+      void writeVideoToFile(videoBlobs[i], dirPath, `rep${i + 1}.mp4`);
+    }
+  };
+
+  return (
+    <IconButton onClick={handleSave}>
+      <SaveAsIcon />
+    </IconButton>
+  );
+}

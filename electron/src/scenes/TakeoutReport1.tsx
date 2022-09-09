@@ -12,7 +12,7 @@ import { formInstructionItemsAtom, setRecordAtom } from './atoms';
 import futuristicTheme from './themes';
 import { takeoutCardSx } from './ui-components/InstructionItemExpression';
 import RadarChart from './ui-components/RadarChart';
-import SaveButtonWithDialog from './ui-components/SaveButton';
+import { SaveButtonWithDialog } from './ui-components/SaveButton';
 import TotalScore from './ui-components/TotalScore';
 
 export default function TakeoutReport1() {
