@@ -1,10 +1,6 @@
-import { SetStateAction } from 'react';
-import { createWriteStream } from 'streamsaver';
+import { Set } from '../training_data/set';
 
-export const startCapturingRepVideo = (
-  canvas: HTMLCanvasElement,
-  setVideoUrls: (update: SetStateAction<string[]>) => void,
-): MediaRecorder => {
+export const startCapturingRepVideo = (canvas: HTMLCanvasElement, set: Set): MediaRecorder => {
   const stream = canvas.captureStream();
   const recorder = new MediaRecorder(stream, {
     mimeType: 'video/webm;codecs=vp9',
@@ -27,7 +23,8 @@ export const startCapturingRepVideo = (
     const blob = new Blob(rec.data, { type: rec.type });
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
-      setVideoUrls((prevUrls) => [...prevUrls, url]);
+      set.repVideoBlobs.push(blob);
+      set.repVideoUrls.push(url);
     }
   };
 
@@ -71,16 +68,4 @@ export const startCapturingSetVideo = (
   recorder.start();
 
   return recorder;
-};
-
-export const downloadVideo = async (url: string, fileName: string) => {
-  await fetch(url).then(async (response) => {
-    const blob = response.body;
-    const fileSize = Number(response.headers.get('content-length'));
-    const fileStream = createWriteStream(fileName, { size: fileSize }) as WritableStream<Uint8Array>;
-
-    if (blob != null) {
-      await blob.pipeTo(fileStream);
-    }
-  });
 };

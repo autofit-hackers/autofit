@@ -1,7 +1,7 @@
 import SaveAsIcon from '@mui/icons-material/SaveAs';
 import { IconButton } from '@mui/material';
 import dayjs from 'dayjs';
-import { downloadVideo } from '../../utils/recordVideo';
+import { createWriteStream } from 'streamsaver';
 
 function SaveButton(props: { object: object; videoUrls: string[] }) {
   const { object, videoUrls } = props;
@@ -13,6 +13,18 @@ function SaveButton(props: { object: object; videoUrls: string[] }) {
     link.download = `setRecord_${now}.json`;
 
     link.click();
+  };
+
+  const downloadVideo = async (url: string, fileName: string) => {
+    await fetch(url).then(async (response) => {
+      const blob = response.body;
+      const fileSize = Number(response.headers.get('content-length'));
+      const fileStream = createWriteStream(fileName, { size: fileSize }) as WritableStream<Uint8Array>;
+
+      if (blob != null) {
+        await blob.pipeTo(fileStream);
+      }
+    });
   };
 
   // TODO: 映像を保存する際にURL個数分のダイアログが出る
