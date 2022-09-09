@@ -44,7 +44,7 @@ export default function IntervalReport() {
     }
   }, [formInstructionItems, kinect]);
 
-  // TODO: UseEffectを使う必要はないかもしれない
+  // DISCUSS: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);

@@ -28,7 +28,7 @@ export const startKinect = (
       color_resolution: KinectAzure.K4A_COLOR_RESOLUTION_720P,
     });
     kinect.createTracker({
-      // TODO: use GPU if available otherwise use CPU
+      // use GPU if available otherwise use CPU
       processing_mode: KinectAzure.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA,
       // gpu_device_id: 1,
     });

@@ -1,3 +1,4 @@
+// TICKET: PoseGridをr3fを用いて再実装
 // import { LandmarkConnectionArray, NormalizedLandmarkList } from '@mediapipe/pose';
 // import { Button } from '@mui/material';
 // import { Line, OrbitControls, PerspectiveCamera, Plane, Sphere } from '@react-three/drei';
@@ -36,7 +37,7 @@
 //   const { theta, phi } = cameraAngle;
 //   const thetaRad = (theta * Math.PI) / 180;
 //   const phiRad = (phi * Math.PI) / 180;
-//   const cameraDistance = 2000; // TODO:  PoseGridViewerのサイズに応じてカメラの距離を調整する
+//   const cameraDistance = 2000;
 //   const x = Math.sin(thetaRad) * Math.cos(phiRad) * cameraDistance;
 //   const z = Math.sin(thetaRad) * Math.sin(phiRad) * cameraDistance;
 //   const y = Math.cos(thetaRad) * cameraDistance;

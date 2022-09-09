@@ -53,7 +53,7 @@ const squatDepth: FormInstructionItem = {
   // しゃがみが深いほど角度は大きい
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);
-    // TODO: 浅いほうを厳しく、深いほうを甘くする
+    // TICKET: 浅いほうを厳しく、深いほうを甘くする
     if (bottomPose === undefined) {
       return 0.0;
     }
