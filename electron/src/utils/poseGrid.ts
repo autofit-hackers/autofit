@@ -237,7 +237,7 @@ export class PoseGrid {
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
   // Default parameters are set so that the grid is viewed from the side
-  // TODO: rename
+  // TODO: rename as setCameraPosition
   setCameraAngle(cameraAngle: CameraAngle = { theta: 90, phi: 0 }): void {
     const { theta, phi } = cameraAngle;
     const thetaRad = (theta * Math.PI) / 180;

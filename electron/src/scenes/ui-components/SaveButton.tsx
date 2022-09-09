@@ -15,7 +15,6 @@ function SaveButton(props: { object: object; videoUrls: string[] }) {
     link.click();
   };
 
-  // TODO: 映像を保存する際にURL個数分のダイアログが出る
   const handleSave = () => {
     const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
     exportJson(object, now);

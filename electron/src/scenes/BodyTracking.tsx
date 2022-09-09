@@ -43,7 +43,7 @@ export default function BodyTrack2d() {
   const repState = useRef<RepState>(resetRepState());
 
   // settings
-  const lowerThreshold = 0.8; // TODO: temporarily hard coded
+  const lowerThreshold = 0.8; // TODO: ここで設定しない
   const upperThreshold = 0.95;
 
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
@@ -264,7 +264,7 @@ export default function BodyTrack2d() {
         setPhase((prevPhase) => prevPhase + 1);
       }
 
-      // TODO: いらないかも（repCount描画の名残り）
+      // DISCUSS: いらないかも（repCount描画の名残り）
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,7 +297,7 @@ export default function BodyTrack2d() {
     }
 
     // このコンポーネントのアンマウント時に実行される
-    // TODO: 最初にもよばれる
+    // WARN: 最初にもよばれる
     return () => {
       // レップとして保存されていない映像は破棄する
       if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {
