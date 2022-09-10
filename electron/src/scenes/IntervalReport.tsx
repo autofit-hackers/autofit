@@ -93,7 +93,7 @@ export default function IntervalReport() {
           >
             <PrintIcon />
           </IconButton>
-          <AutoSaveButton object={setRecord} videoBlobs={setRecord.repVideoBlobs} />
+          <AutoSaveButton trainingResults={setRecord} videoBlobs={setRecord.repVideoBlobs} />
         </Stack>
 
         <Grid container spacing={3}>

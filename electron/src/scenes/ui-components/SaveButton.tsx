@@ -30,11 +30,11 @@ export const handleSave = (object: object, videoBlobs: Blob[]) => {
   }
 };
 
-export function AutoSaveButton(props: { object: object; videoBlobs: Blob[] }) {
-  const { object, videoBlobs } = props;
+export function AutoSaveButton(props: { trainingResults: object; videoBlobs: Blob[] }) {
+  const { trainingResults, videoBlobs } = props;
 
   return (
-    <IconButton onClick={() => handleSave(object, videoBlobs)}>
+    <IconButton onClick={() => handleSave(trainingResults, videoBlobs)}>
       <SaveAsIcon />
     </IconButton>
   );

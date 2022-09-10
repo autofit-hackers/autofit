@@ -12,7 +12,7 @@ import { formInstructionItemsAtom, setRecordAtom } from './atoms';
 import futuristicTheme from './themes';
 import { takeoutCardSx } from './ui-components/InstructionItemExpression';
 import RadarChart from './ui-components/RadarChart';
-import { SaveButtonWithDialog } from './ui-components/SaveButton';
+import { AutoSaveButton } from './ui-components/SaveButton';
 import TotalScore from './ui-components/TotalScore';
 
 export default function TakeoutReport1() {
@@ -75,7 +75,7 @@ export default function TakeoutReport1() {
               スクワットレポート
             </Typography>
             {/* トレーニングデータの保存ボタン */}
-            <SaveButtonWithDialog object={setRecord} videoUrls={setRecord.repVideoUrls} />
+            <AutoSaveButton trainingResults={setRecord} videoBlobs={setRecord.repVideoBlobs} />
             {/* autofitのロゴ */}
             <img src={autofitLogo} alt="autofit" width="150px" />
           </Box>
