@@ -103,7 +103,7 @@
       "iconColour": "#00ff00"
     },
     "WARN": {
-      "icon": "alert-fill",
+      "icon": "alert",
       "foreground": "#ffff00",
       "iconColour": "#ffff00"
     }
