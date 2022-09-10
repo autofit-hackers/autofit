@@ -8,11 +8,11 @@ import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import autofitLogo from '../../resources/images/autofit-logo.png';
 import { KINECT_POSE_CONNECTIONS } from '../training_data/pose';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, repVideoUrlsAtom, setRecordAtom } from './atoms';
+import { formInstructionItemsAtom, setRecordAtom } from './atoms';
 import futuristicTheme from './themes';
 import { takeoutCardSx } from './ui-components/InstructionItemExpression';
 import RadarChart from './ui-components/RadarChart';
-import SaveButton from './ui-components/SaveButton';
+import { AutoSaveButton } from './ui-components/SaveButton';
 import TotalScore from './ui-components/TotalScore';
 
 export default function TakeoutReport1() {
@@ -20,7 +20,6 @@ export default function TakeoutReport1() {
   const [setRecord] = useAtom(setRecordAtom);
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
   const selectedInstructionIndex = 0;
-  const [repVideoUrls] = useAtom(repVideoUrlsAtom);
   const videoPlayerRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
 
   // PoseGrid用
@@ -76,7 +75,7 @@ export default function TakeoutReport1() {
               スクワットレポート
             </Typography>
             {/* トレーニングデータの保存ボタン */}
-            <SaveButton object={setRecord} videoUrls={repVideoUrls} />
+            <AutoSaveButton trainingResults={setRecord} videoBlobs={setRecord.repVideoBlobs} />
             {/* autofitのロゴ */}
             <img src={autofitLogo} alt="autofit" width="150px" />
           </Box>
@@ -106,7 +105,7 @@ export default function TakeoutReport1() {
                 <CardContent sx={takeoutCardSx}>
                   <ReactPlayer
                     ref={videoPlayerRef}
-                    url={repVideoUrls[displayedRepIndex]}
+                    url={setRecord.repVideoUrls[displayedRepIndex]}
                     id="RepVideo"
                     height="100%"
                     width="100%"

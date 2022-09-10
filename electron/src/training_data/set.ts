@@ -7,12 +7,20 @@ export type SetSummary = {
   totalScore: number;
 };
 
-export type Set = { reps: Rep[]; formEvaluationResults: FormEvaluationResult[]; summary: SetSummary };
+export type Set = {
+  reps: Rep[];
+  formEvaluationResults: FormEvaluationResult[];
+  summary: SetSummary;
+  repVideoUrls: string[];
+  repVideoBlobs: Blob[];
+};
 
 export const resetSet = (): Set => ({
   reps: [],
   formEvaluationResults: [],
   summary: { description: [''], totalScore: 0 },
+  repVideoUrls: [],
+  repVideoBlobs: [],
 });
 
 export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
