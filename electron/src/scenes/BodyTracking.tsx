@@ -121,6 +121,10 @@ export default function BodyTrack2d() {
       if (canvasCtx === null) {
         throw new Error('canvasCtx is null');
       }
+
+      // // 画像を左右反転させる
+      // canvasCtx.scale(-1, 1);
+
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
@@ -134,6 +138,7 @@ export default function BodyTrack2d() {
 
       if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const rawCurrentPose: Pose = convertKinectResultsToPose(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
           data.bodyFrame.bodies[0].skeleton.joints,
@@ -238,6 +243,9 @@ export default function BodyTrack2d() {
           }
         }
 
+        // 画像を左右反転させる
+        // canvasCtx.scale(-1, 1);
+
         // pose estimationの結果を描画
         Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
           color: 'white',
@@ -263,6 +271,11 @@ export default function BodyTrack2d() {
       if (setRef.current.reps.length === 100) {
         setPhase((prevPhase) => prevPhase + 1);
       }
+
+      // // 画像を左右反転させる
+      // canvasCtx.scale(-1, 1);
+      // canvasRef.scale(-1, 1);
+      // canvasCtx.transform(1, 0, 0, 1, -100, 0);
 
       // HELPME: いらないかも（repCount描画の名残り）
       canvasCtx.restore();
