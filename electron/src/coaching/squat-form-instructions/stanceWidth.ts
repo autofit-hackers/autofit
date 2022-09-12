@@ -27,8 +27,8 @@ const stanceWidth: FormInstructionItem = {
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  // TICKET: 過去のデータを用いて，スタンスの基準とする足首のパラメータを調整する
-  thresholds: { upper: 1.7, middle: 1.2, lower: 0.85 }, // 足先を基準にした場合は，2,1.4,1が判定基準となる
+  // TICKET: 過去のデータを用いて，スタンスの基準とするパラメータを調整する
+  thresholds: { upper: 1.7, middle: 1.2, lower: 0.85 }, // FOOTを基準にした場合は，2,1.4,1が判定基準となる
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
@@ -85,7 +85,7 @@ const stanceWidth: FormInstructionItem = {
     ).x;
 
     // TICKET: 過去のデータを用いて，スタンスの基準とするパラメータを調整する
-    return { upper: 1.7 * shoulderWidth, middle: 1.2 * shoulderWidth, lower: 0.85 * shoulderWidth }; // 足先を基準にした場合は，2,1.4,1が判定基準となる
+    return { upper: 1.7 * shoulderWidth, middle: 1.2 * shoulderWidth, lower: 0.85 * shoulderWidth }; // FOOTを基準にした場合は，2,1.4,1が判定基準となる
   },
   getCoordinateErrorFromIdeal(rep: Rep, thresholds: Thresholds): number {
     const topPose = getTopPose(rep);
