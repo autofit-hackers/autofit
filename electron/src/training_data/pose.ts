@@ -116,8 +116,9 @@ export const convertKinectResultsToPose = (
   const worldLandmarks: LandmarkList = [];
   const depthToRGB = (Math.PI * 6) / 180.0;
   for (let i = 0; i < kinectPoses.length; i += 1) {
+    // x軸を反転させることで，鏡像にする
     landmarks[i] = {
-      x: kinectPoses[i].colorX / canvas.width - 0.5,
+      x: 1.5 - kinectPoses[i].colorX / canvas.width,
       y: kinectPoses[i].colorY / canvas.height,
       z: 0,
     };
