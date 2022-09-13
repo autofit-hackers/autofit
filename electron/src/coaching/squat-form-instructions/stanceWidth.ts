@@ -27,7 +27,7 @@ const stanceWidth: FormInstructionItem = {
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  // TICKET: 過去のデータを用いて，スタンスの基準とするパラメータを調整する
+  // TICKET: 過去のデータを用いて，スタンス幅を判定するパラメータを変更する（https://www.notion.so/32868e860b414c04ba580fc6d7a7d96e）
   thresholds: { upper: 1.7, middle: 1.2, lower: 0.85 }, // FOOTを基準にした場合は，2,1.4,1が判定基準となる
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const topPose = getTopPose(rep);
@@ -84,7 +84,7 @@ const stanceWidth: FormInstructionItem = {
       criteriaPose.worldLandmarks[KJ.SHOULDER_RIGHT],
     ).x;
 
-    // TICKET: 過去のデータを用いて，スタンスの基準とするパラメータを調整する
+    // TICKET: 過去のデータを用いて，スタンス幅を判定するパラメータを変更する（https://www.notion.so/32868e860b414c04ba580fc6d7a7d96e）
     return { upper: 1.7 * shoulderWidth, middle: 1.2 * shoulderWidth, lower: 0.85 * shoulderWidth }; // FOOTを基準にした場合は，2,1.4,1が判定基準となる
   },
   getCoordinateErrorFromIdeal(rep: Rep, thresholds: Thresholds): number {
