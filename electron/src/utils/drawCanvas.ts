@@ -13,7 +13,6 @@ export const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImag
       pixelArray[(i + 1) * canvasImageData.width * 4 - j * 4 - 1] = 0xff;
     }
   }
-
   // 取得映像の両端1/4をカットして貼り付ける
   ctx.putImageData(
     canvasImageData,
