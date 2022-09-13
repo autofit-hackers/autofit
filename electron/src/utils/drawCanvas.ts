@@ -2,11 +2,17 @@ export const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImag
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
   const newPixelData = Buffer.from(imageFrame.imageData);
   const pixelArray = canvasImageData.data;
-  for (let i = 0; i < canvasImageData.data.length; i += 4) {
-    pixelArray[i] = newPixelData[i + 2];
-    pixelArray[i + 1] = newPixelData[i + 1];
-    pixelArray[i + 2] = newPixelData[i];
-    pixelArray[i + 3] = 0xff;
+  // x軸方向を反転させることで，鏡像にする
+  for (let i = 0; i < canvasImageData.height; i += 1) {
+    for (let j = 0; j < canvasImageData.width; j += 1) {
+      pixelArray[(i + 1) * canvasImageData.width * 4 - j * 4 - 4] =
+        newPixelData[i * canvasImageData.width * 4 + j * 4 + 2];
+      pixelArray[(i + 1) * canvasImageData.width * 4 - j * 4 - 3] =
+        newPixelData[i * canvasImageData.width * 4 + j * 4 + 1];
+      pixelArray[(i + 1) * canvasImageData.width * 4 - j * 4 - 2] =
+        newPixelData[i * canvasImageData.width * 4 + j * 4];
+      pixelArray[(i + 1) * canvasImageData.width * 4 - j * 4 - 1] = 0xff;
+    }
   }
   // 取得映像の両端1/4をカットして貼り付ける
   ctx.putImageData(
