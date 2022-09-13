@@ -15,14 +15,7 @@ import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { startCapturingRepVideo } from '../utils/recordVideo';
-import {
-  formDebugAtom,
-  formInstructionItemsAtom,
-  kinectAtom,
-  phaseAtom,
-  repVideoUrlsAtom,
-  setRecordAtom,
-} from './atoms';
+import { formDebugAtom, formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import RealtimeChart, { InTrainingChart, ManuallyAddableChart } from './ui-components/RealtimeChart';
 
 export default function BodyTrack2d() {
@@ -43,7 +36,7 @@ export default function BodyTrack2d() {
   const repState = useRef<RepState>(resetRepState());
 
   // settings
-  const lowerThreshold = 0.8; // TODO: temporarily hard coded
+  const lowerThreshold = 0.8; // TODO: ここで設定しない
   const upperThreshold = 0.95;
 
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
@@ -60,7 +53,6 @@ export default function BodyTrack2d() {
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
-  const [, setRepVideoUrls] = useAtom(repVideoUrlsAtom);
 
   // レップカウント用
   const repCounterRef = useRef<HTMLDivElement | null>(null);
@@ -94,7 +86,6 @@ export default function BodyTrack2d() {
     repState.current = resetRepState();
     // 映像保存
     repVideoRecorderRef.current = null;
-    setRepVideoUrls([]);
     playTrainingStartSound();
     // グラフ
     evaluatedFrameRef.current.forEach((frame, idx) => {
@@ -161,7 +152,7 @@ export default function BodyTrack2d() {
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // 動画撮影を開始
-          repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRepVideoUrls);
+          repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRef.current);
 
           // セットの最初の身長を記録
           if (setRef.current.reps.length === 0) {
@@ -264,7 +255,7 @@ export default function BodyTrack2d() {
         setPhase((prevPhase) => prevPhase + 1);
       }
 
-      // HELPME: いらないかも（repCount描画の名残り）
+      // DISCUSS: いらないかも（repCount描画の名残り）
       canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,7 +288,7 @@ export default function BodyTrack2d() {
     }
 
     // このコンポーネントのアンマウント時に実行される
-    // FIXME: 最初にもよばれる
+    // WARN: 最初にもよばれる
     return () => {
       // レップとして保存されていない映像は破棄する
       if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {

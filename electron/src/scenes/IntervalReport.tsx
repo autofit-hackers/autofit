@@ -12,6 +12,7 @@ import InstructionSummaryCards from './ui-components/InstructionSummaryCards';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 import RadarChart from './ui-components/RadarChart';
 import RealtimeChart from './ui-components/RealtimeChart';
+import { AutoSaveButton } from './ui-components/SaveButton';
 import TotalScore from './ui-components/TotalScore';
 import VideoPlayer from './ui-components/VideoPlayer';
 
@@ -43,7 +44,7 @@ export default function IntervalReport() {
     }
   }, [formInstructionItems, kinect]);
 
-  // TODO: UseEffectを使う必要はないかもしれない
+  // DISCUSS: UseEffectを使う必要はないかもしれない
   // フォーム指導項目タブが押されたら、レップ映像とPoseGridを切り替える
   useEffect(() => {
     setDisplayedRepIndex(setRecord.formEvaluationResults[selectedInstructionIndex].worstRepIndex);
@@ -92,6 +93,7 @@ export default function IntervalReport() {
           >
             <PrintIcon />
           </IconButton>
+          <AutoSaveButton trainingResults={setRecord} videoBlobs={setRecord.repVideoBlobs} />
         </Stack>
 
         <Grid container spacing={3}>

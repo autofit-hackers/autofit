@@ -35,7 +35,7 @@ const squatVelocity: FormInstructionItem = {
   poseGridCameraAngle: { theta: 90, phi: 270 },
   thresholds: { upper: 2500, middle: 1500, lower: 500 }, // ミリ秒
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
-    // TODO: エキセントリックも実装したい。
+    // TICKET: エキセントリックも実装したい。
     const bottomPose = getBottomPose(rep);
     const lastPose = getLastPose(rep);
     if (bottomPose === undefined || lastPose === undefined) {
