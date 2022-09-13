@@ -1,8 +1,8 @@
-import { Thresholds, FormInstructionItem, calculateError } from '../formInstruction';
-import { getDistance, KJ, getCenter, landmarkToVector3 } from '../../training_data/pose';
-import { Rep, getTopPose } from '../../training_data/rep';
-import { GuidelineSymbols } from '../../utils/poseGrid';
 import stanceWidthImage from '../../../resources/images/formInstructionItems/stance-width.png';
+import { getCenter, getDistance, KJ, landmarkToVector3 } from '../../training_data/pose';
+import { getTopPose, Rep } from '../../training_data/rep';
+import { GuidelineSymbols } from '../../utils/poseGrid';
+import { calculateError, FormInstructionItem, Thresholds } from '../formInstruction';
 
 const stanceWidth: FormInstructionItem = {
   id: 2,
@@ -27,7 +27,8 @@ const stanceWidth: FormInstructionItem = {
   },
   importance: 0.7,
   poseGridCameraAngle: { theta: 90, phi: 270 },
-  thresholds: { upper: 2, middle: 1.4, lower: 1 },
+  // TICKET: 過去のデータを用いて，スタンス幅を判定するパラメータを変更する（https://www.notion.so/32868e860b414c04ba580fc6d7a7d96e）
+  thresholds: { upper: 1.7, middle: 1.2, lower: 0.85 }, // FOOTを基準にした場合は，2,1.4,1が判定基準となる
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const topPose = getTopPose(rep);
     if (topPose === undefined) {
@@ -36,12 +37,13 @@ const stanceWidth: FormInstructionItem = {
       return 0;
     }
     const topWorldLandmarks = topPose.worldLandmarks;
-    const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
+    const footWidth = getDistance(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const footShoulderWidthRatio = footWidth / shoulderWidth;
 
     return calculateError(thresholds, footShoulderWidthRatio);
   },
+  // FIXME: 座標変換が直感的ではない(landmarkToVector3でyzの正負を反転しているため、直接Vectorを生成した場合と挙動が異なる)
   getGuidelineSymbols: (rep: Rep, thresholds: Thresholds): GuidelineSymbols => {
     const guidelineSymbols: GuidelineSymbols = {};
 
@@ -55,8 +57,8 @@ const stanceWidth: FormInstructionItem = {
     const ankleCenter = getCenter(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]);
     const idealLeftFootX = ankleCenter.x - idealFootWidth / 2;
     const idealRightFootX = ankleCenter.x + idealFootWidth / 2;
-    const leftFoot = topWorldLandmarks[KJ.FOOT_LEFT];
-    const rightFoot = topWorldLandmarks[KJ.FOOT_RIGHT];
+    const leftFoot = topWorldLandmarks[KJ.ANKLE_LEFT];
+    const rightFoot = topWorldLandmarks[KJ.ANKLE_RIGHT];
     const shoulderY = (topWorldLandmarks[KJ.SHOULDER_LEFT].y + topWorldLandmarks[KJ.SHOULDER_RIGHT].y) / 2;
 
     guidelineSymbols.lines = [
@@ -75,14 +77,15 @@ const stanceWidth: FormInstructionItem = {
     return guidelineSymbols;
   },
   calculateRealtimeValue: (evaluatedPose) =>
-    getDistance(evaluatedPose.worldLandmarks[KJ.FOOT_LEFT], evaluatedPose.worldLandmarks[KJ.FOOT_RIGHT]).x,
+    getDistance(evaluatedPose.worldLandmarks[KJ.ANKLE_LEFT], evaluatedPose.worldLandmarks[KJ.ANKLE_RIGHT]).x,
   calculateRealtimeThreshold: (criteriaPose) => {
     const shoulderWidth = getDistance(
       criteriaPose.worldLandmarks[KJ.SHOULDER_LEFT],
       criteriaPose.worldLandmarks[KJ.SHOULDER_RIGHT],
     ).x;
 
-    return { upper: 2 * shoulderWidth, middle: 1.4 * shoulderWidth, lower: 1 * shoulderWidth };
+    // TICKET: 過去のデータを用いて，スタンス幅を判定するパラメータを変更する（https://www.notion.so/32868e860b414c04ba580fc6d7a7d96e）
+    return { upper: 1.7 * shoulderWidth, middle: 1.2 * shoulderWidth, lower: 0.85 * shoulderWidth }; // FOOTを基準にした場合は，2,1.4,1が判定基準となる
   },
   getCoordinateErrorFromIdeal(rep: Rep, thresholds: Thresholds): number {
     const topPose = getTopPose(rep);
@@ -92,7 +95,7 @@ const stanceWidth: FormInstructionItem = {
       return 0;
     }
     const topWorldLandmarks = topPose.worldLandmarks;
-    const footWidth = getDistance(topWorldLandmarks[KJ.FOOT_LEFT], topWorldLandmarks[KJ.FOOT_RIGHT]).x;
+    const footWidth = getDistance(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const errorInt = Math.round(footWidth - thresholds.middle * shoulderWidth);
 
