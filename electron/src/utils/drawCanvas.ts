@@ -2,6 +2,7 @@ export const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImag
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
   const newPixelData = Buffer.from(imageFrame.imageData);
   const pixelArray = canvasImageData.data;
+  // x軸方向を反転させることで，鏡像にする
   for (let i = 0; i < canvasImageData.height; i += 1) {
     for (let j = 0; j < canvasImageData.width; j += 1) {
       pixelArray[(i + 1) * canvasImageData.width * 4 - j * 4 - 4] =
