@@ -7,14 +7,15 @@ import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebu
 import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squat-form-instructions/kneeInAndOut';
 import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
 import { convertKinectResultsToPose, heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
-import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
-import { resetSet, Set } from '../training_data/set';
+import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../training_data/rep';
+import { checkIfRepFinish, resetRepState, setStandingHeight } from '../training_data/repState';
+import { resetSet } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { startCapturingRepVideo } from '../utils/recordVideo';
+import TrainingPhase from '../utils/trainingPhase';
 import { formDebugAtom, formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import RealtimeChart, { InTrainingChart, ManuallyAddableChart } from './ui-components/RealtimeChart';
 
@@ -26,14 +27,16 @@ export default function BodyTrack2d() {
   let poseGrid: PoseGrid;
 
   const [, setPhase] = useAtom(phaseAtom);
+  const trainingPhase = useRef(new TrainingPhase(10, 3));
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
 
   // トレーニングデータ
   const [, setSetRecord] = useAtom(setRecordAtom);
-  const setRef = useRef<Set>(resetSet());
-  const repRef = useRef<Rep>(resetRep(0));
-  const repState = useRef<RepState>(resetRepState());
+  const setRef = useRef(resetSet());
+  const repRef = useRef(resetRep(0));
+  const repState = useRef(resetRepState());
 
   // settings
   const lowerThreshold = 0.8; // TODO: ここで設定しない
@@ -48,14 +51,15 @@ export default function BodyTrack2d() {
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
   const prevPoseRef = useRef<Pose | null>(null);
-  const fixOutlierRef = useRef<FixOutlier>(new FixOutlier(fixOutlierParams));
-  const fixWorldOutlierRef = useRef<FixOutlier>(new FixOutlier(fixWorldOutlierPrams));
+  const fixOutlierRef = useRef(new FixOutlier(fixOutlierParams));
+  const fixWorldOutlierRef = useRef(new FixOutlier(fixWorldOutlierPrams));
 
   // 映像保存用
   const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
 
-  // レップカウント用
-  const repCounterRef = useRef<HTMLDivElement | null>(null);
+  // レップカウントなどの表示用
+  const navigationRef = useRef<HTMLDivElement>(null);
+  const repCounterRef = useRef<HTMLDivElement>(null);
 
   // リアルタイムグラフ用
   const evaluatedFrameRef = useRef<EvaluatedFrames>([]);
@@ -97,6 +101,8 @@ export default function BodyTrack2d() {
     setToe([]);
 
     if (repCounterRef.current) repCounterRef.current.innerText = '0';
+    // TODO: 内部のIntervalが自動で破棄されるかは要確認
+    trainingPhase.current = new TrainingPhase(10, 3);
   };
 
   // 毎kinect更新時に実行される
@@ -166,83 +172,94 @@ export default function BodyTrack2d() {
           poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
 
-        // レップの最初のフレームの場合
-        if (repState.current.isFirstFrameInRep) {
-          // 動画撮影を開始
-          repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRef.current);
+        if (trainingPhase.current.phase === 'preparation') {
+          trainingPhase.current.updateInPreparation(currentPose);
+          if (navigationRef.current) navigationRef.current.innerText = trainingPhase.current.text;
+        } else if (trainingPhase.current.phase === 'countDown') {
+          trainingPhase.current.updateInCountDown(currentPose);
+          if (navigationRef.current) navigationRef.current.innerText = trainingPhase.current.text;
+        } else if (trainingPhase.current.phase === 'inTraining') {
+          // レップの最初のフレームの場合
+          if (repState.current.isFirstFrameInRep) {
+            // 動画撮影を開始
+            repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRef.current);
 
-          // セットの最初の身長を記録
-          if (setRef.current.reps.length === 0) {
-            repState.current = setStandingHeight(repState.current, heightInWorld(currentPose));
-          } else {
-            const firstRepTopPose = getTopPose(setRef.current.reps[0]);
-            if (firstRepTopPose !== undefined) {
-              repState.current = setStandingHeight(repState.current, heightInWorld(firstRepTopPose));
+            // セットの最初の身長を記録
+            if (setRef.current.reps.length === 0) {
+              repState.current = setStandingHeight(repState.current, heightInWorld(currentPose));
+            } else {
+              const firstRepTopPose = getTopPose(setRef.current.reps[0]);
+              if (firstRepTopPose !== undefined) {
+                repState.current = setStandingHeight(repState.current, heightInWorld(firstRepTopPose));
+              }
             }
+
+            // レップの開始フラグをoffにする
+            repState.current.isFirstFrameInRep = false;
           }
 
-          // レップの開始フラグをoffにする
-          repState.current.isFirstFrameInRep = false;
-        }
+          // フォームを分析し、レップの状態を更新する
+          repState.current = checkIfRepFinish(
+            repState.current,
+            heightInWorld(currentPose),
+            lowerThreshold,
+            upperThreshold,
+          );
 
-        // フォームを分析し、レップの状態を更新する
-        repState.current = checkIfRepFinish(
-          repState.current,
-          heightInWorld(currentPose),
-          lowerThreshold,
-          upperThreshold,
-        );
+          // 現フレームの推定Poseをレップのフォームに追加
+          repRef.current = appendPoseToForm(repRef.current, currentPose);
 
-        // 現フレームの推定Poseをレップのフォームに追加
-        repRef.current = appendPoseToForm(repRef.current, currentPose);
-
-        // グラフを更新
-        evaluatedFrameRef.current.forEach((item, index) => {
-          const evaluateCallback = formInstructionItems[index].calculateRealtimeValue;
-          item.evaluatedValues.push(evaluateCallback(currentPose));
-        });
-        bodyHeightRef.current.push(heightInWorld(currentPose));
-
-        // レップが終了したとき
-        if (repState.current.isRepEnd) {
-          // 動画撮影を停止し、配列に保存する
-          if (repVideoRecorderRef.current) {
-            repVideoRecorderRef.current.stop();
-          }
-
-          // 完了したレップのフォームを分析・評価
-          repRef.current = calculateKeyframes(repRef.current);
-          repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
-
-          // グラフのthresh更新
-          const topPose = getTopPose(repRef.current);
-          if (topPose !== undefined) {
-            evaluatedFrameRef.current.forEach((item, index) => {
-              const threshold = formInstructionItems[index].calculateRealtimeThreshold(topPose);
-              evaluatedFrameRef.current[index].threshold = threshold;
-            });
-          }
-
-          // 完了したレップの情報をセットに追加し、レップをリセットする
-          setRef.current.reps = [...setRef.current.reps, repRef.current];
-          repRef.current = resetRep(setRef.current.reps.length);
-
-          // レップカウントを読み上げる
-          playRepCountSound(setRef.current.reps.length); // ここで音声を再生
-
-          // RepStateの初期化
-          repState.current = resetRepState();
-
-          // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-          setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems, evaluatedFrameRef.current);
-          setRef.current.formEvaluationResults.forEach((item, index) => {
-            setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
+          // グラフを更新
+          evaluatedFrameRef.current.forEach((item, index) => {
+            const evaluateCallback = formInstructionItems[index].calculateRealtimeValue;
+            item.evaluatedValues.push(evaluateCallback(currentPose));
           });
-          setSetRecord(setRef.current);
+          bodyHeightRef.current.push(heightInWorld(currentPose));
 
+          // レップが終了したとき
+          if (repState.current.isRepEnd) {
+            // 動画撮影を停止し、配列に保存する
+            if (repVideoRecorderRef.current) {
+              repVideoRecorderRef.current.stop();
+            }
+
+            // 完了したレップのフォームを分析・評価
+            repRef.current = calculateKeyframes(repRef.current);
+            repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
+
+            // グラフのthresh更新
+            const topPose = getTopPose(repRef.current);
+            if (topPose !== undefined) {
+              evaluatedFrameRef.current.forEach((item, index) => {
+                const threshold = formInstructionItems[index].calculateRealtimeThreshold(topPose);
+                evaluatedFrameRef.current[index].threshold = threshold;
+              });
+            }
+
+            // 完了したレップの情報をセットに追加し、レップをリセットする
+            setRef.current.reps = [...setRef.current.reps, repRef.current];
+            repRef.current = resetRep(setRef.current.reps.length);
+
+            // レップカウントを読み上げる
+            playRepCountSound(setRef.current.reps.length); // ここで音声を再生
+
+            // RepStateの初期化
+            repState.current = resetRepState();
+
+            // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
+            setRef.current = recordFormEvaluationResult(
+              setRef.current,
+              formInstructionItems,
+              evaluatedFrameRef.current,
+            );
+            setRef.current.formEvaluationResults.forEach((item, index) => {
+              setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
+            });
+            setSetRecord(setRef.current);
+          }
           // レップカウントを更新
           if (repCounterRef.current) {
-            repCounterRef.current.innerHTML = setRef.current.reps.length.toString();
+            repCounterRef.current.innerText = setRef.current.reps.length.toString();
           }
         }
       } else {
@@ -265,7 +282,7 @@ export default function BodyTrack2d() {
   // Kinectの開始とPoseGridのセットアップ
   useEffect(() => {
     startKinect(kinect, onResults);
-    if (!poseGrid && gridDivRef.current !== null) {
+    if (!poseGrid && gridDivRef.current) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
@@ -276,7 +293,7 @@ export default function BodyTrack2d() {
     }
 
     if (repCounterRef.current !== null) {
-      repCounterRef.current.innerHTML = '0';
+      repCounterRef.current.innerText = '0';
     }
 
     if (evaluatedFrameRef.current !== null) {
@@ -360,10 +377,17 @@ export default function BodyTrack2d() {
           }}
         />
       </div>
-      <div
-        ref={repCounterRef}
-        style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
-      />
+      {trainingPhase.current.phase !== 'inTraining' ? (
+        <div
+          ref={navigationRef}
+          style={{ top: '10vw', left: '10vw', fontSize: 30, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
+        />
+      ) : (
+        <div
+          ref={repCounterRef}
+          style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
+        />
+      )}
 
       {/* // フォームデバッグ用 */}
       {isDebugMode ? (
