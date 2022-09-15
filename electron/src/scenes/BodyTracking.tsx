@@ -149,6 +149,23 @@ export default function BodyTrack2d() {
         }
         prevPoseRef.current = currentPose;
 
+        // pose estimationの結果を描画
+        Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
+          color: 'white',
+          lineWidth: 4,
+          radius: 8,
+          fillColor: 'lightgreen',
+        });
+        Draw2D.drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
+          color: 'white',
+          lineWidth: 4,
+        });
+
+        // PoseGridの描画
+        if (poseGrid) {
+          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
+        }
+
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // 動画撮影を開始
@@ -227,23 +244,6 @@ export default function BodyTrack2d() {
           if (repCounterRef.current) {
             repCounterRef.current.innerHTML = setRef.current.reps.length.toString();
           }
-        }
-
-        // pose estimationの結果を描画
-        Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
-          color: 'white',
-          lineWidth: 4,
-          radius: 8,
-          fillColor: 'lightgreen',
-        });
-        Draw2D.drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
-          color: 'white',
-          lineWidth: 4,
-        });
-
-        // PoseGridの描画
-        if (poseGrid) {
-          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
       } else {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
