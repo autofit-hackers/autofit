@@ -1,7 +1,7 @@
 import { KJ, Pose } from '../training_data/pose';
 
 class TrainingPhase {
-  public phase: 'preparation' | 'countDown' | 'inTraining';
+  public phase: 'outOfPosition' | 'countdown' | 'exercising';
   public text = '';
   private acceptableRange: number;
   private timer: NodeJS.Timer | undefined;
@@ -10,7 +10,7 @@ class TrainingPhase {
   private isTimerStarted = false;
 
   constructor(acceptableRange: number, timerDuration: number) {
-    this.phase = 'preparation';
+    this.phase = 'outOfPosition';
     this.acceptableRange = acceptableRange;
     this.timerDuration = timerDuration;
     this.timerCount = this.timerDuration;
@@ -25,7 +25,7 @@ class TrainingPhase {
         0,
       )}cm後ろに下がってください`;
     } else {
-      this.phase = 'countDown';
+      this.phase = 'countdown';
     }
   }
 
@@ -46,7 +46,7 @@ class TrainingPhase {
         this.timer = setInterval(() => {
           this.timerCount -= 1;
           if (this.timerCount <= 0) {
-            this.phase = 'inTraining';
+            this.phase = 'exercising';
             this.text = 'トレーニング開始';
             this.resetTimerCount();
             clearInterval(this.timer);
@@ -58,7 +58,7 @@ class TrainingPhase {
       if (this.timer) {
         clearInterval(this.timer);
       }
-      this.phase = 'preparation';
+      this.phase = 'outOfPosition';
       this.resetTimerCount();
     }
   }

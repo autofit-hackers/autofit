@@ -172,13 +172,13 @@ export default function BodyTrack2d() {
           poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
         }
 
-        if (trainingPhase.current.phase === 'preparation') {
+        if (trainingPhase.current.phase === 'outOfPosition') {
           trainingPhase.current.updateInPreparation(currentPose);
           if (navigationRef.current) navigationRef.current.innerText = trainingPhase.current.text;
-        } else if (trainingPhase.current.phase === 'countDown') {
+        } else if (trainingPhase.current.phase === 'countdown') {
           trainingPhase.current.updateInCountDown(currentPose);
           if (navigationRef.current) navigationRef.current.innerText = trainingPhase.current.text;
-        } else if (trainingPhase.current.phase === 'inTraining') {
+        } else if (trainingPhase.current.phase === 'exercising') {
           // レップの最初のフレームの場合
           if (repState.current.isFirstFrameInRep) {
             // 動画撮影を開始
@@ -377,7 +377,7 @@ export default function BodyTrack2d() {
           }}
         />
       </div>
-      {trainingPhase.current.phase !== 'inTraining' ? (
+      {trainingPhase.current.phase !== 'exercising' ? (
         <div
           ref={navigationRef}
           style={{ top: '10vw', left: '10vw', fontSize: 30, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
