@@ -3,6 +3,7 @@ from typing import List
 from pprint import pprint
 from functools import reduce
 
+import numpy as np
 import pandas as pd
 
 
@@ -16,6 +17,12 @@ MUSCLE_GROUPS = [
     "shoulder",
     "triceps",
 ]
+ONE_REP_TIME = 5.0
+MODALITY_TO_REPS = {"FW": 10, "C": 15, "M": 12}
+SETS = [3, 5]
+
+RANDOM_SEED = 0
+np.random.seed(RANDOM_SEED)
 
 
 def get_args():
@@ -50,9 +57,14 @@ def column_have_any_of_targets(
 def generate_menu(targets: List[str], time: int):
     exercise_df = pd.read_csv("./exercise_list.tsv", sep="\t")
 
+    # extract exercises for target muscle groups
     is_target = column_have_any_of_targets(exercise_df, "Muscle Group", targets)
     target_df = exercise_df[is_target]
-    print(target_df)
+
+    # calculate time (cost)
+    target_df["Reps"] = target_df["Modality"].map(MODALITY_TO_REPS)
+    target_df["Sets"] = np.random.choice(SETS, len(target_df))
+    target_df["Time"] = target_df["Reps"] * target_df["Sets"] * ONE_REP_TIME
 
 
 if __name__ == "__main__":
