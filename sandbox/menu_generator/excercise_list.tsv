@@ -1,0 +1,271 @@
+ID	Exercise	Muscle Group	Level	U/L/C	P / P	Modality	Joint
+0	Full Reverse Crunch	Abdominals - Lower	Advanced	Core	Push	FW	M
+1	Incline Hip Thrust	Abdominals - Lower	Advanced	Core	Push	FW	M
+2	Incline Reverse Crunch	Abdominals - Lower	Advanced	Core	Push	FW	M
+3	Lying Hip Thrust	Abdominals - Lower	Advanced	Core	Push	FW	M
+4	Reverse Crunch	Abdominals - Lower	Beginner	Core	Push	FW	M
+5	Reverse Medicine Ball Crunch	Abdominals - Lower	Advanced	Core	Push	FW	M
+6	Alternating Heel Touch	Abdominals - Obliques	Beginner	Core	Push	FW	M
+7	Bent-Knee Medicine Ball Hip Rotation	Abdominals - Obliques	Advanced	Core	Push	FW	M
+8	Cable Chop	Abdominals - Obliques	Advanced	Core	Push	C	M
+9	Cross Crunch	Abdominals - Obliques	Beginner	Core	Push	FW	M
+10	Cross Crunch w/ Medicine Ball	Abdominals - Obliques	Advanced	Core	Push	FW	M
+11	Decline Cross Sit-Up	Abdominals - Obliques	Advanced	Core	Push	FW	M
+12	Decline Sit-Up w/ Twist	Abdominals - Obliques	Advanced	Core	Push	FW	M
+13	Reverse Cable Chop	Abdominals - Obliques	Advanced	Core	Push	C	M
+14	Seated Medicine Ball Twist	Abdominals - Obliques	Advanced	Core	Push	FW	M
+15	Trunk Rotator	Abdominals - Obliques	Advanced	Core	Push	FW	M
+16	Front Plank (from knees)	Abdominals - Total	Beginner	Core	Static	FW	M
+17	Front Plank (from toes)	Abdominals - Total	Intermediate	Core	Static	FW	M
+18	Front Plank (tripod - 1 arm and 2 legs or 2 legs and 1 arm)	Abdominals - Total	Advanced	Core	Static	FW	M
+19	Side-Plank (from knees)	Abdominals - Total	Intermediate	Core	Static	FW	M
+20	Side-Plank (hip lift)	Abdominals - Total	Beginner	Core	Static	FW	M
+21	Side-Plank (from toes)	Abdominals - Total	Advanced	Core	Static	FW	M
+22	Ab Cycle	Abdominals - Total	Advanced	Core	Push	FW	M
+23	Kneeling Ab Rollout	Abdominals - Total	Intermediate	Core	Push	FW	M
+24	Medicine Ball V-Up	Abdominals - Total	Advanced	Core	Push	FW	M
+25	V-Up	Abdominals - Total	Beginner	Core	Push	FW	M
+26	Weighted V-Up	Abdominals - Total	Intermediate	Core	Push	FW	M
+27	Bent Knee Sit-Up	Abdominals - Upper	Beginner	Core	Push	FW	M
+28	Bent-Knee Crunch	Abdominals - Upper	Beginner	Core	Push	FW	M
+29	Crunch	Abdominals - Upper	Beginner	Core	Push	FW	M
+30	Crunch	Abdominals - Upper	Beginner	Core	Push	FW	M
+31	Decline Crunch	Abdominals - Upper	Advanced	Core	Push	FW	M
+32	Decline Sit-Up	Abdominals - Upper	Advanced	Core	Push	FW	M
+33	Heel Touch	Abdominals - Upper	Beginner	Core	Push	FW	M
+34	Sit-Up	Abdominals - Upper	Beginner	Core	Push	FW	M
+35	Weighted Crunch	Abdominals - Upper	Intermediate	Core	Push	FW	M
+36	Assisted Pull-Up	Back - Latissimus Dorsi	Beginner	Upper	Pull	FW	M
+37	Close-Grip Lat Pulldown	Back - Latissimus Dorsi	Beginner	Upper	Pull	M	M
+38	Inverted Pull-Up	Back - Latissimus Dorsi	Advanced	Upper	Pull	FW	M
+39	Lat Pulldown	Back - Latissimus Dorsi	Beginner	Upper	Pull	C	M
+40	Pull-Up	Back - Latissimus Dorsi	Beginner	Upper	Pull	FW	M
+41	Reverse-Grip Lat Pullown	Back - Latissimus Dorsi	Intermediate	Upper	Pull	C	M
+42	Reverse-Grip Pull-Up	Back - Latissimus Dorsi	Advanced	Upper	Pull	FW	M
+43	V-Bar Pull-Up	Back - Latissimus Dorsi	Advanced	Upper	Pull	FW	M
+44	Wide-Grip Lat Pulldown	Back - Latissimus Dorsi	Beginner	Upper	Pull	C	M
+45	Bent-Over Alternating Dumbbell Row	Back - Lat.Dorsi/Rhomboids	Intermediate	Upper	Pull	FW	M
+46	Bent-Over Barbell Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	FW	M
+47	Bent-Over Dumbbell Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	FW	M
+48	Bent-Over Hammer Dumbbell Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	FW	M
+49	Bent-Over Long Barbell Row	Back - Lat.Dorsi/Rhomboids	Intermediate	Upper	Pull	FW	M
+50	Bent-Over Reverse-Grip Barbell Row	Back - Lat.Dorsi/Rhomboids	Advanced	Upper	Pull	FW	M
+51	Bent-Over Single-Arm Long Barbell Row	Back - Lat.Dorsi/Rhomboids	Advanced	Upper	Pull	FW	M
+52	Machine Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	M	M
+53	One Arm Dumbbell Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	FW	M
+54	Reverse Incline Dumbbell Row	Back - Lat.Dorsi/Rhomboids	Advanced	Upper	Pull	FW	M
+55	Rope Cable Row	Back - Lat.Dorsi/Rhomboids	Intermediate	Upper	Pull	C	M
+56	Seated Cable Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	C	M
+57	Seated Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	C	M
+58	Single-Arm Cable Row	Back - Lat.Dorsi/Rhomboids	Intermediate	Upper	Pull	C	M
+59	Single-Arm Dumbbell Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	FW	M
+60	Single-Arm Lat Pulldown	Back - Lat.Dorsi/Rhomboids	Intermediate	Upper	Pull	C	M
+61	Standing Cable Row	Back - Lat.Dorsi/Rhomboids	Beginner	Upper	Pull	C	M
+62	Standing Single-Arm Cable Row	Back - Lat.Dorsi/Rhomboids	Intermediate	Upper	Pull	C	M
+63	Alternating Dumbbell Curl	Biceps	Beginner	Upper	Pull	FW	S
+64	Alternating Hammer Curl	Biceps	Beginner	Upper	Pull	FW	S
+65	Barbell Curl	Biceps	Beginner	Upper	Pull	FW	S
+66	Bicep Curl	Biceps	Beginner	Upper	Pull	FW	S
+67	Bottom/Top/Full Curls	Biceps	Advanced	Upper	Pull	FW	S
+68	Cable Curl	Biceps	Intermediate	Upper	Pull	C	S
+69	Concentration Dumbbell Curl	Biceps	Intermediate	Upper	Pull	FW	S
+70	Cross Body Hammer Curl	Biceps	Advanced	Upper	Pull	FW	S
+71	Dumbbell Curl	Biceps	Beginner	Upper	Pull	FW	S
+72	EZ-Bar Curl	Biceps	Intermediate	Upper	Pull	FW	S
+73	Hammer Curl	Biceps	Beginner	Upper	Pull	FW	S
+74	Incline Alternating Dumbbell Curl	Biceps	Advanced	Upper	Pull	FW	S
+75	Incline Alternating Hammer Curl	Biceps	Advanced	Upper	Pull	FW	S
+76	Incline Dumbbell Curl	Biceps	Advanced	Upper	Pull	FW	S
+77	Incline Hammer Curl	Biceps	Advanced	Upper	Pull	FW	S
+78	Kneeling Cable Curl	Biceps	Beginner	Upper	Pull	C	S
+79	Lying Cable Curl	Biceps	Intermediate	Upper	Pull	C	S
+80	Lying Double Biceps Cable Curl	Biceps	Intermediate	Upper	Pull	C	S
+81	Lying High Cable Curl	Biceps	Advanced	Upper	Pull	C	S
+82	Machine Curl	Biceps	Beginner	Upper	Pull	M	S
+83	Overhead Double Biceps Cable Curl	Biceps	Advanced	Upper	Pull	C	S
+84	Overhead Rope Cable Curl	Biceps	Advanced	Upper	Pull	C	S
+85	Preacher Barbell Curl	Biceps	Advanced	Upper	Pull	FW	S
+86	Preacher Cable Curl	Biceps	Advanced	Upper	Pull	C	S
+87	Preacher Dumbbell Curl	Biceps	Intermediate	Upper	Pull	FW	S
+88	Preacher EZ-Bar Curl	Biceps	Advanced	Upper	Pull	FW	S
+89	Preacher Hammer Dumbbell Curl	Biceps	Intermediate	Upper	Pull	FW	S
+90	Preacher Single-Arm Dumbbell Curl	Biceps	Intermediate	Upper	Pull	FW	S
+91	Reverse Curl	Biceps	Advanced	Upper	Pull	FW	S
+92	Rope Cable Curl	Biceps	Intermediate	Upper	Pull	C	S
+93	Seated Alternating Curl	Biceps	Beginner	Upper	Pull	FW	S
+94	Seated Alternating Hammer Curl	Biceps	Beginner	Upper	Pull	FW	S
+95	Seated Dumbbell Curl	Biceps	Beginner	Upper	Pull	FW	S
+96	Seated Hammer Curl	Biceps	Beginner	Upper	Pull	FW	S
+97	Single-Arm Barbell Curl	Biceps	Beginner	Upper	Pull	FW	S
+98	Single-Arm Cable Curl	Biceps	Intermediate	Upper	Pull	FW	S
+99	Single-Arm Dumbbell Curl w/ Incline Bench	Biceps	Beginner	Upper	Pull	FW	S
+100	Spider Curl	Biceps	Advanced	Upper	Pull	FW	S
+101	Barbell Calf Raise	Calves - Gastrocnemius	Advanced	Lower	Push	FW	S
+102	Calf Press	Calves - Gastrocnemius	Beginner	Lower	Push	M	S
+103	Calf Raise - Seated	Calves - Gastrocnemius	Beginner	Lower	Push	FW	S
+104	Calf Raise - Standing	Calves - Gastrocnemius	Beginner	Lower	Push	FW	S
+105	Dumbbell Calf Raise	Calves - Gastrocnemius	Beginner	Lower	Push	FW	S
+106	Single-Leg Calf Press	Calves - Gastrocnemius	Advanced	Lower	Push	M	S
+107	Single-Leg Dumbbell Calf Raise	Calves - Gastrocnemius	Advanced	Lower	Push	FW	S
+108	Smith Machine Calf Raise	Calves - Gastrocnemius	Intermediate	Lower	Push	M	S
+109	Seated Calf Raise	Calves - Soleus	Beginner	Lower	Push	M	S
+110	Seated Single-Leg Calf Raise	Calves - Soleus	Intermediate	Lower	Push	M	S
+111	Alternating Dumbbell Bench Press	Chest - Pectoralis	Intermediate	Upper	Push	FW	M
+112	Barbell Bench Press	Chest - Pectoralis	Intermediate	Upper	Push	FW	M
+113	Chest Press	Chest - Pectoralis	Beginner	Upper	Push	M	M
+114	Decline Dumbbell Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+115	Decline Smith Machine Bench Press	Chest - Pectoralis	Advanced	Upper	Push	M	M
+116	Dumbbell Bench Press	Chest - Pectoralis	Beginner	Upper	Push	FW	M
+117	Dumbbell Push-Up	Chest - Pectoralis	Beginner	Upper	Push	FW	M
+118	Elevated Push-Up	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+119	Flat Bench Press	Chest - Pectoralis	Intermediate	Upper	Push	FW	M
+120	Incline Alternating Dumbbell Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+121	Incline Barbell Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+122	Incline Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+123	Incline Dumbbell Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+124	Incline Hammer Dumbbell Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+125	Incline Single-Arm Dumbbell Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+126	Incline Smith Machine Bench Press	Chest - Pectoralis	Advanced	Upper	Push	M	M
+127	Incline Twisting Dumbbell Bench Press	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+128	Kneeling Push-Up	Chest - Pectoralis	Beginner	Upper	Push	FW	M
+129	Machine Bench Press	Chest - Pectoralis	Beginner	Upper	Push	M	M
+130	Machine Vertical Bench Press	Chest - Pectoralis	Beginner	Upper	Push	M	M
+131	Medicine Ball Crossover Push-Up	Chest - Pectoralis	Advanced	Upper	Push	FW	M
+132	Push-Up	Chest - Pectoralis	Beginner	Upper	Push	FW	M
+133	Single-Arm Dumbbell Bench Press	Chest - Pectoralis	Intermediate	Upper	Push	FW	M
+134	Smith Machine Bench Press	Chest - Pectoralis	Intermediate	Upper	Push	M	M
+135	Twisting Dumbbell Bench Press	Chest - Pectoralis	Beginner	Upper	Push	FW	M
+136	Wide-Grip Push-Up	Chest - Pectoralis	Beginner	Upper	Push	FW	M
+137	Cable Crossover	Chest - Pectoralis	Advanced	Upper	Push	C	S
+138	Cable Fly	Chest - Pectoralis	Advanced	Upper	Push	C	S
+139	Decline Dumbbell Fly	Chest - Pectoralis	Advanced	Upper	Push	FW	S
+140	Dumbbell Fly	Chest - Pectoralis	Beginner	Upper	Push	FW	S
+141	High Cable Crossover	Chest - Pectoralis	Advanced	Upper	Push	C	S
+142	Incline Cable Fly	Chest - Pectoralis	Advanced	Upper	Push	C	S
+143	Incline Dumbbell Fly	Chest - Pectoralis	Advanced	Upper	Push	FW	S
+144	Incline Twisting Dumbbell Fly	Chest - Pectoralis	Advanced	Upper	Push	FW	S
+145	Low Cable Crossover	Chest - Pectoralis	Intermediate	Upper	Push	C	S
+146	Pec Deck	Chest - Pectoralis	Beginner	Upper	Push	M	S
+147	Pec Deck Fly	Chest - Pectoralis	Beginner	Upper	Push	M	S
+148	Bent-Knee Single-Leg Hip Lift	Legs - Hamstrings	Advanced	Lower	Pull	FW	M
+149	Elevated Hip Lift	Legs - Hamstrings	Intermediate	Lower	Pull	FW	M
+150	Elevated Single-Leg Hip Lift	Legs - Hamstrings	Advanced	Lower	Pull	FW	M
+151	Hip Lift	Legs - Hamstrings	Beginner	Lower	Pull	FW	M
+152	Single-Leg Hip Lift	Legs - Hamstrings	Intermediate	Lower	Pull	FW	M
+153	Deadlift	Legs - Hamstrings	Advanced	Lower	Pull	FW	S
+154	Leg Curl	Legs - Hamstrings	Beginner	Lower	Pull	M	S
+155	Lying Alternating Leg Curl	Legs - Hamstrings	Intermediate	Lower	Pull	M	S
+156	Lying Leg Curl	Legs - Hamstrings	Beginner	Lower	Pull	M	S
+157	Lying Single-Leg Curl	Legs - Hamstrings	Intermediate	Lower	Pull	M	S
+158	Seated Leg Curl	Legs - Hamstrings	Beginner	Lower	Pull	M	S
+159	Barbell Diagonal Lunge	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+160	Barbell Hack Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+161	Barbell Lunge	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+162	Barbell Reverse Lunge	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+163	Barbell Side Lunge	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+164	Barbell Split Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+165	Barbell Squat	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+166	Barbell Step-Up	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+167	Barbell Walking Lunge	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+168	Diagonal Lunge	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+169	Dumbbell Diagonal Lunge	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+170	Dumbbell Lunge	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+171	Dumbbell Reverse Lunge	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+172	Dumbbell Side Lunge	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+173	Dumbbell Split Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+174	Dumbbell Squat	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+175	Dumbbell Step-Up	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+176	Dumbbell Walking Lunge	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+177	Forward Lunge	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+178	Lateral Barbell Squat	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+179	Lateral Barbell Step-Up	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+180	Lateral Squat	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+181	Lateral Step-Up	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+182	Leg Press	Legs - Quadriceps	Beginner	Lower	Push	M	M
+183	Lunge	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+184	Lying Machine Squat	Legs - Quadriceps	Beginner	Lower	Push	M	M
+185	Machine Hack Squat	Legs - Quadriceps	Beginner	Lower	Push	M	M
+186	Reverse Lunge	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+187	Single-Arm Barbell Side Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+188	Single-Arm Dumbbell Side Squat	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+189	Single-Leg Barbell Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+190	Single-Leg Box Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+191	Single-Leg Dumbbell Box Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+192	Single-Leg Dumbbell Squat	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+193	Single-Leg Squat	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+194	Smith Machine Squat	Legs - Quadriceps	Intermediate	Lower	Push	M	M
+195	Split Squat	Legs - Quadriceps	Advanced	Lower	Push	FW	M
+196	Step-Up	Legs - Quadriceps	Beginner	Lower	Push	FW	M
+197	Walking Lunge	Legs - Quadriceps	Intermediate	Lower	Push	FW	M
+198	Alternating Leg Extension	Legs - Quadriceps	Intermediate	Lower	Push	M	S
+199	Leg Extension	Legs - Quadriceps	Beginner	Lower	Push	M	S
+200	Single-Leg Extension	Legs - Quadriceps	Intermediate	Lower	Push	M	S
+201	Alternating Superman	Lower Back - Erector Spinae	Beginner	Core	Pull	FW	M
+202	Back Raise	Lower Back - Erector Spinae	Beginner	Core	Pull	FW	M
+203	Quadruped Alternating Superman	Lower Back - Erector Spinae	Beginner	Core	Pull	FW	M
+204	Superman	Lower Back - Erector Spinae	Beginner	Core	Pull	FW	M
+205	Superman Hold	Lower Back - Erector Spinae	Beginner	Core	Pull	FW	M
+206	Arnold Dumbbell Press	Shoulders - Delts/Traps	Intermediate	Upper	Push	FW	M
+207	Barbell Shoulder Press	Shoulders - Delts/Traps	Advanced	Upper	Push	FW	M
+208	Dumbbell Alternating Shoulder Press	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	M
+209	Dumbbell Front Raise	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	M
+210	Dumbbell Shoulder Press	Shoulders - Delts/Traps	Intermediate	Upper	Push	FW	M
+211	Dumbbell Twisting Shoulder Press	Shoulders - Delts/Traps	Intermediate	Upper	Push	FW	M
+212	Machine Shoulder Press	Shoulders - Delts/Traps	Beginner	Upper	Push	M	M
+213	Seated Dumbbell Rear Delt Elbow Raise	Shoulders - Delts/Traps	Intermediate	Upper	Push	FW	M
+214	Single-Arm Dumbbell Shoulder Press	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	M
+215	Smith Machine Shoulder Press	Shoulders - Delts/Traps	Advanced	Upper	Push	M	M
+216	Barbell Front Raise	Shoulders - Delts/Traps	Intermediate	Upper	Push	FW	S
+217	Bent-Over Cable Rear Delt Raise	Shoulders - Delts/Traps	Advanced	Upper	Push	C	S
+218	Bent-Over Dumbbell Rear Delt Raise	Shoulders - Delts/Traps	Intermediate	Upper	Push	FW	S
+219	Cable Front Raise	Shoulders - Delts/Traps	Intermediate	Upper	Push	C	S
+220	Cable Lateral Raise	Shoulders - Delts/Traps	Intermediate	Upper	Push	C	S
+221	Dumbbell Lateral Raise	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	S
+222	Front Plate Raise	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	S
+223	Kneeling Single-Arm Cable Rear Delt Raise	Shoulders - Delts/Traps	Advanced	Upper	Push	C	S
+224	Lying Dumbbell External Rotation	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	S
+225	Lying Dumbbell Rear Delt Raise	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	S
+226	Lying Single-Arm Dumbbell Rear Delt Raise	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	S
+227	Pec Deck Real Delt Extensions	Shoulders - Delts/Traps	Intermediate	Upper	Push	M	S
+228	Reverse Incline Dumbbell Rear Delt Raise	Shoulders - Delts/Traps	Advanced	Upper	Push	FW	S
+229	Seated Dumbbell Rear Delt Raise	Shoulders - Delts/Traps	Beginner	Upper	Push	FW	S
+230	Single-Arm Cable Lateral Raise	Shoulders - Delts/Traps	Intermediate	Upper	Push	C	S
+231	Cable External Rotation	Shoulders - Rotator Cuff	Beginner	Upper	Push	C	S
+232	Close-Grip Bench Press	Triceps	Advanced	Upper	Push	FW	M
+233	Forward Lean Dips	Triceps	Intermediate	Upper	Push	FW	M
+234	Assisted Dips	Triceps	Beginner	Upper	Push	FW	M
+235	Bench Dips	Triceps	Intermediate	Upper	Push	FW	M
+236	Diamond Push-Up	Triceps	Intermediate	Upper	Push	FW	M
+237	Dips	Triceps	Intermediate	Upper	Push	FW	M
+238	Machine Dips	Triceps	Beginner	Upper	Push	M	M
+239	Decline Dumbbell Triceps Extension	Triceps	Advanced	Upper	Push	FW	S
+240	Decline EZ-Bar Tricep Extension	Triceps	Advanced	Upper	Push	FW	S
+241	Decline Single Dumbbell Triceps Extension	Triceps	Advanced	Upper	Push	FW	S
+242	Decline Single-Arm Dumbbell Triceps Extension	Triceps	Advanced	Upper	Push	FW	S
+243	Dumbbell Kickback	Triceps	Beginner	Upper	Push	FW	S
+244	Incline EZ-Bar Tricep Extension	Triceps	Advanced	Upper	Push	FW	S
+245	Kneeling Cable Triceps Extension	Triceps	Beginner	Upper	Push	C	S
+246	Leaning Overhead Tricep Extension	Triceps	Intermediate	Upper	Push	FW	S
+247	Low Cable Triceps Extension	Triceps	Intermediate	Upper	Push	C	S
+248	Lying Cable Triceps Extension	Triceps	Intermediate	Upper	Push	C	S
+249	Lying EZ-Bar Triceps Extension	Triceps	Intermediate	Upper	Push	FW	S
+250	Lying Overhead EZ-Bar Tricep Extension	Triceps	Intermediate	Upper	Push	FW	S
+251	Lying Reverse EZ-Bar Triceps Extension	Triceps	Advanced	Upper	Push	FW	S
+252	Lying Single Dumbbell Triceps Extension	Triceps	Beginner	Upper	Push	FW	S
+253	Lying Single-Arm Dumbbell Triceps Extension	Triceps	Beginner	Upper	Push	FW	S
+254	Lying Tricep Extensions	Triceps	Beginner	Upper	Push	FW	S
+255	Overhead Dumbbell Triceps Extension	Triceps	Beginner	Upper	Push	FW	S
+256	Overhead EZ-Bar Triceps Extension	Triceps	Advanced	Upper	Push	FW	S
+257	Overhead Rope Cable Tricep Extension	Triceps	Intermediate	Upper	Push	C	S
+258	Overhead Single Dumbbell Tricep Extension	Triceps	Beginner	Upper	Push	FW	S
+259	Overhead Single-Arm Cable Tricep Extension	Triceps	Intermediate	Upper	Push	C	S
+260	Overhead Single-Arm Dumbbell Tricep Extension	Triceps	Beginner	Upper	Push	FW	S
+261	Reverse Tricep Pushdown	Triceps	Advanced	Upper	Push	C	S
+262	Rope Triceps Pushdown	Triceps	Intermediate	Upper	Push	C	S
+263	Single-Arm Towel Triceps Pushdown	Triceps	Beginner	Upper	Push	C	S
+264	Single-Arm Triceps Pushdown	Triceps	Intermediate	Upper	Push	C	S
+265	Towel Triceps Pushdown	Triceps	Beginner	Upper	Push	C	S
+266	Tricep Extensions	Triceps	Beginner	Upper	Push	FW	S
+267	Tricep Pushdown	Triceps	Beginner	Upper	Push	C	S
+268	Tricep Pushdown	Triceps	Beginner	Upper	Push	C	S
+269	V-Bar Tricep Pushdown	Triceps	Beginner	Upper	Push	C	S
