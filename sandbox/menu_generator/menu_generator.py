@@ -41,21 +41,16 @@ def get_args():
     return parser.parse_args()
 
 
-# def pd_series_or(series1: pd.Series[bool], series2: pd.Series[bool]) -> pd.Series[bool]:
-def pd_series_or(series1, series2):
-    return series1 | series2
-
-
 def column_have_any_of_targets(
     df: pd.DataFrame, column: str, targets: List[str]
 ):  # -> pd.Series[bool]
     column_have_target_gen = (
         df[column].str.contains(target, case=False) for target in targets
     )
-    return reduce(pd_series_or, column_have_target_gen)
+    return reduce(lambda series1, series2: series1 | series2, column_have_target_gen)
 
 
-def generate_menu(targets: List[str], time_min: int):
+def generate_menu(targets: List[str], time: int):
     exercise_df = pd.read_csv("./exercise_list.tsv", sep="\t")
 
     # extract exercises for target muscle groups
