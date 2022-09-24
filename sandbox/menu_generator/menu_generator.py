@@ -18,6 +18,7 @@ MUSCLE_GROUPS = [
     "triceps",
 ]
 ONE_REP_TIME = 5.0
+INTERVAL_TIME = 90
 MODALITY_TO_REPS = {"FW": 10, "C": 15, "M": 12}
 SETS = [3, 5]
 
@@ -54,7 +55,7 @@ def column_have_any_of_targets(
     return reduce(pd_series_or, column_have_target_gen)
 
 
-def generate_menu(targets: List[str], time: int):
+def generate_menu(targets: List[str], time_min: int):
     exercise_df = pd.read_csv("./exercise_list.tsv", sep="\t")
 
     # extract exercises for target muscle groups
@@ -64,7 +65,10 @@ def generate_menu(targets: List[str], time: int):
     # calculate time (cost)
     target_df["Reps"] = target_df["Modality"].map(MODALITY_TO_REPS)
     target_df["Sets"] = np.random.choice(SETS, len(target_df))
-    target_df["Time"] = target_df["Reps"] * target_df["Sets"] * ONE_REP_TIME
+    target_df["Time"] = (
+        target_df["Reps"] * target_df["Sets"] * ONE_REP_TIME
+        + target_df["Sets"] * INTERVAL_TIME
+    )
 
 
 if __name__ == "__main__":
