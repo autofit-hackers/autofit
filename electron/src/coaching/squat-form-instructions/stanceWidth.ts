@@ -37,6 +37,7 @@ const stanceWidth: FormInstructionItem = {
       return 0;
     }
     const topWorldLandmarks = topPose.worldLandmarks;
+    // DISCUSS: 見るべきはx距離ではなくxyz距離？
     const footWidth = getDistance(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const footShoulderWidthRatio = footWidth / shoulderWidth;
