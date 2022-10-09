@@ -205,6 +205,11 @@ export class PoseGrid {
       this.orbitControls.update();
       this.renderer.render(this.scene, this.camera);
     });
+    // カメラの回転;
+    if (this.isAutoRotating) {
+      this.phiForAutoRotation += 0.7;
+      this.setCameraAngle({ theta: 90, phi: this.phiForAutoRotation });
+    }
   }
 
   requestFrame(): void {
