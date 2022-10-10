@@ -1,7 +1,6 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import 'typeface-roboto';
 import filledCheckbox from '../../resources/images/checkbox-filled.svg';
 import emptyCheckbox from '../../resources/images/checkbox-unfilled.svg';
@@ -17,6 +16,7 @@ import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom } from './atoms';
 import './preset.css';
+import CountdownCircles from './ui-components/CountdownCircles';
 
 export default function PreSet() {
   // RGB描画
@@ -177,19 +177,15 @@ export default function PreSet() {
           </div>
         ))}
       </div>
-      <div style={{ position: 'absolute', width: '20%', height: '20%', left: '50%', top: '75%' }}>
-        <CountdownCircleTimer
+      <div style={{ position: 'absolute', width: '50%', height: '20%', left: '50%', top: '75%' }}>
+        <CountdownCircles
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}
-          duration={3}
-          colors={['#004777', '#F7B801', '#A30000']}
-          colorsTime={[3, 2, 1]}
+          duration={1}
           onComplete={() => {
             setPhase((prev) => prev + 1);
           }}
-        >
-          {({ remainingTime }) => remainingTime}
-        </CountdownCircleTimer>
+        />
       </div>
     </>
   );
