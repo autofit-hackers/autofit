@@ -35,7 +35,7 @@ const indexHtml = join(ROOT_PATH.dist, 'index.html');
 
 async function createWindow() {
   win = new BrowserWindow({
-    width: 1920,
+    width: 1440,
     height: 1080,
     title: 'autofit',
     icon: join(ROOT_PATH.public, 'favicon.svg'),
