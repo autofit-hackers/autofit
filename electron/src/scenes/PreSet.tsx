@@ -178,7 +178,7 @@ export default function PreSet() {
           </div>
         ))}
       </div>
-      <div style={{ position: 'absolute', width: '50%', height: '20%', left: '50%', top: '75%' }}>
+      <div style={{ position: 'absolute', width: '40%', height: '20%', left: '55%', top: '80%' }}>
         <CountdownCircles
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}

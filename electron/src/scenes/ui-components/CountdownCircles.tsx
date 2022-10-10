@@ -9,18 +9,26 @@ export default function CountdownCircles(props: {
 }) {
   const { key, isPlaying, duration, onComplete } = props;
   const displayNumbers = [3, 2, 1];
+  const textStyle = {
+    fontFamily: 'Roboto',
+    fontSize: '80px',
+    fontWeight: '500',
+    color: '#4AC0E3',
+  };
 
   return (
     <Box display="flex" sx={{ justifyContent: 'space-between' }}>
       {displayNumbers.map((displayNumber) => (
         <CountdownCircleTimer
-          key={key}
+          key={`${key}_${displayNumber}`}
           isPlaying={isPlaying}
           duration={duration}
           onComplete={onComplete}
           colors="#4AC0E3"
+          size={100}
+          strokeWidth={8}
         >
-          {() => displayNumber}
+          {() => <p style={textStyle}>{displayNumber}</p>}
         </CountdownCircleTimer>
       ))}
     </Box>
