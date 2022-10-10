@@ -2,19 +2,21 @@ import * as Draw2D from '@mediapipe/drawing_utils';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
+import 'typeface-roboto';
 import filledCheckbox from '../../resources/images/checkbox-filled.svg';
 import emptyCheckbox from '../../resources/images/checkbox-unfilled.svg';
 import {
   footAngle,
   shoulderPacking,
   stanceWidth,
-  standingPosition
+  standingPosition,
 } from '../coaching/squat-form-instructions/preSetGuide';
 import { convertKinectResultsToPose, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom } from './atoms';
+import './preset.css';
 
 export default function PreSet() {
   // RGB描画
@@ -163,17 +165,17 @@ export default function PreSet() {
       <canvas
         ref={canvasRef}
         className="rgb-canvas"
-        style={{ position: 'absolute', width: '789px', height: '836.49px', left: '149px', top: '122px' }}
+        style={{ position: 'absolute', width: '40%', height: '70%', left: '5%', top: '15%' }}
       />
-      <div style={{ position: 'absolute', top: '72px', left: '1069px' }}>
+      <div style={{ position: 'absolute', left: '50%', top: '15%' }}>
         {checkBoxRefs.map((checkBoxRef, i) => (
           <div style={{}}>
             <img ref={checkBoxRef} src={emptyCheckbox} alt="Icon" />
-            <p>{guideItems.current[i].guide.label}</p>
+            <p className="CheckBoxText">{guideItems.current[i].guide.label}</p>
           </div>
         ))}
       </div>
-      <div style={{ position: 'absolute', width: '179.48px', height: '174px', left: '1643px', top: '826px' }}>
+      <div style={{ position: 'absolute', width: '20%', height: '20%', left: '50%', top: '75%' }}>
         <CountdownCircleTimer
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}
