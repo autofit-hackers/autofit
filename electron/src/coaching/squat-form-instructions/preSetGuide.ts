@@ -1,7 +1,7 @@
 import { LandmarkList } from '@mediapipe/pose';
 import { getDistance, KJ, getAngle } from '../../training_data/pose';
 
-type PreSetGuide = {
+export type PreSetGuide = {
   nameJP: string;
   label: string;
   shouldPutWarning: boolean;
