@@ -3,8 +3,6 @@ import { Box } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'typeface-roboto';
-import filledCheckbox from '../../resources/images/checkbox-filled.svg';
-import emptyCheckbox from '../../resources/images/checkbox-unfilled.svg';
 import {
   footAngle,
   shoulderPacking,
@@ -48,12 +46,6 @@ export default function PreSet() {
     { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault },
   ]);
   const isAllGuideCleared = useRef(false);
-  const checkBoxRefs = [
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-  ];
 
   // タイマー
   const timerKey = useRef(0);
@@ -129,10 +121,6 @@ export default function PreSet() {
           guideItems.current[i].isClearedInPreviousFrame = guideItems.current[i].isCleared;
           guideItems.current[i].isCleared = isCleared;
           guideItems.current[i].text = guideText;
-          const checkbox = checkBoxRefs[i].current;
-          if (checkbox !== null) {
-            checkbox.src = guideItems.current[i].isCleared ? filledCheckbox : emptyCheckbox;
-          }
         }
       }
 
@@ -171,8 +159,8 @@ export default function PreSet() {
       />
       <div style={{ position: 'absolute', width: '55%', height: '60%', left: '45%', top: '15%' }}>
         <Box display="column" sx={{ justifyContent: 'space-between' }}>
-          {checkBoxRefs.map((checkBoxRef, i) => (
-            <Checkbox isChecked={guideItems.current[i].isCleared} text={guideItems.current[i].guide.label} />
+          {guideItems.current.map((guideItem) => (
+            <Checkbox isChecked={guideItem.isCleared} text={guideItem.guide.label} />
           ))}
         </Box>
       </div>
