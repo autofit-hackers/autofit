@@ -167,11 +167,13 @@ export default function PreSet() {
         className="rgb-canvas"
         style={{ position: 'absolute', width: '40%', height: '70%', left: '5%', top: '15%' }}
       />
-      <div style={{ position: 'absolute', left: '50%', top: '15%' }}>
+      <div style={{ position: 'absolute', width: '50%', left: '50%', top: '15%' }}>
         {checkBoxRefs.map((checkBoxRef, i) => (
           <div style={{}}>
-            <img ref={checkBoxRef} src={emptyCheckbox} alt="Icon" />
-            <p className="CheckBoxText">{guideItems.current[i].guide.label}</p>
+            <p className="CheckBoxText">
+              <img ref={checkBoxRef} src={emptyCheckbox} alt="Icon" className="inline" />
+              {guideItems.current[i].guide.label}
+            </p>
           </div>
         ))}
       </div>

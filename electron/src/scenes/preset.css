@@ -1,8 +1,13 @@
 .CheckBoxText {
   font-family: Roboto;
-  font-size: 30px;
+  font-size: 36px;
   font-weight: 600;
-  line-height: 72px;
+  line-height: 100px;
   letter-spacing: 0.5px;
   text-align: left;
+}
+
+img {
+  display: inline;
+  padding-right: 32px;
 }
