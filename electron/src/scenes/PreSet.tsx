@@ -39,11 +39,12 @@ export default function PreSet() {
   const fixWorldOutlierRef = useRef(new FixOutlier(fixWorldOutlierPrams));
 
   // ガイド項目とチェックボックス
+  const guideItemCommonDefault = { isCleared: false, isClearedInPreviousFrame: false, text: '' };
   const guideItems = useRef([
-    { guide: standingPosition, name: 'standingPosition', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: stanceWidth, name: 'stanceWidth', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: footAngle, name: 'footAngle', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: shoulderPacking, name: 'shoulderPacking', isCleared: false, isClearedInPreviousFrame: false, text: '' },
+    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault },
+    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault },
+    { guide: footAngle, name: 'footAngle', ...guideItemCommonDefault },
+    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault },
   ]);
   const isAllGuideCleared = useRef(false);
   const checkBoxRefs = [
