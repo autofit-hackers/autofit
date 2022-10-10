@@ -42,7 +42,7 @@ export type FormEvaluationResult = {
   score: number;
   bestRepIndex: number;
   worstRepIndex: number;
-  evaluatedValuesPerFrame: FrameEvaluateParams;
+  evaluatedValuesPerFrame?: FrameEvaluateParams;
 };
 
 export const calculateError = (
@@ -149,7 +149,7 @@ const selectDisplayedSummary = (set: Set) => {
 export const recordFormEvaluationResult = (
   set: Set,
   instructionItems: FormInstructionItem[],
-  evaluatedValuesPerFrame: FrameEvaluateParams[],
+  evaluatedValuesPerFrame?: FrameEvaluateParams[],
 ): Set => {
   const setCopy: Set = set;
 
@@ -167,7 +167,7 @@ export const recordFormEvaluationResult = (
       score: 0,
       bestRepIndex: 0,
       worstRepIndex: 0,
-      evaluatedValuesPerFrame: evaluatedValuesPerFrame[index],
+      evaluatedValuesPerFrame: evaluatedValuesPerFrame ? evaluatedValuesPerFrame[index] : undefined,
     };
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する

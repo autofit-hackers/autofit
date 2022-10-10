@@ -118,7 +118,7 @@ export const convertKinectResultsToPose = (
   for (let i = 0; i < kinectPoses.length; i += 1) {
     // x軸を反転させることで，鏡像にする
     landmarks[i] = {
-      x: 1.5 - kinectPoses[i].colorX / canvas.width,
+      x: kinectPoses[i].colorX / canvas.width - 0.5,
       y: kinectPoses[i].colorY / canvas.height,
       z: 0,
     };
@@ -183,7 +183,7 @@ export const normalizeAngle = (
   return angle;
 };
 
-export const getCenter = (
+export const getMidpoint = (
   p1: NormalizedLandmark | Landmark,
   p2: NormalizedLandmark | Landmark,
 ): NormalizedLandmark | Landmark => ({
@@ -192,16 +192,27 @@ export const getCenter = (
   z: (p1.z + p2.z) / 2,
 });
 
+export const getVector = (start: NormalizedLandmark | Landmark, end: NormalizedLandmark | Landmark) => {
+  const x = end.x - start.x;
+  const y = end.y - start.y;
+  const z = end.z - start.z;
+
+  return { x, y, z };
+};
+
+export const getVectorLength = (vector: { x: number; y: number; z: number }) =>
+  Math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2);
+
 export const heightInFrame = (pose: Pose): number => {
   const neck = pose.landmarks[3];
-  const ankle = getCenter(pose.landmarks[20], pose.landmarks[24]);
+  const ankle = getMidpoint(pose.landmarks[20], pose.landmarks[24]);
 
   return getDistance(neck, ankle).xy;
 };
 
 export const heightInWorld = (pose: Pose): number => {
   const neckWorld = pose.worldLandmarks[3];
-  const ankleWorld = getCenter(pose.worldLandmarks[20], pose.worldLandmarks[24]);
+  const ankleWorld = getMidpoint(pose.worldLandmarks[20], pose.worldLandmarks[24]);
 
   return getDistance(neckWorld, ankleWorld).xy;
 };

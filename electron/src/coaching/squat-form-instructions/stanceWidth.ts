@@ -1,5 +1,5 @@
 import stanceWidthImage from '../../../resources/images/formInstructionItems/stance-width.png';
-import { getCenter, getDistance, KJ, landmarkToVector3 } from '../../training_data/pose';
+import { getMidpoint, getDistance, KJ, landmarkToVector3 } from '../../training_data/pose';
 import { getTopPose, Rep } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
 import { calculateError, FormInstructionItem, Thresholds } from '../formInstruction';
@@ -37,6 +37,7 @@ const stanceWidth: FormInstructionItem = {
       return 0;
     }
     const topWorldLandmarks = topPose.worldLandmarks;
+    // DISCUSS: 見るべきはx距離ではなくxyz距離？
     const footWidth = getDistance(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]).x;
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const footShoulderWidthRatio = footWidth / shoulderWidth;
@@ -54,7 +55,7 @@ const stanceWidth: FormInstructionItem = {
 
     const shoulderWidth = getDistance(topWorldLandmarks[KJ.SHOULDER_LEFT], topWorldLandmarks[KJ.SHOULDER_RIGHT]).x;
     const idealFootWidth = thresholds.middle * shoulderWidth;
-    const ankleCenter = getCenter(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]);
+    const ankleCenter = getMidpoint(topWorldLandmarks[KJ.ANKLE_LEFT], topWorldLandmarks[KJ.ANKLE_RIGHT]);
     const idealLeftFootX = ankleCenter.x - idealFootWidth / 2;
     const idealRightFootX = ankleCenter.x + idealFootWidth / 2;
     const leftFoot = topWorldLandmarks[KJ.ANKLE_LEFT];
