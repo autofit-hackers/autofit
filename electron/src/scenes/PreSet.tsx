@@ -1,4 +1,5 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
+import { Box } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'typeface-roboto';
@@ -15,7 +16,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom } from './atoms';
-import './preset.css';
+import Checkbox from './ui-components/Checkbox';
 import CountdownCircles from './ui-components/CountdownCircles';
 
 export default function PreSet() {
@@ -168,15 +169,12 @@ export default function PreSet() {
         className="rgb-canvas"
         style={{ position: 'absolute', width: '40%', height: '70%', left: '5%', top: '15%' }}
       />
-      <div style={{ position: 'absolute', width: '50%', left: '50%', top: '15%' }}>
-        {checkBoxRefs.map((checkBoxRef, i) => (
-          <div style={{}}>
-            <p className="CheckBoxText">
-              <img ref={checkBoxRef} src={emptyCheckbox} alt="Icon" className="inline" />
-              {guideItems.current[i].guide.label}
-            </p>
-          </div>
-        ))}
+      <div style={{ position: 'absolute', width: '55%', height: '60%', left: '45%', top: '15%' }}>
+        <Box display="column" sx={{ justifyContent: 'space-between' }}>
+          {checkBoxRefs.map((checkBoxRef, i) => (
+            <Checkbox isChecked={guideItems.current[i].isCleared} text={guideItems.current[i].guide.label} />
+          ))}
+        </Box>
       </div>
       <div style={{ position: 'absolute', width: '40%', height: '20%', left: '55%', top: '80%' }}>
         <CountdownCircles
