@@ -13,7 +13,7 @@ import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import RepCounter from './ui-components/RepCounter';
 
-export default function BodyTrack2d() {
+export default function InSet() {
   // RGB映像
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -21,6 +21,7 @@ export default function BodyTrack2d() {
   const gridDivRef = useRef<HTMLDivElement | null>(null);
   let poseGrid: PoseGrid;
 
+  // フェーズ
   const [, setPhase] = useAtom(phaseAtom);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -170,6 +171,7 @@ export default function BodyTrack2d() {
   // Kinectの開始とPoseGridのセットアップ
   useEffect(() => {
     startKinect(kinect, onResults);
+
     if (!poseGrid && gridDivRef.current) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid = new PoseGrid(gridDivRef.current, {
@@ -189,7 +191,7 @@ export default function BodyTrack2d() {
         targetCount={targetRepCount}
         style={{ position: 'absolute', top: '5vh', left: '5vh', zIndex: 2 }}
       />
-      <canvas ref={canvasRef} className="fake_canvas" />
+      <canvas ref={canvasRef} className="dummy_canvas" />
       <div
         className="square-box"
         style={{

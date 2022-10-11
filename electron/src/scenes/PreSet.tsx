@@ -8,7 +8,7 @@ import {
   footAngle,
   shoulderPacking,
   stanceWidth,
-  standingPosition
+  standingPosition,
 } from '../coaching/squat-form-instructions/preSetGuide';
 import { convertKinectResultsToPose, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';

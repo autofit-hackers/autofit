@@ -2,7 +2,7 @@ import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
-import InSet from './InSet';
+import BodyTrackingNew from './BodyTrackingNew';
 import IntervalReport from './IntervalReport';
 import StartPage from './StartPage';
 import TakeoutReports from './TakeOutReports';
@@ -15,11 +15,12 @@ export default function TrainingMain() {
   return (
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
+
       <ProductMenu />
       {phase === 0 && <StartPage />}
-      {phase === 1 && <InSet />}
-      {phase === 2 && <IntervalReport />}
-      {phase === 3 && <TakeoutReports />}
+      {phase === 1 && <BodyTrackingNew />}
+      {phase === 3 && <IntervalReport />}
+      {phase === 4 && <TakeoutReports />}
     </ThemeProvider>
   );
 }
