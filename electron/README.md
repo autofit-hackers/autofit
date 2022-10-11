@@ -1,71 +1,64 @@
-# electron-vite-react
+# ELECTRON
 
-[![awesome-vite](https://awesome.re/mentioned-badge.svg)](https://github.com/vitejs/awesome-vite)
-![GitHub stars](https://img.shields.io/github/stars/caoxiemeihao/vite-react-electron?color=fa6470&style=flat)
-![GitHub issues](https://img.shields.io/github/issues/caoxiemeihao/vite-react-electron?color=d8b22d&style=flat)
-![GitHub license](https://img.shields.io/github/license/caoxiemeihao/vite-react-electron?style=flat)
-[![Required Node.JS >= v14.17.0](https://img.shields.io/static/v1?label=node&message=%3E=14.17.0&logo=node.js&color=3f893e&style=flat)](https://nodejs.org/about/releases)
+## Prerequisite
 
-English | [简体中文](README.zh-CN.md)
+- node 16.17.1
+- Kinect
+  - [Azure Kinect Sensor SDK v1.4.1](https://github.com/microsoft/Azure-Kinect-Sensor-SDK/blob/develop/docs/usage.md)
+    - Firmware version: `1.6.110079014`
+  - [Azure Kinect Body Tracking SDK v1.2.1](https://learn.microsoft.com/ja-jp/azure/Kinect-dk/body-sdk-download)
 
-## Overview
+## Environmental Setup
 
-📦 Out of the box  
-🎯 Based on the official [react-ts](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) template, less invasive  
-🌱 Extensible, really simple directory structure  
-💪 Support using Node.js API in Electron-Renderer  
-🔩 Support C/C++ native addons  
-🖥 It's easy to implement multiple windows  
-
-## Quick start
-
-```sh
-npm create electron-vite
+```
+yarn
+yarn run copy-dlls
 ```
 
-![electron-vite-react.gif](https://github.com/electron-vite/electron-vite-react/blob/main/public/electron-vite-react.gif?raw=true)
+## Tips
 
-## Debug
+### How to update Kinect firmware
 
-![electron-vite-react-debug.gif](https://github.com/electron-vite/electron-vite-react/blob/main/public/electron-vite-react-debug.gif?raw=true)
+.\AzureKinectFirmwareTool.exe -u 'C:\Users\Yusuke KONDO\Downloads\AzureKinectDK_Fw_1.6.110079014.bin'
 
-## Directory structure
+```
+$ pwd
 
-*🚨 By default, the files in `electron` folder will be built into the `dist/electron`*
+Path
+----
+C:\Program Files\Azure Kinect SDK v1.4.1\tools
 
-```tree
-├── electron                  Electron-related code
-│   ├── main                  Main-process source code
-│   ├── preload               Preload-scripts source code
-│   └── resources             Resources for the production build
-│       ├── icon.icns             Icon for the application on macOS
-│       ├── icon.ico              Icon for the application
-│       ├── installerIcon.ico     Icon for the application installer
-│       └── uninstallerIcon.ico   Icon for the application uninstaller
-│
-├── release                   Generated after production build, contains executables
-│   └── {version}
-│       ├── {os}-unpacked     Contains unpacked application executable
-│       └── Setup.{ext}       Installer for the application
-│
-├── public                    Static assets
-└── src                       Renderer source code, your React application
+$ .\AzureKinectFirmwareTool.exe -u 'C:\Users\Yusuke KONDO\Downloads\AzureKinectDK_Fw_1.6.110079014.bin'
+1.6.110079014
+
+$  == Azure Kinect DK Firmware Tool ==
+Loading firmware package C:\Users\Yusuke KONDO\Downloads\AzureKinectDK_Fw_1.6.110079014.bin.
+File size: 1294306 bytes
+This package contains:
+  RGB camera firmware:      1.6.110
+  Depth camera firmware:    1.6.79
+  Depth config files: 6109.7 5006.27
+  Audio firmware:           1.6.14
+  Build Config:             Production
+  Certificate Type:         Microsoft
+  Signature Type:           Microsoft
+
+Device Serial Number: 000490121512
+Current Firmware Versions:
+  RGB camera firmware:      1.6.110
+  Depth camera firmware:    1.6.79
+  Depth config file:        6109.7
+  Audio firmware:           1.6.14
+  Build Config:             Production
+  Certificate Type:         Microsoft
+
+Please wait, updating device firmware. Don't unplug the device. This operation can take a few minutes...
+
+Resetting Azure Kinect S/N: 000490121512
+Waiting for reset of S/N: 000490121512 to complete.
+Reset of S/N: 000490121512 completed successfully.
+
+SUCCESS: The firmware was already up-to-date.
 ```
 
-## 🚨 Be aware
-
-By default, this template integrates Node.js in the Renderer process. If you don't need it, you just remove the option below. [Because it will modify the default config of Vite](https://github.com/electron-vite/vite-plugin-electron/tree/main/packages/electron-renderer#config-presets-opinionated).
-
-```diff
-# vite.config.ts
-
-electron({
-- renderer: {}
-})
-```
-
-## FAQ
-
-- [dependencies vs devDependencies](https://github.com/electron-vite/vite-plugin-electron/tree/main/packages/electron-renderer#dependencies-vs-devdependencies)
-- [Using C/C++ native addons in Electron-Renderer](https://github.com/electron-vite/vite-plugin-electron/tree/main/packages/electron-renderer#load-nodejs-cc-native-modules)
-- [Node.js ESM packages](https://github.com/electron-vite/vite-plugin-electron/tree/main/packages/electron-renderer#nodejs-esm-packages) (e.g. `execa` `node-fetch`)
+Then you can verify the firmware is working with `.\k4aviewer.exe`.
