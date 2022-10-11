@@ -8,7 +8,6 @@ export default function CountdownCircles(props: {
   onComplete: () => void;
 }) {
   const { key, isPlaying, duration, onComplete } = props;
-  const displayNumbers = [3, 2, 1];
   const textStyle = {
     fontFamily: 'Roboto',
     fontSize: '80px',
@@ -18,19 +17,17 @@ export default function CountdownCircles(props: {
 
   return (
     <Box display="flex" sx={{ justifyContent: 'space-between' }}>
-      {displayNumbers.map((displayNumber) => (
-        <CountdownCircleTimer
-          key={`${key}_${displayNumber}`}
-          isPlaying={isPlaying}
-          duration={duration}
-          onComplete={onComplete}
-          colors="#4AC0E3"
-          size={100}
-          strokeWidth={8}
-        >
-          {() => <p style={textStyle}>{displayNumber}</p>}
-        </CountdownCircleTimer>
-      ))}
+      <CountdownCircleTimer
+        key={key}
+        isPlaying={isPlaying}
+        duration={duration}
+        onComplete={onComplete}
+        colors="#4AC0E3"
+        size={100}
+        strokeWidth={8}
+      >
+        {({ remainingTime }) => <p style={textStyle}>{remainingTime}</p>}
+      </CountdownCircleTimer>
     </Box>
   );
 }

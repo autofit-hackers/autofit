@@ -168,7 +168,7 @@ export default function PreSet() {
         <CountdownCircles
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}
-          duration={1}
+          duration={3}
           onComplete={() => {
             setPhase((prev) => prev + 1);
           }}
