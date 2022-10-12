@@ -63,6 +63,7 @@
     "echarts-for-react": "^3.0.2",
     "electron-store": "^8.1.0",
     "file-saver": "^2.0.5",
+    "framer-motion": "^7.5.3",
     "howler": "^2.2.3",
     "jotai": "^1.7.8",
     "kinect-azure": "^0.3.0",
