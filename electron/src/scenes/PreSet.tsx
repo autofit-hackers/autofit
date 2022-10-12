@@ -1,20 +1,21 @@
 import * as Draw2D from '@mediapipe/drawing_utils';
+import { Box } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CountdownCircleTimer } from 'react-countdown-circle-timer';
-import filledCheckbox from '../../resources/images/checkbox-filled.svg';
-import emptyCheckbox from '../../resources/images/checkbox-unfilled.svg';
+import 'typeface-roboto';
 import {
   footAngle,
   shoulderPacking,
   stanceWidth,
-  standingPosition
+  standingPosition,
 } from '../coaching/squat-form-instructions/preSetGuide';
 import { convertKinectResultsToPose, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom } from './atoms';
+import Checkbox from './ui-components/Checkbox';
+import CountdownCircles from './ui-components/CountdownCircles';
 
 export default function PreSet() {
   // RGB描画
@@ -37,19 +38,14 @@ export default function PreSet() {
   const fixWorldOutlierRef = useRef(new FixOutlier(fixWorldOutlierPrams));
 
   // ガイド項目とチェックボックス
+  const guideItemCommonDefault = { isCleared: false, isClearedInPreviousFrame: false, text: '' };
   const guideItems = useRef([
-    { guide: standingPosition, name: 'standingPosition', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: stanceWidth, name: 'stanceWidth', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: footAngle, name: 'footAngle', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: shoulderPacking, name: 'shoulderPacking', isCleared: false, isClearedInPreviousFrame: false, text: '' },
+    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault },
+    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault },
+    { guide: footAngle, name: 'footAngle', ...guideItemCommonDefault },
+    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault },
   ]);
   const isAllGuideCleared = useRef(false);
-  const checkBoxRefs = [
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-  ];
 
   // タイマー
   const timerKey = useRef(0);
@@ -125,10 +121,6 @@ export default function PreSet() {
           guideItems.current[i].isClearedInPreviousFrame = guideItems.current[i].isCleared;
           guideItems.current[i].isCleared = isCleared;
           guideItems.current[i].text = guideText;
-          const checkbox = checkBoxRefs[i].current;
-          if (checkbox !== null) {
-            checkbox.src = guideItems.current[i].isCleared ? filledCheckbox : emptyCheckbox;
-          }
         }
       }
 
@@ -163,29 +155,24 @@ export default function PreSet() {
       <canvas
         ref={canvasRef}
         className="rgb-canvas"
-        style={{ position: 'absolute', width: '789px', height: '836.49px', left: '149px', top: '122px' }}
+        style={{ position: 'absolute', width: '40%', height: '70%', left: '5%', top: '15%' }}
       />
-      <div style={{ position: 'absolute', top: '72px', left: '1069px' }}>
-        {checkBoxRefs.map((checkBoxRef, i) => (
-          <div style={{}}>
-            <img ref={checkBoxRef} src={emptyCheckbox} alt="Icon" />
-            <p>{guideItems.current[i].guide.label}</p>
-          </div>
-        ))}
+      <div style={{ position: 'absolute', width: '55%', height: '60%', left: '45%', top: '15%' }}>
+        <Box display="column" sx={{ justifyContent: 'space-between' }}>
+          {guideItems.current.map((guideItem) => (
+            <Checkbox isChecked={guideItem.isCleared} text={guideItem.guide.label} />
+          ))}
+        </Box>
       </div>
-      <div style={{ position: 'absolute', width: '179.48px', height: '174px', left: '1643px', top: '826px' }}>
-        <CountdownCircleTimer
+      <div style={{ position: 'absolute', width: '40%', height: '20%', left: '55%', top: '80%' }}>
+        <CountdownCircles
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}
           duration={3}
-          colors={['#004777', '#F7B801', '#A30000']}
-          colorsTime={[3, 2, 1]}
           onComplete={() => {
             setPhase((prev) => prev + 1);
           }}
-        >
-          {({ remainingTime }) => remainingTime}
-        </CountdownCircleTimer>
+        />
       </div>
     </>
   );
