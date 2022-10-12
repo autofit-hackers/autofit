@@ -4,9 +4,9 @@ import './StartPage.css';
 import AutofitLogo from './ui-components/AutofitLogo';
 
 export default function StartPage() {
-  const [, setPhase] = useAtom(phaseAtom);
+  const [phase, setPhase] = useAtom(phaseAtom);
   const handleStart = () => {
-    setPhase(1);
+    setPhase(phase + 1);
   };
 
   return (
