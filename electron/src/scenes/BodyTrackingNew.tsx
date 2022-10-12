@@ -1,11 +1,6 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  footAngle,
-  shoulderPacking,
-  stanceWidth,
-  standingPosition,
-} from '../coaching/squat-form-instructions/preSetGuide';
+import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat-form-instructions/preSetGuide';
 import { convertKinectResultsToPose, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
 import { resetRepState } from '../training_data/repState';
@@ -45,7 +40,7 @@ export default function BodyTrackingNew() {
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
   // 目標レップ数
-  const targetRepCount = 8;
+  const targetRepCount = 5;
 
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
@@ -56,19 +51,14 @@ export default function BodyTrackingNew() {
   const fixWorldOutlierRef = useRef(new FixOutlier(fixWorldOutlierPrams));
 
   // ガイド項目とチェックボックス
+  const guideItemCommonDefault = { isCleared: false, isClearedInPreviousFrame: false, text: '' };
   const guideItems = useRef([
-    { guide: standingPosition, name: 'standingPosition', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: stanceWidth, name: 'stanceWidth', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: footAngle, name: 'footAngle', isCleared: false, isClearedInPreviousFrame: false, text: '' },
-    { guide: shoulderPacking, name: 'shoulderPacking', isCleared: false, isClearedInPreviousFrame: false, text: '' },
+    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault },
+    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault },
+    // { guide: footAngle, name: 'footAngle', ...guideItemCommonDefault },
+    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault },
   ]);
   const isAllGuideCleared = useRef(false);
-  const checkBoxRefs = [
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-    useRef<HTMLImageElement>(null),
-  ];
 
   // タイマー
   const timerKey = useRef(0);
@@ -127,15 +117,7 @@ export default function BodyTrackingNew() {
         prevPoseRef.current = currentPose;
 
         if (scene.current === 'PreSet') {
-          PreSetProcess(
-            canvasCtx,
-            currentPose,
-            guideItems,
-            checkBoxRefs,
-            isAllGuideCleared,
-            causeReRendering,
-            timerKey,
-          );
+          PreSetProcess(canvasCtx, currentPose, guideItems, isAllGuideCleared, causeReRendering, timerKey);
         } else if (scene.current === 'InSet') {
           InSetProcess(
             poseGrid,
@@ -147,6 +129,7 @@ export default function BodyTrackingNew() {
             setSetRecord,
             causeReRendering,
             setPhase,
+            targetRepCount,
           );
         }
       } else if (poseGrid.current) {
@@ -171,7 +154,6 @@ export default function BodyTrackingNew() {
       {scene.current === 'PreSet' ? (
         <PreSetScene
           canvasRef={canvasRef}
-          checkBoxRefs={checkBoxRefs}
           guideItems={guideItems}
           timerKey={timerKey}
           isAllGuideCleared={isAllGuideCleared}

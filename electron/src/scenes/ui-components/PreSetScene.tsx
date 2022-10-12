@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
 import * as Draw2D from '@mediapipe/drawing_utils';
+import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
-import { CountdownCircleTimer } from 'react-countdown-circle-timer';
-import filledCheckbox from '../../../resources/images/checkbox-filled.svg';
-import emptyCheckbox from '../../../resources/images/checkbox-unfilled.svg';
 import { PreSetGuide } from '../../coaching/squat-form-instructions/preSetGuide';
 import { KINECT_POSE_CONNECTIONS, Pose } from '../../training_data/pose';
+import Checkbox from './Checkbox';
+import CountdownCircles from './CountdownCircles';
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
@@ -19,7 +19,6 @@ export const PreSetProcess = (
       text: string;
     }[]
   >,
-  checkBoxRefs: RefObject<HTMLImageElement>[],
   isAllGuideCleared: MutableRefObject<boolean>,
   causeReRendering: (value: SetStateAction<number>) => void,
   timerKey: MutableRefObject<number>,
@@ -42,10 +41,6 @@ export const PreSetProcess = (
     guideItems.current[i].isClearedInPreviousFrame = guideItems.current[i].isCleared;
     guideItems.current[i].isCleared = isCleared;
     guideItems.current[i].text = guideText;
-    const checkbox = checkBoxRefs[i].current;
-    if (checkbox !== null) {
-      checkbox.src = guideItems.current[i].isCleared ? filledCheckbox : emptyCheckbox;
-    }
   }
 
   // チェックボックス
@@ -54,6 +49,7 @@ export const PreSetProcess = (
   // 全ての項目にチェックが入ったらタイマースタートするために再レンダリング
   if (isAllGuideClearedInPreviousFrame === false && isAllGuideCleared.current === true) {
     causeReRendering((prev) => prev + 1);
+    console.log('timer start');
   }
   // チェックが１つでも外れたらタイマーをリセット（再レンダリング）
   if (isAllGuideClearedInPreviousFrame === true && isAllGuideCleared.current === false) {
@@ -64,7 +60,6 @@ export const PreSetProcess = (
 
 export function PreSetScene(props: {
   canvasRef: RefObject<HTMLCanvasElement>;
-  checkBoxRefs: RefObject<HTMLImageElement>[];
   guideItems: MutableRefObject<
     {
       guide: PreSetGuide;
@@ -79,37 +74,32 @@ export function PreSetScene(props: {
   scene: MutableRefObject<'PreSet' | 'InSet'>;
   causeReRendering: (value: SetStateAction<number>) => void;
 }) {
-  const { canvasRef, checkBoxRefs, guideItems, timerKey, isAllGuideCleared, scene, causeReRendering } = props;
+  const { canvasRef, guideItems, timerKey, isAllGuideCleared, scene, causeReRendering } = props;
 
   return (
     <>
       <canvas
         ref={canvasRef}
         className="rgb-canvas"
-        style={{ position: 'absolute', width: '789px', height: '836.49px', left: '149px', top: '122px' }}
+        style={{ position: 'absolute', width: '40%', height: '70%', left: '5%', top: '15%' }}
       />
-      <div style={{ position: 'absolute', top: '72px', left: '1069px' }}>
-        {checkBoxRefs.map((checkBoxRef, i) => (
-          <div style={{}}>
-            <img ref={checkBoxRef} src={emptyCheckbox} alt="Icon" />
-            <p>{guideItems.current[i].guide.label}</p>
-          </div>
-        ))}
+      <div style={{ position: 'absolute', width: '55%', height: '60%', left: '55%', top: '25%' }}>
+        <Box display="column" sx={{ justifyContent: 'space-between' }}>
+          {guideItems.current.map((guideItem) => (
+            <Checkbox isChecked={guideItem.isCleared} text={guideItem.guide.label} />
+          ))}
+        </Box>
       </div>
-      <div style={{ position: 'absolute', width: '179.48px', height: '174px', left: '1643px', top: '826px' }}>
-        <CountdownCircleTimer
+      <div style={{ position: 'absolute', width: '40%', height: '20%', left: '80%', top: '80%' }}>
+        <CountdownCircles
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}
           duration={3}
-          colors={['#004777', '#F7B801', '#A30000']}
-          colorsTime={[3, 2, 1]}
           onComplete={() => {
             scene.current = 'InSet';
             causeReRendering((prev) => prev + 1);
           }}
-        >
-          {({ remainingTime }) => remainingTime}
-        </CountdownCircleTimer>
+        />
       </div>
     </>
   );

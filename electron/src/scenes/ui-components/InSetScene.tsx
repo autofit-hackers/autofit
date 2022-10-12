@@ -20,6 +20,7 @@ export const InSetProcess = (
   setSetRecord: (update: SetStateAction<Set>) => void,
   causeReRendering: (value: SetStateAction<number>) => void,
   setPhase: (value: SetStateAction<number>) => void,
+  targetRepCount: number,
 ) => {
   // PoseGridの描画
   if (poseGrid.current) {
@@ -72,7 +73,7 @@ export const InSetProcess = (
     causeReRendering((prev) => prev + 1);
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
-  if (setRef.current.reps.length === 100) {
+  if (setRef.current.reps.length === targetRepCount) {
     setPhase((prevPhase) => prevPhase + 1);
   }
 };

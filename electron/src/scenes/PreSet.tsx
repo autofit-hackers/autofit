@@ -133,7 +133,6 @@ export default function PreSet() {
       // 全ての項目にチェックが入ったらタイマースタートするために再レンダリング
       if (isAllGuideClearedInPreviousFrame === false && isAllGuideCleared.current === true) {
         causeReRendering((prev) => prev + 1);
-        console.log('timer start');
       }
       // チェックが１つでも外れたらタイマーをリセット（再レンダリング）
       if (isAllGuideClearedInPreviousFrame === true && isAllGuideCleared.current === false) {
@@ -157,18 +156,18 @@ export default function PreSet() {
         className="rgb-canvas"
         style={{ position: 'absolute', width: '40%', height: '70%', left: '5%', top: '15%' }}
       />
-      <div style={{ position: 'absolute', width: '55%', height: '60%', left: '45%', top: '15%' }}>
+      <div style={{ position: 'absolute', width: '55%', height: '60%', left: '65%', top: '15%' }}>
         <Box display="column" sx={{ justifyContent: 'space-between' }}>
           {guideItems.current.map((guideItem) => (
             <Checkbox isChecked={guideItem.isCleared} text={guideItem.guide.label} />
           ))}
         </Box>
       </div>
-      <div style={{ position: 'absolute', width: '40%', height: '20%', left: '55%', top: '80%' }}>
+      <div style={{ position: 'absolute', width: '40%', height: '20%', left: '80%', top: '80%' }}>
         <CountdownCircles
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}
-          duration={1}
+          duration={3}
           onComplete={() => {
             setPhase((prev) => prev + 1);
           }}
