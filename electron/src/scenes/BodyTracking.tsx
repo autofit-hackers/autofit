@@ -1,34 +1,32 @@
-import * as Draw2D from '@mediapipe/drawing_utils';
-import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { evaluateRepForm, recordFormEvaluationResult } from '../coaching/formInstruction';
-import { EvaluatedFrames, GraphThreshold } from '../coaching/FormInstructionDebug';
-import { getOpeningOfKnee, getOpeningOfToe } from '../coaching/squat-form-instructions/kneeInAndOut';
-import { playRepCountSound, playTrainingEndSound, playTrainingStartSound } from '../coaching/voiceGuidance';
-import { convertKinectResultsToPose, heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../training_data/rep';
-import { checkIfRepFinish, resetRepState, setStandingHeight } from '../training_data/repState';
+import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat-form-instructions/preSetGuide';
+import { convertKinectResultsToPose, Pose } from '../training_data/pose';
+import { resetRep } from '../training_data/rep';
+import { resetRepState } from '../training_data/repState';
 import { resetSet } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
-import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
-import { startCapturingRepVideo } from '../utils/recordVideo';
-import TrainingPhase from '../utils/trainingPhase';
-import { formDebugAtom, formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
-import RealtimeChart, { InTrainingChart, ManuallyAddableChart } from './ui-components/RealtimeChart';
+import { PoseGrid } from '../utils/poseGrid';
+import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
+import { InSetProcess, InSetScene } from './ui-components/InSetScene';
+import { PreSetProcess, PreSetScene } from './ui-components/PreSetScene';
 
-export default function BodyTrack2d() {
-  // 描画
+export default function BodyTracking() {
+  // フェーズ
+  const [, setPhase] = useAtom(phaseAtom);
+  const scene = useRef<'PreSet' | 'InSet'>('PreSet');
+
+  // RGB描画
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
+
+  // poseGrid
   const gridDivRef = useRef<HTMLDivElement | null>(null);
-  let poseGrid: PoseGrid;
+  const poseGrid = useRef<PoseGrid | null>(null);
 
-  const [, setPhase] = useAtom(phaseAtom);
-  const trainingPhase = useRef(new TrainingPhase(10, 3));
-
+  // Kinect
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
 
@@ -38,72 +36,35 @@ export default function BodyTrack2d() {
   const repRef = useRef(resetRep(0));
   const repState = useRef(resetRepState());
 
-  // settings
-  const lowerThreshold = 0.8; // TODO: ここで設定しない
-  const upperThreshold = 0.95;
-
+  // リザルト画面のフォーム指導項目
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
-  // settings to treat outliers in pose estimation
-  const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
-  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
+  // 目標レップ数
+  const targetRepCount = 5;
 
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
+  const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
+  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
   const prevPoseRef = useRef<Pose | null>(null);
   const fixOutlierRef = useRef(new FixOutlier(fixOutlierParams));
   const fixWorldOutlierRef = useRef(new FixOutlier(fixWorldOutlierPrams));
 
-  // 映像保存用
-  const repVideoRecorderRef = useRef<MediaRecorder | null>(null);
+  // ガイド項目とチェックボックス
+  const guideItemCommonDefault = { isCleared: false, isClearedInPreviousFrame: false, text: '' };
+  const guideItems = useRef([
+    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault },
+    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault },
+    // { guide: footAngle, name: 'footAngle', ...guideItemCommonDefault },
+    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault },
+  ]);
+  const isAllGuideCleared = useRef(false);
 
-  // レップカウントなどの表示用
-  const navigationRef = useRef<HTMLDivElement>(null);
-  const repCounterRef = useRef<HTMLDivElement>(null);
+  // タイマー
+  const timerKey = useRef(0);
 
-  // リアルタイムグラフ用
-  const evaluatedFrameRef = useRef<EvaluatedFrames>([]);
-  const [realtimeChartData, setRealtimeChartData] = useState<number[]>([]);
-  const [threshData, setThreshData] = useState<GraphThreshold>({
-    upper: 0,
-    lower: 0,
-    middle: 0,
-  });
-  const [displayingInstructionIndexOnGraph, setDisplayingInstructionIndexOnGraph] = useState<number>(4);
-  const bodyHeightRef = useRef<number[]>([]);
-  const [bodyHightChartData, setBodyHightChartData] = useState<number[]>([]);
-
-  // form debug
-  const [isDebugMode] = useAtom(formDebugAtom);
-  const [knee, setKnee] = useState<number[]>([]);
-  const [toe, setToe] = useState<number[]>([]);
-
-  const handleReset = () => {
-    // 描画
-    canvasImageData.current = null;
-    // reset fixOutlier state
-    fixOutlierRef.current.reset();
-    fixWorldOutlierRef.current.reset();
-    // トレーニングデータ
-    setRef.current = resetSet();
-    repRef.current = resetRep(0);
-    repState.current = resetRepState();
-    // 映像保存
-    repVideoRecorderRef.current = null;
-    playTrainingStartSound();
-    // グラフ
-    evaluatedFrameRef.current.forEach((frame, idx) => {
-      evaluatedFrameRef.current[idx].evaluatedValues = [];
-    });
-    setRealtimeChartData([]);
-    setThreshData({ upper: 0, middle: 0, lower: 0 });
-    setKnee([]);
-    setToe([]);
-
-    if (repCounterRef.current) repCounterRef.current.innerText = '0';
-    // TODO: 内部のIntervalが自動で破棄されるかは要確認
-    trainingPhase.current = new TrainingPhase(10, 3);
-  };
+  // コンポーネントの再レンダリングを強制するためのstate
+  const [, causeReRendering] = useState(0);
 
   // 毎kinect更新時に実行される
   const onResults = useCallback(
@@ -125,7 +86,7 @@ export default function BodyTrack2d() {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
-      } else {
+      } else if (scene.current === 'PreSet') {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
 
@@ -155,121 +116,25 @@ export default function BodyTrack2d() {
         }
         prevPoseRef.current = currentPose;
 
-        // pose estimationの結果を描画
-        Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
-          color: 'white',
-          lineWidth: 4,
-          radius: 8,
-          fillColor: 'lightgreen',
-        });
-        Draw2D.drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
-          color: 'white',
-          lineWidth: 4,
-        });
-
-        // PoseGridの描画
-        if (poseGrid) {
-          poseGrid.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
-        }
-
-        if (trainingPhase.current.phase === 'outOfPosition') {
-          trainingPhase.current.updateInPreparation(currentPose);
-          if (navigationRef.current) navigationRef.current.innerText = trainingPhase.current.text;
-        } else if (trainingPhase.current.phase === 'countdown') {
-          trainingPhase.current.updateInCountDown(currentPose);
-          if (navigationRef.current) navigationRef.current.innerText = trainingPhase.current.text;
-        } else if (trainingPhase.current.phase === 'exercising') {
-          // レップの最初のフレームの場合
-          if (repState.current.isFirstFrameInRep) {
-            // 動画撮影を開始
-            repVideoRecorderRef.current = startCapturingRepVideo(canvasRef.current, setRef.current);
-
-            // セットの最初の身長を記録
-            if (setRef.current.reps.length === 0) {
-              repState.current = setStandingHeight(repState.current, heightInWorld(currentPose));
-            } else {
-              const firstRepTopPose = getTopPose(setRef.current.reps[0]);
-              if (firstRepTopPose !== undefined) {
-                repState.current = setStandingHeight(repState.current, heightInWorld(firstRepTopPose));
-              }
-            }
-
-            // レップの開始フラグをoffにする
-            repState.current.isFirstFrameInRep = false;
-          }
-
-          // フォームを分析し、レップの状態を更新する
-          repState.current = checkIfRepFinish(
-            repState.current,
-            heightInWorld(currentPose),
-            lowerThreshold,
-            upperThreshold,
+        if (scene.current === 'PreSet') {
+          PreSetProcess(canvasCtx, currentPose, guideItems, isAllGuideCleared, causeReRendering, timerKey);
+        } else if (scene.current === 'InSet') {
+          InSetProcess(
+            poseGrid,
+            currentPose,
+            repState,
+            setRef,
+            repRef,
+            formInstructionItems,
+            setSetRecord,
+            causeReRendering,
+            setPhase,
+            targetRepCount,
           );
-
-          // 現フレームの推定Poseをレップのフォームに追加
-          repRef.current = appendPoseToForm(repRef.current, currentPose);
-
-          // グラフを更新
-          evaluatedFrameRef.current.forEach((item, index) => {
-            const evaluateCallback = formInstructionItems[index].calculateRealtimeValue;
-            item.evaluatedValues.push(evaluateCallback(currentPose));
-          });
-          bodyHeightRef.current.push(heightInWorld(currentPose));
-
-          // レップが終了したとき
-          if (repState.current.isRepEnd) {
-            // 動画撮影を停止し、配列に保存する
-            if (repVideoRecorderRef.current) {
-              repVideoRecorderRef.current.stop();
-            }
-
-            // 完了したレップのフォームを分析・評価
-            repRef.current = calculateKeyframes(repRef.current);
-            repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
-
-            // グラフのthresh更新
-            const topPose = getTopPose(repRef.current);
-            if (topPose !== undefined) {
-              evaluatedFrameRef.current.forEach((item, index) => {
-                const threshold = formInstructionItems[index].calculateRealtimeThreshold(topPose);
-                evaluatedFrameRef.current[index].threshold = threshold;
-              });
-            }
-
-            // 完了したレップの情報をセットに追加し、レップをリセットする
-            setRef.current.reps = [...setRef.current.reps, repRef.current];
-            repRef.current = resetRep(setRef.current.reps.length);
-
-            // レップカウントを読み上げる
-            playRepCountSound(setRef.current.reps.length); // ここで音声を再生
-
-            // RepStateの初期化
-            repState.current = resetRepState();
-
-            // 毎レップ判定をして問題ないのでアンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-            setRef.current = recordFormEvaluationResult(
-              setRef.current,
-              formInstructionItems,
-              evaluatedFrameRef.current,
-            );
-            setRef.current.formEvaluationResults.forEach((item, index) => {
-              setRef.current.formEvaluationResults[index].evaluatedValuesPerFrame = evaluatedFrameRef.current[index];
-            });
-            setSetRecord(setRef.current);
-          }
-          // レップカウントを更新
-          if (repCounterRef.current) {
-            repCounterRef.current.innerText = setRef.current.reps.length.toString();
-          }
         }
-      } else {
+      } else if (poseGrid.current) {
         // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
-        poseGrid.updateOrbitControls();
-      }
-
-      // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
-      if (setRef.current.reps.length === 100) {
-        setPhase((prevPhase) => prevPhase + 1);
+        poseGrid.current.updateOrbitControls();
       }
 
       // DISCUSS: いらないかも（repCount描画の名残り）
@@ -279,148 +144,31 @@ export default function BodyTrack2d() {
     [],
   );
 
-  // Kinectの開始とPoseGridのセットアップ
+  // Kinectの開始
   useEffect(() => {
     startKinect(kinect, onResults);
-    if (!poseGrid && gridDivRef.current) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      poseGrid = new PoseGrid(gridDivRef.current, {
-        ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { projectionMode: 'perspective', distance: 200, fov: 75 },
-      });
-      poseGrid.setCameraAngle();
-      poseGrid.isAutoRotating = true;
-    }
-
-    if (repCounterRef.current !== null) {
-      repCounterRef.current.innerText = '0';
-    }
-
-    if (evaluatedFrameRef.current !== null) {
-      evaluatedFrameRef.current = formInstructionItems.map((item) => ({
-        name: item.name,
-        threshold: { upper: 0, lower: 0, middle: 0 },
-        evaluatedValues: [],
-      }));
-    }
-
-    // このコンポーネントのアンマウント時に実行される
-    // WARN: 最初にもよばれる
-    return () => {
-      // レップとして保存されていない映像は破棄する
-      if (repVideoRecorderRef.current != null && repVideoRecorderRef.current.state === 'recording') {
-        repVideoRecorderRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setBodyHightChartData([bodyHeightRef.current[0]].concat(bodyHeightRef.current));
-    }, 10);
-
-    return () => clearInterval(timer);
-  });
+  }, [kinect, onResults]);
 
   return (
-    <>
-      <Button onClick={handleReset} variant="contained" sx={{ position: 'relative', zIndex: 3 }}>
-        トレーニング開始
-      </Button>
-      <Button
-        variant="contained"
-        onClick={() => {
-          setPhase(2);
-          playTrainingEndSound();
-        }}
-        sx={{ zIndex: 3, ml: 3 }}
-        disabled={setRef.current.reps.length === 0}
-      >
-        トレーニング終了
-      </Button>
-
-      <canvas
-        ref={canvasRef}
-        className="main_canvas"
-        style={{
-          width: '90vw',
-          position: 'relative',
-          zIndex: 1,
-          top: '5vw',
-          right: 0,
-          bottom: 0,
-          left: 0,
-          margin: 'auto',
-        }}
-      />
-      <div
-        className="square-box"
-        style={{
-          zIndex: 2,
-          position: 'absolute',
-          width: '30vw',
-          height: '30vw',
-          top: '78vw',
-          left: '63vw',
-        }}
-      >
-        <div
-          className="pose-grid-container"
-          ref={gridDivRef}
-          style={{
-            position: 'relative',
-            height: '100%',
-            width: '100%',
-            top: 0,
-            left: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          }}
-        />
-      </div>
-      {trainingPhase.current.phase !== 'exercising' ? (
-        <div
-          ref={navigationRef}
-          style={{ top: '10vw', left: '10vw', fontSize: 30, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
+    <div>
+      {scene.current === 'PreSet' ? (
+        <PreSetScene
+          canvasRef={canvasRef}
+          guideItems={guideItems}
+          timerKey={timerKey}
+          isAllGuideCleared={isAllGuideCleared}
+          scene={scene}
+          causeReRendering={causeReRendering}
         />
       ) : (
-        <div
-          ref={repCounterRef}
-          style={{ top: '10vw', left: '10vw', fontSize: 100, fontWeight: 'bold', position: 'absolute', zIndex: 3 }}
+        <InSetScene
+          setRef={setRef}
+          targetRepCount={targetRepCount}
+          canvasRef={canvasRef}
+          gridDivRef={gridDivRef}
+          poseGrid={poseGrid}
         />
       )}
-
-      {/* // フォームデバッグ用 */}
-      {isDebugMode ? (
-        <>
-          <RealtimeChart data={realtimeChartData} thresh={threshData} realtimeUpdate size="large" />
-          <Button
-            onClick={() => {
-              if (prevPoseRef.current) {
-                setKnee(knee.concat([getOpeningOfKnee(prevPoseRef.current)]));
-                setToe(toe.concat([getOpeningOfToe(prevPoseRef.current)]));
-              }
-            }}
-          >
-            ADD Data to CSV
-          </Button>
-          <RadioGroup
-            row
-            aria-labelledby="error-group"
-            name="error-buttons-group"
-            value={displayingInstructionIndexOnGraph}
-            onChange={(e, v) => {
-              setDisplayingInstructionIndexOnGraph(v as unknown as number);
-            }}
-          >
-            {evaluatedFrameRef.current.map((item, index: number) => (
-              <FormControlLabel key={item.name} value={index} control={<Radio />} label={item.name} />
-            ))}
-          </RadioGroup>
-          <ManuallyAddableChart data={[knee, toe]} />
-        </>
-      ) : (
-        <InTrainingChart data={bodyHightChartData} />
-      )}
-    </>
+    </div>
   );
 }

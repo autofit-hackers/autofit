@@ -2,7 +2,7 @@ import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/system';
 import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
-import BodyTrackingNew from './BodyTrackingNew';
+import BodyTracking from './BodyTracking';
 import Report1 from './Report1';
 import Report2 from './Report2';
 import futuristicTheme from './themes';
@@ -15,7 +15,7 @@ export default function TrainingMain() {
     <ThemeProvider theme={futuristicTheme}>
       <CssBaseline />
       <ProductMenu />
-      {phase === 0 && <BodyTrackingNew />}
+      {phase === 0 && <BodyTracking />}
       {phase === 1 && <Report1 />}
       {phase === 2 && <Report2 />}
     </ThemeProvider>
