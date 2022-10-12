@@ -55,6 +55,7 @@
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.10.0",
     "@mui/system": "^5.10.0",
+    "@ramonak/react-progress-bar": "^5.0.2",
     "@react-three/drei": "^9.23.8",
     "@react-three/fiber": "^8.6.0",
     "dayjs": "^1.11.4",

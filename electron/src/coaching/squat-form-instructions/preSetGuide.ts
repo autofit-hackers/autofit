@@ -1,7 +1,7 @@
 import { LandmarkList } from '@mediapipe/pose';
 import { getDistance, KJ, getAngle } from '../../training_data/pose';
 
-type PreSetGuide = {
+export type PreSetGuide = {
   nameJP: string;
   label: string;
   shouldPutWarning: boolean;
@@ -14,7 +14,7 @@ export const standingPosition: PreSetGuide = {
   shouldPutWarning: true,
   checkIfCleared: (landmarks: LandmarkList) => {
     const distanceFromStartPosition = landmarks[KJ.SPINE_CHEST].z; // カメラから1.7m前でz=0になる。pose.ts参照
-    const thresholds = { lower: -20, upper: 20 };
+    const thresholds = { lower: 0, upper: 30 };
 
     const isCleared = distanceFromStartPosition >= thresholds.lower && distanceFromStartPosition <= thresholds.upper;
     if (distanceFromStartPosition < thresholds.lower) {

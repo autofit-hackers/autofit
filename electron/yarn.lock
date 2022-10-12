@@ -685,6 +685,11 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.5.tgz#db5a11bf66bdab39569719555b0f76e138d7bd64"
   integrity sha512-9X2obfABZuDVLCgPK9aX0a/x4jaOEweTTWE2+9sr0Qqqevj2Uv5XorvusThmc9XGYpS9yI+fhh8RTafBtGposw==
 
+"@ramonak/react-progress-bar@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@ramonak/react-progress-bar/-/react-progress-bar-5.0.2.tgz#743a3f325b85822a9f51d1f3849d85b4b95e3b8f"
+  integrity sha512-0NBYTe8x3L8svLTUeK7DBE4xzG/XRZ72uJmOMnWfzdSag32F1JE92IARFZyunEmFjc06U00tGfB+CekelrrYHw==
+
 "@react-spring/animated@~9.5.2":
   version "9.5.2"
   resolved "https://registry.yarnpkg.com/@react-spring/animated/-/animated-9.5.2.tgz#42785b4f369d9715e9ee32c04b78483e7bb85489"
