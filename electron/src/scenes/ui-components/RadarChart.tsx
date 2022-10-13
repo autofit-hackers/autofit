@@ -1,7 +1,7 @@
 import { Card, CardContent, SxProps } from '@mui/material';
 import { graphic } from 'echarts';
 import ReactECharts from 'echarts-for-react';
-import { FormEvaluationResult, FormInstructionItem } from '../../coaching/formInstruction';
+import { FormInstructionItem, SetEvaluationResult } from '../../coaching/formInstruction';
 
 export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
@@ -17,7 +17,7 @@ export const escapeHiddenText = (name: string): string => {
 
 function RadarChart(props: {
   formInstructionItems: FormInstructionItem[];
-  formEvaluationResults: FormEvaluationResult[];
+  formEvaluationResults: SetEvaluationResult[];
   style: React.CSSProperties;
   sx: SxProps;
 }) {
@@ -29,7 +29,7 @@ function RadarChart(props: {
   const series = [
     {
       // レーダーチャートの見栄えのため、スコアの最小を20/100とする
-      value: formEvaluationResults.map((result) => Math.max(result.score, 20)),
+      value: formEvaluationResults.map((result) => Math.max(result.totalScore, 20)),
       name: '今回のセット',
     },
   ];
