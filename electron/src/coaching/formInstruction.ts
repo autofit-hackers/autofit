@@ -40,7 +40,7 @@ export type SetEvaluationResult = {
   bestRepIndex: number;
   worstRepIndex: number;
   eachRepErrors: Errors[];
-  evaluatedValuesPerFrame: FrameEvaluateParams; // TODO: レップ中に計算しているが後処理で算出する方が適切
+  evaluatedValuesPerFrame?: FrameEvaluateParams; // TODO: レップ中に計算しているが後処理で算出する方が適切
 };
 
 export const calculateError = (
@@ -155,14 +155,10 @@ const selectDisplayedSummary = (set: Set) => {
 
 // セット変数に各指導項目の評価結果を追加する
 // TODO: ここでevaluatedValuesPerFrameを追加することで白トビバグを解決しているが本当は好ましくない
-export const recordFormEvaluationResult = (
-  set: Set,
-  instructionItems: FormInstructionItem[],
-  evaluatedValuesPerFrame: FrameEvaluateParams[],
-): Set => {
+export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstructionItem[]): Set => {
   const setCopy: Set = set;
 
-  instructionItems.forEach((instructionItem, index) => {
+  instructionItems.forEach((instructionItem) => {
     // TODO: set変数を生成した時点で指導項目の個数分の要素をもつ配列を格納しておく -> resetSet()
     const evaluationResult: SetEvaluationResult = {
       name: instructionItem.name,
@@ -175,7 +171,6 @@ export const recordFormEvaluationResult = (
       totalScore: 0,
       bestRepIndex: 0,
       worstRepIndex: 0,
-      evaluatedValuesPerFrame: evaluatedValuesPerFrame[index],
       eachRepErrors: [],
     };
 
