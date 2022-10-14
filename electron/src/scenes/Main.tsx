@@ -9,6 +9,8 @@ import Report2 from './Report2';
 import StartPage from './StartPage';
 import futuristicTheme from './themes';
 import ProductMenu from './ui-components/ProductMenu';
+import 'typeface-roboto'
+
 
 export default function TrainingMain() {
   const [phase] = useAtom(phaseAtom);
