@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { phaseAtom } from './atoms';
 import './StartPage.css';
@@ -29,9 +30,12 @@ export default function StartPage() {
           onClick={handleStart}
         >
           <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-            Start Training with Us
+            トレーニングをはじめる
           </span>
         </button>
+        <Typography variant="h6" style={{ color: 'white', marginTop: '50px', fontWeight: 'bold' }}>
+          AIでスクワットのフォームを記録・確認してみませんか？
+        </Typography>
       </div>
     </div>
   );
