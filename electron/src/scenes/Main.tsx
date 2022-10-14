@@ -24,17 +24,17 @@ export default function TrainingMain() {
           <StartPage />
         </FadeInOut>
       )}
-      {phase === 1 && (
+      {((phase === 1) || (phase === 2)) && ( // BodyTracking component has two phases: 1 (PreSet) and 2 (InSet)
         <FadeInOut>
           <BodyTracking />
         </FadeInOut>
       )}
-      {phase === 2 && (
+      {phase === 3 && (
         <FadeInOut>
           <Report1 />
         </FadeInOut>
       )}
-      {phase === 3 && (
+      {phase === 4 && (
         <FadeInOut>
           <Report2 />
         </FadeInOut>

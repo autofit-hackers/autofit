@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import { useAtom } from 'jotai';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
 import { evaluateRepForm, FormInstructionItem, recordFormEvaluationResult } from '../../coaching/formInstruction';
 import { playRepCountSound } from '../../coaching/voiceGuidance';
@@ -8,6 +9,7 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from 
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../../training_data/repState';
 import { Set } from '../../training_data/set';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../../utils/poseGrid';
+import { phaseAtom } from '../atoms';
 import RepCounter from './RepCounter';
 
 export const InSetProcess = (
@@ -19,9 +21,10 @@ export const InSetProcess = (
   formInstructionItems: FormInstructionItem[],
   setSetRecord: (update: SetStateAction<Set>) => void,
   causeReRendering: (value: SetStateAction<number>) => void,
-  setPhase: (value: SetStateAction<number>) => void,
   targetRepCount: number,
 ) => {
+  const [phase, setPhase] = useAtom(phaseAtom);
+
   // PoseGridの描画
   if (poseGrid.current) {
     poseGrid.current.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
@@ -74,7 +77,7 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
-    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000)
+    setPhase(phase + 1); // InSet-to-Report transition has FadeInOut animation in ../Main.tsx
   }
 };
 

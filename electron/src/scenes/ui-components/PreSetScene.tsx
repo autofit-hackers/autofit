@@ -1,9 +1,11 @@
 /* eslint-disable no-param-reassign */
 import * as Draw2D from '@mediapipe/drawing_utils';
 import { Box } from '@mui/system';
+import { useAtom } from 'jotai';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
 import { PreSetGuide } from '../../coaching/squat-form-instructions/preSetGuide';
 import { KINECT_POSE_CONNECTIONS, Pose } from '../../training_data/pose';
+import { phaseAtom } from '../atoms';
 import Checkbox from './Checkbox';
 import CountdownCircles from './CountdownCircles';
 
@@ -71,10 +73,10 @@ export function PreSetScene(props: {
   >;
   timerKey: MutableRefObject<number>;
   isAllGuideCleared: MutableRefObject<boolean>;
-  scene: MutableRefObject<'PreSet' | 'InSet'>;
   causeReRendering: (value: SetStateAction<number>) => void;
 }) {
-  const { canvasRef, guideItems, timerKey, isAllGuideCleared, scene, causeReRendering } = props;
+  const { canvasRef, guideItems, timerKey, isAllGuideCleared, causeReRendering } = props;
+  const [phase, setPhase] = useAtom(phaseAtom);
 
   return (
     <>
@@ -96,7 +98,7 @@ export function PreSetScene(props: {
           isPlaying={isAllGuideCleared.current}
           duration={3}
           onComplete={() => {
-            scene.current = 'InSet';
+            setTimeout(() => setPhase(phase + 1), 1000);
             causeReRendering((prev) => prev + 1);
           }}
         />

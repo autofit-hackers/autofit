@@ -10,14 +10,13 @@ import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
+import FadeInOut from './decorators/FadeInOut';
 import { InSetProcess, InSetScene } from './ui-components/InSetScene';
 import { PreSetProcess, PreSetScene } from './ui-components/PreSetScene';
-import FadeInOut from './decorators/FadeInOut';
 
 export default function BodyTracking() {
   // フェーズ
-  const [, setPhase] = useAtom(phaseAtom);
-  const scene = useRef<'PreSet' | 'InSet'>('PreSet');
+  const [phase, _] = useAtom(phaseAtom);
 
   // RGB描画
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -87,7 +86,7 @@ export default function BodyTracking() {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
-      } else if (scene.current === 'PreSet') {
+      } else if (phase === 1) {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
 
@@ -117,9 +116,9 @@ export default function BodyTracking() {
         }
         prevPoseRef.current = currentPose;
 
-        if (scene.current === 'PreSet') {
+        if (phase === 1) {
           PreSetProcess(canvasCtx, currentPose, guideItems, isAllGuideCleared, causeReRendering, timerKey);
-        } else if (scene.current === 'InSet') {
+        } else if (phase === 2) {
           InSetProcess(
             poseGrid,
             currentPose,
@@ -129,7 +128,6 @@ export default function BodyTracking() {
             formInstructionItems,
             setSetRecord,
             causeReRendering,
-            setPhase,
             targetRepCount,
           );
         }
@@ -152,27 +150,27 @@ export default function BodyTracking() {
 
   return (
     <div>
-      {scene.current === 'PreSet' && (
+      {(phase === 1 && (
         // PreSetScene do not need <FadeInOut></FadeInOut> decorator
         <PreSetScene
           canvasRef={canvasRef}
           guideItems={guideItems}
           timerKey={timerKey}
           isAllGuideCleared={isAllGuideCleared}
-          scene={scene}
           causeReRendering={causeReRendering}
         />
-      ) || scene.current === 'InSet' && (
-        <FadeInOut>
-          <InSetScene
-            setRef={setRef}
-            targetRepCount={targetRepCount}
-            canvasRef={canvasRef}
-            gridDivRef={gridDivRef}
-            poseGrid={poseGrid}
-          />
-        </FadeInOut>
-      )}
+      )) ||
+        (phase === 2 && (
+          <FadeInOut>
+            <InSetScene
+              setRef={setRef}
+              targetRepCount={targetRepCount}
+              canvasRef={canvasRef}
+              gridDivRef={gridDivRef}
+              poseGrid={poseGrid}
+            />
+          </FadeInOut>
+        ))}
     </div>
   );
 }
