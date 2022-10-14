@@ -12,6 +12,7 @@ import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import { InSetProcess, InSetScene } from './ui-components/InSetScene';
 import { PreSetProcess, PreSetScene } from './ui-components/PreSetScene';
+import FadeInOut from './decorators/FadeInOut';
 
 export default function BodyTracking() {
   // フェーズ
@@ -151,7 +152,8 @@ export default function BodyTracking() {
 
   return (
     <div>
-      {scene.current === 'PreSet' ? (
+      {scene.current === 'PreSet' && (
+        // PreSetScene do not need <FadeInOut></FadeInOut> decorator
         <PreSetScene
           canvasRef={canvasRef}
           guideItems={guideItems}
@@ -160,14 +162,16 @@ export default function BodyTracking() {
           scene={scene}
           causeReRendering={causeReRendering}
         />
-      ) : (
-        <InSetScene
-          setRef={setRef}
-          targetRepCount={targetRepCount}
-          canvasRef={canvasRef}
-          gridDivRef={gridDivRef}
-          poseGrid={poseGrid}
-        />
+      ) || scene.current === 'InSet' && (
+        <FadeInOut>
+          <InSetScene
+            setRef={setRef}
+            targetRepCount={targetRepCount}
+            canvasRef={canvasRef}
+            gridDivRef={gridDivRef}
+            poseGrid={poseGrid}
+          />
+        </FadeInOut>
       )}
     </div>
   );
