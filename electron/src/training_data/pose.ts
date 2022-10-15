@@ -145,13 +145,18 @@ export const convertKinectResultsToPose = (
 
 export const getNearestBody = (data: any): any => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-  const nearestBody = data.bodyFrame.bodies.reduce((a: any, b: any) =>
+  const minCameraZ = data.bodyFrame.bodies.reduce((a: any, b: any) =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     Math.min(a.skeleton.joints[KJ.PELVIS].cameraZ, b.skeleton.joints[KJ.PELVIS].cameraZ),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  console.log('bodies', data.bodyFrame.bodies);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  const nearestBody = data.bodyFrame.bodies.find(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (a: any) => a.skeleton.joints[KJ.PELVIS].cameraZ === minCameraZ.skeleton.joints[KJ.PELVIS].cameraZ,
+  );
+
+  console.log('minCameraZ', minCameraZ);
   console.log('nearestBody', nearestBody);
 
   return nearestBody;
