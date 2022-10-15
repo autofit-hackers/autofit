@@ -15,8 +15,8 @@ export const PreSetProcess = (
       guide: PreSetGuide;
       name: string;
       isCleared: boolean;
-      isClearedInPreviousFrame: boolean;
       text: string;
+      frameCountAfterUnchecked: number;
     }[]
   >,
   isAllGuideCleared: MutableRefObject<boolean>,
@@ -38,18 +38,24 @@ export const PreSetProcess = (
   // ガイド項目のチェック
   for (let i = 0; i < guideItems.current.length; i += 1) {
     const { isCleared, guideText } = guideItems.current[i].guide.checkIfCleared(currentPose.worldLandmarks);
-    guideItems.current[i].isClearedInPreviousFrame = guideItems.current[i].isCleared;
-    guideItems.current[i].isCleared = isCleared;
+    if (!isCleared) {
+      guideItems.current[i].frameCountAfterUnchecked += 1;
+      if (guideItems.current[i].frameCountAfterUnchecked >= 5) {
+        guideItems.current[i].isCleared = false;
+        guideItems.current[i].frameCountAfterUnchecked = 0;
+      }
+    } else if (isCleared) {
+      guideItems.current[i].frameCountAfterUnchecked = 0;
+      guideItems.current[i].isCleared = true;
+    }
     guideItems.current[i].text = guideText;
   }
 
-  // チェックボックス
   const isAllGuideClearedInPreviousFrame = isAllGuideCleared.current;
   isAllGuideCleared.current = guideItems.current.every((item) => item.isCleared === true);
   // 全ての項目にチェックが入ったらタイマースタートするために再レンダリング
   if (isAllGuideClearedInPreviousFrame === false && isAllGuideCleared.current === true) {
     causeReRendering((prev) => prev + 1);
-    console.log('timer start');
   }
   // チェックが１つでも外れたらタイマーをリセット（再レンダリング）
   if (isAllGuideClearedInPreviousFrame === true && isAllGuideCleared.current === false) {
@@ -65,8 +71,8 @@ export function PreSetScene(props: {
       guide: PreSetGuide;
       name: string;
       isCleared: boolean;
-      isClearedInPreviousFrame: boolean;
       text: string;
+      frameCountAfterUnchecked: number;
     }[]
   >;
   timerKey: MutableRefObject<number>;
