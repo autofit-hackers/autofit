@@ -144,6 +144,11 @@ export const convertKinectResultsToPose = (
 };
 
 export const getNearestBody = (data: any): any => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (data.bodyFrame.bodies.length === 1) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return data.bodyFrame.bodies[0];
+  }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const minCameraZ = data.bodyFrame.bodies.reduce((a: any, b: any) =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
@@ -153,11 +158,8 @@ export const getNearestBody = (data: any): any => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const nearestBody = data.bodyFrame.bodies.find(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (a: any) => a.skeleton.joints[KJ.PELVIS].cameraZ === minCameraZ.skeleton.joints[KJ.PELVIS].cameraZ,
+    (a: any) => a.skeleton.joints[KJ.PELVIS].cameraZ === minCameraZ,
   );
-
-  console.log('minCameraZ', minCameraZ);
-  console.log('nearestBody', nearestBody);
 
   return nearestBody;
 };
