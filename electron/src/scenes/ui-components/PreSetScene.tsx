@@ -36,30 +36,29 @@ export const PreSetProcess = (
   });
 
   // ガイド項目のチェック
+  // TODO: 姿勢推定できていない場合はチェックを外す
   for (let i = 0; i < guideItems.current.length; i += 1) {
     const { isCleared, guideText } = guideItems.current[i].guide.checkIfCleared(currentPose.worldLandmarks);
     if (!isCleared) {
       guideItems.current[i].frameCountAfterUnchecked += 1;
-      if (guideItems.current[i].frameCountAfterUnchecked >= 5) {
-        guideItems.current[i].isCleared = false;
+      // 10フレーム以上基準をクリアしていない場合、チェックを外す
+      if (guideItems.current[i].frameCountAfterUnchecked >= 10) {
         guideItems.current[i].frameCountAfterUnchecked = 0;
+        guideItems.current[i].isCleared = false;
+        causeReRendering((prev) => prev + 1);
       }
     } else if (isCleared) {
       guideItems.current[i].frameCountAfterUnchecked = 0;
       guideItems.current[i].isCleared = true;
+      causeReRendering((prev) => prev + 1);
     }
     guideItems.current[i].text = guideText;
   }
 
   const isAllGuideClearedInPreviousFrame = isAllGuideCleared.current;
   isAllGuideCleared.current = guideItems.current.every((item) => item.isCleared === true);
-  // 全ての項目にチェックが入ったらタイマースタートするために再レンダリング
-  if (isAllGuideClearedInPreviousFrame === false && isAllGuideCleared.current === true) {
-    causeReRendering((prev) => prev + 1);
-  }
-  // チェックが１つでも外れたらタイマーをリセット（再レンダリング）
+  // チェックが１つでも外れたらタイマーをリセット
   if (isAllGuideClearedInPreviousFrame === true && isAllGuideCleared.current === false) {
-    causeReRendering((prev) => prev + 1);
     timerKey.current += 1;
   }
 };
