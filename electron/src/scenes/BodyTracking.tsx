@@ -78,6 +78,9 @@ export default function BodyTracking() {
   // 目標レップ数
   const targetRepCount = 5;
 
+  // 応援メッセージ
+  const message = useRef('スクワットを開始してください');
+
   // 毎kinect更新時に実行される
   const onResults = useCallback(
     (data: {
@@ -142,6 +145,7 @@ export default function BodyTracking() {
             causeReRendering,
             setPhase,
             targetRepCount,
+            message,
           );
         }
       } else if (poseGrid.current) {
@@ -183,6 +187,7 @@ export default function BodyTracking() {
               canvasRef={canvasRef}
               gridDivRef={gridDivRef}
               poseGrid={poseGrid}
+              message={message}
             />
           </FadeInOut>
         ))}

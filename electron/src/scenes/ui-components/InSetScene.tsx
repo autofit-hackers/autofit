@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import { createTheme, CssBaseline, ThemeProvider, Typography } from '@mui/material';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
 import { evaluateRep, evaluateSet, InstructionItem } from '../../coaching/formInstruction';
 import { playRepCountSound } from '../../coaching/voiceGuidance';
@@ -21,6 +21,7 @@ export const InSetProcess = (
   causeReRendering: (value: SetStateAction<number>) => void,
   setPhase: (value: SetStateAction<number>) => void,
   targetRepCount: number,
+  message: MutableRefObject<string>,
 ) => {
   // PoseGridの描画
   if (poseGrid.current) {
@@ -69,6 +70,18 @@ export const InSetProcess = (
     setRef.current = evaluateSet(setRef.current, formInstructionItems);
     setSetRecord(setRef.current);
 
+    // 表示メッセージを更新
+    // TODO: 現在はランダムメッセージ
+    const messageOptions = [
+      'その調子！',
+      '焦らずに！',
+      '太ももとお尻の筋肉を意識しましょう',
+      'しっかりしゃがんで！',
+      '膝を前に出しすぎないように',
+      'ゆっくり丁寧に',
+    ];
+    message.current = messageOptions[Math.floor(Math.random() * messageOptions.length)];
+
     // レップカウントゲージ更新のため再レンダリングさせる
     causeReRendering((prev) => prev + 1);
   }
@@ -84,8 +97,9 @@ export function InSetScene(props: {
   canvasRef: RefObject<HTMLCanvasElement>;
   gridDivRef: MutableRefObject<HTMLDivElement | null>;
   poseGrid: MutableRefObject<PoseGrid | null>;
+  message: MutableRefObject<string>;
 }) {
-  const { currentRepCount, targetRepCount, canvasRef, gridDivRef, poseGrid } = props;
+  const { currentRepCount, targetRepCount, canvasRef, gridDivRef, poseGrid, message } = props;
 
   useEffect(() => {
     if (!poseGrid.current && gridDivRef.current) {
@@ -127,9 +141,9 @@ export function InSetScene(props: {
         style={{
           zIndex: 1,
           position: 'absolute',
-          width: '90vh',
-          height: '90vh',
-          top: '5vh',
+          width: '70vh',
+          height: '70vh',
+          top: '15vh',
           left: '5vh',
         }}
       >
@@ -146,6 +160,9 @@ export function InSetScene(props: {
           }}
         />
       </div>
+      <Typography variant="h4" style={{ position: 'absolute', left: '60%', top: '50%' }}>
+        {message.current}
+      </Typography>
     </ThemeProvider>
   );
 }
