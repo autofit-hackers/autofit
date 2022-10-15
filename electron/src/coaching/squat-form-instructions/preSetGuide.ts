@@ -111,7 +111,7 @@ export const footAngle: PreSetGuide = {
 
 export const shoulderPacking: PreSetGuide = {
   nameJP: '肩のパッキング',
-  label: '肩甲骨を引き下げる',
+  label: '姿勢をよくする',
   shouldPutWarning: false,
   // TODO: チョトムズイ
   checkIfCleared: (landmarks: LandmarkList) => {
@@ -122,6 +122,6 @@ export const shoulderPacking: PreSetGuide = {
     const thresholds = { lower: 170, upper: 200 };
     const isCleared = neckToEachShoulderAngle >= thresholds.lower && neckToEachShoulderAngle <= thresholds.upper;
 
-    return { isCleared, guideText: isCleared ? '' : '肩甲骨を引き下げてください' };
+    return { isCleared, guideText: isCleared ? '' : '姿勢をよくしてください' };
   },
 };
