@@ -35,15 +35,15 @@ export default function Report2() {
         playing
         loop
         controls
-        width="400px"
-        height="410px"
+        width="30vw"
+        height="31.2vw"
         style={{
           zIndex: 2,
           position: 'absolute',
           width: '420px',
           height: '500px',
-          top: '155px',
-          left: '150px',
+          top: '22vh',
+          left: '12.5vw',
           borderRadius: '24px',
           borderColor: '#4AC0E3',
           borderWidth: '6px',
