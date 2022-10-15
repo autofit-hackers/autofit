@@ -1,10 +1,10 @@
 import { getDistance, KJ, landmarkToVector3 } from '../../training_data/pose';
 import { Rep, getBottomPose, getTopPose } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
-import { FormInstructionItem, calculateError, Thresholds } from '../formInstruction';
+import { InstructionItem, calculateError, Thresholds } from '../formInstruction';
 import kneeFrontAndBackImage from '../../../resources/images/formInstructionItems/knee-front-and-back.png';
 
-const kneeFrontAndBack: FormInstructionItem = {
+const kneeFrontAndBack: InstructionItem = {
   id: 3,
   name: 'Knee front and back',
   label: '膝の前後位置',

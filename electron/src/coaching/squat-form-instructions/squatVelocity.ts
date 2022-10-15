@@ -1,9 +1,9 @@
-import { Thresholds, FormInstructionItem, calculateError } from '../formInstruction';
+import { Thresholds, InstructionItem, calculateError } from '../formInstruction';
 import { heightInWorld } from '../../training_data/pose';
 import { Rep, getBottomPose, getLastPose } from '../../training_data/rep';
 import squatVelocityImage from '../../../resources/images/formInstructionItems/squat-velocity.png';
 
-const squatVelocity: FormInstructionItem = {
+const squatVelocity: InstructionItem = {
   id: 4,
   name: 'Speed',
   label: '速度',

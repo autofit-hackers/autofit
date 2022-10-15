@@ -2,9 +2,9 @@ import stanceWidthImage from '../../../resources/images/formInstructionItems/sta
 import { getMidpoint, getDistance, KJ, landmarkToVector3 } from '../../training_data/pose';
 import { getTopPose, Rep } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
-import { calculateError, FormInstructionItem, Thresholds } from '../formInstruction';
+import { calculateError, InstructionItem, Thresholds } from '../formInstruction';
 
-const stanceWidth: FormInstructionItem = {
+const stanceWidth: InstructionItem = {
   id: 2,
   name: 'Stance width',
   label: '足の幅',

@@ -91,7 +91,7 @@ export function PreSetScene(props: {
       <div style={{ position: 'absolute', width: '55%', height: '60%', left: '55%', top: '25%' }}>
         <Box display="column" sx={{ justifyContent: 'space-between' }}>
           {guideItems.current.map((guideItem) => (
-            <Checkbox isChecked={guideItem.isCleared} text={guideItem.guide.label} />
+            <Checkbox key={guideItem.name} isChecked={guideItem.isCleared} text={guideItem.guide.label} />
           ))}
         </Box>
       </div>

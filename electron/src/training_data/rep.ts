@@ -7,13 +7,15 @@ type KeyframesIndex = {
   ascendingMiddle: number | undefined;
   descendingMiddle: number | undefined;
 };
+type RealtimeMessage = { small: string; large: string };
 
 export type Rep = {
   index: number;
   form: Pose[];
   keyframesIndex: KeyframesIndex;
+  realtimeMessage: RealtimeMessage;
   videoUrl: string;
-  formErrorScores: number[];
+  instructionItemErrorScores: number[];
   coordinateErrors: number[];
   guidelineSymbolsList: GuidelineSymbols[];
 };
@@ -32,9 +34,10 @@ export const resetRep = (repIndex: number): Rep => ({
     ascendingMiddle: undefined,
     descendingMiddle: undefined,
   },
+  realtimeMessage: { small: '', large: '' },
   videoUrl: '',
   coordinateErrors: [],
-  formErrorScores: [],
+  instructionItemErrorScores: [],
   guidelineSymbolsList: [],
 });
 
