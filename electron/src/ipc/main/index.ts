@@ -35,7 +35,7 @@ const indexHtml = join(ROOT_PATH.dist, 'index.html');
 
 async function createWindow() {
   win = new BrowserWindow({
-    width: 1440,
+    width: 1920,
     height: 1080,
     title: 'autofit',
     icon: join(ROOT_PATH.public, 'favicon.svg'),
@@ -47,7 +47,7 @@ async function createWindow() {
     kiosk: false,
   });
 
-  win.setAspectRatio(4 / 3);
+  win.setAspectRatio(16 / 9);
 
   win.setMenuBarVisibility(false);
 
