@@ -2,6 +2,7 @@ import { Button } from '@mui/material';
 import { useAtom } from 'jotai';
 import result1 from '../../resources/images/result/result1.png';
 import { phaseAtom } from './atoms';
+import { LoadingPage } from './LoadingScreen';
 
 export default function Report1() {
   const [, setPhase] = useAtom(phaseAtom);
@@ -31,6 +32,7 @@ export default function Report1() {
       >
         次へ
       </Button>
+      <LoadingPage />
     </>
   );
 }
