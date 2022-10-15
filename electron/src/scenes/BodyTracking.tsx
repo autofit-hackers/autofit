@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat-form-instructions/preSetGuide';
 import { convertKinectResultsToPose, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
@@ -10,6 +10,7 @@ import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
+import StartPage from './StartPage';
 import { InSetProcess, InSetScene } from './ui-components/InSetScene';
 import { PreSetProcess, PreSetScene } from './ui-components/PreSetScene';
 
@@ -150,29 +151,31 @@ export default function BodyTracking() {
   }, [kinect, onResults]);
 
   return (
-    <div>
-      {(scene.current === 'PreSet' && (
-        // PreSetScene do not need <FadeInOut></FadeInOut> decorator
-        <PreSetScene
-          canvasRef={canvasRef}
-          guideItems={guideItems}
-          timerKey={timerKey}
-          isAllGuideCleared={isAllGuideCleared}
-          scene={scene}
-          causeReRendering={causeReRendering}
-        />
-      )) ||
-        (scene.current === 'InSet' && (
-          <FadeInOut>
-            <InSetScene
-              setRef={setRef}
-              targetRepCount={targetRepCount}
-              canvasRef={canvasRef}
-              gridDivRef={gridDivRef}
-              poseGrid={poseGrid}
-            />
-          </FadeInOut>
-        ))}
-    </div>
+    <Suspense fallback={<StartPage />}>
+      <div>
+        {(scene.current === 'PreSet' && (
+          // PreSetScene do not need <FadeInOut></FadeInOut> decorator
+          <PreSetScene
+            canvasRef={canvasRef}
+            guideItems={guideItems}
+            timerKey={timerKey}
+            isAllGuideCleared={isAllGuideCleared}
+            scene={scene}
+            causeReRendering={causeReRendering}
+          />
+        )) ||
+          (scene.current === 'InSet' && (
+            <FadeInOut>
+              <InSetScene
+                setRef={setRef}
+                targetRepCount={targetRepCount}
+                canvasRef={canvasRef}
+                gridDivRef={gridDivRef}
+                poseGrid={poseGrid}
+              />
+            </FadeInOut>
+          ))}
+      </div>
+    </Suspense>
   );
 }
