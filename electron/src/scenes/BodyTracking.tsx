@@ -103,6 +103,7 @@ export default function BodyTracking() {
       }
 
       if (data.bodyFrame.bodies.length > 0) {
+        console.log('data length', data.bodyFrame.bodies.length);
         // Kinectの姿勢推定結果を自作のPose型に代入
         const rawCurrentPose: Pose = convertKinectResultsToPose(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access

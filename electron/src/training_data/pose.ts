@@ -151,7 +151,8 @@ export const getNearestBody = (data: any): any => {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  console.log(data.bodyFrame.bodies, nearestBody);
+  console.log('bodies', data.bodyFrame.bodies);
+  console.log('nearestBody', nearestBody);
 
   return nearestBody;
 };
