@@ -7,7 +7,15 @@ export type SetSummary = {
   totalScore: number;
 };
 
+export type SetInfo = {
+  userName: string;
+  exerciseName: string;
+  targetReps: number;
+  targetWeight: number;
+};
+
 export type Set = {
+  setInfo: SetInfo;
   reps: Rep[];
   formEvaluationResults: SetEvaluationResult[];
   summary: SetSummary;
@@ -15,7 +23,8 @@ export type Set = {
   repVideoBlobs: Blob[];
 };
 
-export const resetSet = (): Set => ({
+export const resetSet = (setInfo = { userName: '', exerciseName: '', targetReps: 0, targetWeight: 0 }): Set => ({
+  setInfo,
   reps: [],
   formEvaluationResults: [],
   summary: { description: [''], totalScore: 0 },
