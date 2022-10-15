@@ -27,7 +27,7 @@ export default function Report1() {
           paddingRight: '70px',
         }}
         onClick={() => {
-          setPhase(5);
+          setPhase(4);
         }}
       >
         次へ

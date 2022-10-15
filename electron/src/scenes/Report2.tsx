@@ -67,7 +67,7 @@ export default function Report2() {
           paddingRight: '70px',
         }}
         onClick={() => {
-          setPhase(4);
+          setPhase(0);
         }}
       >
         終了
