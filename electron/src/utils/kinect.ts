@@ -29,8 +29,8 @@ export const startKinect = (
     });
     kinect.createTracker({
       // use GPU if available otherwise use CPU
-      // processing_mode: KinectAzure.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA,
-      processing_mode: KinectAzure.K4ABT_TRACKER_PROCESSING_MODE_CPU,
+      processing_mode: KinectAzure.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA,
+      // processing_mode: KinectAzure.K4ABT_TRACKER_PROCESSING_MODE_CPU,
       // gpu_device_id: 1,
     });
     kinect.startListening(onResults);
