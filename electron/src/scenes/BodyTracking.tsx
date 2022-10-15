@@ -47,8 +47,8 @@ export default function BodyTracking() {
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
   const prevPoseRef = useRef<Pose | null>(null);
-  const fixOutlierRef = useRef(new FixOutlier(fixOutlierParams));
-  const fixWorldOutlierRef = useRef(new FixOutlier(fixWorldOutlierPrams));
+  const fixOutlier = new FixOutlier(fixOutlierParams);
+  const fixWorldOutlier = new FixOutlier(fixWorldOutlierPrams);
 
   // ガイド項目とチェックボックス
   const guideItemCommonDefault = { isCleared: false, text: '' };
@@ -103,12 +103,12 @@ export default function BodyTracking() {
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
         if (prevPoseRef.current != null) {
-          const fixedLandmarks = fixOutlierRef.current.fixOutlierOfLandmarkList(
+          const fixedLandmarks = fixOutlier.fixOutlierOfLandmarkList(
             prevPoseRef.current.landmarks,
             rawCurrentPose.landmarks,
           );
           currentPose.landmarks = fixedLandmarks;
-          const fixedWorldLandmarks = fixWorldOutlierRef.current.fixOutlierOfLandmarkList(
+          const fixedWorldLandmarks = fixWorldOutlier.fixOutlierOfLandmarkList(
             prevPoseRef.current.worldLandmarks,
             rawCurrentPose.worldLandmarks,
           );
@@ -147,6 +147,7 @@ export default function BodyTracking() {
   // Kinectの開始
   useEffect(() => {
     startKinect(kinect, onResults);
+    // REF: ここでStopKinect呼べるかもしれない（https://blog.techscore.com/entry/2022/06/10/080000）
   }, [kinect, onResults]);
 
   return (

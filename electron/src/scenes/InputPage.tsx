@@ -2,13 +2,12 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import DeblurIcon from '@mui/icons-material/Deblur';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
-import { Backdrop, Box, Button, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useState } from 'react';
 import 'typeface-roboto';
 import { resetSet } from '../training_data/set';
 import { phaseAtom, setRecordAtom } from './atoms';
-import LoadingScreen from './LoadingScreen';
 
 export default function InputPage() {
   const [, setPhase] = useAtom(phaseAtom);
@@ -17,10 +16,8 @@ export default function InputPage() {
   const [trainingName, setTrainingName] = useState('スクワット');
   const [targetWeight, setTargetWeight] = useState(0);
   const [targetReps, setTargetReps] = useState(8);
-  const [open, setOpen] = useState(false);
 
   const submitForm = () => {
-    setOpen(true);
     setPhase((prevPhase) => prevPhase + 1);
     setSetRecord(resetSet({ userName: subjectName, exerciseName: trainingName, targetWeight, targetReps }));
   };
@@ -81,15 +78,6 @@ export default function InputPage() {
       >
         {subjectName}さん、{targetWeight}kgで{targetReps}回{trainingName}を開始する
       </Button>
-      <Backdrop
-        sx={{ color: '#FFFFFF', zIndex: 10 }}
-        open={open}
-        onClick={() => {
-          setOpen(false);
-        }}
-      >
-        <LoadingScreen />
-      </Backdrop>
     </Stack>
   );
 }
