@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createTheme, CssBaseline, ThemeProvider, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
 import { evaluateRep, evaluateSet, InstructionItem } from '../../coaching/formInstruction';
 import { playRepCountSound } from '../../coaching/voiceGuidance';
@@ -21,7 +22,6 @@ export const InSetProcess = (
   causeReRendering: (value: SetStateAction<number>) => void,
   setPhase: (value: SetStateAction<number>) => void,
   targetRepCount: number,
-  message: MutableRefObject<string>,
 ) => {
   // PoseGridの描画
   if (poseGrid.current) {
@@ -70,18 +70,6 @@ export const InSetProcess = (
     setRef.current = evaluateSet(setRef.current, formInstructionItems);
     setSetRecord(setRef.current);
 
-    // 表示メッセージを更新
-    // TODO: 現在はランダムメッセージ
-    const messageOptions = [
-      'その調子！',
-      '焦らずに！',
-      '太ももとお尻の筋肉を意識しましょう',
-      'しっかりしゃがんで！',
-      '膝を前に出しすぎないように',
-      'ゆっくり丁寧に',
-    ];
-    message.current = messageOptions[Math.floor(Math.random() * messageOptions.length)];
-
     // レップカウントゲージ更新のため再レンダリングさせる
     causeReRendering((prev) => prev + 1);
   }
@@ -97,16 +85,15 @@ export function InSetScene(props: {
   canvasRef: RefObject<HTMLCanvasElement>;
   gridDivRef: MutableRefObject<HTMLDivElement | null>;
   poseGrid: MutableRefObject<PoseGrid | null>;
-  message: MutableRefObject<string>;
 }) {
-  const { currentRepCount, targetRepCount, canvasRef, gridDivRef, poseGrid, message } = props;
+  const { currentRepCount, targetRepCount, canvasRef, gridDivRef, poseGrid } = props;
 
   useEffect(() => {
     if (!poseGrid.current && gridDivRef.current) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid.current = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { projectionMode: 'perspective', distance: 200, fov: 75 },
+        camera: { projectionMode: 'perspective', distance: 150, fov: 75 },
       });
       poseGrid.current.setCameraAngle();
       poseGrid.current.isAutoRotating = true;
@@ -128,6 +115,7 @@ export function InSetScene(props: {
   });
 
   return (
+    // TODO: 上流でテーマ設定する
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <RepCounter
@@ -141,8 +129,8 @@ export function InSetScene(props: {
         style={{
           zIndex: 1,
           position: 'absolute',
-          width: '70vh',
-          height: '70vh',
+          width: '65vh',
+          height: '65vh',
           top: '15vh',
           left: '5vh',
         }}
@@ -160,9 +148,23 @@ export function InSetScene(props: {
           }}
         />
       </div>
-      <Typography variant="h4" style={{ position: 'absolute', left: '60%', top: '50%' }}>
-        {message.current}
-      </Typography>
+      <Box
+        sx={{
+          position: 'absolute',
+          left: '65%',
+          top: '45%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography fontWeight="bold" variant="h5">
+          {currentRepCount === 0 ? '' : 'しっかりしゃがんで'}
+        </Typography>
+        <Typography fontWeight="bold" variant="h3" sx={{ margin: '10px' }}>
+          {currentRepCount === 0 ? '開始してください' : '強く立ち上がる'}
+        </Typography>
+      </Box>
     </ThemeProvider>
   );
 }
