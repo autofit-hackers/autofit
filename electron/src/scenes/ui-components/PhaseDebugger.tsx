@@ -6,8 +6,8 @@ import { phaseAtom } from '../atoms';
 
 export default function PhaseDebugger() {
   const [phase, setPhase] = useAtom(phaseAtom);
-  const incrementPhase = () => setPhase(phase + 1);
-  const decrementPhase = () => setPhase(phase - 1);
+  const incrementPhase = () => setPhase((prevPhase) => prevPhase + 1);
+  const decrementPhase = () => setPhase((prevPhase) => prevPhase - 1);
 
   return (
     <Box>
