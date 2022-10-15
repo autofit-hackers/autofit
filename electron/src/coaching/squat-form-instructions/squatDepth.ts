@@ -1,4 +1,4 @@
-import { calculateError, FormInstructionItem, Thresholds } from '../formInstruction';
+import { calculateError, InstructionItem, Thresholds } from '../formInstruction';
 import squatDepthImage from '../../../resources/images/formInstructionItems/squat-depth.png';
 import { KJ, getDistance, landmarkToVector3, getAngle, normalizeAngle, Pose } from '../../training_data/pose';
 import { Rep, getBottomPose } from '../../training_data/rep';
@@ -18,7 +18,7 @@ const getThighAngleFromSide = (pose: Pose): number => {
   return meanThighAngleFromSide;
 };
 
-const squatDepth: FormInstructionItem = {
+const squatDepth: InstructionItem = {
   id: 0,
   name: 'Squat depth',
   label: 'しゃがむ深さ',

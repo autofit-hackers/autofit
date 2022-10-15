@@ -1,7 +1,7 @@
 import { getAngle, KJ, getDistance, landmarkToVector3, normalizeAngle, Pose } from '../../training_data/pose';
 import { Rep, getBottomPose, getTopPose } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
-import { FormInstructionItem, calculateError, Thresholds } from '../formInstruction';
+import { InstructionItem, calculateError, Thresholds } from '../formInstruction';
 import kneeInAndOutImage from '../../../resources/images/formInstructionItems/knee-in-and-out.png';
 
 export const getOpeningOfKnee = (pose: Pose): number =>
@@ -18,7 +18,7 @@ export const getOpeningOfToe = (pose: Pose): number =>
     'positive-inferior',
   );
 
-const kneeInAndOut: FormInstructionItem = {
+const kneeInAndOut: InstructionItem = {
   id: 1,
   name: 'Knee in and out',
   label: 'ひざの開き',
