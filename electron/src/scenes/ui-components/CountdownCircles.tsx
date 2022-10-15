@@ -22,7 +22,8 @@ export default function CountdownCircles(props: {
         isPlaying={isPlaying}
         duration={duration}
         onComplete={onComplete}
-        colors="#4AC0E3"
+        colors={['#4AC0E3', '#F7B801', '#A30000', '#A30000']}
+        colorsTime={[3, 2, 1, 0]}
         size={160}
         strokeWidth={12}
       >
