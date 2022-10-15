@@ -135,19 +135,20 @@ const selectDisplayedSummary = (set: Set) => {
   return [''];
 };
 
-// フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
-export const evaluateRep = (prevRep: Rep, instructionItems: InstructionItem[]): Rep => {
-  const rep: Rep = prevRep;
+// １レップのフォームを評価する
+export const evaluateRep = (rep: Rep, instructionItems: InstructionItem[]): Rep => {
+  const repCopy: Rep = rep;
+
   instructionItems.forEach((instructionItem) => {
     const { thresholds } = instructionItem;
-    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep, thresholds);
-    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(rep, thresholds);
-    rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
-      ? instructionItem.getGuidelineSymbols(rep, thresholds)
+    repCopy.instructionItemErrorScores[instructionItem.id] = instructionItem.evaluateForm(repCopy, thresholds);
+    repCopy.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(repCopy, thresholds);
+    repCopy.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
+      ? instructionItem.getGuidelineSymbols(repCopy, thresholds)
       : ({} as GuidelineSymbols);
   });
 
-  return rep;
+  return repCopy;
 };
 
 // セット変数に各指導項目の評価結果を追加する
@@ -174,8 +175,8 @@ export const evaluateSet = (set: Set, instructionItems: InstructionItem[]): Set 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
     set.reps.forEach((rep) => {
       itemResult.eachRepErrors[rep.index] = {
-        score: calculateScoreFromError(rep.formErrorScores[instructionItem.id]),
-        error: rep.formErrorScores[instructionItem.id],
+        score: calculateScoreFromError(rep.instructionItemErrorScores[instructionItem.id]),
+        error: rep.instructionItemErrorScores[instructionItem.id],
         coordinateError: rep.coordinateErrors[instructionItem.id],
       };
     });
