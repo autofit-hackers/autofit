@@ -143,6 +143,21 @@ export const convertKinectResultsToPose = (
   return { landmarks, worldLandmarks, timestamp };
 };
 
+export const getNearestBody = (data: any): any => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  const minCameraZ = data.bodyFrame.bodies.reduce((a: any, b: any) =>
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    Math.min(a.skeleton.joints[KJ.PELVIS].cameraZ, b.skeleton.joints[KJ.PELVIS].cameraZ),
+  );
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  const body = data.bodyFrame.bodies.find(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (a: any) => a.skeleton.joints[KJ.PELVIS].cameraZ === minCameraZ.skeleton.joints[KJ.PELVIS].cameraZ,
+  );
+
+  return body;
+};
+
 export const getDistance = (start: Landmark, end: Landmark) => ({
   x: Math.abs(start.x - end.x),
   y: Math.abs(start.y - end.y),
