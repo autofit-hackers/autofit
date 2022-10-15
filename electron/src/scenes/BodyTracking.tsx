@@ -10,9 +10,9 @@ import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
+import FadeInOut from './decorators/FadeInOut';
 import { InSetProcess, InSetScene } from './ui-components/InSetScene';
 import { PreSetProcess, PreSetScene } from './ui-components/PreSetScene';
-import FadeInOut from './decorators/FadeInOut';
 
 export default function BodyTracking() {
   // フェーズ
@@ -52,12 +52,12 @@ export default function BodyTracking() {
   const fixWorldOutlierRef = useRef(new FixOutlier(fixWorldOutlierPrams));
 
   // ガイド項目とチェックボックス
-  const guideItemCommonDefault = { isCleared: false, isClearedInPreviousFrame: false, text: '' };
+  const guideItemCommonDefault = { isCleared: false, text: '' };
   const guideItems = useRef([
-    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault },
-    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault },
+    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault, frameCountAfterUnchecked: 0 },
+    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault, frameCountAfterUnchecked: 0 },
     // { guide: footAngle, name: 'footAngle', ...guideItemCommonDefault },
-    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault },
+    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault, frameCountAfterUnchecked: 0 },
   ]);
   const isAllGuideCleared = useRef(false);
 
@@ -152,7 +152,7 @@ export default function BodyTracking() {
 
   return (
     <div>
-      {scene.current === 'PreSet' && (
+      {(scene.current === 'PreSet' && (
         // PreSetScene do not need <FadeInOut></FadeInOut> decorator
         <PreSetScene
           canvasRef={canvasRef}
@@ -162,17 +162,18 @@ export default function BodyTracking() {
           scene={scene}
           causeReRendering={causeReRendering}
         />
-      ) || scene.current === 'InSet' && (
-        <FadeInOut>
-          <InSetScene
-            setRef={setRef}
-            targetRepCount={targetRepCount}
-            canvasRef={canvasRef}
-            gridDivRef={gridDivRef}
-            poseGrid={poseGrid}
-          />
-        </FadeInOut>
-      )}
+      )) ||
+        (scene.current === 'InSet' && (
+          <FadeInOut>
+            <InSetScene
+              setRef={setRef}
+              targetRepCount={targetRepCount}
+              canvasRef={canvasRef}
+              gridDivRef={gridDivRef}
+              poseGrid={poseGrid}
+            />
+          </FadeInOut>
+        ))}
     </div>
   );
 }
