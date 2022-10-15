@@ -6,14 +6,21 @@ import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useState } from 'react';
 import 'typeface-roboto';
-import { phaseAtom } from './atoms';
+import { resetSet } from '../training_data/set';
+import { phaseAtom, setRecordAtom } from './atoms';
 
 export default function InputPage() {
   const [, setPhase] = useAtom(phaseAtom);
+  const [, setSetRecord] = useAtom(setRecordAtom);
   const [subjectName, setSubjectName] = useState('名無し');
   const [trainingName, setTrainingName] = useState('スクワット');
   const [targetWeight, setTargetWeight] = useState(0);
   const [targetReps, setTargetReps] = useState(8);
+
+  const submitForm = () => {
+    setPhase((prevPhase) => prevPhase + 1);
+    setSetRecord(resetSet({ userName: subjectName, exerciseName: trainingName, targetWeight, targetReps }));
+  };
 
   return (
     <Stack spacing={8} alignItems="center">
@@ -67,9 +74,7 @@ export default function InputPage() {
         variant="outlined"
         size="large"
         style={{ marginTop: '50px', fontWeight: 'bold', borderWidth: '4px', borderRadius: '20px' }}
-        onClick={() => {
-          setPhase((prevPhase) => prevPhase + 1);
-        }}
+        onClick={submitForm}
       >
         {subjectName}さん、{targetWeight}kgで{targetReps}回{trainingName}を開始する
       </Button>

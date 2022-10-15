@@ -4,7 +4,6 @@ import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squa
 import { convertKinectResultsToPose, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
 import { resetRepState } from '../training_data/repState';
-import { resetSet } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
@@ -31,8 +30,8 @@ export default function BodyTracking() {
   const [kinect] = useAtom(kinectAtom);
 
   // トレーニングデータ
-  const [, setSetRecord] = useAtom(setRecordAtom);
-  const setRef = useRef(resetSet());
+  const [setRecord, setSetRecord] = useAtom(setRecordAtom);
+  const setRef = useRef(setRecord);
   const repRef = useRef(resetRep(0));
   const repState = useRef(resetRepState());
 
