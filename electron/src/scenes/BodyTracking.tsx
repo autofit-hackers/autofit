@@ -76,7 +76,7 @@ export default function BodyTracking() {
   const [formInstructionItems] = useAtom(formInstructionItemsAtom);
 
   // 目標レップ数
-  const targetRepCount = 5;
+  const targetRepCount = setRecord.setInfo.targetReps;
 
   // 応援メッセージ
   const message = useRef('スクワットを開始してください');
