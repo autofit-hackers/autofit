@@ -1,7 +1,7 @@
 import ErrorIcon from '@mui/icons-material/Error';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import { Card, CardActionArea, CardContent, Chip, Stack, Typography } from '@mui/material';
-import { SetEvaluationResult } from '../../coaching/formInstruction';
+import { InstructionItemResult } from '../../coaching/formInstruction';
 
 export function GoodChip(props: { isGood: boolean }) {
   const { isGood } = props;
@@ -41,7 +41,7 @@ function InstructionSummaryCard(props: {
 }
 
 function InstructionSummaryCards(props: {
-  formEvaluationResults: SetEvaluationResult[];
+  formEvaluationResults: InstructionItemResult[];
   selectedInstructionIndex: number;
   setSelectedInstructionIndex: React.Dispatch<React.SetStateAction<number>>;
 }) {

@@ -6,8 +6,8 @@ const futuristicTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#E7234E',
-      light: '#E7234E',
+      main: '#4AC0E3',
+      light: '#4AC0E3',
       contrastText: '#fff',
     },
     secondary: {

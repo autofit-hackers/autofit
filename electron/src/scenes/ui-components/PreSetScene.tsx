@@ -15,8 +15,8 @@ export const PreSetProcess = (
       guide: PreSetGuide;
       name: string;
       isCleared: boolean;
-      isClearedInPreviousFrame: boolean;
       text: string;
+      frameCountAfterUnchecked: number;
     }[]
   >,
   isAllGuideCleared: MutableRefObject<boolean>,
@@ -36,24 +36,29 @@ export const PreSetProcess = (
   });
 
   // ガイド項目のチェック
+  // TODO: 姿勢推定できていない場合はチェックを外す
   for (let i = 0; i < guideItems.current.length; i += 1) {
     const { isCleared, guideText } = guideItems.current[i].guide.checkIfCleared(currentPose.worldLandmarks);
-    guideItems.current[i].isClearedInPreviousFrame = guideItems.current[i].isCleared;
-    guideItems.current[i].isCleared = isCleared;
+    if (!isCleared) {
+      guideItems.current[i].frameCountAfterUnchecked += 1;
+      // 10フレーム以上基準をクリアしていない場合、チェックを外す
+      if (guideItems.current[i].frameCountAfterUnchecked >= 10) {
+        guideItems.current[i].frameCountAfterUnchecked = 0;
+        guideItems.current[i].isCleared = false;
+        causeReRendering((prev) => prev + 1);
+      }
+    } else if (isCleared) {
+      guideItems.current[i].frameCountAfterUnchecked = 0;
+      guideItems.current[i].isCleared = true;
+      causeReRendering((prev) => prev + 1);
+    }
     guideItems.current[i].text = guideText;
   }
 
-  // チェックボックス
   const isAllGuideClearedInPreviousFrame = isAllGuideCleared.current;
   isAllGuideCleared.current = guideItems.current.every((item) => item.isCleared === true);
-  // 全ての項目にチェックが入ったらタイマースタートするために再レンダリング
-  if (isAllGuideClearedInPreviousFrame === false && isAllGuideCleared.current === true) {
-    causeReRendering((prev) => prev + 1);
-    console.log('timer start');
-  }
-  // チェックが１つでも外れたらタイマーをリセット（再レンダリング）
+  // チェックが１つでも外れたらタイマーをリセット
   if (isAllGuideClearedInPreviousFrame === true && isAllGuideCleared.current === false) {
-    causeReRendering((prev) => prev + 1);
     timerKey.current += 1;
   }
 };
@@ -65,8 +70,8 @@ export function PreSetScene(props: {
       guide: PreSetGuide;
       name: string;
       isCleared: boolean;
-      isClearedInPreviousFrame: boolean;
       text: string;
+      frameCountAfterUnchecked: number;
     }[]
   >;
   timerKey: MutableRefObject<number>;
@@ -86,7 +91,7 @@ export function PreSetScene(props: {
       <div style={{ position: 'absolute', width: '55%', height: '60%', left: '55%', top: '25%' }}>
         <Box display="column" sx={{ justifyContent: 'space-between' }}>
           {guideItems.current.map((guideItem) => (
-            <Checkbox isChecked={guideItem.isCleared} text={guideItem.guide.label} />
+            <Checkbox key={guideItem.name} isChecked={guideItem.isCleared} text={guideItem.guide.label} />
           ))}
         </Box>
       </div>

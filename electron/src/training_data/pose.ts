@@ -118,13 +118,13 @@ export const convertKinectResultsToPose = (
   for (let i = 0; i < kinectPoses.length; i += 1) {
     // x軸を反転させることで，鏡像にする
     landmarks[i] = {
-      x: kinectPoses[i].colorX / canvas.width - 0.5,
+      x: 1.5 - kinectPoses[i].colorX / canvas.width,
       y: kinectPoses[i].colorY / canvas.height,
       z: 0,
     };
 
-    // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
-    // woldLandmarksはmmからcm単位に変換する
+    // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正。woldLandmarksはmmからcm単位に変換する
+    // TODO: 体の向きとz軸が常に一致するように変換する
     if (rotation) {
       worldLandmarks[i] = {
         x: kinectPoses[i].cameraX / 10,

@@ -1,7 +1,8 @@
 /* eslint-disable no-param-reassign */
-import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import { createTheme, CssBaseline, ThemeProvider, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
-import { evaluateRepForm, FormInstructionItem, recordFormEvaluationResult } from '../../coaching/formInstruction';
+import { evaluateRep, evaluateSet, InstructionItem } from '../../coaching/formInstruction';
 import { playRepCountSound } from '../../coaching/voiceGuidance';
 import { heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../../training_data/rep';
@@ -16,7 +17,7 @@ export const InSetProcess = (
   repState: MutableRefObject<RepState>,
   setRef: MutableRefObject<Set>,
   repRef: MutableRefObject<Rep>,
-  formInstructionItems: FormInstructionItem[],
+  formInstructionItems: InstructionItem[],
   setSetRecord: (update: SetStateAction<Set>) => void,
   causeReRendering: (value: SetStateAction<number>) => void,
   setPhase: (value: SetStateAction<number>) => void,
@@ -53,7 +54,7 @@ export const InSetProcess = (
   if (repState.current.isRepEnd) {
     // 完了したレップのフォームを分析・評価
     repRef.current = calculateKeyframes(repRef.current);
-    repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
+    repRef.current = evaluateRep(repRef.current, formInstructionItems);
 
     // 完了したレップの情報をセットに追加し、レップをリセットする
     setRef.current.reps = [...setRef.current.reps, repRef.current];
@@ -66,7 +67,7 @@ export const InSetProcess = (
     repState.current = resetRepState();
 
     // アンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-    setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems);
+    setRef.current = evaluateSet(setRef.current, formInstructionItems);
     setSetRecord(setRef.current);
 
     // レップカウントゲージ更新のため再レンダリングさせる
@@ -74,25 +75,25 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
-    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000)
+    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000);
   }
 };
 
 export function InSetScene(props: {
-  setRef: MutableRefObject<Set>;
+  currentRepCount: number;
   targetRepCount: number;
   canvasRef: RefObject<HTMLCanvasElement>;
   gridDivRef: MutableRefObject<HTMLDivElement | null>;
   poseGrid: MutableRefObject<PoseGrid | null>;
 }) {
-  const { setRef, targetRepCount, canvasRef, gridDivRef, poseGrid } = props;
+  const { currentRepCount, targetRepCount, canvasRef, gridDivRef, poseGrid } = props;
 
   useEffect(() => {
     if (!poseGrid.current && gridDivRef.current) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid.current = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { projectionMode: 'perspective', distance: 200, fov: 75 },
+        camera: { projectionMode: 'perspective', distance: 150, fov: 75 },
       });
       poseGrid.current.setCameraAngle();
       poseGrid.current.isAutoRotating = true;
@@ -114,10 +115,11 @@ export function InSetScene(props: {
   });
 
   return (
+    // TODO: 上流でテーマ設定する
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <RepCounter
-        currentCount={setRef.current.reps.length}
+        currentCount={currentRepCount}
         targetCount={targetRepCount}
         style={{ position: 'absolute', top: '5vh', left: '5vh', zIndex: 2 }}
       />
@@ -127,9 +129,9 @@ export function InSetScene(props: {
         style={{
           zIndex: 1,
           position: 'absolute',
-          width: '90vh',
-          height: '90vh',
-          top: '5vh',
+          width: '65vh',
+          height: '65vh',
+          top: '15vh',
           left: '5vh',
         }}
       >
@@ -146,6 +148,23 @@ export function InSetScene(props: {
           }}
         />
       </div>
+      <Box
+        sx={{
+          position: 'absolute',
+          left: '65%',
+          top: '45%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography fontWeight="bold" variant="h5">
+          {currentRepCount === 0 ? '' : 'しっかりしゃがんで'}
+        </Typography>
+        <Typography fontWeight="bold" variant="h3" sx={{ margin: '10px' }}>
+          {currentRepCount === 0 ? '開始してください' : '強く立ち上がる'}
+        </Typography>
+      </Box>
     </ThemeProvider>
   );
 }

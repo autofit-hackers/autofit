@@ -1,13 +1,22 @@
 export const renderBGRA32ColorFrame = (ctx: CanvasRenderingContext2D, canvasImageData: ImageData, imageFrame: any) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
   const newPixelData = Buffer.from(imageFrame.imageData);
+  const { width } = canvasImageData;
   const pixelArray = canvasImageData.data;
+
+  // Flip the image horizontally
   for (let i = 0; i < canvasImageData.data.length; i += 4) {
-    pixelArray[i] = newPixelData[i + 2];
-    pixelArray[i + 1] = newPixelData[i + 1];
-    pixelArray[i + 2] = newPixelData[i];
-    pixelArray[i + 3] = 0xff;
+    const x = (i / 4) % width;
+    const y = Math.floor(i / 4 / width);
+    const newX = width - x - 1;
+    const newY = y;
+    const newI = (newY * width + newX) * 4;
+    pixelArray[newI] = newPixelData[i + 2];
+    pixelArray[newI + 1] = newPixelData[i + 1];
+    pixelArray[newI + 2] = newPixelData[i];
+    pixelArray[newI + 3] = 0xff;
   }
+
   // 取得映像の両端1/4をカットして貼り付ける
   ctx.putImageData(
     canvasImageData,

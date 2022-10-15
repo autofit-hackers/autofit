@@ -4,7 +4,6 @@ import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squa
 import { convertKinectResultsToPose, getNearestBody, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
 import { resetRepState } from '../training_data/repState';
-import { resetSet } from '../training_data/set';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
@@ -15,33 +14,13 @@ import { InSetProcess, InSetScene } from './ui-components/InSetScene';
 import { PreSetProcess, PreSetScene } from './ui-components/PreSetScene';
 
 export default function BodyTracking() {
+  /*
+  共通
+  */
+
   // フェーズ
   const [, setPhase] = useAtom(phaseAtom);
   const scene = useRef<'PreSet' | 'InSet'>('PreSet');
-
-  // RGB描画
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasImageData = useRef<ImageData | null>(null);
-
-  // poseGrid
-  const gridDivRef = useRef<HTMLDivElement | null>(null);
-  const poseGrid = useRef<PoseGrid | null>(null);
-
-  // Kinect
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const [kinect] = useAtom(kinectAtom);
-
-  // トレーニングデータ
-  const [, setSetRecord] = useAtom(setRecordAtom);
-  const setRef = useRef(resetSet());
-  const repRef = useRef(resetRep(0));
-  const repState = useRef(resetRepState());
-
-  // リザルト画面のフォーム指導項目
-  const [formInstructionItems] = useAtom(formInstructionItemsAtom);
-
-  // 目標レップ数
-  const targetRepCount = 5;
 
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
@@ -51,21 +30,53 @@ export default function BodyTracking() {
   const fixOutlier = new FixOutlier(fixOutlierParams);
   const fixWorldOutlier = new FixOutlier(fixWorldOutlierPrams);
 
+  // コンポーネントの再レンダリングを強制するためのstate
+  const [, causeReRendering] = useState(0);
+
+  // RGB描画
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasImageData = useRef<ImageData | null>(null);
+
+  // Kinect
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [kinect] = useAtom(kinectAtom);
+
+  /*
+  PreSet
+  */
+
   // ガイド項目とチェックボックス
-  const guideItemCommonDefault = { isCleared: false, isClearedInPreviousFrame: false, text: '' };
+  const guideItemCommonDefault = { isCleared: false, text: '' };
   const guideItems = useRef([
-    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault },
-    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault },
+    { guide: standingPosition, name: 'standingPosition', ...guideItemCommonDefault, frameCountAfterUnchecked: 0 },
+    { guide: stanceWidth, name: 'stanceWidth', ...guideItemCommonDefault, frameCountAfterUnchecked: 0 },
     // { guide: footAngle, name: 'footAngle', ...guideItemCommonDefault },
-    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault },
+    { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault, frameCountAfterUnchecked: 0 },
   ]);
   const isAllGuideCleared = useRef(false);
 
   // タイマー
   const timerKey = useRef(0);
 
-  // コンポーネントの再レンダリングを強制するためのstate
-  const [, causeReRendering] = useState(0);
+  /*
+  InSet
+  */
+
+  // poseGrid
+  const gridDivRef = useRef<HTMLDivElement | null>(null);
+  const poseGrid = useRef<PoseGrid | null>(null);
+
+  // トレーニングデータ
+  const [setRecord, setSetRecord] = useAtom(setRecordAtom);
+  const setRef = useRef(setRecord);
+  const repRef = useRef(resetRep(0));
+  const repState = useRef(resetRepState());
+
+  // リザルト画面のフォーム指導項目
+  const [formInstructionItems] = useAtom(formInstructionItemsAtom);
+
+  // 目標レップ数
+  const targetRepCount = setRecord.setInfo.targetReps;
 
   // 毎kinect更新時に実行される
   const onResults = useCallback(
@@ -148,6 +159,7 @@ export default function BodyTracking() {
   // Kinectの開始
   useEffect(() => {
     startKinect(kinect, onResults);
+    // REF: ここでStopKinect呼べるかもしれない（https://blog.techscore.com/entry/2022/06/10/080000）
   }, [kinect, onResults]);
 
   return (
@@ -166,7 +178,7 @@ export default function BodyTracking() {
         (scene.current === 'InSet' && (
           <FadeInOut>
             <InSetScene
-              setRef={setRef}
+              currentRepCount={setRef.current.reps.length}
               targetRepCount={targetRepCount}
               canvasRef={canvasRef}
               gridDivRef={gridDivRef}
