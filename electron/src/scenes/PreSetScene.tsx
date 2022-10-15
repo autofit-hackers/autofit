@@ -1,11 +1,12 @@
 /* eslint-disable no-param-reassign */
 import * as Draw2D from '@mediapipe/drawing_utils';
+import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
-import { PreSetGuide } from '../../coaching/squat-form-instructions/preSetGuide';
-import { KINECT_POSE_CONNECTIONS, Pose } from '../../training_data/pose';
-import Checkbox from './Checkbox';
-import CountdownCircles from './CountdownCircles';
+import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
+import { KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import Checkbox from './ui-components/Checkbox';
+import CountdownCircles from './ui-components/CountdownCircles';
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
@@ -83,19 +84,52 @@ export function PreSetScene(props: {
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        className="rgb-canvas"
-        style={{ position: 'absolute', width: '40%', height: '70%', left: '5%', top: '15%' }}
-      />
-      <div style={{ position: 'absolute', width: '55%', height: '60%', left: '55%', top: '25%' }}>
+      <canvas ref={canvasRef} className="rgb-canvas" style={{ position: 'absolute', height: '100vh' }} />
+      <div
+        style={{
+          position: 'absolute',
+          width: '44%',
+          height: '10%',
+          left: '53%',
+          top: '15%',
+          // backgroundColor: 'red',
+          alignItems: 'center',
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{ p: 3, borderRadius: 10, justifyContent: 'center', alignItems: 'center', display: 'flex' }}
+          style={{ fontWeight: 'bold', backgroundColor: '#ff9800', color: 'white' }}
+        >
+          チェック項目をクリアしてスタート！
+        </Typography>
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          width: '40%',
+          height: '40%',
+          left: '55%',
+          top: '30%',
+          backgroundColor: 'white',
+        }}
+      >
         <Box display="column" sx={{ justifyContent: 'space-between' }}>
           {guideItems.current.map((guideItem) => (
             <Checkbox isChecked={guideItem.isCleared} text={guideItem.guide.label} />
           ))}
         </Box>
       </div>
-      <div style={{ position: 'absolute', width: '40%', height: '20%', left: '80%', top: '80%' }}>
+      <div
+        style={{
+          position: 'absolute',
+          width: '18%',
+          height: '30%',
+          left: '82%',
+          top: '70%',
+          backgroundColor: 'white',
+        }}
+      >
         <CountdownCircles
           key={timerKey.current}
           isPlaying={isAllGuideCleared.current}

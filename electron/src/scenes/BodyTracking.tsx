@@ -10,8 +10,8 @@ import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
-import { InSetProcess, InSetScene } from './ui-components/InSetScene';
-import { PreSetProcess, PreSetScene } from './ui-components/PreSetScene';
+import { InSetProcess, InSetScene } from './InSetScene';
+import { PreSetProcess, PreSetScene } from './PreSetScene';
 
 export default function BodyTracking() {
   // フェーズ

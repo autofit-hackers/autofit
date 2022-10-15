@@ -1,14 +1,14 @@
 /* eslint-disable no-param-reassign */
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
-import { evaluateRepForm, FormInstructionItem, recordFormEvaluationResult } from '../../coaching/formInstruction';
-import { playRepCountSound } from '../../coaching/voiceGuidance';
-import { heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../../training_data/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../../training_data/rep';
-import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../../training_data/repState';
-import { Set } from '../../training_data/set';
-import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../../utils/poseGrid';
-import RepCounter from './RepCounter';
+import { evaluateRepForm, FormInstructionItem, recordFormEvaluationResult } from '../coaching/formInstruction';
+import { playRepCountSound } from '../coaching/voiceGuidance';
+import { heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
+import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
+import { Set } from '../training_data/set';
+import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
+import RepCounter from './ui-components/RepCounter';
 
 export const InSetProcess = (
   poseGrid: MutableRefObject<PoseGrid | null>,
@@ -74,7 +74,7 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
-    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000)
+    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000);
   }
 };
 

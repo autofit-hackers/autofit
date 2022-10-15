@@ -10,8 +10,8 @@ export default function CountdownCircles(props: {
   const { key, isPlaying, duration, onComplete } = props;
   const textStyle = {
     fontFamily: 'Roboto',
-    fontSize: '80px',
-    fontWeight: '500',
+    fontSize: '100px',
+    fontWeight: '900',
     color: '#4AC0E3',
   };
 
@@ -23,8 +23,8 @@ export default function CountdownCircles(props: {
         duration={duration}
         onComplete={onComplete}
         colors="#4AC0E3"
-        size={100}
-        strokeWidth={8}
+        size={160}
+        strokeWidth={12}
       >
         {({ remainingTime }) => <p style={textStyle}>{remainingTime}</p>}
       </CountdownCircleTimer>
