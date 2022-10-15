@@ -32,7 +32,7 @@ export type FormInstructionItem = {
 };
 
 // TODO: プロパティの整理
-export type SetEvaluationResult = {
+export type EvaluationResult = {
   name: string;
   isGood: boolean;
   description: ResultDescription;
@@ -57,7 +57,6 @@ export const calculateError = (
 // フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
 export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
   const rep: Rep = prevRep;
-
   instructionItems.forEach((instructionItem) => {
     const { thresholds } = instructionItem;
     rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep, thresholds);
@@ -160,7 +159,7 @@ export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstr
 
   instructionItems.forEach((instructionItem) => {
     // TODO: set変数を生成した時点で指導項目の個数分の要素をもつ配列を格納しておく -> resetSet()
-    const evaluationResult: SetEvaluationResult = {
+    const evaluationResult: EvaluationResult = {
       name: instructionItem.name,
       isGood: true,
       description: {
@@ -177,7 +176,7 @@ export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstr
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
     set.reps.forEach((rep) => {
       evaluationResult.eachRepErrors[rep.index] = {
-        score: calculateScoreFromError(rep.formErrorScores[instructionItem.id]), // TODO
+        score: calculateScoreFromError(rep.formErrorScores[instructionItem.id]),
         error: rep.formErrorScores[instructionItem.id],
         coordinateError: rep.coordinateErrors[instructionItem.id],
       };

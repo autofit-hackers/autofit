@@ -74,18 +74,18 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
-    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000)
+    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000);
   }
 };
 
 export function InSetScene(props: {
-  setRef: MutableRefObject<Set>;
+  currentRepCount: number;
   targetRepCount: number;
   canvasRef: RefObject<HTMLCanvasElement>;
   gridDivRef: MutableRefObject<HTMLDivElement | null>;
   poseGrid: MutableRefObject<PoseGrid | null>;
 }) {
-  const { setRef, targetRepCount, canvasRef, gridDivRef, poseGrid } = props;
+  const { currentRepCount, targetRepCount, canvasRef, gridDivRef, poseGrid } = props;
 
   useEffect(() => {
     if (!poseGrid.current && gridDivRef.current) {
@@ -117,7 +117,7 @@ export function InSetScene(props: {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <RepCounter
-        currentCount={setRef.current.reps.length}
+        currentCount={currentRepCount}
         targetCount={targetRepCount}
         style={{ position: 'absolute', top: '5vh', left: '5vh', zIndex: 2 }}
       />

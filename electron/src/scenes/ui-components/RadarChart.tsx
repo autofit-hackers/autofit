@@ -1,7 +1,7 @@
 import { Card, CardContent, SxProps } from '@mui/material';
 import { graphic } from 'echarts';
 import ReactECharts from 'echarts-for-react';
-import { FormInstructionItem, SetEvaluationResult } from '../../coaching/formInstruction';
+import { EvaluationResult, FormInstructionItem } from '../../coaching/formInstruction';
 
 export type RadarChartIndicators = { name: string; max: number }[];
 export type RadarChartSeries = { name: string; value: number[] }[];
@@ -17,7 +17,7 @@ export const escapeHiddenText = (name: string): string => {
 
 function RadarChart(props: {
   formInstructionItems: FormInstructionItem[];
-  formEvaluationResults: SetEvaluationResult[];
+  formEvaluationResults: EvaluationResult[];
   style: React.CSSProperties;
   sx: SxProps;
 }) {

@@ -178,7 +178,7 @@ export default function BodyTracking() {
         (scene.current === 'InSet' && (
           <FadeInOut>
             <InSetScene
-              setRef={setRef}
+              currentRepCount={setRef.current.reps.length}
               targetRepCount={targetRepCount}
               canvasRef={canvasRef}
               gridDivRef={gridDivRef}
