@@ -155,6 +155,8 @@ export const getNearestBody = (data: any): any => {
     (a: any) => a.skeleton.joints[KJ.PELVIS].cameraZ === minCameraZ.skeleton.joints[KJ.PELVIS].cameraZ,
   );
 
+  console.log('min', minCameraZ);
+
   return body;
 };
 
