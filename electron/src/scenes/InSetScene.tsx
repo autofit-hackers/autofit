@@ -2,14 +2,14 @@
 import { createTheme, CssBaseline, ThemeProvider, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
-import { evaluateRep, evaluateSet, InstructionItem } from '../../coaching/formInstruction';
-import { playRepCountSound } from '../../coaching/voiceGuidance';
-import { heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../../training_data/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../../training_data/rep';
-import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../../training_data/repState';
-import { Set } from '../../training_data/set';
-import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../../utils/poseGrid';
-import RepCounter from './RepCounter';
+import { evaluateRep, evaluateSet, InstructionItem } from '../coaching/formInstruction';
+import { playRepCountSound } from '../coaching/voiceGuidance';
+import { heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../training_data/rep';
+import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
+import { Set } from '../training_data/set';
+import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
+import RepCounter from './ui-components/RepCounter';
 
 export const InSetProcess = (
   poseGrid: MutableRefObject<PoseGrid | null>,
