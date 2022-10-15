@@ -123,8 +123,8 @@ export const convertKinectResultsToPose = (
       z: 0,
     };
 
-    // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正
-    // woldLandmarksはmmからcm単位に変換する
+    // Depthカメラがcolorカメラと比べ，Z軸が6度ずれているので補正。woldLandmarksはmmからcm単位に変換する
+    // TODO: 体の向きとz軸が常に一致するように変換する
     if (rotation) {
       worldLandmarks[i] = {
         x: kinectPoses[i].cameraX / 10,
