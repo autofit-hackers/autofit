@@ -1,4 +1,4 @@
-import type { EvaluationResult } from '../coaching/formInstruction';
+import type { InstructionItemResult } from '../coaching/formInstruction';
 import { Rep } from './rep';
 
 export type SetSummary = {
@@ -17,7 +17,7 @@ export type SetInfo = {
 export type Set = {
   setInfo: SetInfo;
   reps: Rep[];
-  formEvaluationResults: EvaluationResult[];
+  formEvaluationResults: InstructionItemResult[];
   summary: SetSummary;
   repVideoUrls: string[];
   repVideoBlobs: Blob[];

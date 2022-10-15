@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { FormInstructionItem } from '../coaching/formInstruction';
+import { InstructionItem } from '../coaching/formInstruction';
 import kneeFrontAndBack from '../coaching/squat-form-instructions/kneeFrontAndBack';
 import kneeInAndOut from '../coaching/squat-form-instructions/kneeInAndOut';
 import squatDepth from '../coaching/squat-form-instructions/squatDepth';
@@ -11,7 +11,7 @@ const KinectAzure = require('kinect-azure');
 
 export const phaseAtom = atom<number>(0);
 
-export const formInstructionItemsAtom = atom<FormInstructionItem[]>([
+export const formInstructionItemsAtom = atom<InstructionItem[]>([
   squatDepth,
   kneeInAndOut,
   stanceWidth,

@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
-import { evaluateRepForm, FormInstructionItem, recordFormEvaluationResult } from '../../coaching/formInstruction';
+import { evaluateRep, evaluateSet, InstructionItem } from '../../coaching/formInstruction';
 import { playRepCountSound } from '../../coaching/voiceGuidance';
 import { heightInWorld, KINECT_POSE_CONNECTIONS, Pose } from '../../training_data/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from '../../training_data/rep';
@@ -16,7 +16,7 @@ export const InSetProcess = (
   repState: MutableRefObject<RepState>,
   setRef: MutableRefObject<Set>,
   repRef: MutableRefObject<Rep>,
-  formInstructionItems: FormInstructionItem[],
+  formInstructionItems: InstructionItem[],
   setSetRecord: (update: SetStateAction<Set>) => void,
   causeReRendering: (value: SetStateAction<number>) => void,
   setPhase: (value: SetStateAction<number>) => void,
@@ -53,7 +53,7 @@ export const InSetProcess = (
   if (repState.current.isRepEnd) {
     // 完了したレップのフォームを分析・評価
     repRef.current = calculateKeyframes(repRef.current);
-    repRef.current = evaluateRepForm(repRef.current, formInstructionItems);
+    repRef.current = evaluateRep(repRef.current, formInstructionItems);
 
     // 完了したレップの情報をセットに追加し、レップをリセットする
     setRef.current.reps = [...setRef.current.reps, repRef.current];
@@ -66,7 +66,7 @@ export const InSetProcess = (
     repState.current = resetRepState();
 
     // アンマウント時だけではなく、毎レップ終了時にフォーム分析を行う
-    setRef.current = recordFormEvaluationResult(setRef.current, formInstructionItems);
+    setRef.current = evaluateSet(setRef.current, formInstructionItems);
     setSetRecord(setRef.current);
 
     // レップカウントゲージ更新のため再レンダリングさせる

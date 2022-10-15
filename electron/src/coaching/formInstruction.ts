@@ -10,7 +10,7 @@ export type ResultDescription = { short: string; long: string; fixed: string };
 export type Errors = { error: number; score: number; coordinateError: number };
 
 // TODO: プロパティの整理
-export type FormInstructionItem = {
+export type InstructionItem = {
   readonly id: number;
   readonly name: string;
   readonly label: string;
@@ -31,18 +31,6 @@ export type FormInstructionItem = {
   readonly getCoordinateErrorFromIdeal: (rep: Rep, thresholds: Thresholds) => number;
 };
 
-// TODO: プロパティの整理
-export type EvaluationResult = {
-  name: string;
-  isGood: boolean;
-  description: ResultDescription;
-  totalScore: number;
-  bestRepIndex: number;
-  worstRepIndex: number;
-  eachRepErrors: Errors[];
-  evaluatedValuesPerFrame?: FrameEvaluateParams; // TODO: レップ中に計算しているが後処理で算出する方が適切
-};
-
 export const calculateError = (
   thresholds: { upper: number; middle: number; lower: number },
   value: number,
@@ -54,19 +42,16 @@ export const calculateError = (
   return (value - thresholds.middle) / (thresholds.upper - thresholds.middle);
 };
 
-// フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
-export const evaluateRepForm = (prevRep: Rep, instructionItems: FormInstructionItem[]): Rep => {
-  const rep: Rep = prevRep;
-  instructionItems.forEach((instructionItem) => {
-    const { thresholds } = instructionItem;
-    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep, thresholds);
-    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(rep, thresholds);
-    rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
-      ? instructionItem.getGuidelineSymbols(rep, thresholds)
-      : ({} as GuidelineSymbols);
-  });
-
-  return rep;
+// TODO: プロパティの整理
+export type InstructionItemResult = {
+  name: string;
+  isGood: boolean;
+  description: ResultDescription;
+  totalScore: number;
+  bestRepIndex: number;
+  worstRepIndex: number;
+  eachRepErrors: Errors[];
+  evaluatedValuesPerFrame?: FrameEvaluateParams; // TODO: レップ中に計算しているが後処理で算出する方が適切
 };
 
 /**
@@ -84,13 +69,11 @@ const calculateScoreFromError = (error: number): number => {
   return 10 - 5 * errorAbs;
 };
 
-const judgeWhetherSetIsGoodForEachInstruction = (itemScore: number, threshold = 50): boolean => itemScore >= threshold;
-
 const decideShortSummaryForEachInstruction = (
   isGood: boolean,
   worstRepErrorScore: number,
   worstRepCoordinateError: number,
-  instructionItem: FormInstructionItem,
+  instructionItem: InstructionItem,
 ): string => {
   if (isGood) {
     return instructionItem.shortDescription.normal.beforeNumber + instructionItem.shortDescription.normal.afterNumber;
@@ -112,7 +95,7 @@ const decideShortSummaryForEachInstruction = (
 };
 
 // 各指導項目についてセットに対する総評の決定
-const decideLongSummary = (eachRepErrors: Errors[], instructionItem: FormInstructionItem): string => {
+const decideLongSummary = (eachRepErrors: Errors[], instructionItem: InstructionItem): string => {
   // エラーの和を計算
   const errorSum = eachRepErrors.reduce((acc, err) => acc + err.error, 0);
   let summary = '';
@@ -152,14 +135,29 @@ const selectDisplayedSummary = (set: Set) => {
   return [''];
 };
 
+// フォーム指導項目のリストの全要素に関して、１レップのフォームを評価する
+export const evaluateRep = (prevRep: Rep, instructionItems: InstructionItem[]): Rep => {
+  const rep: Rep = prevRep;
+  instructionItems.forEach((instructionItem) => {
+    const { thresholds } = instructionItem;
+    rep.formErrorScores[instructionItem.id] = instructionItem.evaluateForm(rep, thresholds);
+    rep.coordinateErrors[instructionItem.id] = instructionItem.getCoordinateErrorFromIdeal(rep, thresholds);
+    rep.guidelineSymbolsList[instructionItem.id] = instructionItem.getGuidelineSymbols
+      ? instructionItem.getGuidelineSymbols(rep, thresholds)
+      : ({} as GuidelineSymbols);
+  });
+
+  return rep;
+};
+
 // セット変数に各指導項目の評価結果を追加する
 // TODO: ここでevaluatedValuesPerFrameを追加することで白トビバグを解決しているが本当は好ましくない
-export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstructionItem[]): Set => {
+export const evaluateSet = (set: Set, instructionItems: InstructionItem[]): Set => {
   const setCopy: Set = set;
 
   instructionItems.forEach((instructionItem) => {
     // TODO: set変数を生成した時点で指導項目の個数分の要素をもつ配列を格納しておく -> resetSet()
-    const evaluationResult: EvaluationResult = {
+    const itemResult: InstructionItemResult = {
       name: instructionItem.name,
       isGood: true,
       description: {
@@ -175,7 +173,7 @@ export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstr
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
     set.reps.forEach((rep) => {
-      evaluationResult.eachRepErrors[rep.index] = {
+      itemResult.eachRepErrors[rep.index] = {
         score: calculateScoreFromError(rep.formErrorScores[instructionItem.id]),
         error: rep.formErrorScores[instructionItem.id],
         coordinateError: rep.coordinateErrors[instructionItem.id],
@@ -183,30 +181,28 @@ export const recordFormEvaluationResult = (set: Set, instructionItems: FormInstr
     });
 
     // エラーの絶対値が最大/最小となるレップのインデックスを記録する
-    const eachRepErrorsAbs = evaluationResult.eachRepErrors.map((error) => Math.abs(error.error));
-    evaluationResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
-    evaluationResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
+    const eachRepErrorsAbs = itemResult.eachRepErrors.map((error) => Math.abs(error.error));
+    itemResult.bestRepIndex = eachRepErrorsAbs.indexOf(Math.min(...eachRepErrorsAbs));
+    itemResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
 
     // セット全体に対する指導項目スコアを算出する
-    evaluationResult.totalScore = calculateScoreForEachInstruction(
-      evaluationResult.eachRepErrors.map((err) => err.score),
-    );
+    itemResult.totalScore = calculateScoreForEachInstruction(itemResult.eachRepErrors.map((err) => err.score));
 
-    // 各指導項目について、セット全体のgood/badを判定する
-    evaluationResult.isGood = judgeWhetherSetIsGoodForEachInstruction(evaluationResult.totalScore);
+    // 各指導項目について、セット全体のgood/badを判定する（50点以上でgood)
+    itemResult.isGood = itemResult.totalScore >= 50;
 
     // 各レップに対する表示テキストの決定
-    evaluationResult.description.short = decideShortSummaryForEachInstruction(
-      evaluationResult.isGood,
-      evaluationResult.eachRepErrors[evaluationResult.worstRepIndex].error,
-      evaluationResult.eachRepErrors[evaluationResult.worstRepIndex].coordinateError,
+    itemResult.description.short = decideShortSummaryForEachInstruction(
+      itemResult.isGood,
+      itemResult.eachRepErrors[itemResult.worstRepIndex].error,
+      itemResult.eachRepErrors[itemResult.worstRepIndex].coordinateError,
       instructionItem,
     );
 
     // 各指導項目に対するセット全体の評価分の決定
-    evaluationResult.description.long = decideLongSummary(evaluationResult.eachRepErrors, instructionItem);
+    itemResult.description.long = decideLongSummary(itemResult.eachRepErrors, instructionItem);
 
-    setCopy.formEvaluationResults[instructionItem.id] = evaluationResult;
+    setCopy.formEvaluationResults[instructionItem.id] = itemResult;
   });
 
   // セットに対する総評の決定
