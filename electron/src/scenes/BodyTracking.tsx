@@ -1,7 +1,7 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat-form-instructions/preSetGuide';
-import { convertKinectResultsToPose, Pose } from '../training_data/pose';
+import { convertKinectResultsToPose, getNearestBody, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
 import { resetRepState } from '../training_data/repState';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
@@ -106,7 +106,7 @@ export default function BodyTracking() {
         // Kinectの姿勢推定結果を自作のPose型に代入
         const rawCurrentPose: Pose = convertKinectResultsToPose(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          data.bodyFrame.bodies[0].skeleton.joints,
+          getNearestBody(data).skeleton.joints,
           canvasRef.current,
           true,
           new Date().getTime(),
