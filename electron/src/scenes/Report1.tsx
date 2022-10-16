@@ -4,6 +4,7 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { Grid, Stack, Typography } from '@mui/material';
 import { ReactElement } from 'react';
 import result2 from '../../resources/images/chest.png';
+import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
 
 function TextWithIcon(props: { icon: ReactElement; text: string }) {
   const { icon, text } = props;
@@ -39,6 +40,8 @@ function ShortResult(props: { icon: ReactElement; text: string }) {
 }
 
 export default function Report1() {
+  useDummySetRecordIfDebugMode();
+
   return (
     <Grid container>
       <Grid item xs={12} sx={{ mt: '7vh' }}>

@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import React from 'react';
 import { formDebugAtom, playSoundAtom } from '../atoms';
 import PhaseDebugger from './PhaseDebugger';
-import DummySetRecordButton from './SetRecordDebugger';
+import SaveSetRecordButton from './SetRecordDebugger';
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
@@ -135,10 +135,10 @@ function ProductMenu() {
         <FormInstructionDebugModeSwitch />
         <Divider variant="middle" />
         {isDebugMode && (
-          <>
+          <div>
             <PhaseDebugger />
-            <DummySetRecordButton />
-          </>
+            <SaveSetRecordButton />
+          </div>
         )}
       </Menu>
     </div>
