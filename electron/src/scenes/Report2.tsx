@@ -1,4 +1,5 @@
 import { Button } from '@mui/material';
+import { Box } from '@mui/system';
 import { useAtom } from 'jotai';
 import { useEffect, useRef } from 'react';
 import ReactPlayer from 'react-player';
@@ -25,7 +26,7 @@ export default function Report2() {
   }, [formInstructionItems]);
 
   return (
-    <>
+    <Box display="flex" justifyContent="center">
       <img src={result2} alt="Result2" style={{ height: '100vh' }} />
       <ReactPlayer
         ref={videoPlayerRef}
@@ -34,18 +35,18 @@ export default function Report2() {
         playing
         loop
         controls
-        width="420px"
-        height="500px"
+        width="30vw"
+        height="31.2vw"
         style={{
           zIndex: 2,
           position: 'absolute',
           width: '420px',
           height: '500px',
-          top: '190px',
-          left: '40px',
-          borderRadius: '20px',
+          top: '22vh',
+          left: '12.5vw',
+          borderRadius: '24px',
           borderColor: '#4AC0E3',
-          borderWidth: '8px',
+          borderWidth: '6px',
           backgroundColor: 'rgba(0, 0, 0, 1.0)',
         }}
       />
@@ -53,11 +54,11 @@ export default function Report2() {
       <Button
         sx={{
           position: 'absolute',
-          top: '770px',
-          left: '1000px',
+          top: '89vh',
+          left: '76vw',
           transform: 'translate(-50%, -50%)',
-          height: '60px',
-          width: '225x',
+          height: '60px', // 60
+          width: '225px', // 225
           borderRadius: '40px',
           backgroundColor: '#4AC0E3',
           color: '#FFFFFF',
@@ -67,11 +68,11 @@ export default function Report2() {
           paddingRight: '70px',
         }}
         onClick={() => {
-          setPhase(4);
+          setPhase(0);
         }}
       >
         終了
       </Button>
-    </>
+    </Box>
   );
 }

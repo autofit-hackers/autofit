@@ -12,10 +12,10 @@ import { phaseAtom, setRecordAtom } from './atoms';
 export default function InputPage() {
   const [, setPhase] = useAtom(phaseAtom);
   const [, setSetRecord] = useAtom(setRecordAtom);
-  const [subjectName, setSubjectName] = useState('名無し');
+  const [subjectName, setSubjectName] = useState('Yusuke Kondo');
   const [trainingName, setTrainingName] = useState('スクワット');
-  const [targetWeight, setTargetWeight] = useState(0);
-  const [targetReps, setTargetReps] = useState(8);
+  const [targetWeight, setTargetWeight] = useState(20);
+  const [targetReps, setTargetReps] = useState(5);
 
   const submitForm = () => {
     setPhase((prevPhase) => prevPhase + 1);
@@ -33,6 +33,7 @@ export default function InputPage() {
           id="input-name"
           label="名前"
           variant="standard"
+          defaultValue={subjectName}
           onChange={(newValue) => setSubjectName(newValue.target.value)}
         />
       </Box>
@@ -45,7 +46,7 @@ export default function InputPage() {
           InputProps={{
             readOnly: true,
           }}
-          defaultValue="スクワット"
+          defaultValue={trainingName}
           onChange={(newValue) => setTrainingName(newValue.target.value)}
         />
       </Box>
@@ -56,6 +57,7 @@ export default function InputPage() {
           label="重量"
           variant="standard"
           type="number"
+          defaultValue={targetWeight}
           onChange={(newValue) => setTargetWeight(newValue.target.value as unknown as number)}
         />
       </Box>
@@ -66,7 +68,7 @@ export default function InputPage() {
           label="回数"
           variant="standard"
           type="number"
-          defaultValue={8}
+          defaultValue={targetReps}
           onChange={(newValue) => setTargetReps(newValue.target.value as unknown as number)}
         />
       </Box>

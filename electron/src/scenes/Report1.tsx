@@ -1,4 +1,5 @@
 import { Button } from '@mui/material';
+import { Box } from '@mui/system';
 import { useAtom } from 'jotai';
 import result1 from '../../resources/images/result/result1.png';
 import { phaseAtom } from './atoms';
@@ -8,13 +9,13 @@ export default function Report1() {
   const [, setPhase] = useAtom(phaseAtom);
 
   return (
-    <>
+    <Box display="flex" justifyContent="center">
       <img src={result1} alt="Result1" style={{ height: '100vh' }} />
       <Button
         sx={{
           position: 'absolute',
-          top: '770px',
-          left: '1000px',
+          top: '85vh',
+          left: '68vw',
           transform: 'translate(-50%, -50%)',
           height: '60px',
           width: '225x',
@@ -27,12 +28,12 @@ export default function Report1() {
           paddingRight: '70px',
         }}
         onClick={() => {
-          setPhase(5);
+          setPhase(4);
         }}
       >
         次へ
       </Button>
       <LoadingPage />
-    </>
+    </Box>
   );
 }
