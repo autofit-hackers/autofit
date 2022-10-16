@@ -1,15 +1,24 @@
 import { Button } from '@mui/material';
+import fs from 'fs';
 import { useAtom } from 'jotai';
 import { resetSet } from '../../training_data/set';
 import { formDebugAtom, setRecordAtom } from '../atoms';
 
 export default function DummySetRecordButton() {
-  const [, setSetRecord] = useAtom(setRecordAtom);
+  const [setRecord] = useAtom(setRecordAtom);
+  const handleSave = () => {
+    const data = setRecord;
+
+    fs.writeFile('./resources/set/dummy.json', JSON.stringify(data), (err) => {
+      if (err) throw err;
+      console.log('complete');
+    });
+  };
 
   return (
     <Button
       onClick={() => {
-        setSetRecord(resetSet());
+        handleSave();
       }}
       variant="outlined"
       sx={{ p: 1 }}
