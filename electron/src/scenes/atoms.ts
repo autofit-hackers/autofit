@@ -17,6 +17,6 @@ export const kinectAtom = atom<typeof KinectAzure>(new KinectAzure());
 type Settings = { playSound: boolean; checkpoints: Checkpoint[]; isDebugMode: boolean };
 export const SettingsAtom = atom<Settings>({
   playSound: true,
-  checkpoints: [dropDepth, kneeFrontBack, velocity],
+  checkpoints: [dropDepth, velocity, kneeFrontBack],
   isDebugMode: false,
 });
