@@ -22,19 +22,29 @@ function InstructionCardClickable({
   onClick: () => void;
 }) {
   return (
-    <Box sx={{ borderRadius: 5, p: 3, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }} onClick={onClick}>
-      <Stack spacing={2}>
+    <Box sx={{ borderRadius: 5, p: 2, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }} onClick={onClick}>
+      <Stack spacing={0}>
         <Chip
           label={label}
-          sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
+          sx={{ fontSize: 16, fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
         />
         <CardMedia component="img" image={imageUrl} alt="image" style={{ objectFit: 'contain' }} />
-        <Typography variant="h5" component="h1" fontWeight="bold">
+        <Typography variant="h5" component="h1" fontWeight="bold" color={isGood ? 'green' : 'red'}>
           {isGood ? 'Good' : 'Bad'}
         </Typography>
-        <Typography>タップして詳細を見る</Typography>
+        <Typography>詳細を見る</Typography>
       </Stack>
     </Box>
+  );
+}
+
+export function HeaderGridItem() {
+  return (
+    <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
+      <Typography variant="h5" component="h1" align="left" borderBottom={1} fontWeight="bold">
+        今回のトレーニング結果
+      </Typography>
+    </Grid>
   );
 }
 
@@ -57,13 +67,9 @@ export default function Report2() {
 
   return (
     <div>
-      <Grid container sx={{ paddingBlock: '5vh', paddingInline: '0vw' }}>
+      <Grid container sx={{ paddingBlock: '5vh', height: '90vh' }}>
         {/* ヘッダー */}
-        <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
-          <Typography variant="h5" component="h1" align="left" borderBottom={1} fontWeight="bold">
-            今回のトレーニング結果
-          </Typography>
-        </Grid>
+        <HeaderGridItem />
         {/* 左側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
           <ReactPlayer
@@ -88,7 +94,7 @@ export default function Report2() {
             <Stack spacing={2} alignItems="flex-start">
               <Chip
                 label="ポイント"
-                sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
+                sx={{ fontSize: 16, fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
               />
               <Typography variant="h5" component="h1" fontWeight="bold">
                 {setRecord.resultSummary.description}
