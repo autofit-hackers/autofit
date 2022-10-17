@@ -26,7 +26,7 @@ export default function ResultModal({
     if (!poseGrid.current && gridDivRef.current) {
       poseGrid.current = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { projectionMode: 'perspective', distance: 150, fov: 75 },
+        camera: { projectionMode: 'parallel', distance: 150, fov: 75 },
       });
       poseGrid.current.isAutoRotating = false;
       poseGrid.current.setCameraAngle(checkpoint.poseGridCameraAngle);
@@ -44,13 +44,13 @@ export default function ResultModal({
     <>
       <Paper sx={{ marginBlock: '10vh', marginInline: '10vw', height: '80vh', borderRadius: 2 }}>
         <Grid container sx={{ paddingBlock: '2vh', paddingInline: '0vw', mx: '10' }}>
-          <Grid item xs={12} sx={{ paddingBlock: '1.5vh', paddingInline: '5vw' }}>
-            <Typography variant="h4" component="h1" align="left" borderBottom={0} fontWeight="bold">
+          <Grid item xs={12} sx={{ paddingBlock: '2vh', paddingInline: '5vw' }}>
+            <Typography variant="h4" component="h1" align="left" borderBottom="1vh" fontWeight="bold">
               {checkpoint.labelJP}
             </Typography>
           </Grid>
           {/* 右側 */}
-          <Grid item xs={8} sx={{ paddingBlock: 'vh', paddingLeft: '5vw', paddingRight: '1vw' }}>
+          <Grid item xs={7} sx={{ paddingBlock: 'vh', paddingLeft: '5vw', paddingRight: '1vw' }}>
             <ReactPlayer
               url={checkpoint.lectureVideoUrl}
               id="RepVideo"
@@ -67,7 +67,7 @@ export default function ResultModal({
             />
           </Grid>
           {/* 左 */}
-          <Grid item xs={4} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
+          <Grid item xs={5} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
             <div style={{ height: '50vh' }}>
               <PoseGridViewer
                 gridDivRef={gridDivRef}
