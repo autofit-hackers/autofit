@@ -5,7 +5,8 @@ import squatVelocityImage from '../../../resources/images/formInstructionItems/s
 const velocity: Checkpoint = {
   nameEN: 'Velocity',
   labelJP: '速度',
-  iconImage: squatVelocityImage,
+  iconImageUrl: squatVelocityImage,
+  lectureVideoUrl: '../../../resources/movie/squat-speed.mov',
   evaluationTextTemplate: {
     negative: {
       beforeNumber: '立ち上がるのが約',

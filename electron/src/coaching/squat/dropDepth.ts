@@ -21,7 +21,8 @@ const getThighAngleFromSide = (pose: Pose): number => {
 const dropDepth: Checkpoint = {
   nameEN: 'Squat depth',
   labelJP: 'しゃがむ深さ',
-  iconImage: squatDepthImage,
+  iconImageUrl: squatDepthImage,
+  lectureVideoUrl: '../../../resources/movie/squat-depth.mov',
   evaluationTextTemplate: {
     negative: {
       beforeNumber: '',

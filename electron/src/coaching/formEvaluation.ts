@@ -8,7 +8,8 @@ export type Thresholds = { upper: number; middle: number; lower: number };
 export type Checkpoint = {
   readonly nameEN: string;
   readonly labelJP: string;
-  readonly iconImage: string;
+  readonly iconImageUrl: string;
+  readonly lectureVideoUrl: string;
   readonly evaluationTextTemplate: {
     negative: EvaluationTextTemplate;
     normal: EvaluationTextTemplate;
