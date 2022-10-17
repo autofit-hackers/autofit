@@ -43,11 +43,13 @@ export default function Report2() {
 
   return (
     <Grid container sx={{ paddingBlock: '5vh', paddingInline: '0vw' }}>
+      {/* ヘッダー */}
       <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
         <Typography variant="h5" component="h1" align="left" borderBottom={1} fontWeight="bold">
           今回のトレーニング結果
         </Typography>
       </Grid>
+      {/* 左側 */}
       <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
         <ReactPlayer
           ref={videoPlayerRef}
@@ -66,6 +68,7 @@ export default function Report2() {
           }}
         />
       </Grid>
+      {/* 右側 */}
       <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingRight: '5vw' }}>
         <FlatCard>
           <Stack spacing={2} alignItems="flex-start">
@@ -78,6 +81,7 @@ export default function Report2() {
             </Typography>
           </Stack>
         </FlatCard>
+        {/* 各評価項目のカード */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: '5vh' }}>
           <FlatCard>
             <Stack spacing={2}>
@@ -114,6 +118,7 @@ export default function Report2() {
           </FlatCard>
         </Stack>
       </Grid>
+      {/* フッター */}
       <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" spacing="50vw">
           <FlatButton text="戻る" onClick={() => setPhase((prev) => prev - 1)} />
