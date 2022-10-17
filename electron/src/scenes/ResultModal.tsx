@@ -6,13 +6,24 @@ import ReactPlayer from 'react-player';
 import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import { FlatCard } from './ui-components/FlatUI';
 
-export default function ResultModal({ handleClose }: { handleClose: () => void }) {
+export default function ResultModal({
+  handleClose,
+  instructionName,
+}: {
+  handleClose: () => void;
+  instructionName: 'depth' | 'speed' | 'posture';
+}) {
   const videoPlayerRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
 
   return (
     <>
-      <Paper sx={{ marginBlock: '10vh', marginInline: '10vw', height: '80vh' }}>
-        <Grid container sx={{ paddingBlock: '5vh', paddingInline: '0vw', mx: '10' }}>
+      <Paper sx={{ marginBlock: '10vh', marginInline: '10vw', height: '80vh', borderRadius: 2 }}>
+        <Grid container sx={{ paddingBlock: '2vh', paddingInline: '0vw', mx: '10' }}>
+          <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
+            <Typography variant="h5" component="h1" align="left" borderBottom={1} fontWeight="bold">
+              {instructionName}
+            </Typography>
+          </Grid>
           {/* 右側 */}
           <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
             <ReactPlayer

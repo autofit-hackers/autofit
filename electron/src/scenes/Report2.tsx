@@ -1,4 +1,4 @@
-import { Button, Chip, Grid, Modal, Stack, Typography } from '@mui/material';
+import { Box, Chip, Grid, Modal, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
@@ -8,14 +8,40 @@ import { phaseAtom } from './atoms';
 import ResultModal from './ResultModal';
 import { FlatButton, FlatCard } from './ui-components/FlatUI';
 
+function InstructionCardClickable({
+  label,
+  evaluationScore,
+  onClick,
+}: {
+  label: string;
+  evaluationScore: number;
+  onClick: () => void;
+}) {
+  return (
+    <Box sx={{ borderRadius: 5, p: 3, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }} onClick={onClick}>
+      <Stack spacing={2}>
+        <Chip
+          label={label}
+          sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
+        />
+        <Typography variant="h5" component="h1" fontWeight="bold">
+          {evaluationScore > 60 ? 'Good' : 'Bad'}
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
 export default function Report2() {
   const [, setPhase] = useAtom(phaseAtom);
   const videoPlayerRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
 
   const [open, setOpen] = useState(false);
+  const [instructionName, setInstructionName] = useState<'depth' | 'speed' | 'posture'>('depth');
 
-  const handleOpen = () => {
+  const handleOpen = (name: 'depth' | 'speed' | 'posture') => {
     setOpen(true);
+    setInstructionName(name);
   };
 
   const handleClose = () => {
@@ -66,39 +92,9 @@ export default function Report2() {
           </FlatCard>
           {/* 各評価項目のカード */}
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: '5vh' }}>
-            <FlatCard>
-              <Stack spacing={2}>
-                <Chip
-                  label="深さ"
-                  sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
-                />
-                <Typography variant="h5" component="h1" fontWeight="bold">
-                  Good
-                </Typography>
-              </Stack>
-            </FlatCard>
-            <FlatCard>
-              <Stack spacing={2}>
-                <Chip
-                  label="速度"
-                  sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
-                />
-                <Typography variant="h5" component="h1" fontWeight="bold">
-                  Good
-                </Typography>
-              </Stack>
-            </FlatCard>
-            <FlatCard>
-              <Stack spacing={2}>
-                <Chip
-                  label="姿勢"
-                  sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
-                />
-                <Typography variant="h5" component="h1" fontWeight="bold">
-                  Good
-                </Typography>
-              </Stack>
-            </FlatCard>
+            <InstructionCardClickable label="深さ" evaluationScore={80} onClick={() => handleOpen('depth')} />
+            <InstructionCardClickable label="速度" evaluationScore={20} onClick={() => handleOpen('speed')} />
+            <InstructionCardClickable label="姿勢" evaluationScore={80} onClick={() => handleOpen('posture')} />
           </Stack>
         </Grid>
         {/* フッター */}
@@ -109,16 +105,13 @@ export default function Report2() {
           </Stack>
         </Grid>
       </Grid>
-      <Button variant="outlined" color="primary" onClick={handleOpen}>
-        Open modal
-      </Button>
       <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <ResultModal handleClose={handleClose} />
+        <ResultModal handleClose={handleClose} instructionName={instructionName} />
       </Modal>
     </div>
   );

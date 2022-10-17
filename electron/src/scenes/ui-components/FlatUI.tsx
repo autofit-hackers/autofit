@@ -4,6 +4,14 @@ export function FlatCard({ children }: { children: React.ReactNode }) {
   return <Box sx={{ borderRadius: 5, p: 3, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }}>{children}</Box>;
 }
 
+export function FlatCardClickable({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+  return (
+    <Box sx={{ borderRadius: 5, p: 3, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }} onClick={onClick}>
+      {children}
+    </Box>
+  );
+}
+
 export function FlatButton({ text, onClick }: { text: string; onClick: () => void }) {
   return (
     <Button
