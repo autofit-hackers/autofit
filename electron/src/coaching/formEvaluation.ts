@@ -8,7 +8,7 @@ export type Thresholds = { upper: number; middle: number; lower: number };
 export type Checkpoint = {
   readonly id: number;
   readonly nameEN: string;
-  readonly labelJP: string;
+  readonly nameJp: string;
   readonly iconImageUrl: string;
   readonly lectureVideoUrl: string;
   readonly evaluationTextTemplate: {
@@ -91,28 +91,24 @@ const decideShortSummaryForEachCheckpoint = (
 /**
  * セット全体に対する指導項目スコアを100点満点で算出する
  */
-const calculateScoreForEachInstruction = (repScores: number[]) =>
+const calculateScoreForEachCheckpoint = (repScores: number[]) =>
   repScores.reduce((acc, score) => acc + score, 0) / repScores.length;
 
 // 表示する総評テキストの選択
-const decideSummaryTextForSet = (set: Set) => {
-  const scores = set.checkpointResults.map((result) => result.scoreForSet);
+const decideSummaryTextForSet = (set: Set, checkpoints: Checkpoint[]) => {
+  const isGoods = set.checkResult.map((result) => result.isGood);
+  if (isGoods.every((isGood) => isGood)) {
+    return '全ての項目が完璧でした。\nおめでとうございます！';
+  }
+  if (isGoods.some((isGood) => isGood)) {
+    const scores = set.checkResult.map((result) => result.scoreForSet);
+    const worstCheckpointName = checkpoints[scores.indexOf(Math.min(...scores))].nameJp;
+    const bestCheckpointName = checkpoints[scores.indexOf(Math.max(...scores))].nameJp;
 
-  if (!Number.isNaN(scores[0])) {
-    const minScore = scores.reduce((num1: number, num2: number) => Math.min(num1, num2), 1);
-
-    // 最小値をとるインデックスを配列で取得し、コメントの配列を返す
-    const indices = [];
-    let idx = scores.indexOf(minScore);
-    while (idx !== -1) {
-      indices.push(idx);
-      idx = scores.indexOf(minScore, idx + 1);
-    }
-
-    return indices.map((v) => set.checkpointResults[v].description);
+    return `${bestCheckpointName}に関しては大変素晴らしいです。\n${worstCheckpointName}のボタンをクリックして改善点を確認しましょう。`;
   }
 
-  return [''];
+  return 'まだスクワットに慣れていないみたいです。\n各項目をクリックして改善点を確認しましょう。';
 };
 
 // １レップのフォームを評価する
@@ -161,7 +157,7 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
     checkResult.worstRepIndex = eachRepErrorsAbs.indexOf(Math.max(...eachRepErrorsAbs));
 
     // セット全体に対する指導項目スコアを算出する
-    checkResult.scoreForSet = calculateScoreForEachInstruction(
+    checkResult.scoreForSet = calculateScoreForEachCheckpoint(
       checkResult.eachRepErrors.map((err) => calculateRepScore(err.errorScores)),
     );
 
@@ -176,7 +172,7 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
       checkpoint,
     );
 
-    setCopy.checkpointResults[id] = checkResult;
+    setCopy.checkResult[id] = checkResult;
   });
 
   // トレーニング時間（秒）の算出
@@ -190,13 +186,12 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
   setCopy.resultSummary.calorieConsumption = (1.05 * 5.0 * 60 * setCopy.resultSummary.timeToComplete) / 3600;
 
   // セットに対する総評の決定
-  setCopy.resultSummary.description = decideSummaryTextForSet(setCopy);
+  setCopy.resultSummary.description = decideSummaryTextForSet(setCopy, checkpoints);
 
   // セットの合計得点を計算
   setCopy.resultSummary.totalScore = Math.round(
-    setCopy.checkpointResults
-      .map((result) => result.scoreForSet)
-      .reduce((num1: number, num2: number) => num1 + num2, 0) / setCopy.checkpointResults.length,
+    setCopy.checkResult.map((result) => result.scoreForSet).reduce((num1: number, num2: number) => num1 + num2, 0) /
+      setCopy.checkResult.length,
   );
 
   return setCopy;

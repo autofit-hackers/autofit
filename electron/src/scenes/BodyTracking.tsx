@@ -136,6 +136,7 @@ export default function BodyTracking() {
         } else if (scene.current === 'InSet') {
           InSetProcess(
             canvasRef,
+            canvasCtx,
             poseGrid,
             currentPose,
             repState,
