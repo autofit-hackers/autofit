@@ -6,11 +6,11 @@ import ReactPlayer from 'react-player';
 import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import { phaseAtom } from './atoms';
 
-function FlatCard({ children }: { children: React.ReactNode }) {
-  return <Box sx={{ borderRadius: 5, p: 3, borderWidth: 6, borderColor: '#4AC0E3' }}>{children}</Box>;
+export function FlatCard({ children }: { children: React.ReactNode }) {
+  return <Box sx={{ borderRadius: 5, p: 3, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }}>{children}</Box>;
 }
 
-function FlatButton({ text, onClick }: { text: string; onClick: () => void }) {
+export function FlatButton({ text, onClick }: { text: string; onClick: () => void }) {
   return (
     <Button
       variant="contained"
@@ -20,8 +20,6 @@ function FlatButton({ text, onClick }: { text: string; onClick: () => void }) {
         p: 2,
         borderWidth: 6,
         borderColor: '#4AC0E3',
-        width: '100%',
-        height: '100%',
         fontSize: 'h5.fontSize',
         fontWeight: 'bold',
         paddingLeft: '70px',
@@ -97,7 +95,7 @@ export default function Report2() {
           <FlatCard>
             <Stack spacing={2}>
               <Chip
-                label="深さ"
+                label="速度"
                 sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
               />
               <Typography variant="h5" component="h1" fontWeight="bold">
@@ -108,7 +106,7 @@ export default function Report2() {
           <FlatCard>
             <Stack spacing={2}>
               <Chip
-                label="深さ"
+                label="姿勢"
                 sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
               />
               <Typography variant="h5" component="h1" fontWeight="bold">
