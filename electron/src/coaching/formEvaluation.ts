@@ -8,7 +8,7 @@ export type Thresholds = { upper: number; middle: number; lower: number };
 export type Checkpoint = {
   readonly id: number;
   readonly nameEN: string;
-  readonly nameJp: string;
+  readonly nameJP: string;
   readonly iconImageUrl: string;
   readonly lectureVideoUrl: string;
   readonly evaluationTextTemplate: {
@@ -102,8 +102,8 @@ const decideSummaryTextForSet = (set: Set, checkpoints: Checkpoint[]) => {
   }
   if (isGoods.some((isGood) => isGood)) {
     const scores = set.checkResult.map((result) => result.scoreForSet);
-    const worstCheckpointName = checkpoints[scores.indexOf(Math.min(...scores))].nameJp;
-    const bestCheckpointName = checkpoints[scores.indexOf(Math.max(...scores))].nameJp;
+    const worstCheckpointName = checkpoints[scores.indexOf(Math.min(...scores))].nameJP;
+    const bestCheckpointName = checkpoints[scores.indexOf(Math.max(...scores))].nameJP;
 
     return `${bestCheckpointName}に関しては大変素晴らしいです。\n${worstCheckpointName}のボタンをクリックして改善点を確認しましょう。`;
   }

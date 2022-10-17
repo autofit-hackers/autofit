@@ -7,7 +7,7 @@ import kneeFrontAndBackImage from '../../../resources/images/formInstructionItem
 const kneeFrontBack: Checkpoint = {
   id: 2,
   nameEN: 'Knee front and back',
-  nameJp: '姿勢',
+  nameJP: '姿勢',
   iconImageUrl: kneeFrontAndBackImage,
   lectureVideoUrl: '../../../resources/movie/squat-posture.mov',
   evaluationTextTemplate: {
