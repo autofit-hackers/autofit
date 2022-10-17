@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { createTheme, CssBaseline, ThemeProvider, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { useAtom } from 'jotai';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
 import { evaluateRep, evaluateSet, InstructionItem } from '../coaching/formInstruction';
 import { playRepCountSound } from '../coaching/voiceGuidance';
@@ -10,7 +11,9 @@ import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '..
 import { Set } from '../training_data/set';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { startCapturingRepVideo } from '../utils/recordVideo';
+import { setRecordAtom } from './atoms';
 import RepCounter from './ui-components/RepCounter';
+import { handleSave } from './ui-components/SaveButton';
 
 export const InSetProcess = (
   canvasRef: RefObject<HTMLCanvasElement>,
@@ -26,6 +29,8 @@ export const InSetProcess = (
   targetRepCount: number,
   repVideoRecorder: MutableRefObject<MediaRecorder | null>,
 ) => {
+  const [setRecord] = useAtom(setRecordAtom);
+
   // PoseGridの描画
   if (poseGrid.current) {
     poseGrid.current.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
@@ -87,6 +92,7 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
+    handleSave(setRecord, setRecord.repVideoBlobs, setRecord.setInfo.userName);
     setTimeout(
       () =>
         setPhase((prevPhase) => {

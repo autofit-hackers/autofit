@@ -18,9 +18,10 @@ const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) =
   });
 };
 
-export const handleSave = (object: object, videoBlobs: Blob[]) => {
+export const handleSave = (object: object, videoBlobs: Blob[], suffix?: string) => {
+  const basePath = join(process.cwd(), 'data');
   const now = `${dayjs().format('MM-DD-HH-mm-ss')}`;
-  const dirPath = join(process.cwd(), 'data', now);
+  const dirPath = suffix != null ? join(basePath, suffix, now) : join(basePath, now);
   if (!existsSync(dirPath)) {
     mkdirSync(dirPath, { recursive: true });
   }
