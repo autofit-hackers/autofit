@@ -26,8 +26,8 @@ function PoseGridViewer(props: {
           zIndex: 1,
           textAlign: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          width: '65vh',
-          height: '65vh',
+          width: '50vh',
+          height: '50vh',
         }}
       />
       <IconButton

@@ -65,27 +65,26 @@ const decideShortSummaryForEachCheckpoint = (
   isGood: boolean,
   worstRepErrorScore: number,
   worstRepCoordinateError: number,
-  instructionItem: Checkpoint,
+  checkpoint: Checkpoint,
 ): string => {
   if (isGood) {
     return (
-      instructionItem.evaluationTextTemplate.normal.beforeNumber +
-      instructionItem.evaluationTextTemplate.normal.afterNumber
+      checkpoint.evaluationTextTemplate.normal.beforeNumber + checkpoint.evaluationTextTemplate.normal.afterNumber
     );
   }
 
   if (worstRepErrorScore < 0) {
     return (
-      instructionItem.evaluationTextTemplate.negative.beforeNumber +
+      checkpoint.evaluationTextTemplate.negative.beforeNumber +
       Math.abs(worstRepCoordinateError).toString() +
-      instructionItem.evaluationTextTemplate.negative.afterNumber
+      checkpoint.evaluationTextTemplate.negative.afterNumber
     );
   }
 
   return (
-    instructionItem.evaluationTextTemplate.positive.beforeNumber +
+    checkpoint.evaluationTextTemplate.positive.beforeNumber +
     worstRepCoordinateError.toString() +
-    instructionItem.evaluationTextTemplate.positive.afterNumber
+    checkpoint.evaluationTextTemplate.positive.afterNumber
   );
 };
 
@@ -150,10 +149,10 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
     };
 
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
-    set.reps.forEach((rep, repId) => {
+    set.reps.forEach((rep) => {
       checkResult.eachRepErrors[rep.index] = {
-        errorScores: rep.errorScores[repId],
-        coordinateError: rep.coordinateErrors[repId],
+        errorScores: rep.errorScores[id],
+        coordinateError: rep.coordinateErrors[id],
       };
     });
 
@@ -188,9 +187,7 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
   // 消費カロリーの産出
   // REF: https://www.supersports.com/ja-jp/xebio/media/hGg4AV6nfP2MZ3mfDMigRt
   // TODO: 詳細なカロリー計算
-  setCopy.resultSummary.calorieConsumption = Math.round(
-    (1.05 * 5.0 * 60 * setCopy.resultSummary.timeToComplete) / 3600,
-  );
+  setCopy.resultSummary.calorieConsumption = (1.05 * 5.0 * 60 * setCopy.resultSummary.timeToComplete) / 3600;
 
   // セットに対する総評の決定
   setCopy.resultSummary.description = decideSummaryTextForSet(setCopy);

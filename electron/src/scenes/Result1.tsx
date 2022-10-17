@@ -79,7 +79,7 @@ export default function Report1() {
                 text="消費カロリー"
               />
             }
-            measuredValue={`${setRecord.resultSummary.calorieConsumption} kcal`}
+            measuredValue={`${setRecord.resultSummary.calorieConsumption.toFixed(2)} kcal`}
           />
         </Stack>
       </Grid>
