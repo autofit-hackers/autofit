@@ -5,7 +5,7 @@ import { CardMedia, Grid, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { ReactElement } from 'react';
 import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
-import { phaseAtom } from './atoms';
+import { phaseAtom, setRecordAtom } from './atoms';
 import { FlatButton } from './ui-components/FlatUI';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
 
@@ -45,6 +45,7 @@ function ShortResult(props: { metrics: ReactElement; measuredValue: string }) {
 export default function Report1() {
   useDummySetRecordIfDebugMode();
   const [, setPhase] = useAtom(phaseAtom);
+  const [setRecord] = useAtom(setRecordAtom);
 
   return (
     <Grid container>
@@ -56,21 +57,21 @@ export default function Report1() {
       <Grid item xs={6} sx={{ mt: '7vh' }}>
         <Stack>
           <Typography variant="h1" component="h1" align="center" borderBottom={1} sx={{ mx: '5vw' }} fontWeight="bold">
-            68
+            {setRecord.resultSummary.totalScore}
           </Typography>
           <ShortResult
             metrics={<TextWithIcon icon={<AccessTimeIcon fontSize="large" color="primary" />} text="時間" />}
-            measuredValue="55:35"
+            measuredValue={`${setRecord.resultSummary.timeToComplete}秒`}
           />
           <ShortResult
             metrics={<TextWithIcon icon={<FitnessCenterIcon fontSize="large" color="primary" />} text="回数" />}
-            measuredValue="5回"
+            measuredValue={`${setRecord.reps.length}/${setRecord.setInfo.targetReps}`}
           />
           <ShortResult
             metrics={
               <TextWithIcon icon={<LocalFireDepartmentIcon fontSize="large" color="primary" />} text="消費カロリー" />
             }
-            measuredValue="92kcal"
+            measuredValue={`${setRecord.resultSummary.calorieConsumption} kcal`}
           />
         </Stack>
       </Grid>
