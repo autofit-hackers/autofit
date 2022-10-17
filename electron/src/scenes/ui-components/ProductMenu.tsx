@@ -2,7 +2,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Divider, FormControlLabel, IconButton, Menu, styled, Switch } from '@mui/material';
 import { useAtom } from 'jotai';
 import React from 'react';
-import { formDebugAtom, SettingsAtom } from '../atoms';
+import { SettingsAtom } from '../atoms';
 import PhaseDebugger from './PhaseDebugger';
 import SaveSetRecordButton from './SetRecordDebugger';
 
@@ -73,15 +73,15 @@ function PlaySoundSwitch() {
 }
 
 function FormInstructionDebugModeSwitch() {
-  const [isDebugMode, setDebugMode] = useAtom(formDebugAtom);
+  const [settings, setSettings] = useAtom(SettingsAtom);
 
   return (
     <FormControlLabel
       control={
         <Switch
-          checked={isDebugMode}
+          checked={settings.isDebugMode}
           onChange={() => {
-            setDebugMode(!isDebugMode);
+            setSettings({ ...settings, isDebugMode: !settings.isDebugMode });
           }}
         />
       }
@@ -101,7 +101,7 @@ function ProductMenu() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [isDebugMode] = useAtom(formDebugAtom);
+  const [settings] = useAtom(SettingsAtom);
 
   return (
     <div>
@@ -134,7 +134,7 @@ function ProductMenu() {
         <PlaySoundSwitch />
         <FormInstructionDebugModeSwitch />
         <Divider variant="middle" />
-        {isDebugMode && (
+        {settings.isDebugMode && (
           <div>
             <PhaseDebugger />
             <SaveSetRecordButton />

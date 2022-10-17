@@ -14,7 +14,9 @@ export const setRecordAtom = atom<Set>(resetSet());
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 export const kinectAtom = atom<typeof KinectAzure>(new KinectAzure());
 
-type Settings = { playSound: boolean; checkpoints: Checkpoint[] };
-export const SettingsAtom = atom<Settings>({ playSound: true, checkpoints: [dropDepth, kneeFrontBack, velocity] });
-
-export const formDebugAtom = atom<boolean>(false);
+type Settings = { playSound: boolean; checkpoints: Checkpoint[]; isDebugMode: boolean };
+export const SettingsAtom = atom<Settings>({
+  playSound: true,
+  checkpoints: [dropDepth, kneeFrontBack, velocity],
+  isDebugMode: false,
+});
