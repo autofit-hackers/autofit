@@ -64,6 +64,7 @@ export const InSetProcess = (
     if (repVideoRecorder.current) {
       repVideoRecorder.current.stop();
     }
+
     // 完了したレップのフォームを分析・評価
     repRef.current = calculateKeyframes(repRef.current);
     repRef.current = evaluateRep(repRef.current, checkpoints);
@@ -87,15 +88,7 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
-    setTimeout(
-      () =>
-        setPhase((prevPhase) => {
-          console.log('setPhase', prevPhase);
-
-          return 3;
-        }),
-      1000,
-    );
+    setTimeout(() => setPhase(3), 1000); // TODO: no hard code
   }
 };
 
@@ -110,7 +103,6 @@ export function InSetScene(props: {
 
   useEffect(() => {
     if (!poseGrid.current && gridDivRef.current) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       poseGrid.current = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
         camera: { projectionMode: 'perspective', distance: 150, fov: 75 },
@@ -143,14 +135,14 @@ export function InSetScene(props: {
         targetCount={targetRepCount}
         style={{ position: 'absolute', top: '5vh', left: '5vh', zIndex: 2 }}
       />
-      <canvas ref={canvasRef} className="dummy_canvas" />
+      <canvas ref={canvasRef} className="rgb-canvas" style={{ position: 'absolute', height: '50vh', zIndex: -1 }} />
       <div
         className="square-box"
         style={{
-          zIndex: 1,
+          zIndex: 2,
           position: 'absolute',
-          width: '65vh',
-          height: '65vh',
+          width: '55vh',
+          height: '55vh',
           top: '15vh',
           left: '5vh',
         }}
@@ -176,6 +168,7 @@ export function InSetScene(props: {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          zIndex: 2,
         }}
       >
         <Typography fontWeight="bold" variant="h5">
