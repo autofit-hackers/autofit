@@ -2,8 +2,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Divider, FormControlLabel, IconButton, Menu, styled, Switch } from '@mui/material';
 import { useAtom } from 'jotai';
 import React from 'react';
-import { formDebugAtom, playSoundAtom } from '../atoms';
+import { formDebugAtom, SettingsAtom } from '../atoms';
 import PhaseDebugger from './PhaseDebugger';
+import SaveSetRecordButton from './SetRecordDebugger';
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
@@ -53,15 +54,15 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 }));
 
 function PlaySoundSwitch() {
-  const [playSound, setPlaySound] = useAtom(playSoundAtom);
+  const [settings, setSettings] = useAtom(SettingsAtom);
 
   return (
     <FormControlLabel
       control={
         <MaterialUISwitch
-          checked={playSound}
+          checked={settings.playSound}
           onChange={() => {
-            setPlaySound(!playSound);
+            setSettings({ ...settings, playSound: !settings.playSound });
           }}
         />
       }
@@ -133,7 +134,12 @@ function ProductMenu() {
         <PlaySoundSwitch />
         <FormInstructionDebugModeSwitch />
         <Divider variant="middle" />
-        {isDebugMode && <PhaseDebugger />}
+        {isDebugMode && (
+          <div>
+            <PhaseDebugger />
+            <SaveSetRecordButton />
+          </div>
+        )}
       </Menu>
     </div>
   );

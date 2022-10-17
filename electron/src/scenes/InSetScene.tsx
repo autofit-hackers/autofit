@@ -87,7 +87,15 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
-    setTimeout(() => setPhase((prevPhase) => prevPhase + 1), 1000);
+    setTimeout(
+      () =>
+        setPhase((prevPhase) => {
+          console.log('setPhase', prevPhase);
+
+          return 3;
+        }),
+      1000,
+    );
   }
 };
 
