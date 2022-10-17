@@ -19,6 +19,7 @@ const getThighAngleFromSide = (pose: Pose): number => {
 };
 
 const dropDepth: Checkpoint = {
+  id: 0,
   nameEN: 'Squat depth',
   labelJP: 'しゃがむ深さ',
   iconImageUrl: squatDepthImage,
@@ -46,6 +47,7 @@ const dropDepth: Checkpoint = {
   // しゃがみが深いほど角度は大きい
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);
+
     // TICKET: 浅いほうを厳しく、深いほうを甘くする
     if (bottomPose === undefined) {
       return 0.0;

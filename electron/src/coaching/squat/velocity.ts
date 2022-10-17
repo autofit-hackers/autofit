@@ -3,6 +3,7 @@ import { Rep, getBottomPose, getLastPose } from '../../training_data/rep';
 import squatVelocityImage from '../../../resources/images/formInstructionItems/squat-velocity.png';
 
 const velocity: Checkpoint = {
+  id: 1,
   nameEN: 'Velocity',
   labelJP: '速度',
   iconImageUrl: squatVelocityImage,

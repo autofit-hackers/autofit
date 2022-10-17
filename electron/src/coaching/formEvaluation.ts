@@ -6,6 +6,7 @@ type EvaluationTextTemplate = { beforeNumber: string; afterNumber: string };
 export type Thresholds = { upper: number; middle: number; lower: number };
 
 export type Checkpoint = {
+  readonly id: number;
   readonly nameEN: string;
   readonly labelJP: string;
   readonly iconImageUrl: string;
@@ -121,8 +122,10 @@ export const evaluateRep = (rep: Rep, checkpoints: Checkpoint[]): Rep => {
 
   checkpoints.forEach((checkpoint, id) => {
     const { thresholds } = checkpoint;
-    repCopy.checkpointErrors[id].errorScore = checkpoint.evaluateForm(repCopy, thresholds);
-    repCopy.checkpointErrors[id].coordinateError = checkpoint.getCoordinateErrorFromIdeal(repCopy, thresholds);
+    repCopy.errorScores[id] = checkpoint.evaluateForm(repCopy, thresholds);
+
+    repCopy.coordinateErrors[id] = checkpoint.getCoordinateErrorFromIdeal(repCopy, thresholds);
+
     repCopy.guidelineSymbolsList[id] = checkpoint.getGuidelineSymbols
       ? checkpoint.getGuidelineSymbols(repCopy, thresholds)
       : ({} as GuidelineSymbols);
@@ -149,8 +152,8 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
     // レップ変数に格納されている各指導項目のエラースコアを参照して、Resultオブジェクトに追加する
     set.reps.forEach((rep, repId) => {
       checkResult.eachRepErrors[rep.index] = {
-        errorScores: rep.checkpointErrors[repId].errorScore,
-        coordinateError: rep.checkpointErrors[repId].coordinateError,
+        errorScores: rep.errorScores[repId],
+        coordinateError: rep.coordinateErrors[repId],
       };
     });
 

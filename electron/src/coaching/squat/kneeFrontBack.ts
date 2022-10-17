@@ -5,6 +5,7 @@ import { GuidelineSymbols } from '../../utils/poseGrid';
 import kneeFrontAndBackImage from '../../../resources/images/formInstructionItems/knee-front-and-back.png';
 
 const kneeFrontBack: Checkpoint = {
+  id: 2,
   nameEN: 'Knee front and back',
   labelJP: '膝の前後位置',
   iconImageUrl: kneeFrontAndBackImage,
