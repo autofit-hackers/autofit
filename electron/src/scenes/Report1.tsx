@@ -2,8 +2,11 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { CardMedia, Grid, Stack, Typography } from '@mui/material';
+import { useAtom } from 'jotai';
 import { ReactElement } from 'react';
 import result2 from '../../resources/images/chest.png';
+import { phaseAtom } from './atoms';
+import { FlatButton } from './Report2';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
 
 function TextWithIcon(props: { icon: ReactElement; text: string }) {
@@ -41,6 +44,7 @@ function ShortResult(props: { metrics: ReactElement; measuredValue: string }) {
 
 export default function Report1() {
   useDummySetRecordIfDebugMode();
+  const [, setPhase] = useAtom(phaseAtom);
 
   return (
     <Grid container>
@@ -72,6 +76,11 @@ export default function Report1() {
       </Grid>
       <Grid item xs={6} sx={{ mt: '7vh' }} alignContent="center" justifyContent="center">
         <CardMedia component="img" image={result2} alt="Result2" style={{ height: '50vh', objectFit: 'contain' }} />
+      </Grid>
+      <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
+        <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing="50vw">
+          <FlatButton text="次へ" onClick={() => setPhase((prev) => prev + 1)} />
+        </Stack>
       </Grid>
     </Grid>
   );
