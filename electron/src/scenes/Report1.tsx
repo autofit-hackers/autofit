@@ -6,7 +6,7 @@ import { useAtom } from 'jotai';
 import { ReactElement } from 'react';
 import result2 from '../../resources/images/chest.png';
 import { phaseAtom } from './atoms';
-import { FlatButton } from './Report2';
+import { FlatButton } from './ui-components/FlatUI';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
 
 function TextWithIcon(props: { icon: ReactElement; text: string }) {
