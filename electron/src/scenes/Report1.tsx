@@ -6,6 +6,7 @@ import { useAtom } from 'jotai';
 import { ReactElement } from 'react';
 import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
 import { phaseAtom } from './atoms';
+import { HeaderGridItem } from './Report2';
 import { FlatButton } from './ui-components/FlatUI';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
 
@@ -15,7 +16,7 @@ function TextWithIcon(props: { icon: ReactElement; text: string }) {
   return (
     <Stack direction="row" spacing={1} alignItems="center" justifyContent="left">
       {icon}
-      <Typography variant="h5" component="h1" align="left" sx={{ mx: '5vw' }} fontWeight="bold">
+      <Typography variant="h4" component="h1" align="left" sx={{ mx: '5vw' }} fontWeight="bold">
         {text}
       </Typography>
     </Stack>
@@ -35,7 +36,7 @@ function ShortResult(props: { metrics: ReactElement; measuredValue: string }) {
       sx={{ marginInline: '5vw', mt: '5vh', p: '1vh' }}
     >
       {metrics}
-      <Typography variant="h5" component="h1" align="left" fontWeight="bold">
+      <Typography variant="h3" component="h1" align="left" fontWeight="bold">
         {measuredValue}
       </Typography>
     </Stack>
@@ -47,35 +48,43 @@ export default function Report1() {
   const [, setPhase] = useAtom(phaseAtom);
 
   return (
-    <Grid container>
-      <Grid item xs={12} sx={{ mt: '7vh' }}>
-        <Typography variant="h5" component="h1" align="left" borderBottom={1} sx={{ mx: '5vw' }} fontWeight="bold">
-          今回のトレーニング結果
-        </Typography>
-      </Grid>
-      <Grid item xs={6} sx={{ mt: '7vh' }}>
+    <Grid container sx={{ paddingBlock: '5vh', maxHeight: '90vh' }}>
+      <HeaderGridItem />
+      {/* 左側 */}
+      <Grid item xs={6} sx={{ mt: '5vh' }}>
         <Stack>
-          <Typography variant="h1" component="h1" align="center" borderBottom={1} sx={{ mx: '5vw' }} fontWeight="bold">
+          <Typography
+            variant="h1"
+            component="h1"
+            align="center"
+            borderBottom={1}
+            sx={{ mx: '5vw', fontSize: 150 }}
+            fontWeight="bold"
+          >
             68
           </Typography>
           <ShortResult
-            metrics={<TextWithIcon icon={<AccessTimeIcon fontSize="large" color="primary" />} text="時間" />}
+            metrics={<TextWithIcon icon={<AccessTimeIcon sx={{ fontSize: 60 }} color="primary" />} text="時間" />}
             measuredValue="55:35"
           />
           <ShortResult
-            metrics={<TextWithIcon icon={<FitnessCenterIcon fontSize="large" color="primary" />} text="回数" />}
+            metrics={<TextWithIcon icon={<FitnessCenterIcon sx={{ fontSize: 60 }} color="primary" />} text="回数" />}
             measuredValue="5回"
           />
           <ShortResult
             metrics={
-              <TextWithIcon icon={<LocalFireDepartmentIcon fontSize="large" color="primary" />} text="消費カロリー" />
+              <TextWithIcon
+                icon={<LocalFireDepartmentIcon sx={{ fontSize: 60 }} color="primary" />}
+                text="消費カロリー"
+              />
             }
             measuredValue="92kcal"
           />
         </Stack>
       </Grid>
+      {/* 右側 */}
       <Grid item xs={6} sx={{ mt: '7vh' }} alignContent="center" justifyContent="center">
-        <CardMedia component="img" image={result2} alt="Result2" style={{ height: '50vh', objectFit: 'contain' }} />
+        <CardMedia component="img" image={result2} alt="Result2" style={{ height: '60vh', objectFit: 'contain' }} />
       </Grid>
       <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
         <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing="50vw">

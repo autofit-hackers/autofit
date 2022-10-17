@@ -1,7 +1,7 @@
 import { Box, Button } from '@mui/material';
 
 export function FlatCard({ children }: { children: React.ReactNode }) {
-  return <Box sx={{ borderRadius: 5, p: 3, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }}>{children}</Box>;
+  return <Box sx={{ borderRadius: 5, p: 2, borderWidth: 6, borderColor: '#4AC0E3', width: '100%' }}>{children}</Box>;
 }
 
 export function FlatCardClickable({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {

@@ -19,16 +19,16 @@ export default function ResultModal({
     <>
       <Paper sx={{ marginBlock: '10vh', marginInline: '10vw', height: '80vh', borderRadius: 2 }}>
         <Grid container sx={{ paddingBlock: '2vh', paddingInline: '0vw', mx: '10' }}>
-          <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
-            <Typography variant="h5" component="h1" align="left" borderBottom={1} fontWeight="bold">
+          <Grid item xs={12} sx={{ paddingBlock: '1.5vh', paddingInline: '5vw' }}>
+            <Typography variant="h4" component="h1" align="left" borderBottom={0} fontWeight="bold">
               {instructionName}
             </Typography>
           </Grid>
           {/* 右側 */}
-          <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
+          <Grid item xs={8} sx={{ paddingBlock: 'vh', paddingLeft: '5vw', paddingRight: '1vw' }}>
             <ReactPlayer
               ref={videoPlayerRef}
-              url="../../resources/images/result/sq-video.mov"
+              url="../../resources/movie/squat-posture.mov"
               id="RepVideo"
               playing
               loop
@@ -43,7 +43,7 @@ export default function ResultModal({
             />
           </Grid>
           {/* 左 */}
-          <Grid item xs={6} sx={{ paddingInline: '5vw' }}>
+          <Grid item xs={4} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
             <div style={{ height: '50vh' }}>
               <Typography
                 variant="h5"
@@ -60,14 +60,14 @@ export default function ResultModal({
         </Grid>
         <Grid item xs={12} sx={{ paddingInline: '5vw' }}>
           <FlatCard>
-            <Typography variant="h5" component="h1" align="left" fontWeight="bold">
-              ちゃんと腰を下げたほうがいいよ
+            <Typography variant="h6" component="h1" align="left" fontWeight="bold">
+              ちゃんと腰を下げたほうがいいよ。ちゃんと腰を下げたほうがいいよ。ちゃんと腰を下げたほうがいいよ。ちゃんと腰を下げたほうがいいよ。ちゃんと腰を下げたほうがいい。
             </Typography>
           </FlatCard>
         </Grid>
       </Paper>
       <IconButton sx={{ position: 'absolute', top: '10vh', right: '10vw' }} color="primary" onClick={handleClose}>
-        <CancelIcon fontSize="large" />
+        <CancelIcon sx={{ fontSize: '4vw' }} />
       </IconButton>
     </>
   );
