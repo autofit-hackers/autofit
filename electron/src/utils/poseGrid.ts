@@ -420,10 +420,12 @@ export class PoseGrid {
   startLoopPlayback(rep: Rep, currentFrameIndex: number, numAllFrame: number, duration: number): void {
     this.updateLandmarks(rep.form[currentFrameIndex].worldLandmarks, KINECT_POSE_CONNECTIONS);
 
-    if (currentFrameIndex === numAllFrame - 1) {
-      requestAnimationFrame(() => this.startLoopPlayback(rep, 0, numAllFrame, duration));
-    } else {
-      requestAnimationFrame(() => this.startLoopPlayback(rep, currentFrameIndex + 1, numAllFrame, duration));
-    }
+    setTimeout(() => {
+      if (currentFrameIndex === numAllFrame - 1) {
+        requestAnimationFrame(() => this.startLoopPlayback(rep, 0, numAllFrame, duration));
+      } else {
+        requestAnimationFrame(() => this.startLoopPlayback(rep, currentFrameIndex + 1, numAllFrame, duration));
+      }
+    }, duration / numAllFrame);
   }
 }

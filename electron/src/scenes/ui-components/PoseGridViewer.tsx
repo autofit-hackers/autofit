@@ -5,28 +5,19 @@ import { CameraAngle, PoseGrid } from '../../utils/poseGrid';
 
 function PoseGridViewer(props: {
   gridDivRef: React.MutableRefObject<HTMLDivElement | null>;
-  poseGridRef: React.MutableRefObject<PoseGrid | null>;
+  poseGrid: React.MutableRefObject<PoseGrid | null>;
   cameraPosition: CameraAngle;
 }) {
-  const { gridDivRef, poseGridRef, cameraPosition } = props;
+  const { gridDivRef, poseGrid, cameraPosition } = props;
   const [projectionMode, setProjectionMode] = useState<'perspective' | 'parallel'>('parallel');
 
   const handleCameraTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setProjectionMode(event.target.checked ? 'parallel' : 'perspective');
-    poseGridRef.current?.changeCameraType();
+    poseGrid.current?.changeCameraType();
   };
 
   return (
-    <div
-      className="square-box"
-      style={{
-        zIndex: 2,
-        position: 'relative',
-        width: '100%',
-        height: '408px',
-        // TODO: height はピクセル指定しないと正しく表示されない
-      }}
-    >
+    <>
       <div
         className="pose-grid-container"
         ref={gridDivRef}
@@ -35,16 +26,16 @@ function PoseGridViewer(props: {
           zIndex: 1,
           textAlign: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          height: '100%',
-          width: '100%',
+          width: '65vh',
+          height: '65vh',
         }}
       />
       <IconButton
         aria-label="reset-camera-angle"
         color="primary"
         onClick={() => {
-          if (poseGridRef.current !== null) {
-            poseGridRef.current.setCameraAngle(cameraPosition);
+          if (poseGrid.current !== null) {
+            poseGrid.current.setCameraAngle(cameraPosition);
           }
         }}
         sx={{ zIndex: 2 }}
@@ -57,7 +48,7 @@ function PoseGridViewer(props: {
         inputProps={{ 'aria-label': 'controlled' }}
         sx={{ position: 'absolute', top: 0, right: 0, textAlign: 'center', zIndex: 2 }}
       />
-    </div>
+    </>
   );
 }
 

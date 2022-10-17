@@ -1,24 +1,23 @@
 import { Box, CardMedia, Chip, Grid, Modal, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import ReactPlayer from 'react-player';
-// eslint-disable-next-line import/no-unresolved
-import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
 import postureImage from '../../resources/images/formInstructionItems/knee-front-and-back.png';
 import depthImage from '../../resources/images/formInstructionItems/squat-depth.png';
 import speedImage from '../../resources/images/formInstructionItems/squat-velocity.png';
-import { phaseAtom } from './atoms';
+import { Checkpoint } from '../coaching/formEvaluation';
+import { phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
 import ResultModal from './ResultModal';
 import { FlatButton, FlatCard } from './ui-components/FlatUI';
 
 function InstructionCardClickable({
   label,
-  evaluationScore,
+  isGood,
   imageUrl,
   onClick,
 }: {
   label: string;
-  evaluationScore: number;
+  isGood: boolean;
   imageUrl: string;
   onClick: () => void;
 }) {
@@ -31,7 +30,7 @@ function InstructionCardClickable({
         />
         <CardMedia component="img" image={imageUrl} alt="image" style={{ objectFit: 'contain' }} />
         <Typography variant="h5" component="h1" fontWeight="bold">
-          {evaluationScore > 60 ? 'Good' : 'Bad'}
+          {isGood ? 'Good' : 'Bad'}
         </Typography>
         <Typography>タップして詳細を見る</Typography>
       </Stack>
@@ -41,14 +40,15 @@ function InstructionCardClickable({
 
 export default function Report2() {
   const [, setPhase] = useAtom(phaseAtom);
-  const videoPlayerRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
+  const [setRecord] = useAtom(setRecordAtom);
+  const [settings] = useAtom(SettingsAtom);
 
   const [open, setOpen] = useState(false);
-  const [instructionName, setInstructionName] = useState<'depth' | 'speed' | 'posture'>('depth');
+  const [selectedCheckpoint, setSelectedCheckpoint] = useState(settings.checkpoints[0]);
 
-  const handleOpen = (name: 'depth' | 'speed' | 'posture') => {
+  const handleOpen = (checkpoint: Checkpoint) => {
     setOpen(true);
-    setInstructionName(name);
+    setSelectedCheckpoint(checkpoint);
   };
 
   const handleClose = () => {
@@ -67,8 +67,7 @@ export default function Report2() {
         {/* 左側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
           <ReactPlayer
-            ref={videoPlayerRef}
-            url="../../resources/images/result/sq-video.mov"
+            url={setRecord.repVideoUrls.slice(-1)[0]}
             id="RepVideo"
             playing
             loop
@@ -92,8 +91,7 @@ export default function Report2() {
                 sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
               />
               <Typography variant="h5" component="h1" fontWeight="bold">
-                全体的なフォームはきれいですが、 体幹に力を入れて胴体をまっすぐに保つように。
-                歌声にもあらわれています。
+                {setRecord.resultSummary.description}
               </Typography>
             </Stack>
           </FlatCard>
@@ -101,21 +99,21 @@ export default function Report2() {
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: '5vh' }}>
             <InstructionCardClickable
               label="深さ"
-              evaluationScore={80}
+              isGood={setRecord.checkpointResults[0].isGood}
               imageUrl={depthImage}
-              onClick={() => handleOpen('depth')}
+              onClick={() => handleOpen(settings.checkpoints[0])}
             />
             <InstructionCardClickable
               label="速度"
-              evaluationScore={20}
+              isGood={setRecord.checkpointResults[1].isGood}
               imageUrl={speedImage}
-              onClick={() => handleOpen('speed')}
+              onClick={() => handleOpen(settings.checkpoints[1])}
             />
             <InstructionCardClickable
               label="姿勢"
-              evaluationScore={80}
+              isGood={setRecord.checkpointResults[2].isGood}
               imageUrl={postureImage}
-              onClick={() => handleOpen('posture')}
+              onClick={() => handleOpen(settings.checkpoints[2])}
             />
           </Stack>
         </Grid>
@@ -133,7 +131,12 @@ export default function Report2() {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <ResultModal handleClose={handleClose} instructionName={instructionName} />
+        <ResultModal
+          handleClose={handleClose}
+          checkpoint={selectedCheckpoint}
+          checkResult={setRecord.checkpointResults[selectedCheckpoint.id]}
+          worstRep={setRecord.reps[setRecord.checkpointResults[selectedCheckpoint.id].worstRepIndex]}
+        />
       </Modal>
     </div>
   );
