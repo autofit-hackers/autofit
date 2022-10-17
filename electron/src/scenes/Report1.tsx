@@ -39,6 +39,7 @@ function ShortResult(props: { metrics: ReactElement; measuredValue: string }) {
 }
 
 export default function Report1() {
+  useDummySetRecordIfDebugMode();
   return (
     <Grid container>
       <Grid item xs={12} sx={{ mt: '7vh' }}>
@@ -73,3 +74,4 @@ export default function Report1() {
     </Grid>
   );
 }
+

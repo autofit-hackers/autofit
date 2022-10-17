@@ -17,7 +17,7 @@ export type Rep = {
   videoUrl: string;
   instructionItemErrorScores: number[];
   coordinateErrors: number[];
-  guidelineSymbolsList: GuidelineSymbols[];
+  guidelineSymbolsList?: GuidelineSymbols[];
 };
 
 export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
