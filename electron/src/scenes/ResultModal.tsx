@@ -28,7 +28,7 @@ export default function ResultModal({
           <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
             <ReactPlayer
               ref={videoPlayerRef}
-              url="../../resources/images/result/sq-video.mov"
+              url="../../resources/movie/squat-speed.mov"
               id="RepVideo"
               playing
               loop
