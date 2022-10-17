@@ -1,9 +1,12 @@
-import { Box, Chip, Grid, Modal, Stack, Typography } from '@mui/material';
+import { Box, CardMedia, Chip, Grid, Modal, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 // eslint-disable-next-line import/no-unresolved
 import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
+import postureImage from '../../resources/images/formInstructionItems/knee-front-and-back.png';
+import depthImage from '../../resources/images/formInstructionItems/squat-depth.png';
+import speedImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 import { phaseAtom } from './atoms';
 import ResultModal from './ResultModal';
 import { FlatButton, FlatCard } from './ui-components/FlatUI';
@@ -11,10 +14,12 @@ import { FlatButton, FlatCard } from './ui-components/FlatUI';
 function InstructionCardClickable({
   label,
   evaluationScore,
+  imageUrl,
   onClick,
 }: {
   label: string;
   evaluationScore: number;
+  imageUrl: string;
   onClick: () => void;
 }) {
   return (
@@ -24,9 +29,11 @@ function InstructionCardClickable({
           label={label}
           sx={{ fontWeight: 'bold', color: 'white', backgroundColor: '#4AC0E3', paddingInline: 1 }}
         />
+        <CardMedia component="img" image={imageUrl} alt="image" style={{ objectFit: 'contain' }} />
         <Typography variant="h5" component="h1" fontWeight="bold">
           {evaluationScore > 60 ? 'Good' : 'Bad'}
         </Typography>
+        <Typography>タップして詳細を見る</Typography>
       </Stack>
     </Box>
   );
@@ -92,9 +99,24 @@ export default function Report2() {
           </FlatCard>
           {/* 各評価項目のカード */}
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: '5vh' }}>
-            <InstructionCardClickable label="深さ" evaluationScore={80} onClick={() => handleOpen('depth')} />
-            <InstructionCardClickable label="速度" evaluationScore={20} onClick={() => handleOpen('speed')} />
-            <InstructionCardClickable label="姿勢" evaluationScore={80} onClick={() => handleOpen('posture')} />
+            <InstructionCardClickable
+              label="深さ"
+              evaluationScore={80}
+              imageUrl={depthImage}
+              onClick={() => handleOpen('depth')}
+            />
+            <InstructionCardClickable
+              label="速度"
+              evaluationScore={20}
+              imageUrl={speedImage}
+              onClick={() => handleOpen('speed')}
+            />
+            <InstructionCardClickable
+              label="姿勢"
+              evaluationScore={80}
+              imageUrl={postureImage}
+              onClick={() => handleOpen('posture')}
+            />
           </Stack>
         </Grid>
         {/* フッター */}
