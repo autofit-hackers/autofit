@@ -127,7 +127,7 @@ export default function Report2() {
         <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing="50vw">
             <FlatButton text="戻る" onClick={() => setPhase((prev) => prev - 1)} />
-            <FlatButton text="次へ" onClick={() => setPhase((prev) => prev + 1)} />
+            <FlatButton text="終了" onClick={() => setPhase((prev) => prev + 1)} />
           </Stack>
         </Grid>
       </Grid>

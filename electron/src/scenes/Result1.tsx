@@ -52,18 +52,22 @@ export default function Report1() {
     <Grid container sx={{ paddingBlock: '5vh', maxHeight: '90vh' }}>
       <HeaderGridItem />
       {/* 左側 */}
-      <Grid item xs={6} sx={{ mt: '5vh' }}>
+      <Grid item xs={6} sx={{ mt: '2vh' }}>
         <Stack>
-          <Typography
-            variant="h1"
-            component="h1"
-            align="center"
-            borderBottom={1}
-            sx={{ mx: '5vw', fontSize: 150 }}
-            fontWeight="bold"
+          <Stack
+            direction="row"
+            justifyContent="center"
+            alignItems="flex-end"
+            spacing={0}
+            sx={{ borderBottomWidth: 1, borderColor: 'black', marginInline: '5vw', paddingBottom: '1vh' }}
           >
-            {setRecord.resultSummary.totalScore}
-          </Typography>
+            <Typography variant="h1" component="h1" align="center" sx={{ mx: '1vw', fontSize: 150 }} fontWeight="bold">
+              {setRecord.resultSummary.totalScore}
+            </Typography>
+            <Typography variant="h4" component="h1" align="center" sx={{ fontSize: 30 }} fontWeight="bold">
+              点
+            </Typography>
+          </Stack>
           <ShortResult
             metrics={<TextWithIcon icon={<AccessTimeIcon sx={{ fontSize: 60 }} color="primary" />} text="時間" />}
             measuredValue={`${setRecord.resultSummary.timeToComplete}秒`}
