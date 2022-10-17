@@ -8,6 +8,7 @@ type KeyframesIndex = {
   descendingMiddle: number | undefined;
 };
 type RealtimeMessage = { small: string; large: string };
+type CheckpointErrors = { errorScore: number; coordinateError: number }[];
 
 export type Rep = {
   index: number;
@@ -15,8 +16,7 @@ export type Rep = {
   keyframesIndex: KeyframesIndex;
   realtimeMessage: RealtimeMessage;
   videoUrl: string;
-  instructionItemErrorScores: number[];
-  coordinateErrors: number[];
+  checkpointErrors: CheckpointErrors;
   guidelineSymbolsList: GuidelineSymbols[];
 };
 
@@ -36,8 +36,7 @@ export const resetRep = (repIndex: number): Rep => ({
   },
   realtimeMessage: { small: '', large: '' },
   videoUrl: '',
-  coordinateErrors: [],
-  instructionItemErrorScores: [],
+  checkpointErrors: [],
   guidelineSymbolsList: [],
 });
 
