@@ -37,6 +37,9 @@ export default function BodyTracking() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
 
+  // 映像保存用
+  const repVideoRecorder = useRef<MediaRecorder | null>(null);
+
   // Kinect
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
@@ -132,6 +135,7 @@ export default function BodyTracking() {
           PreSetProcess(canvasCtx, currentPose, guideItems, isAllGuideCleared, causeReRendering, timerKey);
         } else if (scene.current === 'InSet') {
           InSetProcess(
+            canvasRef,
             poseGrid,
             currentPose,
             repState,
@@ -142,6 +146,7 @@ export default function BodyTracking() {
             causeReRendering,
             setPhase,
             targetRepCount,
+            repVideoRecorder,
           );
         }
       } else if (poseGrid.current) {
@@ -160,6 +165,15 @@ export default function BodyTracking() {
   useEffect(() => {
     startKinect(kinect, onResults);
     // REF: ここでStopKinect呼べるかもしれない（https://blog.techscore.com/entry/2022/06/10/080000）
+
+    // このコンポーネントのアンマウント時に実行される
+    // WARN: 最初にもよばれる
+    return () => {
+      // レップとして保存されていない映像は破棄する
+      if (repVideoRecorder.current != null && repVideoRecorder.current.state === 'recording') {
+        repVideoRecorder.current = null;
+      }
+    };
   }, [kinect, onResults]);
 
   return (
