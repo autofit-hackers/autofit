@@ -25,6 +25,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Rep } from '../training_data/rep';
 import { KINECT_POSE_CONNECTIONS, landmarkToVector3 } from '../training_data/pose';
 
 import { Set } from '../training_data/set';
@@ -413,6 +414,16 @@ export class PoseGrid {
         this.updateOrbitControls();
       }
       requestAnimationFrame(() => this.startSynchronizingToVideo(videoRef, setRecord, displayedRepIndex));
+    }
+  }
+
+  startLoopPlayback(rep: Rep, currentFrameIndex: number, numAllFrame: number, duration: number): void {
+    this.updateLandmarks(rep.form[currentFrameIndex].worldLandmarks, KINECT_POSE_CONNECTIONS);
+
+    if (currentFrameIndex === numAllFrame - 1) {
+      requestAnimationFrame(() => this.startLoopPlayback(rep, 0, numAllFrame, duration));
+    } else {
+      requestAnimationFrame(() => this.startLoopPlayback(rep, currentFrameIndex + 1, numAllFrame, duration));
     }
   }
 }
