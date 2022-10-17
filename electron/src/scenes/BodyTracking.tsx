@@ -8,7 +8,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
+import { kinectAtom, phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
 import { InSetProcess, InSetScene } from './InSetScene';
 import { PreSetProcess, PreSetScene } from './PreSetScene';
@@ -36,6 +36,9 @@ export default function BodyTracking() {
   // RGB描画
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
+
+  // 映像保存用
+  const repVideoRecorder = useRef<MediaRecorder | null>(null);
 
   // Kinect
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -72,8 +75,8 @@ export default function BodyTracking() {
   const repRef = useRef(resetRep(0));
   const repState = useRef(resetRepState());
 
-  // リザルト画面のフォーム指導項目
-  const [formInstructionItems] = useAtom(formInstructionItemsAtom);
+  // Settings
+  const [settings] = useAtom(SettingsAtom);
 
   // 目標レップ数
   const targetRepCount = setRecord.setInfo.targetReps;
@@ -98,7 +101,7 @@ export default function BodyTracking() {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
-      } else if (scene.current === 'PreSet') {
+      } else {
         renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
 
@@ -132,16 +135,18 @@ export default function BodyTracking() {
           PreSetProcess(canvasCtx, currentPose, guideItems, isAllGuideCleared, causeReRendering, timerKey);
         } else if (scene.current === 'InSet') {
           InSetProcess(
+            canvasRef,
             poseGrid,
             currentPose,
             repState,
             setRef,
             repRef,
-            formInstructionItems,
+            settings.checkpoints,
             setSetRecord,
             causeReRendering,
             setPhase,
             targetRepCount,
+            repVideoRecorder,
           );
         }
       } else if (poseGrid.current) {
@@ -160,6 +165,15 @@ export default function BodyTracking() {
   useEffect(() => {
     startKinect(kinect, onResults);
     // REF: ここでStopKinect呼べるかもしれない（https://blog.techscore.com/entry/2022/06/10/080000）
+
+    // このコンポーネントのアンマウント時に実行される
+    // WARN: 最初にもよばれる
+    return () => {
+      // レップとして保存されていない映像は破棄する
+      if (repVideoRecorder.current != null && repVideoRecorder.current.state === 'recording') {
+        repVideoRecorder.current = null;
+      }
+    };
   }, [kinect, onResults]);
 
   return (
