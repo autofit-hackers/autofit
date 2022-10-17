@@ -4,7 +4,7 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { CardMedia, Grid, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { ReactElement } from 'react';
-import result2 from '../../resources/images/chest.png';
+import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
 import { phaseAtom } from './atoms';
 import { FlatButton } from './ui-components/FlatUI';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
