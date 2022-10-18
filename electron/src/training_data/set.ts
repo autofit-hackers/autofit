@@ -1,10 +1,11 @@
-import type { InstructionItemResult } from '../coaching/formInstruction';
+import type { CheckResult } from '../coaching/formEvaluation';
 import { Rep } from './rep';
 
-export type SetSummary = {
-  weight?: number;
-  description: string[];
+export type SetResultSummary = {
   totalScore: number;
+  description: string;
+  timeToComplete: number;
+  calorieConsumption: number;
 };
 
 export type SetInfo = {
@@ -18,8 +19,8 @@ export type SetInfo = {
 export type Set = {
   setInfo: SetInfo;
   reps: Rep[];
-  formEvaluationResults: InstructionItemResult[];
-  summary: SetSummary;
+  checkResult: CheckResult[];
+  resultSummary: SetResultSummary;
   repVideoUrls: string[];
   repVideoBlobs: Blob[];
 };
@@ -29,8 +30,8 @@ export const resetSet = (
 ): Set => ({
   setInfo,
   reps: [],
-  formEvaluationResults: [],
-  summary: { description: [''], totalScore: 0 },
+  checkResult: [],
+  resultSummary: { totalScore: 0, description: '', timeToComplete: 0, calorieConsumption: 0 },
   repVideoUrls: [],
   repVideoBlobs: [],
 });

@@ -8,7 +8,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
+import { kinectAtom, phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
 import { InSetProcess, InSetScene } from './InSetScene';
 import { PreSetProcess, PreSetScene } from './PreSetScene';
@@ -75,8 +75,8 @@ export default function BodyTracking() {
   const repRef = useRef(resetRep(0));
   const repState = useRef(resetRepState());
 
-  // リザルト画面のフォーム指導項目
-  const [formInstructionItems] = useAtom(formInstructionItemsAtom);
+  // Settings
+  const [settings] = useAtom(SettingsAtom);
 
   // 目標レップ数
   const targetRepCount = setRecord.setInfo.targetReps;
@@ -140,7 +140,7 @@ export default function BodyTracking() {
             repState,
             setRef,
             repRef,
-            formInstructionItems,
+            settings.checkpoints,
             setSetRecord,
             causeReRendering,
             setPhase,

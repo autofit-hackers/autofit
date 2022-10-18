@@ -15,9 +15,9 @@ export type Rep = {
   keyframesIndex: KeyframesIndex;
   realtimeMessage: RealtimeMessage;
   videoUrl: string;
-  instructionItemErrorScores: number[];
+  errorScores: number[];
   coordinateErrors: number[];
-  guidelineSymbolsList?: GuidelineSymbols[];
+  guidelineSymbolsList: GuidelineSymbols[];
 };
 
 export const appendPoseToForm = (prevRep: Rep, pose: Pose): Rep => ({
@@ -36,8 +36,8 @@ export const resetRep = (repIndex: number): Rep => ({
   },
   realtimeMessage: { small: '', large: '' },
   videoUrl: '',
+  errorScores: [],
   coordinateErrors: [],
-  instructionItemErrorScores: [],
   guidelineSymbolsList: [],
 });
 

@@ -1,29 +1,22 @@
 import { atom } from 'jotai';
-import { InstructionItem } from '../coaching/formInstruction';
-import kneeFrontAndBack from '../coaching/squat-form-instructions/kneeFrontAndBack';
-import kneeInAndOut from '../coaching/squat-form-instructions/kneeInAndOut';
-import squatDepth from '../coaching/squat-form-instructions/squatDepth';
-import squatVelocity from '../coaching/squat-form-instructions/squatVelocity';
-import stanceWidth from '../coaching/squat-form-instructions/stanceWidth';
+import dropDepth from '../coaching/squat/dropDepth';
+import kneeFrontBack from '../coaching/squat/kneeFrontBack';
+import velocity from '../coaching/squat/velocity';
+import { Checkpoint } from '../coaching/formEvaluation';
 import { resetSet, Set } from '../training_data/set';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const KinectAzure = require('kinect-azure');
 
 export const phaseAtom = atom<number>(0);
 
-export const formInstructionItemsAtom = atom<InstructionItem[]>([
-  squatDepth,
-  kneeInAndOut,
-  stanceWidth,
-  kneeFrontAndBack,
-  squatVelocity,
-]);
-
 export const setRecordAtom = atom<Set>(resetSet());
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 export const kinectAtom = atom<typeof KinectAzure>(new KinectAzure());
 
-export const playSoundAtom = atom<boolean>(true);
-
-export const formDebugAtom = atom<boolean>(false);
+type Settings = { playSound: boolean; checkpoints: Checkpoint[]; isDebugMode: boolean };
+export const SettingsAtom = atom<Settings>({
+  playSound: true,
+  checkpoints: [dropDepth, velocity, kneeFrontBack],
+  isDebugMode: false,
+});

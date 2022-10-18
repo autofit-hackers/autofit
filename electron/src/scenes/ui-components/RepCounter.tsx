@@ -8,7 +8,6 @@ export default function RepCounter(props: { currentCount: number; targetCount: n
   for (let i = 0; i < targetCount; i += 1) {
     dummyArray.push(i);
   }
-  console.log('currenCount', currentCount);
 
   return (
     <div style={{ display: 'flex', ...style }}>
