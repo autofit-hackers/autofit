@@ -105,19 +105,19 @@ export default function Report2() {
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: '5vh' }}>
             <InstructionCardClickable
               label="深さ"
-              isGood={setRecord.checkpointResults[0].isGood}
+              isGood={setRecord.checkResult[0].isGood}
               imageUrl={depthImage}
               onClick={() => handleOpen(settings.checkpoints[0])}
             />
             <InstructionCardClickable
               label="速度"
-              isGood={setRecord.checkpointResults[1].isGood}
+              isGood={setRecord.checkResult[1].isGood}
               imageUrl={speedImage}
               onClick={() => handleOpen(settings.checkpoints[1])}
             />
             <InstructionCardClickable
               label="姿勢"
-              isGood={setRecord.checkpointResults[2].isGood}
+              isGood={setRecord.checkResult[2].isGood}
               imageUrl={postureImage}
               onClick={() => handleOpen(settings.checkpoints[2])}
             />
@@ -140,8 +140,8 @@ export default function Report2() {
         <ResultModal
           handleClose={handleClose}
           checkpoint={selectedCheckpoint}
-          checkResult={setRecord.checkpointResults[selectedCheckpoint.id]}
-          worstRep={setRecord.reps[setRecord.checkpointResults[selectedCheckpoint.id].worstRepIndex]}
+          checkResult={setRecord.checkResult[selectedCheckpoint.id]}
+          worstRep={setRecord.reps[setRecord.checkResult[selectedCheckpoint.id].worstRepIndex]}
         />
       </Modal>
     </div>

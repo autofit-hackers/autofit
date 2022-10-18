@@ -3,7 +3,7 @@ import { Rep } from './rep';
 
 export type SetResultSummary = {
   totalScore: number;
-  description: string[];
+  description: string;
   timeToComplete: number;
   calorieConsumption: number;
 };
@@ -18,7 +18,7 @@ export type SetInfo = {
 export type Set = {
   setInfo: SetInfo;
   reps: Rep[];
-  checkpointResults: CheckResult[];
+  checkResult: CheckResult[];
   resultSummary: SetResultSummary;
   repVideoUrls: string[];
   repVideoBlobs: Blob[];
@@ -27,8 +27,8 @@ export type Set = {
 export const resetSet = (setInfo = { userName: '', exerciseName: '', targetReps: 0, targetWeight: 0 }): Set => ({
   setInfo,
   reps: [],
-  checkpointResults: [],
-  resultSummary: { totalScore: 0, description: [''], timeToComplete: 0, calorieConsumption: 0 },
+  checkResult: [],
+  resultSummary: { totalScore: 0, description: '', timeToComplete: 0, calorieConsumption: 0 },
   repVideoUrls: [],
   repVideoBlobs: [],
 });

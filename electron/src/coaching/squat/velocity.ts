@@ -5,7 +5,7 @@ import squatVelocityImage from '../../../resources/images/formInstructionItems/s
 const velocity: Checkpoint = {
   id: 1,
   nameEN: 'Velocity',
-  labelJP: '速度',
+  nameJP: '速度',
   iconImageUrl: squatVelocityImage,
   lectureVideoUrl: '../../../resources/movie/squat-speed.mov',
   evaluationTextTemplate: {

@@ -46,7 +46,7 @@ export default function ResultModal({
         <Grid container sx={{ paddingBlock: '2vh', paddingInline: '0vw', mx: '10' }}>
           <Grid item xs={12} sx={{ paddingBlock: '2vh', paddingInline: '5vw' }}>
             <Typography variant="h4" component="h1" align="left" borderBottom="1vh" fontWeight="bold">
-              {checkpoint.labelJP}
+              {checkpoint.nameJP}
             </Typography>
           </Grid>
           {/* 右側 */}
