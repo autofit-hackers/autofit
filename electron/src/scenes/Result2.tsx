@@ -6,7 +6,7 @@ import postureImage from '../../resources/images/formInstructionItems/knee-front
 import depthImage from '../../resources/images/formInstructionItems/squat-depth.png';
 import speedImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 import { Checkpoint } from '../coaching/formEvaluation';
-import { resetSet } from '../training_data/set';
+import { resetSet, revokeRepVideoUrls } from '../training_data/set';
 import { phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
 import ResultModal from './ResultModal';
 import { FlatButton, FlatCard } from './ui-components/FlatUI';
@@ -67,6 +67,7 @@ export default function Report2() {
   };
 
   const handleFinish = () => {
+    revokeRepVideoUrls(setRecord);
     setSetRecord(resetSet());
     setPhase(0);
   };
