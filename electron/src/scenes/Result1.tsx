@@ -6,7 +6,7 @@ import { useAtom } from 'jotai';
 import { ReactElement } from 'react';
 import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
 import { phaseAtom } from './atoms';
-import { HeaderGridItem } from './Report2';
+import { HeaderGridItem } from './Result2';
 import { FlatButton } from './ui-components/FlatUI';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
 
