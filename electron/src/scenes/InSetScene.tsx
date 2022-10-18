@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import * as Draw2D from '@mediapipe/drawing_utils';
 import { createTheme, CssBaseline, ThemeProvider, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
@@ -15,7 +14,6 @@ import RepCounter from './ui-components/RepCounter';
 
 export const InSetProcess = (
   canvasRef: RefObject<HTMLCanvasElement>,
-  canvasCtx: CanvasRenderingContext2D,
   poseGrid: MutableRefObject<PoseGrid | null>,
   currentPose: Pose,
   repState: MutableRefObject<RepState>,
@@ -28,18 +26,6 @@ export const InSetProcess = (
   targetRepCount: number,
   repVideoRecorder: MutableRefObject<MediaRecorder | null>,
 ) => {
-  // pose estimationの結果を描画
-  Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
-    color: 'white',
-    lineWidth: 4,
-    radius: 8,
-    fillColor: 'lightgreen',
-  });
-  Draw2D.drawConnectors(canvasCtx, currentPose.landmarks, KINECT_POSE_CONNECTIONS, {
-    color: 'white',
-    lineWidth: 4,
-  });
-
   // PoseGridの描画
   if (poseGrid.current) {
     poseGrid.current.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
@@ -78,7 +64,6 @@ export const InSetProcess = (
     if (repVideoRecorder.current) {
       repVideoRecorder.current.stop();
     }
-
     // 完了したレップのフォームを分析・評価
     repRef.current = calculateKeyframes(repRef.current);
     repRef.current = evaluateRep(repRef.current, checkpoints);
@@ -149,7 +134,6 @@ export function InSetScene(props: {
         targetCount={targetRepCount}
         style={{ position: 'absolute', top: '5vh', left: '5vh', zIndex: 2 }}
       />
-      <canvas ref={canvasRef} className="rgb-canvas" style={{ position: 'absolute', height: '50vh', zIndex: -1 }} />
       <div
         className="square-box"
         style={{
@@ -191,6 +175,11 @@ export function InSetScene(props: {
         <Typography fontWeight="bold" variant="h3" sx={{ margin: '10px' }}>
           {currentRepCount === 0 ? '開始してください' : '強く立ち上がる'}
         </Typography>
+      </Box>
+      <Box sx={{ position: 'absolute', top: '100vh' }}>
+        <canvas ref={canvasRef} className="dummy_canvas" width={640} height={720} hidden />
+        {/* FIXME: The canvas element collapses without hard-coded width and height */}
+        {/* The width and height above are the same to PreSetScene */}
       </Box>
     </ThemeProvider>
   );

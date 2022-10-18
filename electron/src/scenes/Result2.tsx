@@ -7,7 +7,8 @@ import depthImage from '../../resources/images/formInstructionItems/squat-depth.
 import speedImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 import { Checkpoint } from '../coaching/formEvaluation';
 import { resetSet, revokeRepVideoUrls } from '../training_data/set';
-import { phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
+import { phaseAtom, setRecordAtom, settingsAtom } from './atoms';
+import saveExercise from './handlers/save-exercise';
 import ResultModal from './ResultModal';
 import { FlatButton, FlatCard } from './ui-components/FlatUI';
 
@@ -52,7 +53,7 @@ export function HeaderGridItem() {
 export default function Report2() {
   const [, setPhase] = useAtom(phaseAtom);
   const [setRecord, setSetRecord] = useAtom(setRecordAtom);
-  const [settings] = useAtom(SettingsAtom);
+  const [settings] = useAtom(settingsAtom);
 
   const [open, setOpen] = useState(false);
   const [selectedCheckpoint, setSelectedCheckpoint] = useState(settings.checkpoints[0]);
@@ -67,9 +68,13 @@ export default function Report2() {
   };
 
   const handleFinish = () => {
-    revokeRepVideoUrls(setRecord);
-    setSetRecord(resetSet());
-    setPhase(0);
+    saveExercise(setRecord);
+    // TODO:データの保存をawaitする
+    setTimeout(() => {
+      revokeRepVideoUrls(setRecord);
+      setSetRecord(resetSet());
+      setPhase(0);
+    }, 1000);
   };
 
   return (
