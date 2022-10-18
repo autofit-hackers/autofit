@@ -6,6 +6,7 @@ import postureImage from '../../resources/images/formInstructionItems/knee-front
 import depthImage from '../../resources/images/formInstructionItems/squat-depth.png';
 import speedImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 import { Checkpoint } from '../coaching/formEvaluation';
+import { resetSet, revokeRepVideoUrls } from '../training_data/set';
 import { phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
 import ResultModal from './ResultModal';
 import { FlatButton, FlatCard } from './ui-components/FlatUI';
@@ -50,7 +51,7 @@ export function HeaderGridItem() {
 
 export default function Report2() {
   const [, setPhase] = useAtom(phaseAtom);
-  const [setRecord] = useAtom(setRecordAtom);
+  const [setRecord, setSetRecord] = useAtom(setRecordAtom);
   const [settings] = useAtom(SettingsAtom);
 
   const [open, setOpen] = useState(false);
@@ -63,6 +64,12 @@ export default function Report2() {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleFinish = () => {
+    revokeRepVideoUrls(setRecord);
+    setSetRecord(resetSet());
+    setPhase(0);
   };
 
   return (
@@ -127,7 +134,7 @@ export default function Report2() {
         <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing="50vw">
             <FlatButton text="戻る" onClick={() => setPhase((prev) => prev - 1)} />
-            <FlatButton text="終了" onClick={() => setPhase((prev) => prev + 1)} />
+            <FlatButton text="終了" onClick={() => handleFinish()} />
           </Stack>
         </Grid>
       </Grid>
