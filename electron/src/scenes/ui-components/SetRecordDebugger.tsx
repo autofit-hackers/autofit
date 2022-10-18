@@ -1,7 +1,7 @@
 import { Button } from '@mui/material';
 import fs from 'fs';
 import { useAtom } from 'jotai';
-import { setRecordAtom, SettingsAtom } from '../atoms';
+import { setRecordAtom, settingsAtom } from '../atoms';
 
 export default function SaveSetRecordButton() {
   const [setRecord] = useAtom(setRecordAtom);
@@ -32,7 +32,7 @@ export default function SaveSetRecordButton() {
  */
 export const useDummySetRecordIfDebugMode = (): void => {
   const [setRecord] = useAtom(setRecordAtom);
-  const [settings] = useAtom(SettingsAtom);
+  const [settings] = useAtom(settingsAtom);
 
   if (settings.isDebugMode && setRecord.reps.length === 0) {
     // TODO: ダミーのsetRecordを作成する

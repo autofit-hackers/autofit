@@ -6,7 +6,7 @@ import postureImage from '../../resources/images/formInstructionItems/knee-front
 import depthImage from '../../resources/images/formInstructionItems/squat-depth.png';
 import speedImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 import { Checkpoint } from '../coaching/formEvaluation';
-import { phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
+import { phaseAtom, setRecordAtom, settingsAtom } from './atoms';
 import saveExercise from './handlers/save-exercise';
 import ResultModal from './ResultModal';
 import { FlatButton, FlatCard } from './ui-components/FlatUI';
@@ -52,7 +52,7 @@ export function HeaderGridItem() {
 export default function Report2() {
   const [, setPhase] = useAtom(phaseAtom);
   const [setRecord] = useAtom(setRecordAtom);
-  const [settings] = useAtom(SettingsAtom);
+  const [settings] = useAtom(settingsAtom);
 
   const [open, setOpen] = useState(false);
   const [selectedCheckpoint, setSelectedCheckpoint] = useState(settings.checkpoints[0]);

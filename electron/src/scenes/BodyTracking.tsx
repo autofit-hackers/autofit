@@ -8,7 +8,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { kinectAtom, phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
+import { kinectAtom, phaseAtom, setRecordAtom, settingsAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
 import { InSetProcess, InSetScene } from './InSetScene';
 import { PreSetProcess, PreSetScene } from './PreSetScene';
@@ -76,7 +76,7 @@ export default function BodyTracking() {
   const repState = useRef(resetRepState());
 
   // Settings
-  const [settings] = useAtom(SettingsAtom);
+  const [settings] = useAtom(settingsAtom);
 
   // 目標レップ数
   const targetRepCount = setRecord.setInfo.targetReps;
