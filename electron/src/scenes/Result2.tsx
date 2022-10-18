@@ -69,9 +69,12 @@ export default function Report2() {
 
   const handleFinish = () => {
     saveExercise(setRecord);
-    revokeRepVideoUrls(setRecord);
-    setSetRecord(resetSet());
-    setPhase(0);
+    // TODO:データの保存をawaitする
+    setTimeout(() => {
+      revokeRepVideoUrls(setRecord);
+      setSetRecord(resetSet());
+      setPhase(0);
+    }, 1000);
   };
 
   return (
