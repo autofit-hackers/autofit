@@ -105,7 +105,7 @@ const decideSummaryTextForSet = (set: Set, checkpoints: Checkpoint[]) => {
     const worstCheckpointName = checkpoints[scores.indexOf(Math.min(...scores))].nameJP;
     const bestCheckpointName = checkpoints[scores.indexOf(Math.max(...scores))].nameJP;
 
-    return `${bestCheckpointName}の点ではとても上手にできていました！一方で${worstCheckpointName}はまだ改善できそうですので、ポイントをタップして確認しましょう。`;
+    return `とてもいい${bestCheckpointName}でスクワットできています。一方で${worstCheckpointName}はまだ改善できそうですので、ポイントをタップして確認しましょう。`;
   }
 
   return 'まだスクワットに慣れていないようです。各ポイントをタップして改善点を確認しましょう。';
