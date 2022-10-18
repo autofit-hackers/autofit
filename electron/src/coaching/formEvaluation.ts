@@ -98,17 +98,17 @@ const calculateScoreForEachCheckpoint = (repScores: number[]) =>
 const decideSummaryTextForSet = (set: Set, checkpoints: Checkpoint[]) => {
   const isGoods = set.checkResult.map((result) => result.isGood);
   if (isGoods.every((isGood) => isGood)) {
-    return '全ての項目が完璧でした。\nおめでとうございます！';
+    return '高得点おめでとうございます！お手本のようなスクワットでした！';
   }
   if (isGoods.some((isGood) => isGood)) {
     const scores = set.checkResult.map((result) => result.scoreForSet);
     const worstCheckpointName = checkpoints[scores.indexOf(Math.min(...scores))].nameJP;
     const bestCheckpointName = checkpoints[scores.indexOf(Math.max(...scores))].nameJP;
 
-    return `${bestCheckpointName}に関しては大変素晴らしいです。\n${worstCheckpointName}のボタンをクリックして改善点を確認しましょう。`;
+    return `${bestCheckpointName}の点ではとても上手にできていました！一方で${worstCheckpointName}はまだ改善できそうですので、ポイントをタップして確認しましょう。`;
   }
 
-  return 'まだスクワットに慣れていないみたいです。\n各項目をクリックして改善点を確認しましょう。';
+  return 'まだスクワットに慣れていないようです。各ポイントをタップして改善点を確認しましょう。';
 };
 
 // １レップのフォームを評価する
