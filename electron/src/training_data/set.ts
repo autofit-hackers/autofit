@@ -37,3 +37,7 @@ export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
   ...prevSet,
   reps: [...prevSet.reps, rep],
 });
+
+export const revokeRepVideoUrls = (set: Set): void => {
+  set.repVideoUrls.forEach((url) => URL.revokeObjectURL(url));
+};
