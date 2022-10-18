@@ -30,7 +30,11 @@ const dropDepth: Checkpoint = {
       afterNumber:
         'cmほどしゃがみが浅いです。せっかく筋トレをしているのに、しゃがみが浅すぎると負荷が減ってしまってもったいないので、腰を太ももが平行になるまで落としましょう。',
     },
-    normal: { beforeNumber: 'ちょうどよい深さで腰を落とせています。この調子。', afterNumber: '' },
+    normal: {
+      beforeNumber:
+        '左の動画のように、腰は太ももが床と平行になるところまで落とせています。次回以降も意識して継続してください。',
+      afterNumber: '',
+    },
     positive: {
       beforeNumber: '',
       afterNumber:
