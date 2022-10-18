@@ -95,15 +95,14 @@ export default function BodyTracking() {
         throw new Error('canvasCtx is null');
       }
       canvasCtx.save();
-      canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      canvasCtx.clearRect(0, 0, data.colorImageFrame.height, data.colorImageFrame.height);
 
       if (canvasImageData.current === null) {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
-      } else if (scene.current === 'PreSet') {
-        renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
+      renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
 
       if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入

@@ -143,7 +143,6 @@ export function InSetScene(props: {
         targetCount={targetRepCount}
         style={{ position: 'absolute', top: '5vh', left: '5vh', zIndex: 2 }}
       />
-      <canvas ref={canvasRef} className="dummy_canvas" />
       <div
         className="square-box"
         style={{
@@ -184,6 +183,11 @@ export function InSetScene(props: {
         <Typography fontWeight="bold" variant="h3" sx={{ margin: '10px' }}>
           {currentRepCount === 0 ? '開始してください' : '強く立ち上がる'}
         </Typography>
+      </Box>
+      <Box sx={{ position: 'absolute', top: '100vh' }}>
+        <canvas ref={canvasRef} className="dummy_canvas" width={640} height={720} hidden />
+        {/* FIXME: The canvas element collapses without hard-coded width and height */}
+        {/* The width and height above are the same to PreSetScene */}
       </Box>
     </ThemeProvider>
   );
