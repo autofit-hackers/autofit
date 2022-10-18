@@ -3,9 +3,10 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { CardMedia, Grid, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect } from 'react';
 import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
-import { phaseAtom, setRecordAtom } from './atoms';
+import { stopKinect } from '../utils/kinect';
+import { kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import { HeaderGridItem } from './Result2';
 import { FlatButton } from './ui-components/FlatUI';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
@@ -47,6 +48,14 @@ export default function Report1() {
   useDummySetRecordIfDebugMode();
   const [, setPhase] = useAtom(phaseAtom);
   const [setRecord] = useAtom(setRecordAtom);
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [kinect] = useAtom(kinectAtom);
+
+  // Kinectを停止する
+  useEffect(() => {
+    stopKinect(kinect);
+  }, [kinect]);
 
   return (
     <Grid container sx={{ paddingBlock: '5vh', maxHeight: '90vh' }}>
