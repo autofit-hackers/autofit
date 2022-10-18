@@ -32,7 +32,7 @@ const kneeFrontBack: Checkpoint = {
     normal: 'ちょうど良い膝の曲げ方です。',
     positive: '膝が前に出過ぎています。',
   },
-  poseGridCameraAngle: { theta: 90, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 180 },
   thresholds: { upper: 15, middle: 1, lower: -1 },
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);

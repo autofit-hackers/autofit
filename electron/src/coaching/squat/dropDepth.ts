@@ -46,7 +46,7 @@ const dropDepth: Checkpoint = {
     normal: 'ちょうどよい深さで腰を落とせています。この調子。',
     positive: '腰は太ももが床と平行になるところまで落とせば十分です。',
   },
-  poseGridCameraAngle: { theta: 90, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 180 },
   thresholds: { upper: 100, middle: 80, lower: 60 },
   // しゃがみが深いほど角度は大きい
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
