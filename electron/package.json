@@ -4,7 +4,7 @@
   "private": true,
   "version": "2.0.0",
   "description": "Vite React Electron boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
+  "author": "autofit Inc. <info@autofit.co.jp>",
   "license": "MIT",
   "main": "dist/src/ipc/main/index.js",
   "scripts": {
