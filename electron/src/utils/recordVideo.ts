@@ -33,11 +33,7 @@ export const startCapturingRepVideo = (canvas: HTMLCanvasElement, set: Set): Med
   return recorder;
 };
 
-// TODO: 上の関数とまとめたい
-export const startCapturingSetVideo = (
-  canvas: HTMLCanvasElement,
-  setVideoUrl: React.MutableRefObject<string>,
-): MediaRecorder => {
+export const startCapturingSetVideo = (canvas: HTMLCanvasElement, set: Set): MediaRecorder => {
   const stream = canvas.captureStream();
   const recorder = new MediaRecorder(stream, {
     mimeType: 'video/webm;codecs=vp9',
@@ -61,7 +57,9 @@ export const startCapturingSetVideo = (
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
       // eslint-disable-next-line no-param-reassign
-      setVideoUrl.current = url;
+      set.setVideoBlob = blob;
+      // eslint-disable-next-line no-param-reassign
+      set.setVideoUrl = url;
     }
   };
 

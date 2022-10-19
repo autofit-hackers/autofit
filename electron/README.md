@@ -15,6 +15,12 @@ yarn
 yarn run copy-dlls
 ```
 
+### Release
+
+```
+yarn run release
+```
+
 ## Tips
 
 ### How to update Kinect firmware
