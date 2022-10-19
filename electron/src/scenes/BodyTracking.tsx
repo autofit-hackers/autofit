@@ -199,6 +199,7 @@ export default function BodyTracking() {
           isAllGuideCleared={isAllGuideCleared}
           scene={scene}
           causeReRendering={causeReRendering}
+          hasRackedOut={hasRackedOut}
         />
       )) ||
         (scene.current === 'InSet' && (

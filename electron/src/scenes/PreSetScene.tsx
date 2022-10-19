@@ -1,12 +1,13 @@
 /* eslint-disable no-param-reassign */
 import * as Draw2D from '@mediapipe/drawing_utils';
-import { Typography } from '@mui/material';
+import { Modal, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
 import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
 import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
 import Checkbox from './ui-components/Checkbox';
 import CountdownCircles from './ui-components/CountdownCircles';
+import ModalInstruction from './ui-components/ModalInstruction';
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
@@ -98,8 +99,9 @@ export function PreSetScene(props: {
   isAllGuideCleared: MutableRefObject<boolean>;
   scene: MutableRefObject<'PreSet' | 'InSet'>;
   causeReRendering: (value: SetStateAction<number>) => void;
+  hasRackedOut: MutableRefObject<boolean>;
 }) {
-  const { canvasRef, guideItems, timerKey, isAllGuideCleared, scene, causeReRendering } = props;
+  const { canvasRef, guideItems, timerKey, isAllGuideCleared, scene, causeReRendering, hasRackedOut } = props;
 
   return (
     <>
@@ -159,6 +161,9 @@ export function PreSetScene(props: {
           }}
         />
       </div>
+      <Modal open={!hasRackedOut.current}>
+        <ModalInstruction description="バーベルを担いで開始しましょう！" />
+      </Modal>
     </>
   );
 }
