@@ -16,11 +16,15 @@ const kneeFrontBack: Checkpoint = {
       afterNumber:
         'cmほど前に出してください。膝がつま先より後ろにくると後ろ重心になり、バランスが悪くなります。つま先の上までは膝を出しても大丈夫なので、無理のない姿勢でスクワットしましょう。',
     },
-    normal: { beforeNumber: '膝とお尻の前後位置はバッチリです。', afterNumber: '' },
+    normal: {
+      beforeNumber:
+        '膝とお尻の前後位置はバッチリです。膝を痛める恐れがあるので、つま先が前に出すぎないように次回以降も意識してください。',
+      afterNumber: '',
+    },
     positive: {
       beforeNumber: 'お尻をあと',
       afterNumber:
-        'cmほど後ろに引いてください。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。。',
+        'cmほど後ろに引いてください。膝を痛める恐れがあるので、つま先を膝が越えすぎないように注意しましょう。お尻を引きながら腰を落とすイメージです。',
     },
   },
   voice: {
@@ -28,7 +32,7 @@ const kneeFrontBack: Checkpoint = {
     normal: 'ちょうど良い膝の曲げ方です。',
     positive: '膝が前に出過ぎています。',
   },
-  poseGridCameraAngle: { theta: 90, phi: 0 },
+  poseGridCameraAngle: { theta: 90, phi: 180 },
   thresholds: { upper: 15, middle: 1, lower: -1 },
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);

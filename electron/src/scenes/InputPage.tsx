@@ -3,6 +3,7 @@ import DeblurIcon from '@mui/icons-material/Deblur';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
+import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
 import { useState } from 'react';
 import 'typeface-roboto';
@@ -16,10 +17,11 @@ export default function InputPage() {
   const [trainingName, setTrainingName] = useState('スクワット');
   const [targetWeight, setTargetWeight] = useState(20);
   const [targetReps, setTargetReps] = useState(5);
+  const [startTime] = useState(dayjs().format('YYYY-MM-DD-HH-mm-ss'));
 
   const submitForm = () => {
     setPhase((prevPhase) => prevPhase + 1);
-    setSetRecord(resetSet({ userName: subjectName, exerciseName: trainingName, targetWeight, targetReps }));
+    setSetRecord(resetSet({ userName: subjectName, exerciseName: trainingName, targetWeight, targetReps, startTime }));
   };
 
   return (

@@ -8,7 +8,7 @@ import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { kinectAtom, phaseAtom, setRecordAtom, SettingsAtom } from './atoms';
+import { kinectAtom, phaseAtom, setRecordAtom, settingsAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
 import { InSetProcess, InSetScene } from './InSetScene';
 import { PreSetProcess, PreSetScene } from './PreSetScene';
@@ -76,7 +76,7 @@ export default function BodyTracking() {
   const repState = useRef(resetRepState());
 
   // Settings
-  const [settings] = useAtom(SettingsAtom);
+  const [settings] = useAtom(settingsAtom);
 
   // 目標レップ数
   const targetRepCount = setRecord.setInfo.targetReps;
@@ -95,15 +95,14 @@ export default function BodyTracking() {
         throw new Error('canvasCtx is null');
       }
       canvasCtx.save();
-      canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      canvasCtx.clearRect(0, 0, data.colorImageFrame.height, data.colorImageFrame.height);
 
       if (canvasImageData.current === null) {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
-      } else {
-        renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
+      renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
 
       if (data.bodyFrame.bodies.length > 0) {
         // Kinectの姿勢推定結果を自作のPose型に代入
@@ -136,7 +135,6 @@ export default function BodyTracking() {
         } else if (scene.current === 'InSet') {
           InSetProcess(
             canvasRef,
-            canvasCtx,
             poseGrid,
             currentPose,
             repState,

@@ -14,7 +14,10 @@ const velocity: Checkpoint = {
       afterNumber:
         '秒と少し速いです。ペースが速すぎると反動を使ってしまう上、関節に負担がかかります。もう少しゆっくりの速度で筋肉に効かせるイメージを持ちましょう。目安は2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるくらいです。',
     },
-    normal: { beforeNumber: '速度はバッチリです。', afterNumber: '' },
+    normal: {
+      beforeNumber: 'スクワットの速度はバッチリです。2〜3秒かけてしゃがみ、1〜2秒かけて立ち上がるのが一般的です。',
+      afterNumber: '',
+    },
     positive: {
       beforeNumber: '立ち上がるのに約',
       afterNumber:

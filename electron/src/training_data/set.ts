@@ -13,6 +13,7 @@ export type SetInfo = {
   exerciseName: string;
   targetReps: number;
   targetWeight: number;
+  startTime: string;
 };
 
 export type Set = {
@@ -24,7 +25,13 @@ export type Set = {
   repVideoBlobs: Blob[];
 };
 
-export const resetSet = (setInfo = { userName: '', exerciseName: '', targetReps: 0, targetWeight: 0 }): Set => ({
+export const revokeRepVideoUrls = (set: Set): void => {
+  set.repVideoUrls.forEach((url) => URL.revokeObjectURL(url));
+};
+
+export const resetSet = (
+  setInfo = { userName: '', exerciseName: '', targetReps: 0, targetWeight: 0, startTime: '' },
+): Set => ({
   setInfo,
   reps: [],
   checkResult: [],

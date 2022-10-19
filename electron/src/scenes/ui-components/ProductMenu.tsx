@@ -2,7 +2,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Divider, FormControlLabel, IconButton, Menu, styled, Switch } from '@mui/material';
 import { useAtom } from 'jotai';
 import React from 'react';
-import { SettingsAtom } from '../atoms';
+import { settingsAtom } from '../atoms';
 import PhaseDebugger from './PhaseDebugger';
 import SaveSetRecordButton from './SetRecordDebugger';
 
@@ -54,7 +54,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 }));
 
 function PlaySoundSwitch() {
-  const [settings, setSettings] = useAtom(SettingsAtom);
+  const [settings, setSettings] = useAtom(settingsAtom);
 
   return (
     <FormControlLabel
@@ -73,7 +73,7 @@ function PlaySoundSwitch() {
 }
 
 function FormInstructionDebugModeSwitch() {
-  const [settings, setSettings] = useAtom(SettingsAtom);
+  const [settings, setSettings] = useAtom(settingsAtom);
 
   return (
     <FormControlLabel
@@ -101,7 +101,7 @@ function ProductMenu() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [settings] = useAtom(SettingsAtom);
+  const [settings] = useAtom(settingsAtom);
 
   return (
     <div>
