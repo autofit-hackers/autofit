@@ -86,7 +86,8 @@ export const InSetProcess = (
     causeReRendering((prev) => prev + 1);
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
-  if (setRef.current.reps.length === targetRepCount) {
+  // eslint-disable-next-line eqeqeq
+  if (setRef.current.reps.length == targetRepCount) {
     setTimeout(() => setPhase(3), 1000); // TODO: no hard code
   }
 };
