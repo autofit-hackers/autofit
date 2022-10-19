@@ -63,6 +63,10 @@ export default function BodyTracking() {
   // タイマー
   const timerKey = useRef(0);
 
+  // rack out
+  const hasRackedOut = useRef(false);
+  const initialShoulderY = useRef(0);
+
   /*
   InSet
   */
@@ -135,7 +139,16 @@ export default function BodyTracking() {
         prevPoseRef.current = currentPose;
 
         if (scene.current === 'PreSet') {
-          PreSetProcess(canvasCtx, currentPose, guideItems, isAllGuideCleared, causeReRendering, timerKey);
+          PreSetProcess(
+            canvasCtx,
+            currentPose,
+            guideItems,
+            isAllGuideCleared,
+            causeReRendering,
+            timerKey,
+            hasRackedOut,
+            initialShoulderY,
+          );
         } else if (scene.current === 'InSet') {
           InSetProcess(
             canvasRef,
@@ -185,6 +198,7 @@ export default function BodyTracking() {
           isAllGuideCleared={isAllGuideCleared}
           scene={scene}
           causeReRendering={causeReRendering}
+          hasRackedOut={hasRackedOut}
         />
       )) ||
         (scene.current === 'InSet' && (
