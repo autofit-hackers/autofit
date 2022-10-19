@@ -1,10 +1,10 @@
 {
-  "name": "electron-vite-react",
-  "productName": "Electron",
+  "name": "autofit-electron",
+  "version": "0.0.0",
+  "productName": "autofit-electron",
   "private": true,
-  "description": "Vite React Electron boilerplate.",
+  "description": "AI coaching for weight training",
   "author": "autofit Inc. <info@autofit.co.jp>",
-  "license": "MIT",
   "main": "dist/src/ipc/main/index.js",
   "scripts": {
     "start": "vite",
