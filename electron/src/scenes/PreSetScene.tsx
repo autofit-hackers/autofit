@@ -38,8 +38,6 @@ export const PreSetProcess = (
     lineWidth: 4,
   });
 
-  console.log(hasRackedOut.current, initialShoulderY.current, currentPose.worldLandmarks[KJ.NOSE].y);
-
   // ラックアウトの判定用に肩の高さを記録
   if (initialShoulderY.current === 0) {
     initialShoulderY.current =
