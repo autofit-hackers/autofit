@@ -76,13 +76,9 @@ export const getInterestBody = (bodies: any[], interestBodyId: number): KinectBo
     }
 
     // 一人以上映っている場合は、カメラからのxz距離が一番近い人を返す
-    const minHorizontalDistanceFromCamera = bodies.reduce((a: any, b: any) =>
-      Math.min(Math.sqrt(getHorizontalDistance(a)), Math.sqrt(getHorizontalDistance(b))),
-    );
+    const horizontalDistanceFromCamera = bodies.map((body) => getHorizontalDistance(body));
 
-    const interestBody = bodies.find(
-      (a: any) => Math.sqrt(getHorizontalDistance(a)) === minHorizontalDistanceFromCamera,
-    );
+    const interestBody = bodies[bodies.indexOf(Math.min(...horizontalDistanceFromCamera))];
 
     return { skeleton: interestBody.skeleton, id: interestBody.id };
   }
