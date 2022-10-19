@@ -68,7 +68,7 @@ export const getInterestBody = (bodies: any, interestBodyId: number): KinectBody
   // 前回のフレームで人体を検出していない場合
   if (interestBodyId === -1) {
     // 一人しか映ってない場合はそのまま返す
-    if (bodies.bodyFrame.bodies.length === 1) {
+    if (bodies.length === 1) {
       return { skeleton: bodies[0], id: 0 };
     }
 
