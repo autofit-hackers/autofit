@@ -82,7 +82,9 @@ export const InSetProcess = (
     causeReRendering((prev) => prev + 1);
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
-  if (setRef.current.reps.length === targetRepCount) {
+  // eslint-disable-next-line eqeqeq
+  if (setRef.current.reps.length == targetRepCount) {
+    // WARN:  等価演算子（==）を厳密等価演算子（===）にすると、目標レップ数を入力フォームで変更した場合にReport1への遷移に失敗する（原因不明）
     if (videoRecorder.current) {
       videoRecorder.current.stop();
     }
