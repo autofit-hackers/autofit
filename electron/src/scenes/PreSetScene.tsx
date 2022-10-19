@@ -4,7 +4,7 @@ import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
 import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
-import { KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
+import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
 import Checkbox from './ui-components/Checkbox';
 import CountdownCircles from './ui-components/CountdownCircles';
 
@@ -20,9 +20,11 @@ export const PreSetProcess = (
       frameCountAfterUnchecked: number;
     }[]
   >,
-  isAllGuideCleared: MutableRefObject<boolean>,
+  hasClearedAllGuides: MutableRefObject<boolean>,
   causeReRendering: (value: SetStateAction<number>) => void,
   timerKey: MutableRefObject<number>,
+  hasRackedOut: MutableRefObject<boolean>,
+  initialShoulderY: MutableRefObject<number>,
 ) => {
   // pose estimationの結果を描画
   Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
@@ -35,6 +37,25 @@ export const PreSetProcess = (
     color: 'white',
     lineWidth: 4,
   });
+
+  console.log(hasRackedOut.current, initialShoulderY.current, currentPose.worldLandmarks[KJ.NOSE].y);
+
+  // ラックアウトの判定用に肩の高さを記録
+  if (initialShoulderY.current === 0) {
+    initialShoulderY.current =
+      (currentPose.worldLandmarks[KJ.SHOULDER_RIGHT].y + currentPose.worldLandmarks[KJ.SHOULDER_LEFT].y) / 2;
+
+    return;
+  }
+  // ラックアウトのチェック
+  if (!hasRackedOut.current) {
+    // ラックアウト前の肩の高さより鼻が下がったらラックアウトとみなす
+    if (currentPose.worldLandmarks[KJ.NOSE].y < initialShoulderY.current) {
+      hasRackedOut.current = true;
+    }
+
+    return;
+  }
 
   // ガイド項目のチェック
   // TODO: 姿勢推定できていない場合はチェックを外す
@@ -56,10 +77,10 @@ export const PreSetProcess = (
     guideItems.current[i].text = guideText;
   }
 
-  const isAllGuideClearedInPreviousFrame = isAllGuideCleared.current;
-  isAllGuideCleared.current = guideItems.current.every((item) => item.isCleared === true);
+  const hasClearedAllGuidesInPreviousFrame = hasClearedAllGuides.current;
+  hasClearedAllGuides.current = guideItems.current.every((item) => item.isCleared === true);
   // チェックが１つでも外れたらタイマーをリセット
-  if (isAllGuideClearedInPreviousFrame === true && isAllGuideCleared.current === false) {
+  if (hasClearedAllGuidesInPreviousFrame === true && hasClearedAllGuides.current === false) {
     timerKey.current += 1;
   }
 };
