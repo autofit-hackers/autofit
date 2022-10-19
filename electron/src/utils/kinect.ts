@@ -64,7 +64,10 @@ export const stopKinect = (kinect: typeof KinectAzure): void => {
 
 export type KinectBody = { skeleton: any; id: number };
 
-export const getInterestBody = (bodies: any, interestBodyId: number): KinectBody => {
+export const getInterestBody = (bodies: any[], interestBodyId: number): KinectBody => {
+  const getHorizontalDistance = (body: any) =>
+    body.skeleton.joints[KJ.PELVIS].cameraX ** 2 + body.skeleton.joints[KJ.PELVIS].cameraZ ** 2;
+
   // 前回のフレームで人体を検出していない場合
   if (interestBodyId === -1) {
     // 一人しか映ってない場合はそのまま返す
@@ -74,16 +77,11 @@ export const getInterestBody = (bodies: any, interestBodyId: number): KinectBody
 
     // 一人以上映っている場合は、カメラからのxz距離が一番近い人を返す
     const minHorizontalDistanceFromCamera = bodies.reduce((a: any, b: any) =>
-      Math.min(
-        Math.sqrt(a.skeleton.joints[KJ.PELVIS].cameraX ** 2 + a.skeleton.joints[KJ.PELVIS].cameraZ ** 2),
-        Math.sqrt(b.skeleton.joints[KJ.PELVIS].cameraX ** 2 + b.skeleton.joints[KJ.PELVIS].cameraZ ** 2),
-      ),
+      Math.min(Math.sqrt(getHorizontalDistance(a)), Math.sqrt(getHorizontalDistance(b))),
     );
 
     const interestBody = bodies.find(
-      (a: any) =>
-        Math.sqrt(a.skeleton.joints[KJ.PELVIS].cameraX ** 2 + a.skeleton.joints[KJ.PELVIS].cameraZ ** 2) ===
-        minHorizontalDistanceFromCamera,
+      (a: any) => Math.sqrt(getHorizontalDistance(a)) === minHorizontalDistanceFromCamera,
     );
 
     return { skeleton: interestBody.skeleton, id: interestBody.id };
