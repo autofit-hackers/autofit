@@ -1,12 +1,12 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat-form-instructions/preSetGuide';
-import { convertKinectResultsToPose, getNearestBody, Pose } from '../training_data/pose';
+import { convertKinectResultsToPose, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
 import { resetRepState } from '../training_data/repState';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { startKinect } from '../utils/kinect';
+import { getInterestBody, KinectBody, startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
 import { kinectAtom, phaseAtom, setRecordAtom, settingsAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
@@ -43,6 +43,8 @@ export default function BodyTracking() {
   // Kinect
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
+
+  const interestBody = useRef<KinectBody>({ skeleton: undefined, id: -1 });
 
   /*
   PreSet
@@ -105,10 +107,12 @@ export default function BodyTracking() {
       renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
 
       if (data.bodyFrame.bodies.length > 0) {
+        interestBody.current = getInterestBody(data.bodyFrame.bodies, interestBody.current.id);
+
         // Kinectの姿勢推定結果を自作のPose型に代入
         const rawCurrentPose: Pose = convertKinectResultsToPose(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          getNearestBody(data).skeleton.joints,
+          interestBody.current.skeleton.joints,
           canvasRef.current,
           true,
           new Date().getTime(),
@@ -148,8 +152,12 @@ export default function BodyTracking() {
             videoRecorder,
           );
         }
-      } else if (poseGrid.current) {
-        // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
+      }
+      // 姿勢推定結果が空の場合、
+      else if (poseGrid.current) {
+        // bodyIdをリセットする
+        interestBody.current.id = -1;
+        // poseGridのマウス操作だけ更新する
         poseGrid.current.updateOrbitControls();
       }
 
