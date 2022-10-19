@@ -9,7 +9,7 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from 
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { Set } from '../training_data/set';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
-import { startCapturingRepVideo } from '../utils/recordVideo';
+import { startCapturingSetVideo } from '../utils/recordVideo';
 import RepCounter from './ui-components/RepCounter';
 
 export const InSetProcess = (
@@ -24,20 +24,20 @@ export const InSetProcess = (
   causeReRendering: (value: SetStateAction<number>) => void,
   setPhase: (value: SetStateAction<number>) => void,
   targetRepCount: number,
-  repVideoRecorder: MutableRefObject<MediaRecorder | null>,
+  videoRecorder: MutableRefObject<MediaRecorder | null>,
 ) => {
   // PoseGridの描画
   if (poseGrid.current) {
     poseGrid.current.updateLandmarks(currentPose.worldLandmarks, KINECT_POSE_CONNECTIONS);
   }
 
+  // 映像撮影開始
+  if (!videoRecorder.current && canvasRef.current) {
+    videoRecorder.current = startCapturingSetVideo(canvasRef.current, setRef.current);
+  }
+
   // レップの最初のフレームの場合
   if (repState.current.isFirstFrameInRep) {
-    // 動画撮影を開始
-    if (canvasRef.current) {
-      repVideoRecorder.current = startCapturingRepVideo(canvasRef.current, setRef.current);
-    }
-
     // セットの最初の身長を記録
     if (setRef.current.reps.length === 0) {
       repState.current = setStandingHeight(repState.current, heightInWorld(currentPose));
@@ -60,10 +60,6 @@ export const InSetProcess = (
 
   // レップが終了したとき
   if (repState.current.isRepEnd) {
-    // 動画撮影を停止し、配列に保存する
-    if (repVideoRecorder.current) {
-      repVideoRecorder.current.stop();
-    }
     // 完了したレップのフォームを分析・評価
     repRef.current = calculateKeyframes(repRef.current);
     repRef.current = evaluateRep(repRef.current, checkpoints);
@@ -87,7 +83,10 @@ export const InSetProcess = (
   }
   // RepCountが一定値に達するとsetの情報を記録した後、phaseを更新しセットレポートへ移動する
   if (setRef.current.reps.length === targetRepCount) {
-    setTimeout(() => setPhase(3), 1000); // TODO: no hard code
+    if (videoRecorder.current) {
+      videoRecorder.current.stop();
+    }
+    setTimeout(() => setPhase(3), 1000);
   }
 };
 
