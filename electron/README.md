@@ -7,12 +7,20 @@
   - [Azure Kinect Sensor SDK v1.4.1](https://github.com/microsoft/Azure-Kinect-Sensor-SDK/blob/develop/docs/usage.md)
     - Firmware version: `1.6.110079014`
   - [Azure Kinect Body Tracking SDK v1.2.1](https://learn.microsoft.com/ja-jp/azure/Kinect-dk/body-sdk-download)
+- [dvc](https://dvc.org/doc)
 
 ## Environmental Setup
 
 ```
+choco install dvc
 yarn
 yarn run copy-dlls
+```
+
+### Release
+
+```
+yarn run release
 ```
 
 ## Tips
@@ -62,3 +70,21 @@ SUCCESS: The firmware was already up-to-date.
 ```
 
 Then you can verify the firmware is working with `.\k4aviewer.exe`.
+
+### Share training log via DVC
+
+#### Download
+
+```
+git pull
+dvc pull
+```
+
+#### Upload
+
+```
+dvc add <directory_name>
+git commit
+git push
+dvc push
+```
