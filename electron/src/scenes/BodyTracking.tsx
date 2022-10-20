@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat-form-instructions/preSetGuide';
+import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat/preSetGuide';
 import { convertKinectResultsToPose, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
 import { resetRepState } from '../training_data/repState';

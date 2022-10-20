@@ -3,12 +3,11 @@ import * as Draw2D from '@mediapipe/drawing_utils';
 import { Modal, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
-import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
+import { PreSetGuide } from '../coaching/squat/preSetGuide';
 import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
 import Checkbox from './ui-components/Checkbox';
 import CountdownCircles from './ui-components/CountdownCircles';
 import InstructionModal from './ui-components/InstructionModal';
-
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
