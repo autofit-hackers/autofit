@@ -71,6 +71,11 @@ SUCCESS: The firmware was already up-to-date.
 
 Then you can verify the firmware is working with `.\k4aviewer.exe`.
 
+### Logging
+
+This project has been adopted electron-log package.
+For details, see [the documentations](https://github.com/megahertz/electron-log).
+
 ### Share training log via DVC
 
 #### Download
