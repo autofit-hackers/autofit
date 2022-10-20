@@ -7,7 +7,8 @@ import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
 import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
 import Checkbox from './ui-components/Checkbox';
 import CountdownCircles from './ui-components/CountdownCircles';
-import ModalInstruction from './ui-components/ModalInstruction';
+import InstructionModal from './ui-components/InstructionModal';
+
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
@@ -162,7 +163,7 @@ export function PreSetScene(props: {
         />
       </div>
       <Modal open={!hasRackedOut.current}>
-        <ModalInstruction description="バーベルを担いで開始しましょう！" />
+        <InstructionModal description="バーベルを担いで開始しましょう！" />
       </Modal>
     </>
   );

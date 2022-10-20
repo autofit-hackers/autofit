@@ -1,8 +1,8 @@
-import { calculateError, InstructionItem, Thresholds } from '../formInstruction';
 import squatDepthImage from '../../../resources/images/formInstructionItems/squat-depth.png';
-import { KJ, getDistance, landmarkToVector3, getAngle, normalizeAngle, Pose } from '../../training_data/pose';
-import { Rep, getBottomPose } from '../../training_data/rep';
+import { getAngle, getDistance, KJ, landmarkToVector3, normalizeAngle, Pose } from '../../training_data/pose';
+import { getBottomPose, Rep } from '../../training_data/rep';
 import { GuidelineSymbols } from '../../utils/poseGrid';
+import { calculateError, InstructionItem, Thresholds } from '../formInstruction';
 
 const getThighAngleFromSide = (pose: Pose): number => {
   const leftThighAngleFromSide = normalizeAngle(
@@ -58,6 +58,7 @@ const squatDepth: InstructionItem = {
       return 0.0;
     }
     const meanThighAngleFromSide = getThighAngleFromSide(bottomPose);
+    console.log('meanThighAngleFromSide', meanThighAngleFromSide);
 
     return calculateError(thresholds, meanThighAngleFromSide);
   },
