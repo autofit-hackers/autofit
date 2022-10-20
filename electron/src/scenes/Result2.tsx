@@ -6,7 +6,7 @@ import postureImage from '../../resources/images/formInstructionItems/knee-front
 import depthImage from '../../resources/images/formInstructionItems/squat-depth.png';
 import speedImage from '../../resources/images/formInstructionItems/squat-velocity.png';
 import { Checkpoint } from '../coaching/formEvaluation';
-import { resetSet, revokeRepVideoUrls } from '../training_data/set';
+import { resetSet, revokeVideoUrls } from '../training_data/set';
 import { phaseAtom, setRecordAtom, settingsAtom } from './atoms';
 import saveExercise from './handlers/save-exercise';
 import ResultModal from './ResultModal';
@@ -71,7 +71,7 @@ export default function Report2() {
     saveExercise(setRecord);
     // TODO:データの保存をawaitする
     setTimeout(() => {
-      revokeRepVideoUrls(setRecord);
+      revokeVideoUrls(setRecord);
       setSetRecord(resetSet());
       setPhase(0);
     }, 1000);
@@ -85,7 +85,7 @@ export default function Report2() {
         {/* 左側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
           <ReactPlayer
-            url={setRecord.repVideoUrls.slice(-1)[0]}
+            url={setRecord.setVideoUrl}
             id="RepVideo"
             playing
             loop

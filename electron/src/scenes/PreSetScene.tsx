@@ -9,6 +9,7 @@ import Checkbox from './ui-components/Checkbox';
 import CountdownCircles from './ui-components/CountdownCircles';
 import InstructionModal from './ui-components/InstructionModal';
 
+
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
   currentPose: Pose,

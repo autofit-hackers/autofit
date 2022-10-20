@@ -181,10 +181,8 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
   );
 
   // 消費カロリーの産出
-  // REF: https://www.supersports.com/ja-jp/xebio/media/hGg4AV6nfP2MZ3mfDMigRt
-  // TODO: 詳細なカロリー計算
-  setCopy.resultSummary.calorieConsumption = (1.05 * 5.0 * 60 * setCopy.resultSummary.timeToComplete) / 3600;
-
+  // REF: https://oggi.jp/6772217#:~:text=1%E5%9B%9E%E3%81%82%E3%81%9F%E3%82%8A0.4kcal,%E3%81%A8%E8%A8%80%E3%82%8F%E3%82%8C%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%E3%80%82
+  setCopy.resultSummary.calorieConsumption = 0.4 * setCopy.reps.length;
   // セットに対する総評の決定
   setCopy.resultSummary.description = decideSummaryTextForSet(setCopy, checkpoints);
 

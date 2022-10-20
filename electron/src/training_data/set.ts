@@ -23,10 +23,13 @@ export type Set = {
   resultSummary: SetResultSummary;
   repVideoUrls: string[];
   repVideoBlobs: Blob[];
+  setVideoUrl: string;
+  setVideoBlob: Blob;
 };
 
-export const revokeRepVideoUrls = (set: Set): void => {
+export const revokeVideoUrls = (set: Set): void => {
   set.repVideoUrls.forEach((url) => URL.revokeObjectURL(url));
+  URL.revokeObjectURL(set.setVideoUrl);
 };
 
 export const resetSet = (
@@ -38,6 +41,8 @@ export const resetSet = (
   resultSummary: { totalScore: 0, description: '', timeToComplete: 0, calorieConsumption: 0 },
   repVideoUrls: [],
   repVideoBlobs: [],
+  setVideoUrl: '',
+  setVideoBlob: new Blob(),
 });
 
 export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({
