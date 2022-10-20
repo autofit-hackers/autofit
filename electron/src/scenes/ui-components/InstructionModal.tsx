@@ -1,7 +1,7 @@
 import { Paper, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 
-export default function ModalInstruction({ description }: { description: string }) {
+export default function InstructionModal({ description }: { description: string }) {
   return (
     <Paper
       sx={{
