@@ -7,7 +7,7 @@ import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
 import Checkbox from '../stories/CheckboxWithText';
 import PreSetAlertModal from '../stories/PreSetAlertModal';
 import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
-import CountdownCircles from './ui-components/CountdownCircles';
+import CountdownCircles from '../stories/CountdownCircles';
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
