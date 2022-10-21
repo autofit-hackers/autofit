@@ -15,10 +15,6 @@ interface FlatButtonProps {
 /**
  * Primary UI component for user interaction
  */
-// export default function AfButton({ label, sx }: ButtonProps) {
-//   return <Button sx={{ ...sx }}>{label}</Button>;
-// }
-
 export default function FlatButton({ label, onClick, sx }: FlatButtonProps) {
   return (
     <Button
