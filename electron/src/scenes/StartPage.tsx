@@ -1,8 +1,8 @@
 import { Typography } from '@mui/material';
 import { useAtom } from 'jotai';
+import AutofitLogo from '../stories/AutofitLogo';
 import { phaseAtom } from './atoms';
 import './StartPage.css';
-import AutofitLogo from './ui-components/AutofitLogo';
 
 export default function StartPage() {
   const [phase, setPhase] = useAtom(phaseAtom);
