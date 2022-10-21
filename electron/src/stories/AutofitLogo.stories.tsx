@@ -5,7 +5,6 @@ export default {
   title: 'autofit/Animation/AutofitLogo',
   component: AutofitLogo,
   parameters: {
-    // More on Story layout: https://storybook.js.org/docs/react/configure/story-layout
     layout: 'fullscreen',
   },
 } as ComponentMeta<typeof AutofitLogo>;

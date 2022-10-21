@@ -5,11 +5,15 @@ export default {
   title: 'autofit/Card/Header',
   component: Header,
   argTypes: {
-    backgroundColor: { control: 'color' },
+    title: { control: 'text' },
   },
 } as ComponentMeta<typeof Header>;
 
 // eslint-disable-next-line react/function-component-definition, react/jsx-props-no-spreading
-const Template: ComponentStory<typeof Header> = () => <Header />;
+export const Template: ComponentStory<typeof Header> = (args) => <Header {...args} />;
 
-export const Primary = Template.bind({});
+export const Result = Template.bind({});
+
+Result.args = {
+  title: '今回のトレーニング結果',
+};
