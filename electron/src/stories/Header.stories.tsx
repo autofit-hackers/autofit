@@ -10,7 +10,7 @@ export default {
 } as ComponentMeta<typeof Header>;
 
 // eslint-disable-next-line react/function-component-definition, react/jsx-props-no-spreading
-export const Template: ComponentStory<typeof Header> = (args) => <Header {...args} />;
+const Template: ComponentStory<typeof Header> = (args) => <Header {...args} />;
 
 export const Result = Template.bind({});
 
