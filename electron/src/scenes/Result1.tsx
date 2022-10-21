@@ -5,24 +5,12 @@ import { CardMedia, Grid, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { ReactElement, useEffect } from 'react';
 import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
+import FlatButton from '../stories/FlatButton';
 import { stopKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import { HeaderGridItem } from './Result2';
-import { FlatButton } from './ui-components/FlatUI';
+import TextWithIcon from '../stories/TextWithIcon';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
-
-function TextWithIcon(props: { icon: ReactElement; text: string }) {
-  const { icon, text } = props;
-
-  return (
-    <Stack direction="row" spacing={1} alignItems="center" justifyContent="left">
-      {icon}
-      <Typography variant="h4" component="h1" align="left" sx={{ mx: '5vw' }} fontWeight="bold">
-        {text}
-      </Typography>
-    </Stack>
-  );
-}
 
 function ShortResult(props: { metrics: ReactElement; measuredValue: string }) {
   const { metrics, measuredValue } = props;
@@ -102,7 +90,7 @@ export default function Report1() {
       </Grid>
       <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
         <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing="50vw">
-          <FlatButton text="次へ" onClick={() => setPhase((prev) => prev + 1)} />
+          <FlatButton label="次へ" onClick={() => setPhase((prev) => prev + 1)} />
         </Stack>
       </Grid>
     </Grid>
