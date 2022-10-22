@@ -183,6 +183,7 @@ export default function BodyTracking() {
 
   // Kinectの開始
   useEffect(() => {
+    window.log.debug('kinect is starting...');
     startKinect(kinect, onResults);
     // REF: ここでStopKinect呼べるかもしれない（https://blog.techscore.com/entry/2022/06/10/080000）
   }, [kinect, onResults]);

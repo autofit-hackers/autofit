@@ -9,7 +9,6 @@ import Checkbox from './ui-components/Checkbox';
 import CountdownCircles from './ui-components/CountdownCircles';
 import InstructionModal from './ui-components/InstructionModal';
 
-
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
   currentPose: Pose,
@@ -52,6 +51,7 @@ export const PreSetProcess = (
     // ラックアウト前の肩の高さより鼻が下がったらラックアウトとみなす
     if (currentPose.worldLandmarks[KJ.NOSE].y < initialShoulderY.current) {
       hasRackedOut.current = true;
+      window.log.debug('Rack out is detected');
     }
 
     return;
