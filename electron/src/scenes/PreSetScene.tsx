@@ -3,8 +3,8 @@ import * as Draw2D from '@mediapipe/drawing_utils';
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
-import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
-import Checkbox from '../stories/CheckboxWithText';
+import { PreSetGuide } from '../coaching/squat/preSetGuide';
+import CheckboxWithText from '../stories/CheckboxWithText';
 import CountdownCircles from '../stories/CountdownCircles';
 import PreSetAlertModal from '../stories/PreSetAlertModal';
 import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
@@ -138,7 +138,7 @@ export function PreSetScene(props: {
       >
         <Box display="column" sx={{ justifyContent: 'space-between' }}>
           {guideItems.current.map((guideItem) => (
-            <Checkbox key={guideItem.name} isChecked={guideItem.isCleared} text={guideItem.guide.label} />
+            <CheckboxWithText key={guideItem.name} isChecked={guideItem.isCleared} text={guideItem.guide.label} />
           ))}
         </Box>
       </div>
