@@ -1,13 +1,14 @@
 import { Box } from '@mui/material';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 
-export default function CountdownCircles(props: {
+interface CountdownCirclesProps {
   key: number;
   isPlaying: boolean;
   duration: number;
   onComplete: () => void;
-}) {
-  const { key, isPlaying, duration, onComplete } = props;
+}
+
+export default function CountdownCircles({ key, isPlaying, duration, onComplete }: CountdownCirclesProps) {
   const textStyle = {
     fontFamily: 'Roboto',
     fontSize: '100px',

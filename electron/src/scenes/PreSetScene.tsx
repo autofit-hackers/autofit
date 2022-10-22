@@ -1,13 +1,13 @@
 /* eslint-disable no-param-reassign */
 import * as Draw2D from '@mediapipe/drawing_utils';
-import { Modal, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
 import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
+import Checkbox from '../stories/CheckboxWithText';
+import CountdownCircles from '../stories/CountdownCircles';
+import PreSetAlertModal from '../stories/PreSetAlertModal';
 import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
-import Checkbox from './ui-components/Checkbox';
-import CountdownCircles from './ui-components/CountdownCircles';
-import InstructionModal from './ui-components/InstructionModal';
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
@@ -162,9 +162,7 @@ export function PreSetScene(props: {
           }}
         />
       </div>
-      <Modal open={!hasRackedOut.current}>
-        <InstructionModal description="バーベルを担いで開始しましょう！" />
-      </Modal>
+      <PreSetAlertModal description="バーベルを担いで開始しましょう！" open={!hasRackedOut.current} />
     </>
   );
 }

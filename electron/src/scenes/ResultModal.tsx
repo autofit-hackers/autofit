@@ -3,9 +3,9 @@ import { Grid, IconButton, Paper, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import ReactPlayer from 'react-player';
 import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
+import FlatCard from '../stories/FlatCard';
 import { Rep } from '../training_data/rep';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
-import { FlatCard } from './ui-components/FlatUI';
 import PoseGridViewer from './ui-components/PoseGridViewer';
 
 export default function ResultModal({
