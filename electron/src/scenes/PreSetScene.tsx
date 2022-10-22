@@ -5,9 +5,9 @@ import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
 import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
 import Checkbox from '../stories/CheckboxWithText';
+import CountdownCircles from '../stories/CountdownCircles';
 import PreSetAlertModal from '../stories/PreSetAlertModal';
 import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
-import CountdownCircles from '../stories/CountdownCircles';
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
@@ -51,6 +51,7 @@ export const PreSetProcess = (
     // ラックアウト前の肩の高さより鼻が下がったらラックアウトとみなす
     if (currentPose.worldLandmarks[KJ.NOSE].y < initialShoulderY.current) {
       hasRackedOut.current = true;
+      window.log.debug('Rack out is detected');
     }
 
     return;
