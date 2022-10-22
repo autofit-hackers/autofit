@@ -1,9 +1,15 @@
 import { Typography } from '@mui/material';
-import filledUnit from '../../../resources/images/repcount-gauge-filled.svg';
-import emptyUnit from '../../../resources/images/repcount-gauge-unfilled.svg';
+import filledUnit from '../../resources/images/repcount-gauge-filled.svg';
+import emptyUnit from '../../resources/images/repcount-gauge-unfilled.svg';
 
-export default function RepCounter(props: { currentCount: number; targetCount: number; style: React.CSSProperties }) {
-  const { currentCount, targetCount, style } = props;
+interface RepCounterProps {
+  currentCount: number;
+  targetCount: number;
+  // eslint-disable-next-line react/require-default-props
+  style?: React.CSSProperties;
+}
+
+export default function RepCounter({ currentCount, targetCount, style }: RepCounterProps) {
   const dummyArray = [];
   for (let i = 0; i < targetCount; i += 1) {
     dummyArray.push(i);
