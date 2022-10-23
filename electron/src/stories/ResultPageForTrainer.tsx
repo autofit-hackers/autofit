@@ -5,7 +5,7 @@ import FlatButton from './FlatButton';
 import FlatCard from './FlatCard';
 import Header from './Header';
 import RadarChart from './RadarChart';
-import ResultDetail from './ResultDetail';
+import ResultDetailModal from './ResultDetailModal';
 
 interface ResultPageForTrainerProps {
   /**
@@ -106,7 +106,7 @@ export default function ResultForTrainer({
         </Grid>
       </Grid>
       {/* 詳細のモーダル */}
-      <ResultDetail
+      <ResultDetailModal
         checkpointName={description}
         open={open}
         description={description}

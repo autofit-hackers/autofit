@@ -3,7 +3,7 @@ import { Grid, IconButton, Modal, Paper, Typography } from '@mui/material';
 import ReactPlayer from 'react-player';
 import FlatCard from './FlatCard';
 
-interface ResultDetailProps {
+interface ResultDetailModalProps {
   checkpointName: string;
   description: string;
   open: boolean;
@@ -11,7 +11,7 @@ interface ResultDetailProps {
   handleClose?: () => void;
 }
 
-export default function ResultDetail({ checkpointName, description, open, handleClose }: ResultDetailProps) {
+export default function ResultDetailModal({ checkpointName, description, open, handleClose }: ResultDetailModalProps) {
   return (
     <Modal open={open} onClose={handleClose}>
       <>
