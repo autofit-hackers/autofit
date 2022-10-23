@@ -2,9 +2,6 @@ import { Chip, Grid, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import ReactPlayer from 'react-player';
 import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
-import dropDepth from '../coaching/squat/dropDepth';
-import kneeFrontBack from '../coaching/squat/kneeFrontBack';
-import velocity from '../coaching/squat/velocity';
 import FlatButton from './FlatButton';
 import FlatCard from './FlatCard';
 import Header from './Header';
@@ -19,6 +16,7 @@ interface ResultPageForTrainerProps {
   videoUrl: string;
   summaryDescription: string;
   results: CheckResult[];
+  checkpoints: Checkpoint[];
   handleBack: () => void;
   handleForward: () => void;
 }
@@ -27,12 +25,12 @@ export default function ResultForTrainer({
   videoUrl,
   summaryDescription,
   results,
+  checkpoints,
   handleBack,
   handleForward,
 }: ResultPageForTrainerProps) {
   const [open, setOpen] = useState(false);
   const [selectedCheckpoint, setSelectedCheckpoint] = useState('');
-  const checkpoints: Checkpoint[] = [dropDepth, velocity, kneeFrontBack];
 
   // レーダーチャートの項目を作成
   const radarChartItems = checkpoints.map((checkpoint) => ({

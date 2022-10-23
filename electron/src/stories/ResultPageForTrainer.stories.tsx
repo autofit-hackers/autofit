@@ -1,7 +1,11 @@
 import { action } from '@storybook/addon-actions';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { CheckResult } from '../coaching/formEvaluation';
+import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
 import ResultPageForTrainer from './ResultPageForTrainer';
+
+import dropDepth from '../coaching/squat/dropDepth';
+import kneeFrontBack from '../coaching/squat/kneeFrontBack';
+import velocity from '../coaching/squat/velocity';
 
 export default {
   title: 'autofit/Page/ResultPageForTrainer',
@@ -43,10 +47,13 @@ const results: CheckResult[] = [
   },
 ];
 
+const checkpoints: Checkpoint[] = [dropDepth, velocity, kneeFrontBack];
+
 Primary.args = {
   videoUrl: 'https://www.youtube.com/watch?v=Q8TXgCzxEnw',
   summaryDescription: '今回のトレーニング結果は、ひざの開きが50%、背筋の張りが50%でした。',
   results,
+  checkpoints,
   handleBack: action('back'),
   handleForward: action('forward'),
 };
