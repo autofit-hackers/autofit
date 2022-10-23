@@ -6,9 +6,11 @@ type RadarChartItem = { name: string; value: number };
 interface RadarChartProps {
   radarChartItems: RadarChartItem[];
   onClick: { click(params: { name: string }): void };
+  // eslint-disable-next-line react/require-default-props
+  style?: React.CSSProperties;
 }
 
-export default function RadarChart({ radarChartItems, onClick }: RadarChartProps) {
+export default function RadarChart({ radarChartItems, onClick, style }: RadarChartProps) {
   // グラフエリアの定義
   const indicators = radarChartItems.map((item) => ({ name: item.name, max: 100 }));
   // 軸の定義
@@ -27,6 +29,8 @@ export default function RadarChart({ radarChartItems, onClick }: RadarChartProps
       axisName: {
         formatter: '{value}',
         color: '#428BD4',
+        fontWeight: 'bold',
+        fontSize: 20,
       },
       triggerEvent: true,
     },
@@ -51,5 +55,5 @@ export default function RadarChart({ radarChartItems, onClick }: RadarChartProps
     ],
   };
 
-  return <ReactECharts option={option} onEvents={onClick} />;
+  return <ReactECharts option={option} onEvents={onClick} style={style} />;
 }

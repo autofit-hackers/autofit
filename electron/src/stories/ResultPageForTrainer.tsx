@@ -28,11 +28,11 @@ export default function ResultForTrainer({
   const radarChartItems = [
     {
       name: 'ひざの開き',
-      value: 50,
+      value: 70,
     },
     {
       name: '背筋の張り',
-      value: 50,
+      value: 40,
     },
     {
       name: '腰の張り',
@@ -40,15 +40,15 @@ export default function ResultForTrainer({
     },
     {
       name: '腕の開き',
-      value: 50,
+      value: 90,
     },
     {
       name: '腕の張り',
-      value: 50,
+      value: 80,
     },
     {
       name: '腕の上げ下げ',
-      value: 50,
+      value: 30,
     },
   ];
   const onClick = {
@@ -75,16 +75,23 @@ export default function ResultForTrainer({
             width="100%"
             height="100%"
             style={{
+              border: '6px',
               borderRadius: '24px',
               borderColor: '#4AC0E3',
-              borderWidth: '6px',
-              backgroundColor: 'rgba(0, 0, 0, 1.0)',
+              // backgroundColor: 'rgba(0, 0, 0, 1.0)',
             }}
           />
         </Grid>
         {/* 右側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingRight: '5vw' }}>
-          <RadarChart radarChartItems={radarChartItems} onClick={onClick} />
+          <Stack direction="row" alignItems="center">
+            <RadarChart
+              radarChartItems={radarChartItems}
+              onClick={onClick}
+              style={{ width: '100%', height: '50vh' }}
+            />
+            {/* <Score value={80} /> */}
+          </Stack>
           <FlatCard>
             <Stack spacing={2} alignItems="flex-start">
               <Chip
