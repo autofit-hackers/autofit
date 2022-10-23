@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+
+import { KJ } from '../training_data/pose';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const KinectAzure = require('kinect-azure');
@@ -57,4 +60,29 @@ export const stopKinect = (kinect: typeof KinectAzure): void => {
   } else {
     console.log('no kinect exposed');
   }
+};
+
+export type KinectBody = { skeleton: any; id: number };
+
+export const getInterestBody = (bodies: any[], interestBodyId: number): KinectBody => {
+  const getHorizontalDistance = (body: any) =>
+    body.skeleton.joints[KJ.PELVIS].cameraX ** 2 + body.skeleton.joints[KJ.PELVIS].cameraZ ** 2;
+
+  // 前回のフレームで人体を検出していない場合
+  if (interestBodyId === -1) {
+    // 一人しか映ってない場合はそのまま返す
+    if (bodies.length === 1) {
+      return { skeleton: bodies[0], id: 0 };
+    }
+
+    // 一人以上映っている場合は、カメラからのxz距離が一番近い人を返す
+    const horizontalDistanceFromCamera = bodies.map((body) => getHorizontalDistance(body));
+
+    const interestBody = bodies[bodies.indexOf(Math.min(...horizontalDistanceFromCamera))];
+
+    return { skeleton: interestBody.skeleton, id: interestBody.id };
+  }
+
+  // 前回のフレームで人体が検出されbodyIdが特定されている場合は、そのIDの人を返す
+  return { skeleton: bodies[interestBodyId].skeleton, id: interestBodyId };
 };

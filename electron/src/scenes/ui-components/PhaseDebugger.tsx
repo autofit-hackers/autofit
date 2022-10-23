@@ -12,7 +12,7 @@ export default function PhaseDebugger() {
   return (
     <Box>
       <Typography align="center">Phase: {phase}</Typography>
-      <Box sx={{ justifyContent: 'center' }} align="center">
+      <Box alignItems="center" justifyContent="center">
         <Button onClick={incrementPhase}>
           <AddIcon />
         </Button>

@@ -1,34 +1,58 @@
 import CancelIcon from '@mui/icons-material/Cancel';
 import { Grid, IconButton, Paper, Typography } from '@mui/material';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import ReactPlayer from 'react-player';
-// eslint-disable-next-line import/no-unresolved
-import BaseReactPlayer, { BaseReactPlayerProps } from 'react-player/base';
-import { FlatCard } from './ui-components/FlatUI';
+import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
+import FlatCard from '../stories/FlatCard';
+import { Rep } from '../training_data/rep';
+import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
+import PoseGridViewer from './ui-components/PoseGridViewer';
 
 export default function ResultModal({
   handleClose,
-  instructionName,
+  checkpoint,
+  checkResult,
+  worstRep,
 }: {
   handleClose: () => void;
-  instructionName: 'depth' | 'speed' | 'posture';
+  checkpoint: Checkpoint;
+  checkResult: CheckResult;
+  worstRep: Rep;
 }) {
-  const videoPlayerRef = useRef<BaseReactPlayer<BaseReactPlayerProps>>(null);
+  const gridDivRef = useRef<HTMLDivElement | null>(null);
+  const poseGrid = useRef<PoseGrid | null>(null);
+
+  useEffect(() => {
+    if (!poseGrid.current && gridDivRef.current) {
+      poseGrid.current = new PoseGrid(gridDivRef.current, {
+        ...DEFAULT_POSE_GRID_CONFIG,
+        camera: { projectionMode: 'parallel', distance: 150, fov: 75 },
+      });
+      poseGrid.current.isAutoRotating = false;
+      poseGrid.current.setCameraAngle(checkpoint.poseGridCameraAngle);
+      poseGrid.current.drawGuideline(worstRep.guidelineSymbolsList[checkpoint.id]);
+      poseGrid.current.startLoopPlayback(
+        worstRep,
+        0,
+        worstRep.form.length,
+        worstRep.form.slice(-1)[0].timestamp - worstRep.form[0].timestamp,
+      );
+    }
+  });
 
   return (
     <>
       <Paper sx={{ marginBlock: '10vh', marginInline: '10vw', height: '80vh', borderRadius: 2 }}>
         <Grid container sx={{ paddingBlock: '2vh', paddingInline: '0vw', mx: '10' }}>
-          <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
-            <Typography variant="h5" component="h1" align="left" borderBottom={1} fontWeight="bold">
-              {instructionName}
+          <Grid item xs={12} sx={{ paddingBlock: '2vh', paddingInline: '5vw' }}>
+            <Typography variant="h4" component="h1" align="left" borderBottom="1vh" fontWeight="bold">
+              {checkpoint.nameJP}
             </Typography>
           </Grid>
           {/* 右側 */}
-          <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
+          <Grid item xs={7} sx={{ paddingBlock: 'vh', paddingLeft: '5vw', paddingRight: '1vw' }}>
             <ReactPlayer
-              ref={videoPlayerRef}
-              url="../../resources/movie/squat-speed.mov"
+              url={checkpoint.lectureVideoUrl}
               id="RepVideo"
               playing
               loop
@@ -43,31 +67,26 @@ export default function ResultModal({
             />
           </Grid>
           {/* 左 */}
-          <Grid item xs={6} sx={{ paddingInline: '5vw' }}>
+          <Grid item xs={5} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
             <div style={{ height: '50vh' }}>
-              <Typography
-                variant="h5"
-                component="h1"
-                align="center"
-                fontWeight="bold"
-                sx={{ backgroundColor: 'gray' }}
-                height="100%"
-              >
-                poseGrid
-              </Typography>
+              <PoseGridViewer
+                gridDivRef={gridDivRef}
+                poseGrid={poseGrid}
+                cameraPosition={checkpoint.poseGridCameraAngle}
+              />
             </div>
           </Grid>
         </Grid>
         <Grid item xs={12} sx={{ paddingInline: '5vw' }}>
           <FlatCard>
             <Typography variant="h5" component="h1" align="left" fontWeight="bold">
-              ちゃんと腰を下げたほうがいいよ
+              {checkResult.description}
             </Typography>
           </FlatCard>
         </Grid>
       </Paper>
       <IconButton sx={{ position: 'absolute', top: '10vh', right: '10vw' }} color="primary" onClick={handleClose}>
-        <CancelIcon fontSize="large" />
+        <CancelIcon sx={{ fontSize: '4vw' }} />
       </IconButton>
     </>
   );

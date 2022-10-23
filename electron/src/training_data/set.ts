@@ -1,10 +1,11 @@
-import type { InstructionItemResult } from '../coaching/formInstruction';
+import type { CheckResult } from '../coaching/formEvaluation';
 import { Rep } from './rep';
 
-export type SetSummary = {
-  weight?: number;
-  description: string[];
+export type SetResultSummary = {
   totalScore: number;
+  description: string;
+  timeToComplete: number;
+  calorieConsumption: number;
 };
 
 export type SetInfo = {
@@ -12,24 +13,36 @@ export type SetInfo = {
   exerciseName: string;
   targetReps: number;
   targetWeight: number;
+  startTime: string;
 };
 
 export type Set = {
   setInfo: SetInfo;
   reps: Rep[];
-  formEvaluationResults: InstructionItemResult[];
-  summary: SetSummary;
+  checkResult: CheckResult[];
+  resultSummary: SetResultSummary;
   repVideoUrls: string[];
   repVideoBlobs: Blob[];
+  setVideoUrl: string;
+  setVideoBlob: Blob;
 };
 
-export const resetSet = (setInfo = { userName: '', exerciseName: '', targetReps: 0, targetWeight: 0 }): Set => ({
+export const revokeVideoUrls = (set: Set): void => {
+  set.repVideoUrls.forEach((url) => URL.revokeObjectURL(url));
+  URL.revokeObjectURL(set.setVideoUrl);
+};
+
+export const resetSet = (
+  setInfo = { userName: '', exerciseName: '', targetReps: 0, targetWeight: 0, startTime: '' },
+): Set => ({
   setInfo,
   reps: [],
-  formEvaluationResults: [],
-  summary: { description: [''], totalScore: 0 },
+  checkResult: [],
+  resultSummary: { totalScore: 0, description: '', timeToComplete: 0, calorieConsumption: 0 },
   repVideoUrls: [],
   repVideoBlobs: [],
+  setVideoUrl: '',
+  setVideoBlob: new Blob(),
 });
 
 export const appendRepToSet = (prevSet: Set, rep: Rep): Set => ({

@@ -3,10 +3,11 @@ import * as Draw2D from '@mediapipe/drawing_utils';
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction } from 'react';
-import { PreSetGuide } from '../coaching/squat-form-instructions/preSetGuide';
-import { KINECT_POSE_CONNECTIONS, Pose } from '../training_data/pose';
-import Checkbox from './ui-components/Checkbox';
-import CountdownCircles from './ui-components/CountdownCircles';
+import { PreSetGuide } from '../coaching/squat/preSetGuide';
+import CheckboxWithText from '../stories/CheckboxWithText';
+import CountdownCircles from '../stories/CountdownCircles';
+import PreSetAlertModal from '../stories/PreSetAlertModal';
+import { KINECT_POSE_CONNECTIONS, KJ, Pose } from '../training_data/pose';
 
 export const PreSetProcess = (
   canvasCtx: CanvasRenderingContext2D,
@@ -20,9 +21,11 @@ export const PreSetProcess = (
       frameCountAfterUnchecked: number;
     }[]
   >,
-  isAllGuideCleared: MutableRefObject<boolean>,
+  hasClearedAllGuides: MutableRefObject<boolean>,
   causeReRendering: (value: SetStateAction<number>) => void,
   timerKey: MutableRefObject<number>,
+  hasRackedOut: MutableRefObject<boolean>,
+  initialShoulderY: MutableRefObject<number>,
 ) => {
   // pose estimationの結果を描画
   Draw2D.drawLandmarks(canvasCtx, currentPose.landmarks, {
@@ -35,6 +38,24 @@ export const PreSetProcess = (
     color: 'white',
     lineWidth: 4,
   });
+
+  // ラックアウトの判定用に肩の高さを記録
+  if (initialShoulderY.current === 0) {
+    initialShoulderY.current =
+      (currentPose.worldLandmarks[KJ.SHOULDER_RIGHT].y + currentPose.worldLandmarks[KJ.SHOULDER_LEFT].y) / 2;
+
+    return;
+  }
+  // ラックアウトのチェック
+  if (!hasRackedOut.current) {
+    // ラックアウト前の肩の高さより鼻が下がったらラックアウトとみなす
+    if (currentPose.worldLandmarks[KJ.NOSE].y < initialShoulderY.current) {
+      hasRackedOut.current = true;
+      window.log.debug('Rack out is detected');
+    }
+
+    return;
+  }
 
   // ガイド項目のチェック
   // TODO: 姿勢推定できていない場合はチェックを外す
@@ -56,10 +77,10 @@ export const PreSetProcess = (
     guideItems.current[i].text = guideText;
   }
 
-  const isAllGuideClearedInPreviousFrame = isAllGuideCleared.current;
-  isAllGuideCleared.current = guideItems.current.every((item) => item.isCleared === true);
+  const hasClearedAllGuidesInPreviousFrame = hasClearedAllGuides.current;
+  hasClearedAllGuides.current = guideItems.current.every((item) => item.isCleared === true);
   // チェックが１つでも外れたらタイマーをリセット
-  if (isAllGuideClearedInPreviousFrame === true && isAllGuideCleared.current === false) {
+  if (hasClearedAllGuidesInPreviousFrame === true && hasClearedAllGuides.current === false) {
     timerKey.current += 1;
   }
 };
@@ -79,8 +100,9 @@ export function PreSetScene(props: {
   isAllGuideCleared: MutableRefObject<boolean>;
   scene: MutableRefObject<'PreSet' | 'InSet'>;
   causeReRendering: (value: SetStateAction<number>) => void;
+  hasRackedOut: MutableRefObject<boolean>;
 }) {
-  const { canvasRef, guideItems, timerKey, isAllGuideCleared, scene, causeReRendering } = props;
+  const { canvasRef, guideItems, timerKey, isAllGuideCleared, scene, causeReRendering, hasRackedOut } = props;
 
   return (
     <>
@@ -116,7 +138,7 @@ export function PreSetScene(props: {
       >
         <Box display="column" sx={{ justifyContent: 'space-between' }}>
           {guideItems.current.map((guideItem) => (
-            <Checkbox key={guideItem.name} isChecked={guideItem.isCleared} text={guideItem.guide.label} />
+            <CheckboxWithText key={guideItem.name} isChecked={guideItem.isCleared} text={guideItem.guide.label} />
           ))}
         </Box>
       </div>
@@ -140,6 +162,7 @@ export function PreSetScene(props: {
           }}
         />
       </div>
+      <PreSetAlertModal description="バーベルを担いで開始しましょう！" open={!hasRackedOut.current} />
     </>
   );
 }

@@ -45,3 +45,5 @@ npm-debug.log.*
 *.exe
 
 data/
+log/
+/log

@@ -1,14 +1,14 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat-form-instructions/preSetGuide';
-import { convertKinectResultsToPose, getNearestBody, Pose } from '../training_data/pose';
+import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat/preSetGuide';
+import { convertKinectResultsToPose, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
 import { resetRepState } from '../training_data/repState';
 import { renderBGRA32ColorFrame } from '../utils/drawCanvas';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { startKinect } from '../utils/kinect';
+import { getInterestBody, KinectBody, startKinect } from '../utils/kinect';
 import { PoseGrid } from '../utils/poseGrid';
-import { formInstructionItemsAtom, kinectAtom, phaseAtom, setRecordAtom } from './atoms';
+import { kinectAtom, phaseAtom, setRecordAtom, settingsAtom } from './atoms';
 import FadeInOut from './decorators/FadeInOut';
 import { InSetProcess, InSetScene } from './InSetScene';
 import { PreSetProcess, PreSetScene } from './PreSetScene';
@@ -37,9 +37,14 @@ export default function BodyTracking() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasImageData = useRef<ImageData | null>(null);
 
+  // 映像保存用
+  const videoRecorder = useRef<MediaRecorder | null>(null);
+
   // Kinect
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [kinect] = useAtom(kinectAtom);
+
+  const interestBody = useRef<KinectBody>({ skeleton: undefined, id: -1 });
 
   /*
   PreSet
@@ -58,6 +63,10 @@ export default function BodyTracking() {
   // タイマー
   const timerKey = useRef(0);
 
+  // rack out
+  const hasRackedOut = useRef(false);
+  const initialShoulderY = useRef(0);
+
   /*
   InSet
   */
@@ -72,8 +81,8 @@ export default function BodyTracking() {
   const repRef = useRef(resetRep(0));
   const repState = useRef(resetRepState());
 
-  // リザルト画面のフォーム指導項目
-  const [formInstructionItems] = useAtom(formInstructionItemsAtom);
+  // Settings
+  const [settings] = useAtom(settingsAtom);
 
   // 目標レップ数
   const targetRepCount = setRecord.setInfo.targetReps;
@@ -92,21 +101,22 @@ export default function BodyTracking() {
         throw new Error('canvasCtx is null');
       }
       canvasCtx.save();
-      canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      canvasCtx.clearRect(0, 0, data.colorImageFrame.height, data.colorImageFrame.height);
 
       if (canvasImageData.current === null) {
         canvasRef.current.width = data.colorImageFrame.width / 2; // 撮影映像の中央部分だけを描画するため、canvasの横幅を半分にする
         canvasRef.current.height = data.colorImageFrame.height;
         canvasImageData.current = canvasCtx.createImageData(data.colorImageFrame.width, data.colorImageFrame.height);
-      } else if (scene.current === 'PreSet') {
-        renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
       }
+      renderBGRA32ColorFrame(canvasCtx, canvasImageData.current, data.colorImageFrame);
 
       if (data.bodyFrame.bodies.length > 0) {
+        interestBody.current = getInterestBody(data.bodyFrame.bodies, interestBody.current.id);
+
         // Kinectの姿勢推定結果を自作のPose型に代入
         const rawCurrentPose: Pose = convertKinectResultsToPose(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          getNearestBody(data).skeleton.joints,
+          interestBody.current.skeleton.joints,
           canvasRef.current,
           true,
           new Date().getTime(),
@@ -129,23 +139,38 @@ export default function BodyTracking() {
         prevPoseRef.current = currentPose;
 
         if (scene.current === 'PreSet') {
-          PreSetProcess(canvasCtx, currentPose, guideItems, isAllGuideCleared, causeReRendering, timerKey);
+          PreSetProcess(
+            canvasCtx,
+            currentPose,
+            guideItems,
+            isAllGuideCleared,
+            causeReRendering,
+            timerKey,
+            hasRackedOut,
+            initialShoulderY,
+          );
         } else if (scene.current === 'InSet') {
           InSetProcess(
+            canvasRef,
             poseGrid,
             currentPose,
             repState,
             setRef,
             repRef,
-            formInstructionItems,
+            settings.checkpoints,
             setSetRecord,
             causeReRendering,
             setPhase,
             targetRepCount,
+            videoRecorder,
           );
         }
-      } else if (poseGrid.current) {
-        // 姿勢推定結果が空の場合、poseGridのマウス操作だけ更新する
+      }
+      // 姿勢推定結果が空の場合、
+      else if (poseGrid.current) {
+        // bodyIdをリセットする
+        interestBody.current.id = -1;
+        // poseGridのマウス操作だけ更新する
         poseGrid.current.updateOrbitControls();
       }
 
@@ -158,6 +183,7 @@ export default function BodyTracking() {
 
   // Kinectの開始
   useEffect(() => {
+    window.log.debug('kinect is starting...');
     startKinect(kinect, onResults);
     // REF: ここでStopKinect呼べるかもしれない（https://blog.techscore.com/entry/2022/06/10/080000）
   }, [kinect, onResults]);
@@ -173,6 +199,7 @@ export default function BodyTracking() {
           isAllGuideCleared={isAllGuideCleared}
           scene={scene}
           causeReRendering={causeReRendering}
+          hasRackedOut={hasRackedOut}
         />
       )) ||
         (scene.current === 'InSet' && (
