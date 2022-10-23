@@ -6,10 +6,11 @@ import { useAtom } from 'jotai';
 import { ReactElement, useEffect } from 'react';
 import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
 import FlatButton from '../stories/FlatButton';
+import Score from '../stories/Score';
+import TextWithIcon from '../stories/TextWithIcon';
 import { stopKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import { HeaderGridItem } from './Result2';
-import TextWithIcon from '../stories/TextWithIcon';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
 
 function ShortResult(props: { metrics: ReactElement; measuredValue: string }) {
@@ -51,20 +52,7 @@ export default function Report1() {
       {/* 左側 */}
       <Grid item xs={6} sx={{ mt: '2vh' }}>
         <Stack>
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="flex-end"
-            spacing={0}
-            sx={{ borderBottomWidth: 1, borderColor: 'black', marginInline: '5vw', paddingBottom: '1vh' }}
-          >
-            <Typography variant="h1" component="h1" align="center" sx={{ mx: '1vw', fontSize: 150 }} fontWeight="bold">
-              {setRecord.resultSummary.totalScore}
-            </Typography>
-            <Typography variant="h4" component="h1" align="center" sx={{ fontSize: 30 }} fontWeight="bold">
-              点
-            </Typography>
-          </Stack>
+          <Score value={setRecord.resultSummary.totalScore} />
           <ShortResult
             metrics={<TextWithIcon icon={<AccessTimeIcon sx={{ fontSize: 60 }} color="primary" />} text="時間" />}
             measuredValue={`${setRecord.resultSummary.timeToComplete}秒`}
