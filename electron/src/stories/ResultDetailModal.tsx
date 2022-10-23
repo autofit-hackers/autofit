@@ -30,6 +30,7 @@ export default function ResultDetailModal({ checkpointName, description, open, h
                 playing
                 loop
                 muted
+                controls
                 width="100%"
                 height="100%"
                 style={{
@@ -48,6 +49,7 @@ export default function ResultDetailModal({ checkpointName, description, open, h
                 playing
                 loop
                 muted
+                controls
                 width="100%"
                 height="100%"
                 style={{

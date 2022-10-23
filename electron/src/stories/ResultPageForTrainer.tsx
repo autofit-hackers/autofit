@@ -1,18 +1,24 @@
 import { Chip, Grid, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import ReactPlayer from 'react-player';
+import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
+import dropDepth from '../coaching/squat/dropDepth';
+import kneeFrontBack from '../coaching/squat/kneeFrontBack';
+import velocity from '../coaching/squat/velocity';
 import FlatButton from './FlatButton';
 import FlatCard from './FlatCard';
 import Header from './Header';
 import RadarChart from './RadarChart';
 import ResultDetailModal from './ResultDetailModal';
+import Score from './Score';
 
 interface ResultPageForTrainerProps {
   /**
-   * Button contents
+   * Page contents
    */
   videoUrl: string;
   summaryDescription: string;
+  results: CheckResult[];
   handleBack: () => void;
   handleForward: () => void;
 }
@@ -20,40 +26,24 @@ interface ResultPageForTrainerProps {
 export default function ResultForTrainer({
   videoUrl,
   summaryDescription,
+  results,
   handleBack,
   handleForward,
 }: ResultPageForTrainerProps) {
   const [open, setOpen] = useState(false);
-  const [description, setDescription] = useState('');
-  const radarChartItems = [
-    {
-      name: 'ひざの開き',
-      value: 70,
-    },
-    {
-      name: '背筋の張り',
-      value: 40,
-    },
-    {
-      name: '腰の張り',
-      value: 50,
-    },
-    {
-      name: '腕の開き',
-      value: 90,
-    },
-    {
-      name: '腕の張り',
-      value: 80,
-    },
-    {
-      name: '腕の上げ下げ',
-      value: 30,
-    },
-  ];
+  const [selectedCheckpoint, setSelectedCheckpoint] = useState('');
+  const checkpoints: Checkpoint[] = [dropDepth, velocity, kneeFrontBack];
+
+  // レーダーチャートの項目を作成
+  const radarChartItems = checkpoints.map((checkpoint) => ({
+    name: checkpoint.nameJP,
+    value: results.find((r) => r.nameEN === checkpoint.nameEN)?.scoreForSet || 0,
+  }));
+
+  // レーダーチャートの各項目をクリックしたときの処理
   const onClick = {
     click(params: { name: string }) {
-      setDescription(params.name);
+      setSelectedCheckpoint(params.name);
       setOpen(true);
     },
   };
@@ -63,6 +53,7 @@ export default function ResultForTrainer({
       <Grid container sx={{ paddingBlock: '5vh', height: '90vh' }}>
         {/* ヘッダー */}
         <Header title="今回のトレーニング結果" />
+
         {/* 左側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw', height: '60vh' }}>
           <ReactPlayer
@@ -71,7 +62,7 @@ export default function ResultForTrainer({
             playing
             loop
             muted
-            // controls
+            controls
             width="100%"
             height="100%"
             style={{
@@ -82,6 +73,7 @@ export default function ResultForTrainer({
             }}
           />
         </Grid>
+
         {/* 右側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingRight: '5vw' }}>
           <Stack direction="row" alignItems="center">
@@ -90,7 +82,7 @@ export default function ResultForTrainer({
               onClick={onClick}
               style={{ width: '100%', height: '50vh' }}
             />
-            {/* <Score value={80} /> */}
+            <Score value={80} />
           </Stack>
           <FlatCard>
             <Stack spacing={2} alignItems="flex-start">
@@ -104,6 +96,7 @@ export default function ResultForTrainer({
             </Stack>
           </FlatCard>
         </Grid>
+
         {/* フッター */}
         <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing="50vw">
@@ -112,11 +105,12 @@ export default function ResultForTrainer({
           </Stack>
         </Grid>
       </Grid>
+
       {/* 詳細のモーダル */}
       <ResultDetailModal
-        checkpointName={description}
+        checkpointName={selectedCheckpoint}
         open={open}
-        description={description}
+        description={results.find((r) => r.nameJP === selectedCheckpoint)?.description || ''}
         handleClose={() => setOpen(false)}
       />
     </div>

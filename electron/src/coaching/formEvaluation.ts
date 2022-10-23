@@ -6,6 +6,7 @@ type EvaluationTextTemplate = { beforeNumber: string; afterNumber: string };
 export type Thresholds = { upper: number; middle: number; lower: number };
 
 export type Checkpoint = {
+  name: any;
   readonly id: number;
   readonly nameEN: string;
   readonly nameJP: string;
@@ -39,6 +40,7 @@ export type Errors = { errorScores: number; coordinateError: number };
 
 export type CheckResult = {
   nameEN: string;
+  nameJP?: string;
   isGood: boolean;
   description: string;
   scoreForSet: number;
