@@ -66,22 +66,6 @@ export default function ResultForTrainer({
               backgroundColor: 'rgba(0, 0, 0, 1.0)',
             }}
           />
-          {/* <ReactPlayer
-            url={videoUrl}
-            id="RepVideo"
-            playing
-            loop
-            muted
-            controls
-            width="100%"
-            height="100%"
-            style={{
-              border: '6px',
-              borderRadius: '24px',
-              borderColor: '#4AC0E3',
-              // backgroundColor: 'rgba(0, 0, 0, 1.0)',
-            }}
-          /> */}
         </Grid>
 
         {/* 右側 */}
