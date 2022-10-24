@@ -1,6 +1,5 @@
-import { Chip, Grid, Stack, Typography } from '@mui/material';
+import { CardMedia, Chip, Grid, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
-import ReactPlayer from 'react-player';
 import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
 import FlatButton from './FlatButton';
 import FlatCard from './FlatCard';
@@ -53,7 +52,21 @@ export default function ResultForTrainer({
 
         {/* 左側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw', height: '60vh' }}>
-          <ReactPlayer
+          <CardMedia
+            component="video"
+            image={videoUrl}
+            style={{ height: '100%', objectFit: 'contain' }}
+            autoPlay
+            loop
+            muted
+            sx={{
+              border: 6,
+              borderRadius: 5,
+              borderColor: '#4AC0E3',
+              backgroundColor: 'rgba(0, 0, 0, 1.0)',
+            }}
+          />
+          {/* <ReactPlayer
             url={videoUrl}
             id="RepVideo"
             playing
@@ -68,7 +81,7 @@ export default function ResultForTrainer({
               borderColor: '#4AC0E3',
               // backgroundColor: 'rgba(0, 0, 0, 1.0)',
             }}
-          />
+          /> */}
         </Grid>
 
         {/* 右側 */}
@@ -108,6 +121,8 @@ export default function ResultForTrainer({
         checkpointName={selectedCheckpoint}
         open={open}
         description={results.find((r) => r.nameJP === selectedCheckpoint)?.description || ''}
+        leftVideoUrl={checkpoints.find((r) => r.nameJP === selectedCheckpoint)?.lectureVideoUrl || ''}
+        rightVideoUrl="https://www.youtube.com/watch?v=JGwWNGJdvx8"
         handleClose={() => setOpen(false)}
       />
     </div>
