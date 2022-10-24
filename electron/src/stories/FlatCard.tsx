@@ -15,7 +15,7 @@ interface FlatCardProps {
 
 export default function FlatCard({ children, onClick, sx }: FlatCardProps) {
   return (
-    <Box onClick={onClick} sx={{ borderRadius: 5, p: 2, border: 6, borderColor: '#4AC0E3', width: '100%', ...sx }}>
+    <Box onClick={onClick} sx={{ borderRadius: 5, p: 2, border: 6, borderColor: '#4AC0E3', ...sx }}>
       {children}
     </Box>
   );
