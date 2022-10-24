@@ -122,7 +122,7 @@ export default function ResultForTrainer({
         open={open}
         description={results.find((r) => r.nameJP === selectedCheckpoint)?.description || ''}
         leftVideoUrl={checkpoints.find((r) => r.nameJP === selectedCheckpoint)?.lectureVideoUrl || ''}
-        rightVideoUrl="https://www.youtube.com/watch?v=JGwWNGJdvx8"
+        rightVideoUrl="../../../resources/movie/squat-depth.mov"
         handleClose={() => setOpen(false)}
       />
     </div>

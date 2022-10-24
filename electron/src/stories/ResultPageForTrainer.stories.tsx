@@ -60,7 +60,7 @@ const results: CheckResult[] = [
 const checkpoints: Checkpoint[] = [dropDepth, velocity, kneeFrontBack, backBent];
 
 Primary.args = {
-  videoUrl: 'https://www.youtube.com/watch?v=Q8TXgCzxEnw',
+  videoUrl: '../../../resources/movie/squat-depth.mov',
   summaryDescription: '今回のトレーニング結果は、ひざの開きが50%、背筋の張りが50%でした。',
   results,
   checkpoints,
