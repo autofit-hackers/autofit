@@ -14,13 +14,12 @@ const getBackBentAngleFromSide = (pose: Pose): number => {
     'permit-negative-inferior',
   );
   const backBentAngleFromSide = (upperBackAngleFromSide - lowerBackAngleFromSide) / 2;
-  console.log('backBentAngleFromSide', backBentAngleFromSide);
 
   return backBentAngleFromSide;
 };
 
 const backBent: Checkpoint = {
-  id: 0,
+  id: 3,
   nameEN: 'Back bent',
   nameJP: '背中の丸まり/反り',
   iconImageUrl: squatDepthImage,
@@ -46,7 +45,7 @@ const backBent: Checkpoint = {
     positive: '背中が反りすぎています。お尻を引き締めましょう。',
   },
   poseGridCameraAngle: { theta: 90, phi: 180 },
-  thresholds: { upper: 85, middle: 90, lower: 100 },
+  thresholds: { upper: 100, middle: 90, lower: 85 },
   // しゃがみが深いほど角度は大きい
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
     const bottomPose = getBottomPose(rep);

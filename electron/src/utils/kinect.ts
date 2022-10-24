@@ -68,8 +68,6 @@ export const getInterestBody = (bodies: any[], interestBodyId: number): KinectBo
   const getHorizontalDistance = (body: any) =>
     body.skeleton.joints[KJ.PELVIS].cameraX ** 2 + body.skeleton.joints[KJ.PELVIS].cameraZ ** 2;
 
-  console.log('id', interestBodyId);
-
   // 前回のフレームで人体を検出していない場合
   if (interestBodyId === -1) {
     // 一人しか映ってない場合はそのまま返す
