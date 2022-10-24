@@ -1,8 +1,9 @@
+import { action } from '@storybook/addon-actions';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import PreSetAlertModal from './PreSetAlertModal';
 
 export default {
-  title: 'autofit/Card/PreSetAlertModal',
+  title: 'autofit/Modal/PreSetAlertModal',
   component: PreSetAlertModal,
 } as ComponentMeta<typeof PreSetAlertModal>;
 
@@ -14,7 +15,5 @@ export const Primary = Template.bind({});
 Primary.args = {
   description: 'バーベルを担いで開始しましょう！',
   open: true,
-  onClose: () => {
-    console.log('closed');
-  },
+  onClose: action('closed'),
 };

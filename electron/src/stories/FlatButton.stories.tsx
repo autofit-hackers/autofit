@@ -1,3 +1,4 @@
+import { action } from '@storybook/addon-actions';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import FlatButton from './FlatButton';
@@ -16,8 +17,6 @@ const Template: ComponentStory<typeof FlatButton> = (args) => <FlatButton {...ar
 export const Primary = Template.bind({});
 Primary.args = {
   label: 'Button',
-  onClick: () => {
-    console.log('clicked');
-  },
+  onClick: action('clicked'),
   sx: {},
 };
