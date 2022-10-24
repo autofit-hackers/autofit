@@ -23,7 +23,7 @@ const backBent: Checkpoint = {
   nameEN: 'Back bent',
   nameJP: '背中の丸まり/反り',
   iconImageUrl: squatDepthImage,
-  lectureVideoUrl: '../../../resources/movie/squat-depth.mov',
+  lectureVideoUrl: '../../../resources/movie/squat-back-bent.mov',
   evaluationTextTemplate: {
     negative: {
       beforeNumber: '',

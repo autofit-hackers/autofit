@@ -23,7 +23,7 @@ const kneeInAndOut: Checkpoint = {
   nameEN: 'Knee in and out',
   nameJP: 'ひざの開き',
   iconImageUrl: kneeInAndOutImage,
-  lectureVideoUrl: 'https://www.youtube.com/watch?v=Q9Z9Z9Z9Z9Z',
+  lectureVideoUrl: '../../../resources/movie/squat-knee-in.mov',
   evaluationTextTemplate: {
     negative: {
       beforeNumber: '膝が適切な角度より',
