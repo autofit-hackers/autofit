@@ -154,7 +154,7 @@ export default function Report2() {
           handleClose={handleClose}
           checkpoint={selectedCheckpoint}
           checkResult={setRecord.checkResult[selectedCheckpoint.id]}
-          worstRep={setRecord.reps[setRecord.checkResult[selectedCheckpoint.id].worstRepIndex]}
+          setRecord={setRecord}
         />
       </Modal>
     </div>

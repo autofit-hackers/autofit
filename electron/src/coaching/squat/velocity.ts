@@ -29,6 +29,7 @@ const velocity: Checkpoint = {
     normal: 'いい速さです。',
     positive: '少しペースが遅いです。もう少しテンポ良く。',
   },
+  RGBcameraAngle: 'front',
   poseGridCameraAngle: { theta: 90, phi: 270 },
   thresholds: { upper: 2500, middle: 1500, lower: 500 }, // ミリ秒
   evaluateForm: (rep: Rep, thresholds: Thresholds) => {
