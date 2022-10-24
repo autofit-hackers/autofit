@@ -7,7 +7,6 @@ import FlatCard from './FlatCard';
 import Header from './Header';
 import RadarChart from './RadarChart';
 import ResultDetailModal from './ResultDetailModal';
-import Score from './Score';
 
 interface ResultPageForTrainerProps {
   /**
@@ -80,7 +79,7 @@ export default function ResultForTrainer({
               onClick={onClick}
               style={{ width: '100%', height: '50vh' }}
             />
-            <Score value={80} />
+            {/* <Score value={80} /> */}
           </Stack>
           <FlatCard>
             <Stack spacing={2} alignItems="flex-start">
