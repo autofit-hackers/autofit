@@ -56,10 +56,10 @@ export type CheckResult = {
 const calculateRepScore = (error: number): number => {
   const errorAbs = Math.abs(error);
   if (errorAbs <= 1) {
-    return 100 - 20 * errorAbs;
+    return Math.max(100 - 20 * errorAbs, 0);
   }
 
-  return 10 - 5 * errorAbs;
+  return Math.max(10 - 5 * errorAbs, 0);
 };
 
 const decideShortSummaryForEachCheckpoint = (
@@ -193,6 +193,7 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
     setCopy.checkResult.map((result) => result.scoreForSet).reduce((num1: number, num2: number) => num1 + num2, 0) /
       setCopy.checkResult.length,
   );
+  console.log(setCopy.checkResult.map((result) => result.scoreForSet));
 
   return setCopy;
 };
