@@ -39,7 +39,7 @@ export type Errors = { errorScores: number; coordinateError: number };
 
 export type CheckResult = {
   nameEN: string;
-  nameJP?: string;
+  nameJP: string;
   isGood: boolean;
   description: string;
   scoreForSet: number;
@@ -138,6 +138,7 @@ export const evaluateSet = (set: Set, checkpoints: Checkpoint[]): Set => {
   checkpoints.forEach((checkpoint, id) => {
     const checkResult: CheckResult = {
       nameEN: checkpoint.nameEN,
+      nameJP: checkpoint.nameJP,
       isGood: true,
       description: '',
       scoreForSet: 0,
