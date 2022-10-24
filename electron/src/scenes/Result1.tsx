@@ -5,24 +5,13 @@ import { CardMedia, Grid, Stack, Typography } from '@mui/material';
 import { useAtom } from 'jotai';
 import { ReactElement, useEffect } from 'react';
 import result2 from '../../resources/images/muscle-map/muscle-map-squat.png';
+import FlatButton from '../stories/FlatButton';
+import Score from '../stories/Score';
+import TextWithIcon from '../stories/TextWithIcon';
 import { stopKinect } from '../utils/kinect';
 import { kinectAtom, phaseAtom, setRecordAtom } from './atoms';
 import { HeaderGridItem } from './Result2';
-import { FlatButton } from './ui-components/FlatUI';
 import { useDummySetRecordIfDebugMode } from './ui-components/SetRecordDebugger';
-
-function TextWithIcon(props: { icon: ReactElement; text: string }) {
-  const { icon, text } = props;
-
-  return (
-    <Stack direction="row" spacing={1} alignItems="center" justifyContent="left">
-      {icon}
-      <Typography variant="h4" component="h1" align="left" sx={{ mx: '5vw' }} fontWeight="bold">
-        {text}
-      </Typography>
-    </Stack>
-  );
-}
 
 function ShortResult(props: { metrics: ReactElement; measuredValue: string }) {
   const { metrics, measuredValue } = props;
@@ -63,20 +52,7 @@ export default function Report1() {
       {/* 左側 */}
       <Grid item xs={6} sx={{ mt: '2vh' }}>
         <Stack>
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="flex-end"
-            spacing={0}
-            sx={{ borderBottomWidth: 1, borderColor: 'black', marginInline: '5vw', paddingBottom: '1vh' }}
-          >
-            <Typography variant="h1" component="h1" align="center" sx={{ mx: '1vw', fontSize: 150 }} fontWeight="bold">
-              {setRecord.resultSummary.totalScore}
-            </Typography>
-            <Typography variant="h4" component="h1" align="center" sx={{ fontSize: 30 }} fontWeight="bold">
-              点
-            </Typography>
-          </Stack>
+          <Score value={setRecord.resultSummary.totalScore} />
           <ShortResult
             metrics={<TextWithIcon icon={<AccessTimeIcon sx={{ fontSize: 60 }} color="primary" />} text="時間" />}
             measuredValue={`${setRecord.resultSummary.timeToComplete}秒`}
@@ -102,7 +78,7 @@ export default function Report1() {
       </Grid>
       <Grid item xs={12} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
         <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing="50vw">
-          <FlatButton text="次へ" onClick={() => setPhase((prev) => prev + 1)} />
+          <FlatButton label="次へ" onClick={() => setPhase((prev) => prev + 1)} />
         </Stack>
       </Grid>
     </Grid>

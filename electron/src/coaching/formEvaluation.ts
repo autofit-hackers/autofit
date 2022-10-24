@@ -39,6 +39,7 @@ export type Errors = { errorScores: number; coordinateError: number };
 
 export type CheckResult = {
   nameEN: string;
+  nameJP?: string;
   isGood: boolean;
   description: string;
   scoreForSet: number;
