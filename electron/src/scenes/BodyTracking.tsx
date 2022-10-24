@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
 import { shoulderPacking, stanceWidth, standingPosition } from '../coaching/squat/preSetGuide';
 import { convertKinectResultsToPose, Pose } from '../training_data/pose';
 import { resetRep } from '../training_data/rep';
@@ -38,7 +39,9 @@ export default function BodyTracking() {
   const canvasImageData = useRef<ImageData | null>(null);
 
   // 映像保存用
-  const videoRecorder = useRef<MediaRecorder | null>(null);
+  const frontVideoRecorder = useRef<MediaRecorder | null>(null);
+  const sideVideoRecorder = useRef<MediaRecorder | null>(null);
+  const webcamRef = useRef<Webcam>(null);
 
   // Kinect
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -162,7 +165,9 @@ export default function BodyTracking() {
             causeReRendering,
             setPhase,
             targetRepCount,
-            videoRecorder,
+            frontVideoRecorder,
+            sideVideoRecorder,
+            webcamRef,
           );
         }
       }
@@ -190,6 +195,14 @@ export default function BodyTracking() {
 
   return (
     <div>
+      <div hidden>
+        <Webcam
+          ref={webcamRef}
+          videoConstraints={{
+            facingMode: 'user',
+          }}
+        />
+      </div>
       {(scene.current === 'PreSet' && (
         // PreSetScene do not need <FadeInOut></FadeInOut> decorator
         <PreSetScene

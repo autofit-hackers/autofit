@@ -49,7 +49,7 @@ export default function ResultModal({
               {checkpoint.nameJP}
             </Typography>
           </Grid>
-          {/* 右側 */}
+          {/* 左 */}
           <Grid item xs={7} sx={{ paddingBlock: 'vh', paddingLeft: '5vw', paddingRight: '1vw' }}>
             <ReactPlayer
               url={checkpoint.lectureVideoUrl}
@@ -66,7 +66,7 @@ export default function ResultModal({
               }}
             />
           </Grid>
-          {/* 左 */}
+          {/* 右 */}
           <Grid item xs={5} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
             <div style={{ height: '50vh' }}>
               <PoseGridViewer
