@@ -3,6 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
 import ResultPageForTrainer from './ResultPageForTrainer';
 
+import backBent from '../coaching/squat/backBent';
 import dropDepth from '../coaching/squat/dropDepth';
 import kneeFrontBack from '../coaching/squat/kneeFrontBack';
 import velocity from '../coaching/squat/velocity';
@@ -29,7 +30,7 @@ const results: CheckResult[] = [
   },
   {
     nameEN: 'Knee front and back',
-    nameJP: '姿勢',
+    nameJP: '膝の前後位置',
     isGood: false,
     description: 'ひざが前に出ています',
     scoreForSet: 50,
@@ -45,12 +46,21 @@ const results: CheckResult[] = [
     worstRepIndex: 0,
     eachRepErrors: [{ errorScores: 1, coordinateError: 0 }],
   },
+  {
+    nameEN: 'Back bent',
+    nameJP: '背中の丸まり/反り',
+    isGood: true,
+    description: '少し速いですが、問題ありません。',
+    scoreForSet: 60,
+    worstRepIndex: 0,
+    eachRepErrors: [{ errorScores: 1, coordinateError: 0 }],
+  },
 ];
 
-const checkpoints: Checkpoint[] = [dropDepth, velocity, kneeFrontBack];
+const checkpoints: Checkpoint[] = [dropDepth, velocity, kneeFrontBack, backBent];
 
 Primary.args = {
-  videoUrl: 'https://www.youtube.com/watch?v=Q8TXgCzxEnw',
+  videoUrl: '../../../resources/movie/squat-depth.mov',
   summaryDescription: '今回のトレーニング結果は、ひざの開きが50%、背筋の張りが50%でした。',
   results,
   checkpoints,
