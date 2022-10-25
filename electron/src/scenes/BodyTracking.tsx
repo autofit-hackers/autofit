@@ -201,8 +201,8 @@ export default function BodyTracking() {
         <Webcam
           ref={webcamRef}
           videoConstraints={{
-            // REF: ここで全deviceのID確認できます（https://codepen.io/masaueno/pen/abKbORp）
-            deviceId: '417eeed1581168255d187c3dfda94f0e9f0bd802c8b0b9b8a9b370262d236e18',
+            // InputPageでwebcamのデバイスID一覧をlogしているので、そこから選択する
+            deviceId: '2865b621ebd175d015170166fc081344d51e66e24051c01bceef0e08ffc60e5d',
           }}
         />
       </div>
