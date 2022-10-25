@@ -34,7 +34,7 @@ export default function Result() {
     // TICKET: resultの中にURLを含める
     // TICKET: 指導項目に応じたビデオの方向を設定する
     <ResultForTrainer
-      videoUrl={setRecord.repVideoUrls[0]}
+      setRecord={setRecord}
       summaryDescription={setRecord.resultSummary.description}
       results={setRecord.checkResult}
       checkpoints={settings.checkpoints}

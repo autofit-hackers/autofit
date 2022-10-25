@@ -201,7 +201,8 @@ export default function BodyTracking() {
         <Webcam
           ref={webcamRef}
           videoConstraints={{
-            facingMode: 'user',
+            // REF: ここで全deviceのID確認できます（https://codepen.io/masaueno/pen/abKbORp）
+            deviceId: '417eeed1581168255d187c3dfda94f0e9f0bd802c8b0b9b8a9b370262d236e18',
           }}
         />
       </div>
