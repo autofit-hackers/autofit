@@ -49,6 +49,7 @@ export default function ResultDetailModal({
                 autoPlay
                 loop
                 muted
+                controls
                 sx={{
                   border: 6,
                   borderRadius: 5,
@@ -59,7 +60,7 @@ export default function ResultDetailModal({
             </Grid>
 
             {/* 右 */}
-            <Grid item xs={6} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
+            <Grid item xs={6} sx={{ paddingBlock: 'vh', paddingRight: '5vw', height: '50vh' }}>
               <CardMedia
                 component="video"
                 image={rightVideoUrl}
@@ -67,6 +68,7 @@ export default function ResultDetailModal({
                 autoPlay
                 loop
                 muted
+                controls
                 sx={{
                   border: 6,
                   borderRadius: 5,

@@ -7,6 +7,7 @@ import FlatCard from './FlatCard';
 import Header from './Header';
 import RadarChart from './RadarChart';
 import ResultDetailModal from './ResultDetailModal';
+import Score from './Score';
 
 interface ResultPageForTrainerProps {
   /**
@@ -52,7 +53,7 @@ export default function ResultForTrainer({
         <Header title="今回のトレーニング結果" />
 
         {/* 左側 */}
-        <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw', height: '60vh' }}>
+        <Grid item xs={5} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw', height: '70vh' }}>
           <CardMedia
             component="video"
             image={setRecord.frontVideoUrl}
@@ -60,6 +61,7 @@ export default function ResultForTrainer({
             autoPlay
             loop
             muted
+            controls
             sx={{
               border: 6,
               borderRadius: 5,
@@ -70,14 +72,14 @@ export default function ResultForTrainer({
         </Grid>
 
         {/* 右側 */}
-        <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingRight: '5vw' }}>
+        <Grid item xs={7} sx={{ paddingBlock: '2.5vh', paddingRight: '5vw' }}>
           <Stack direction="row" alignItems="center">
             <RadarChart
               radarChartItems={radarChartItems}
               onClick={onClick}
               style={{ width: '100%', height: '50vh' }}
             />
-            {/* <Score value={80} /> */}
+            <Score value={80} />
           </Stack>
           <FlatCard>
             <Stack spacing={2} alignItems="flex-start">
