@@ -6,7 +6,7 @@ import { phaseAtom } from './atoms';
 import BodyTracking from './BodyTracking';
 import FadeInOut from './decorators/FadeInOut';
 import InputPage from './InputPage';
-import Report1 from './Result1';
+import Result from './Result';
 import Report2 from './Result2';
 import StartPage from './StartPage';
 import futuristicTheme from './themes';
@@ -36,7 +36,7 @@ export default function TrainingMain() {
       )}
       {phase === 3 && (
         <FadeInOut>
-          <Report1 />
+          <Result />
         </FadeInOut>
       )}
       {phase === 4 && (

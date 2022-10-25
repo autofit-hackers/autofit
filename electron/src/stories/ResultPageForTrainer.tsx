@@ -1,13 +1,11 @@
-import { Chip, Grid, Stack, Typography } from '@mui/material';
+import { CardMedia, Chip, Grid, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
-import ReactPlayer from 'react-player';
 import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
 import FlatButton from './FlatButton';
 import FlatCard from './FlatCard';
 import Header from './Header';
 import RadarChart from './RadarChart';
 import ResultDetailModal from './ResultDetailModal';
-import Score from './Score';
 
 interface ResultPageForTrainerProps {
   /**
@@ -54,20 +52,18 @@ export default function ResultForTrainer({
 
         {/* 左側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw', height: '60vh' }}>
-          <ReactPlayer
-            url={videoUrl}
-            id="RepVideo"
-            playing
+          <CardMedia
+            component="video"
+            image={videoUrl}
+            style={{ height: '100%', objectFit: 'contain' }}
+            autoPlay
             loop
             muted
-            controls
-            width="100%"
-            height="100%"
-            style={{
-              border: '6px',
-              borderRadius: '24px',
+            sx={{
+              border: 6,
+              borderRadius: 5,
               borderColor: '#4AC0E3',
-              // backgroundColor: 'rgba(0, 0, 0, 1.0)',
+              backgroundColor: 'rgba(0, 0, 0, 1.0)',
             }}
           />
         </Grid>
@@ -80,7 +76,7 @@ export default function ResultForTrainer({
               onClick={onClick}
               style={{ width: '100%', height: '50vh' }}
             />
-            <Score value={80} />
+            {/* <Score value={80} /> */}
           </Stack>
           <FlatCard>
             <Stack spacing={2} alignItems="flex-start">
@@ -109,6 +105,8 @@ export default function ResultForTrainer({
         checkpointName={selectedCheckpoint}
         open={open}
         description={results.find((r) => r.nameJP === selectedCheckpoint)?.description || ''}
+        leftVideoUrl={checkpoints.find((r) => r.nameJP === selectedCheckpoint)?.lectureVideoUrl || ''}
+        rightVideoUrl="../../../resources/movie/squat-depth.mov"
         handleClose={() => setOpen(false)}
       />
     </div>

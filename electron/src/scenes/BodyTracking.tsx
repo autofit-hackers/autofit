@@ -23,6 +23,9 @@ export default function BodyTracking() {
   const [, setPhase] = useAtom(phaseAtom);
   const scene = useRef<'PreSet' | 'InSet'>('PreSet');
 
+  // Settings
+  const [settings] = useAtom(settingsAtom);
+
   // 外れ値処理の設定
   // TODO: titration of outlier detection parameters
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
@@ -61,13 +64,15 @@ export default function BodyTracking() {
     // { guide: footAngle, name: 'footAngle', ...guideItemCommonDefault },
     { guide: shoulderPacking, name: 'shoulderPacking', ...guideItemCommonDefault, frameCountAfterUnchecked: 0 },
   ]);
-  const isAllGuideCleared = useRef(false);
+  // if product mode => start with false
+  const isAllGuideCleared = useRef(settings.isDebugMode);
 
   // タイマー
   const timerKey = useRef(0);
 
   // rack out
-  const hasRackedOut = useRef(false);
+  // if product mode => start with false
+  const hasRackedOut = useRef(settings.isDebugMode);
   const initialShoulderY = useRef(0);
 
   /*
@@ -83,9 +88,6 @@ export default function BodyTracking() {
   const setRef = useRef(setRecord);
   const repRef = useRef(resetRep(0));
   const repState = useRef(resetRepState());
-
-  // Settings
-  const [settings] = useAtom(settingsAtom);
 
   // 目標レップ数
   const targetRepCount = setRecord.setInfo.targetReps;
