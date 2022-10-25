@@ -128,6 +128,7 @@ const kneeInAndOut: Checkpoint = {
 
     return errorInt;
   },
+  RGBcameraAngle: 'front',
 };
 
 export default kneeInAndOut;
