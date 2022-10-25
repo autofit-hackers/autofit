@@ -1,3 +1,4 @@
+import { action } from '@storybook/addon-actions';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import CountdownCircles from './CountdownCircles';
@@ -19,6 +20,6 @@ Primary.args = {
   isPlaying: true,
   duration: 10,
   onComplete: () => {
-    console.log('completed');
+    action('completed');
   },
 };
