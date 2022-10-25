@@ -1,3 +1,4 @@
+import Webcam from 'react-webcam';
 import { Set } from '../training_data/set';
 
 export const startCapturingRepVideo = (canvas: HTMLCanvasElement, set: Set): MediaRecorder => {
@@ -33,6 +34,43 @@ export const startCapturingRepVideo = (canvas: HTMLCanvasElement, set: Set): Med
   return recorder;
 };
 
+export const startCapturingWebcam = (webcam: Webcam, set: Set): MediaRecorder => {
+  if (!webcam.stream) {
+    throw new Error('Webcam stream is not ready');
+  }
+  const recorder = new MediaRecorder(webcam.stream, {
+    mimeType: 'video/webm',
+  });
+  const rec: { data: Array<Blob>; type: string } = { data: [], type: '' };
+  recorder.ondataavailable = (e) => {
+    rec.type = e.data.type;
+    rec.data.push(e.data);
+  };
+  recorder.onstart = () => {
+    // 開始1分でレコーダーを自動停止
+    setTimeout(() => {
+      if (recorder.state === 'recording') {
+        console.log('Finishing rep video recorder: 1 min passed since the recording started');
+        recorder.stop();
+      }
+    }, 60000);
+  };
+  recorder.onstop = () => {
+    const blob = new Blob(rec.data, { type: rec.type });
+    if (blob.size > 0) {
+      const url = URL.createObjectURL(blob);
+      // eslint-disable-next-line no-param-reassign
+      set.sideVideoBlob = blob;
+      // eslint-disable-next-line no-param-reassign
+      set.sideVideoUrl = url;
+    }
+  };
+
+  recorder.start();
+
+  return recorder;
+};
+
 export const startCapturingSetVideo = (canvas: HTMLCanvasElement, set: Set): MediaRecorder => {
   const stream = canvas.captureStream();
   const recorder = new MediaRecorder(stream, {
@@ -57,9 +95,9 @@ export const startCapturingSetVideo = (canvas: HTMLCanvasElement, set: Set): Med
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
       // eslint-disable-next-line no-param-reassign
-      set.setVideoBlob = blob;
+      set.frontVideoBlob = blob;
       // eslint-disable-next-line no-param-reassign
-      set.setVideoUrl = url;
+      set.frontVideoUrl = url;
     }
   };
 

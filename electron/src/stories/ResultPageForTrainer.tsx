@@ -1,6 +1,7 @@
 import { CardMedia, Chip, Grid, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
+import { Set } from '../training_data/set';
 import FlatButton from './FlatButton';
 import FlatCard from './FlatCard';
 import Header from './Header';
@@ -11,7 +12,7 @@ interface ResultPageForTrainerProps {
   /**
    * Page contents
    */
-  videoUrl: string;
+  setRecord: Set;
   summaryDescription: string;
   results: CheckResult[];
   checkpoints: Checkpoint[];
@@ -20,7 +21,7 @@ interface ResultPageForTrainerProps {
 }
 
 export default function ResultForTrainer({
-  videoUrl,
+  setRecord,
   summaryDescription,
   results,
   checkpoints,
@@ -54,7 +55,7 @@ export default function ResultForTrainer({
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw', height: '60vh' }}>
           <CardMedia
             component="video"
-            image={videoUrl}
+            image={setRecord.frontVideoUrl}
             style={{ height: '100%', objectFit: 'contain' }}
             autoPlay
             loop
@@ -106,7 +107,11 @@ export default function ResultForTrainer({
         open={open}
         description={results.find((r) => r.nameJP === selectedCheckpoint)?.description || ''}
         leftVideoUrl={checkpoints.find((r) => r.nameJP === selectedCheckpoint)?.lectureVideoUrl || ''}
-        rightVideoUrl="../../../resources/movie/squat-depth.mov"
+        rightVideoUrl={
+          checkpoints.find((r) => r.nameJP === selectedCheckpoint)?.RGBcameraAngle === 'front'
+            ? setRecord.frontVideoUrl
+            : setRecord.sideVideoUrl
+        }
         handleClose={() => setOpen(false)}
       />
     </div>

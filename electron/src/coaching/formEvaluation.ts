@@ -17,6 +17,7 @@ export type Checkpoint = {
     positive: EvaluationTextTemplate;
   };
   readonly voice: { negative: string; normal: string; positive: string };
+  readonly RGBcameraAngle: 'front' | 'side';
   readonly poseGridCameraAngle: CameraAngle;
   readonly thresholds: Thresholds;
   readonly evaluateForm: (rep: Rep, thresholds: Thresholds) => number;

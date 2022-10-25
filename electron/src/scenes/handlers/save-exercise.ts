@@ -27,7 +27,8 @@ const saveExercise = (setObj: Set) => {
   for (let i = 0; i < setObj.repVideoBlobs.length; i += 1) {
     void writeVideoToFile(setObj.repVideoBlobs[i], dirPath, `rep${i + 1}.mp4`);
   }
-  void writeVideoToFile(setObj.setVideoBlob, dirPath, `set.mp4`);
+  void writeVideoToFile(setObj.frontVideoBlob, dirPath, `front.mp4`);
+  void writeVideoToFile(setObj.sideVideoBlob, dirPath, `side.mp4`);
 };
 
 export default saveExercise;
