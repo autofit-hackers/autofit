@@ -1,6 +1,6 @@
-import { calculateError, Checkpoint, Thresholds } from '../formEvaluation';
-import { Rep, getBottomPose, getLastPose } from '../../training_data/rep';
 import squatVelocityImage from '../../../resources/images/formInstructionItems/squat-velocity.png';
+import { getBottomPose, getLastPose, Rep } from '../../training_data/rep';
+import { calculateError, Checkpoint, Thresholds } from '../formEvaluation';
 
 const velocity: Checkpoint = {
   id: 1,
