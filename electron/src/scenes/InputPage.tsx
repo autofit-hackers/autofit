@@ -5,7 +5,7 @@ import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAtom } from 'jotai';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'typeface-roboto';
 import { resetSet } from '../training_data/set';
 import { phaseAtom, setRecordAtom } from './atoms';
@@ -23,6 +23,12 @@ export default function InputPage() {
     setPhase((prevPhase) => prevPhase + 1);
     setSetRecord(resetSet({ userName: subjectName, exerciseName: trainingName, targetWeight, targetReps, startTime }));
   };
+
+  useEffect(() => {
+    void navigator.mediaDevices.enumerateDevices().then((devices) => {
+      console.log(devices.filter(({ kind }) => kind === 'videoinput'));
+    });
+  }, []);
 
   return (
     <Stack spacing={8} alignItems="center">

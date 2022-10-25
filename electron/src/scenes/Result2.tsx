@@ -86,7 +86,7 @@ export default function Report2() {
         {/* 左側 */}
         <Grid item xs={6} sx={{ paddingBlock: '2.5vh', paddingInline: '5vw' }}>
           <ReactPlayer
-            url={setRecord.setVideoUrl}
+            url={setRecord.frontVideoUrl}
             id="RepVideo"
             playing
             loop
@@ -154,7 +154,7 @@ export default function Report2() {
           handleClose={handleClose}
           checkpoint={selectedCheckpoint}
           checkResult={setRecord.checkResult[selectedCheckpoint.id]}
-          worstRep={setRecord.reps[setRecord.checkResult[selectedCheckpoint.id].worstRepIndex]}
+          setRecord={setRecord}
         />
       </Modal>
     </div>

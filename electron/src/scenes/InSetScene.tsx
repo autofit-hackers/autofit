@@ -2,6 +2,7 @@
 import { createTheme, CssBaseline, ThemeProvider, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { MutableRefObject, RefObject, SetStateAction, useEffect } from 'react';
+import Webcam from 'react-webcam';
 import { Checkpoint, evaluateRep, evaluateSet } from '../coaching/formEvaluation';
 import { playRepCountSound } from '../coaching/voiceGuidance';
 import RepCounter from '../stories/RepCounter';
@@ -10,7 +11,7 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, Rep, resetRep } from 
 import { checkIfRepFinish, RepState, resetRepState, setStandingHeight } from '../training_data/repState';
 import { Set } from '../training_data/set';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
-import { startCapturingSetVideo } from '../utils/recordVideo';
+import { startCapturingSetVideo, startCapturingWebcam } from '../utils/recordVideo';
 
 export const InSetProcess = (
   canvasRef: RefObject<HTMLCanvasElement>,
@@ -24,7 +25,9 @@ export const InSetProcess = (
   causeReRendering: (value: SetStateAction<number>) => void,
   setPhase: (value: SetStateAction<number>) => void,
   targetRepCount: number,
-  videoRecorder: MutableRefObject<MediaRecorder | null>,
+  frontVideoRecorder: MutableRefObject<MediaRecorder | null>,
+  sideVideoRecorder: MutableRefObject<MediaRecorder | null>,
+  webcamRef: MutableRefObject<Webcam | null>,
 ) => {
   // PoseGridの描画
   if (poseGrid.current) {
@@ -32,8 +35,9 @@ export const InSetProcess = (
   }
 
   // 映像撮影開始
-  if (!videoRecorder.current && canvasRef.current) {
-    videoRecorder.current = startCapturingSetVideo(canvasRef.current, setRef.current);
+  if (!frontVideoRecorder.current && canvasRef.current && webcamRef.current) {
+    frontVideoRecorder.current = startCapturingSetVideo(canvasRef.current, setRef.current);
+    sideVideoRecorder.current = startCapturingWebcam(webcamRef.current, setRef.current);
   }
 
   // レップの最初のフレームの場合
@@ -85,8 +89,9 @@ export const InSetProcess = (
   // eslint-disable-next-line eqeqeq
   if (setRef.current.reps.length == targetRepCount) {
     // WARN:  等価演算子（==）を厳密等価演算子（===）にすると、目標レップ数を入力フォームで変更した場合にReport1への遷移に失敗する（原因不明）
-    if (videoRecorder.current) {
-      videoRecorder.current.stop();
+    if (frontVideoRecorder.current && sideVideoRecorder.current) {
+      frontVideoRecorder.current.stop();
+      sideVideoRecorder.current.stop();
     }
     setTimeout(() => setPhase(3), 1000);
   }

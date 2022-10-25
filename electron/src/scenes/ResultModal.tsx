@@ -1,45 +1,21 @@
 import CancelIcon from '@mui/icons-material/Cancel';
 import { Grid, IconButton, Paper, Typography } from '@mui/material';
-import { useEffect, useRef } from 'react';
 import ReactPlayer from 'react-player';
 import { Checkpoint, CheckResult } from '../coaching/formEvaluation';
 import FlatCard from '../stories/FlatCard';
-import { Rep } from '../training_data/rep';
-import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
-import PoseGridViewer from './ui-components/PoseGridViewer';
+import { Set } from '../training_data/set';
 
 export default function ResultModal({
   handleClose,
   checkpoint,
   checkResult,
-  worstRep,
+  setRecord,
 }: {
   handleClose: () => void;
   checkpoint: Checkpoint;
   checkResult: CheckResult;
-  worstRep: Rep;
+  setRecord: Set;
 }) {
-  const gridDivRef = useRef<HTMLDivElement | null>(null);
-  const poseGrid = useRef<PoseGrid | null>(null);
-
-  useEffect(() => {
-    if (!poseGrid.current && gridDivRef.current) {
-      poseGrid.current = new PoseGrid(gridDivRef.current, {
-        ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { projectionMode: 'parallel', distance: 150, fov: 75 },
-      });
-      poseGrid.current.isAutoRotating = false;
-      poseGrid.current.setCameraAngle(checkpoint.poseGridCameraAngle);
-      poseGrid.current.drawGuideline(worstRep.guidelineSymbolsList[checkpoint.id]);
-      poseGrid.current.startLoopPlayback(
-        worstRep,
-        0,
-        worstRep.form.length,
-        worstRep.form.slice(-1)[0].timestamp - worstRep.form[0].timestamp,
-      );
-    }
-  });
-
   return (
     <>
       <Paper sx={{ marginBlock: '10vh', marginInline: '10vw', height: '80vh', borderRadius: 2 }}>
@@ -49,11 +25,11 @@ export default function ResultModal({
               {checkpoint.nameJP}
             </Typography>
           </Grid>
-          {/* 右側 */}
-          <Grid item xs={7} sx={{ paddingBlock: 'vh', paddingLeft: '5vw', paddingRight: '1vw' }}>
+          {/* 左 */}
+          <Grid item xs={6} sx={{ paddingBlock: 'vh', paddingLeft: '5vw', paddingRight: '1vw' }}>
             <ReactPlayer
               url={checkpoint.lectureVideoUrl}
-              id="RepVideo"
+              id="LectureVideo"
               playing
               loop
               width="100%"
@@ -66,15 +42,22 @@ export default function ResultModal({
               }}
             />
           </Grid>
-          {/* 左 */}
-          <Grid item xs={5} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
-            <div style={{ height: '50vh' }}>
-              <PoseGridViewer
-                gridDivRef={gridDivRef}
-                poseGrid={poseGrid}
-                cameraPosition={checkpoint.poseGridCameraAngle}
-              />
-            </div>
+          {/* 右 */}
+          <Grid item xs={6} sx={{ paddingBlock: 'vh', paddingRight: '5vw' }}>
+            <ReactPlayer
+              url={checkpoint.RGBcameraAngle === 'front' ? setRecord.frontVideoUrl : setRecord.sideVideoUrl}
+              id="RecordVideo"
+              playing
+              loop
+              width="100%"
+              height="100%"
+              style={{
+                borderRadius: '24px',
+                borderColor: '#4AC0E3',
+                borderWidth: '6px',
+                backgroundColor: 'rgba(0, 0, 0, 1.0)',
+              }}
+            />
           </Grid>
         </Grid>
         <Grid item xs={12} sx={{ paddingInline: '5vw' }}>
