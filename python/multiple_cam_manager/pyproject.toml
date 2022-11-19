@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "multiple-cam-manager"
+version = "0.1.0"
+description = "Manage multiple camera at once to record and analyze weight training form."
+authors = ["Yusuke KONDO <kondounagi@gmail.com>"]
+readme = "README.md"
+packages = [{include = "multiple_cam_manager"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
