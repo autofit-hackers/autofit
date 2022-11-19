@@ -9,6 +9,7 @@ packages = [{include = "multiple_cam_manager"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 opencv-python = "^4.6.0.66"
+numpy = "^1.23.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
