@@ -1,8 +1,13 @@
 import argparse
 import logging
+from datetime import datetime
+from pathlib import Path
 
 import cv2
 import numpy as np
+
+
+OUTPUT_DIR = "output"
 
 
 def ger_args():
@@ -23,9 +28,30 @@ def init_cams(num_camera: int):
     return caps
 
 
+def init_video_writer(
+    path_to_save: str | None,
+    size: tuple[int, int],
+    fps: int = 30,
+):
+    if path_to_save is None:
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = Path(OUTPUT_DIR)
+        output_dir.mkdir(exist_ok=True)
+        path_to_save = output_dir / f"{now}.avi"
+    print(f"saving video to {path_to_save}...")
+    return cv2.VideoWriter(
+        str(path_to_save),
+        cv2.VideoWriter_fourcc(*"MJPG"),
+        fps,
+        size,
+    )
+
+
 def main():
     args = ger_args()
     caps = init_cams(args.num_camera)
+    video_writer = None
+
     while True:
         frames = []
         is_avails = []
@@ -50,9 +76,18 @@ def main():
         # numpy_vertical_concat = np.concatenate((image, grey_3_channel), axis=0)
         # numpy_horizontal_concat = np.concatenate((frame1, frame2), axis=1)
 
+        if video_writer is None:
+            concatted_shape = (numpy_horizontal.shape[1], numpy_horizontal.shape[0])
+            video_writer = init_video_writer(path_to_save=None, size=concatted_shape)
+
+        video_writer.write(numpy_horizontal)
+
         cv2.imshow("Result", numpy_horizontal)
-        key_input = cv2.waitKey(1)
+        key_input = cv2.waitKey(20)
         if key_input == 27:  # exit on ESC
+            video_writer.release()
+            for cap in caps.values():
+                cap.release()
             break
 
 
