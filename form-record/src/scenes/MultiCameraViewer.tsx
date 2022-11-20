@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { Button, Grid } from '@mui/material';
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
@@ -6,6 +6,7 @@ import { createRef, RefObject, useCallback, useEffect, useRef, useState } from '
 import Webcam from 'react-webcam';
 
 function MultiCameraViewer() {
+  const n = 2;
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const webcamRefs = useRef<RefObject<Webcam>[]>([]);
   const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
@@ -20,10 +21,11 @@ function MultiCameraViewer() {
 
   const startCapturingWebcam = useCallback((webcam: Webcam, cameraId: number): MediaRecorder => {
     const now = dayjs().format('YYYY-MM-DD-HH-mm-ss');
-    const dirPath = `${process.cwd()}/record/${now}`;
+    const dirPath = `${process.cwd()}/log/${now}`;
     if (!existsSync(dirPath)) {
       mkdirSync(dirPath, { recursive: true });
     }
+
     if (!webcam.stream) {
       throw new Error('Webcam stream is not ready');
     }
@@ -67,11 +69,17 @@ function MultiCameraViewer() {
     for (let i = 0; i < mediaRecorderRefs.current.length; i += 1) {
       mediaRecorderRefs.current[i].current?.stop();
     }
+    setCapturing(false);
   }, []);
 
   const handleDevices = useCallback(
     (mediaDevices: MediaDeviceInfo[]) =>
-      setDevices(mediaDevices.filter(({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera')),
+      setDevices(
+        mediaDevices
+          .filter(({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera')
+          .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
+      ),
+
     [setDevices],
   );
 
@@ -86,16 +94,23 @@ function MultiCameraViewer() {
   return (
     <>
       {capturing ? (
-        <Button onClick={handleStopCaptureClick}>Stop Capture</Button>
+        <Button onClick={handleStopCaptureClick} variant="contained">
+          Stop Capture
+        </Button>
       ) : (
         <Button onClick={handleStartCaptureClick}>Start Capture</Button>
       )}
-      {devices.map((device, key) => (
-        <div>
-          <Webcam audio={false} videoConstraints={{ deviceId: device.deviceId }} ref={webcamRefs.current[key]} />
-          {device.label || `Device ${key + 1}`}
-        </div>
-      ))}
+      <Grid container spacing={1}>
+        {devices.map((device, key) => (
+          <Grid item xs={6}>
+            <Webcam
+              audio={false}
+              videoConstraints={{ deviceId: device.deviceId, width: 640 * n, height: 360 * n }}
+              ref={webcamRefs.current[key]}
+            />
+          </Grid>
+        ))}
+      </Grid>
     </>
   );
 }
