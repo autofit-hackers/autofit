@@ -54,6 +54,7 @@
     "dayjs": "^1.11.6",
     "fs": "^0.0.1-security",
     "mui": "^0.0.1",
+    "opencv-ts": "^1.3.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-media-recorder": "^1.6.6",

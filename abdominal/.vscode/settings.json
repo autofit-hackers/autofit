@@ -117,6 +117,7 @@
     "echarts",
     "esbuild",
     "HANDTIP",
+    "imread",
     "Kinect",
     "linewidth",
     "mediapipe",
