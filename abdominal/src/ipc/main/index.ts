@@ -37,7 +37,7 @@ async function createWindow() {
   win = new BrowserWindow({
     width: 1920,
     height: 1080,
-    title: 'autofit',
+    title: 'abdominal-main-window',
     icon: join(ROOT_PATH.public, 'favicon.svg'),
     webPreferences: {
       preload,
