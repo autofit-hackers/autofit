@@ -1,4 +1,4 @@
-import MultiCameraViewer from './scenes/MultiCameraViewer';
+import MultiCameraViewer from './components/MultiCameraViewer';
 
 function App() {
   return MultiCameraViewer();

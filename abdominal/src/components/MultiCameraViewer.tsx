@@ -49,6 +49,7 @@ function MultiCameraViewer() {
     };
     recorder.start();
     recorder.onstop = () => {
+      console.log('stop recording');
       const blob = new Blob(rec.data, { type: rec.type });
       if (blob.size > 0) {
         void writeVideoToFile(blob, dirPath, `camera${cameraId}.mp4`);
@@ -58,7 +59,7 @@ function MultiCameraViewer() {
     return recorder;
   }, []);
 
-  const handleStartCaptureClick = useCallback(() => {
+  const startCapturing = useCallback(() => {
     setCapturing(true);
     for (let i = 0; i < mediaRecorderRefs.current.length; i += 1) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -66,10 +67,12 @@ function MultiCameraViewer() {
     }
   }, [startCapturingWebcam]);
 
-  const handleStopCaptureClick = useCallback(() => {
-    for (let i = 0; i < mediaRecorderRefs.current.length; i += 1) {
-      mediaRecorderRefs.current[i].current?.stop();
-    }
+  const stopCapturing = useCallback(() => {
+    mediaRecorderRefs.current.forEach((mediaRecorderRef) => {
+      if (mediaRecorderRef.current != null) {
+        mediaRecorderRef.current.stop();
+      }
+    });
     setCapturing(false);
   }, []);
 
@@ -95,11 +98,11 @@ function MultiCameraViewer() {
   return (
     <>
       {capturing ? (
-        <Button onClick={handleStopCaptureClick} variant="contained">
+        <Button onClick={stopCapturing} variant="contained">
           Stop Capture
         </Button>
       ) : (
-        <Button onClick={handleStartCaptureClick}>Start Capture</Button>
+        <Button onClick={startCapturing}>Start Capture</Button>
       )}
       <Grid container spacing={1}>
         {devices.map((device, key) => (
