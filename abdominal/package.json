@@ -1,7 +1,7 @@
 {
-  "name": "autofit-electron",
-  "version": "0.0.0",
-  "productName": "autofit-electron",
+  "name": "abdominal",
+  "version": "0.1.0",
+  "productName": "abdominal",
   "private": true,
   "description": "AI coaching for weight training",
   "author": "autofit Inc. <info@autofit.co.jp>",
