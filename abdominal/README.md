@@ -8,7 +8,7 @@
 
 ```
 yarn
-yarn run copy-dlls
+yarn prepare
 ```
 
 ### Release
