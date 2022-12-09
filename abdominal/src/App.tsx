@@ -1,7 +1,7 @@
-import TrainingMain from './scenes/Main';
+import MultiCameraViewer from './scenes/MultiCameraViewer';
 
 function App() {
-  return <TrainingMain />;
+  return MultiCameraViewer();
 }
 
 export default App;
