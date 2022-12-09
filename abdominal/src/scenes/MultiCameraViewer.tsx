@@ -6,7 +6,7 @@ import { createRef, RefObject, useCallback, useEffect, useRef, useState } from '
 import Webcam from 'react-webcam';
 
 function MultiCameraViewer() {
-  const n = 2;
+  const numRows = 2;
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const webcamRefs = useRef<RefObject<Webcam>[]>([]);
   const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
@@ -105,7 +105,7 @@ function MultiCameraViewer() {
           <Grid item xs={6}>
             <Webcam
               audio={false}
-              videoConstraints={{ deviceId: device.deviceId, width: 640 * n, height: 360 * n }}
+              videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
               ref={webcamRefs.current[key]}
             />
           </Grid>
