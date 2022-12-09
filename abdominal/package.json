@@ -70,7 +70,6 @@
     "framer-motion": "^7.5.3",
     "howler": "^2.2.3",
     "jotai": "^1.7.8",
-    "kinect-azure": "^0.3.0",
     "react": "^18.2.0",
     "react-countdown-circle-timer": "^3.0.9",
     "react-dom": "^18.2.0",
