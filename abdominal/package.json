@@ -51,6 +51,7 @@
     "@techstark/opencv-js": "^4.6.0-release.1",
     "date-utils": "^1.2.21",
     "dayjs": "^1.11.6",
+    "electron-log": "^4.4.8",
     "fs": "^0.0.1-security",
     "mui": "^0.0.1",
     "react": "^18.2.0",

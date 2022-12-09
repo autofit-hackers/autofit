@@ -4,6 +4,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable consistent-return */
 
+import * as log from 'electron-log';
+
+window.log = log.functions;
+
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise((resolve) => {
     if (condition.includes(document.readyState)) {
