@@ -39,12 +39,13 @@ function MultiCameraViewer() {
     };
     recorder.onstart = () => {
       // 開始10分でレコーダーを自動停止
+      const timeOut = 600000; // 10 min
       setTimeout(() => {
         if (recorder.state === 'recording') {
           console.log('Finishing rep video recorder: 10 min passed since the recording started');
           recorder.stop();
         }
-      }, 600000);
+      }, timeOut);
     };
     recorder.start();
     recorder.onstop = () => {
