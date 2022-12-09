@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
-    "prepare": "cd ../ &&  husky install form-record/.husky",
+    "prepare": "cd ../ &&  husky install abdominal/.husky",
     "lint-staged": "lint-staged",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "eslint --max-warnings 0 .",
