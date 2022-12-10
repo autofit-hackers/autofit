@@ -118,6 +118,7 @@
     "esbuild",
     "HANDTIP",
     "imread",
+    "imshow",
     "Kinect",
     "linewidth",
     "mediapipe",

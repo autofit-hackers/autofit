@@ -1,7 +1,7 @@
-import MultiCameraViewer from './scenes/MultiCameraViewer';
+import FisheyeCorrection from './scenes/FisheyeCorrection';
 
 function App() {
-  return MultiCameraViewer();
+  return <FisheyeCorrection />;
 }
 
 export default App;
