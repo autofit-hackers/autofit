@@ -32,6 +32,9 @@ def undistort(frame):
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(
         K, D, np.eye(3), K, DIM, cv2.CV_16SC2
     )
+    print("map1", type(map1))
+    cv2.imshow("filter", map2)
+    print("map2", type(map2))
     undistorted_img = cv2.remap(
         frame,
         map1,

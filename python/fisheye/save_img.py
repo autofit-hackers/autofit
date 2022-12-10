@@ -29,4 +29,4 @@ def save_frame_camera_key(
     cv2.destroyWindow(window_name)
 
 
-save_frame_camera_key(0, "data/oct1", "camera_capture")
+save_frame_camera_key(1, "data/oct1", "camera_capture")

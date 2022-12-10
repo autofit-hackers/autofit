@@ -5,6 +5,11 @@ import numpy as np
 import os
 import glob
 
+# for json write
+import json
+import json_encoder
+from PIL import Image
+
 CHECKERBOARD = (6, 9)
 
 print(CHECKERBOARD)
@@ -62,3 +67,27 @@ print("Found " + str(N_OK) + " valid images for calibration")
 print("DIM=" + str(_img_shape[::-1]))
 print("K=np.array(" + str(K.tolist()) + ")")
 print("D=np.array(" + str(D.tolist()) + ")")
+
+DIM = _img_shape[::-1]
+map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), K, DIM, cv2.CV_16SC2)
+
+dic = {
+    "DIM": DIM,
+    "K": K.tolist(),
+    "D": D.tolist(),
+    "map1": map1.tolist(),
+    "map2": map2.tolist(),
+}
+
+# file = open("data/oct1/calibration.json", "w")
+# json.dump(dic, file, cls=json_encoder.MyEncoder)
+
+# im = Image.fromarray(map2)
+# im.save("filename.jpeg")
+
+zeros = np.zeros((DIM[1], DIM[0], 1), np.uint8)
+map3=np.concatenate((map1, zeros), axis=2).astype(np.float32)
+print(map3.shape)
+
+
+cv2.imwrite('map1.jpeg', map3)
