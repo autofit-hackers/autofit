@@ -54,7 +54,7 @@ async function createWindow() {
   if (app.isPackaged) {
     void win.loadFile(indexHtml);
   } else {
-    void win.loadURL(url);
+    void (await win.loadURL(url)); // ref. https://github.com/nklayman/vue-cli-plugin-electron-builder/issues/776
     // win.webContents.openDevTools()
   }
 
