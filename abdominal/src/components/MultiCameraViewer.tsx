@@ -63,8 +63,9 @@ function MultiCameraViewer() {
   const startCapturing = useCallback(() => {
     setCapturing(true);
     for (let i = 0; i < mediaRecorderRefs.current.length; i += 1) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      mediaRecorderRefs.current[i].current = startCapturingWebcam(webcamRefs.current[i].current!, i);
+      if (webcamRefs.current[i].current != null) {
+        mediaRecorderRefs.current[i].current = startCapturingWebcam(webcamRefs.current[i].current, i);
+      }
     }
   }, [startCapturingWebcam]);
 
