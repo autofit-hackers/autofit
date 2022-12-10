@@ -22,6 +22,7 @@ function MultiCameraViewer() {
   };
 
   const createWebcamStream = useCallback((webcam: Webcam, cameraId: number): MediaRecorder => {
+    window.log.info(`Start capturing webcam ${cameraId}`);
     const now = dayjs().format('YYYY-MM-DD-HH-mm-ss');
     const dirPath = `${process.cwd()}/log/${now}`;
     if (!existsSync(dirPath)) {
@@ -44,16 +45,16 @@ function MultiCameraViewer() {
       const timeOut = 600000; // 10 min
       setTimeout(() => {
         if (recorder.state === 'recording') {
-          console.log('Finishing rep video recorder: 10 min passed since the recording started');
+          window.log.info('Finishing rep video recorder: 10 min passed since the recording started');
           recorder.stop();
         }
       }, timeOut);
     };
     recorder.start();
     recorder.onstop = () => {
-      console.log('stop recording');
       const blob = new Blob(rec.data, { type: rec.type });
       if (blob.size > 0) {
+        window.log.info(`Write captured video to camera${cameraId}.mp4 in ${dirPath}`);
         void writeVideoToFile(blob, dirPath, `camera${cameraId}.mp4`);
         setBlobURLs((prev) => [...prev, URL.createObjectURL(blob)]);
       }
