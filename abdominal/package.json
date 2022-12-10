@@ -49,6 +49,7 @@
     "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
     "@mui/material": "^5.10.14",
     "@techstark/opencv-js": "^4.6.0-release.1",
+    "@tensorflow/tfjs": "^4.1.0",
     "date-utils": "^1.2.21",
     "dayjs": "^1.11.6",
     "electron-log": "^4.4.8",
