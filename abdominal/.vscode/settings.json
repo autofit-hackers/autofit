@@ -126,7 +126,8 @@
     "streamsaver",
     "UNBINNED",
     "uttr",
-    "yolov"
+    "yolov",
+    "tfjs"
   ],
   "color-picker.languages": ["typescript"]
 }

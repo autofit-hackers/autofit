@@ -1,6 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
-import React, { useEffect, useRef, useState } from 'react';
+import { io } from '@tensorflow/tfjs-core';
+import { useEffect, useRef, useState } from 'react';
 import ButtonHandler from './components/btn-handler';
 import Loader from './components/loader';
 import './style/App.css';
@@ -9,7 +10,7 @@ import { detect } from './utils/detect';
 function BarbellPlateDetector() {
   const [loading, setLoading] = useState({ loading: true, progress: 0 }); // loading state
   const [model, setModel] = useState({
-    net: null,
+    net: null as unknown as tf.GraphModel<string | io.IOHandler>,
     inputShape: [1, 0, 0, 3],
   }); // init model & input shape
 
@@ -23,25 +24,34 @@ function BarbellPlateDetector() {
   const classThreshold = 0.25;
 
   useEffect(() => {
-    tf.ready().then(async () => {
-      const yolov5 = await tf.loadGraphModel(`${window.location.origin}/${modelName}_web_model/model.json`, {
-        onProgress: (fractions) => {
-          setLoading({ loading: true, progress: fractions }); // set loading fractions
-        },
-      }); // load model
+    // load yolov5 model & warming up
+    tf.ready()
+      .then(async () => {
+        // load model
+        const yolov5 = await tf.loadGraphModel(`${window.location.origin}/${modelName}_web_model/model.json`, {
+          onProgress: (fractions) => {
+            setLoading({ loading: true, progress: fractions }); // set loading fractions
+          },
+        });
 
-      // warming up model
-      const dummyInput = tf.ones(yolov5.inputs[0].shape);
-      const warmupResult = await yolov5.executeAsync(dummyInput);
-      tf.dispose(warmupResult); // cleanup memory
-      tf.dispose(dummyInput); // cleanup memory
+        if (yolov5.inputs[0].shape == null) {
+          throw new Error('Invalid model input shape');
+        }
+        // warming up model
+        const dummyInput = tf.ones(yolov5.inputs[0].shape);
+        const warmupResult = await yolov5.executeAsync(dummyInput);
+        tf.dispose(warmupResult); // cleanup memory
+        tf.dispose(dummyInput); // cleanup memory
 
-      setLoading({ loading: false, progress: 1 });
-      setModel({
-        net: yolov5,
-        inputShape: yolov5.inputs[0].shape,
-      }); // set model & input shape
-    });
+        setLoading({ loading: false, progress: 1 });
+        setModel({
+          net: yolov5,
+          inputShape: yolov5.inputs[0].shape,
+        }); // set model & input shape
+      })
+      .catch((err) => {
+        throw err;
+      });
   }, []);
 
   return (
