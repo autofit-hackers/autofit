@@ -5,17 +5,18 @@ import { useEffect, useRef, useState } from 'react';
 import ButtonHandler from './components/btn-handler';
 import Loader from './components/loader';
 import './style/App.css';
+import type { Model } from './utils/detect';
 import detect from './utils/detect';
 
 function BarbellPlateDetector() {
   const [loading, setLoading] = useState({ loading: true, progress: 0 }); // loading state
-  const [model, setModel] = useState({
+  const [model, setModel] = useState<Model>({
     net: null as unknown as tf.GraphModel<string | io.IOHandler>,
     inputShape: [1, 0, 0, 3],
   }); // init model & input shape
 
   // references
-  const cameraRef = useRef(null);
+  const cameraRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef(null);
 
   // model configs

@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Webcam } from '../utils/webcam';
 
-function ButtonHandler({ cameraRef }) {
+function ButtonHandler({ cameraRef }: { cameraRef: React.MutableRefObject<HTMLVideoElement> }) {
   const [streaming, setStreaming] = useState(null); // streaming state
-  const inputRef = useRef(null); // video input reference
   const webcam = new Webcam(); // webcam handler
 
   return (

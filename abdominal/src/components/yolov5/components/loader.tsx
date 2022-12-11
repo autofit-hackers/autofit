@@ -1,12 +1,12 @@
-import "../style/loader.css";
+import '../style/loader.css';
 
-const Loader = (props) => {
+function Loader(props) {
   return (
     <div className="wrapper" {...props}>
-      <div className="spinner"></div>
+      <div className="spinner" />
       <p>{props.children}</p>
     </div>
   );
-};
+}
 
 export default Loader;
