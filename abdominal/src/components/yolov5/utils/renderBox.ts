@@ -2,18 +2,13 @@ import labels from './labels.json';
 
 /**
  * Render prediction boxes
- * @param {HTMLCanvasElement} canvasRef canvas tag reference
- * @param {number} classThreshold class threshold
- * @param {Array} boxesData boxes array
- * @param {Array} scoresData scores array
- * @param {Array} classesData class array
  */
 const renderBoxes = (
   canvasRef: HTMLCanvasElement,
   classThreshold: number,
-  boxesData: number[],
-  scoresData: number[],
-  classesData: number[],
+  boxesData: Float32Array | Int32Array | Uint8Array,
+  scoresData: Float32Array | Int32Array | Uint8Array,
+  classesData: Float32Array | Int32Array | Uint8Array,
 ) => {
   const ctx = canvasRef.getContext('2d');
   if (ctx == null) throw new Error('Canvas context is null');

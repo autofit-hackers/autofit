@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { renderBoxes } from './renderBox';
+import renderBoxes from './renderBox';
 
 export type Model = {
   net: tf.GraphModel<string | tf.io.IOHandler>;
