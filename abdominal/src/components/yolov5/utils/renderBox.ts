@@ -1,29 +1,37 @@
-import labels from "./labels.json";
+import labels from './labels.json';
 
 /**
  * Render prediction boxes
  * @param {HTMLCanvasElement} canvasRef canvas tag reference
  * @param {number} classThreshold class threshold
- * @param {Array} boxes_data boxes array
- * @param {Array} scores_data scores array
- * @param {Array} classes_data class array
+ * @param {Array} boxesData boxes array
+ * @param {Array} scoresData scores array
+ * @param {Array} classesData class array
  */
-export const renderBoxes = (canvasRef, classThreshold, boxes_data, scores_data, classes_data) => {
-  const ctx = canvasRef.getContext("2d");
+const renderBoxes = (
+  canvasRef: HTMLCanvasElement,
+  classThreshold: number,
+  boxesData: number[],
+  scoresData: number[],
+  classesData: number[],
+) => {
+  const ctx = canvasRef.getContext('2d');
+  if (ctx == null) throw new Error('Canvas context is null');
+
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // clean canvas
 
   // font configs
-  const font = "20px sans-serif";
+  const font = '20px sans-serif';
   ctx.font = font;
-  ctx.textBaseline = "top";
+  ctx.textBaseline = 'top';
 
-  for (let i = 0; i < scores_data.length; ++i) {
+  for (let i = 0; i < scoresData.length; i += 1) {
     // filter based on class threshold
-    if (scores_data[i] > classThreshold) {
-      const klass = labels[classes_data[i]];
-      const score = (scores_data[i] * 100).toFixed(1);
+    if (scoresData[i] > classThreshold) {
+      const klass = labels[classesData[i]];
+      const score = (scoresData[i] * 100).toFixed(1);
 
-      let [x1, y1, x2, y2] = boxes_data.slice(i * 4, (i + 1) * 4);
+      let [x1, y1, x2, y2] = boxesData.slice(i * 4, (i + 1) * 4);
       x1 *= canvasRef.width;
       x2 *= canvasRef.width;
       y1 *= canvasRef.height;
@@ -32,25 +40,27 @@ export const renderBoxes = (canvasRef, classThreshold, boxes_data, scores_data, 
       const height = y2 - y1;
 
       // Draw the bounding box.
-      ctx.strokeStyle = "#00FF00";
+      ctx.strokeStyle = '#00FF00';
       ctx.lineWidth = 3.5;
       ctx.strokeRect(x1, y1, width, height);
 
       // Draw the label background.
-      ctx.fillStyle = "#00FF00";
-      const textWidth = ctx.measureText(klass + " - " + score + "%").width;
+      ctx.fillStyle = '#00FF00';
+      const textWidth = ctx.measureText(`${klass} - ${score}%`).width;
       const textHeight = parseInt(font, 10); // base 10
       const yText = y1 - (textHeight + ctx.lineWidth);
       ctx.fillRect(
         x1 - 1,
         yText < 0 ? 0 : yText, // handle overflow label box
         textWidth + ctx.lineWidth,
-        textHeight + ctx.lineWidth
+        textHeight + ctx.lineWidth,
       );
 
       // Draw labels
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(klass + " - " + score + "%", x1 - 1, yText < 0 ? 0 : yText);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(`${klass} - ${score}%`, x1 - 1, yText < 0 ? 0 : yText);
     }
   }
 };
+
+export default renderBoxes;
