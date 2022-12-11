@@ -28,7 +28,7 @@ const renderBoxes = (
   for (let i = 0; i < scoresData.length; i += 1) {
     // filter based on class threshold
     if (scoresData[i] > classThreshold) {
-      const klass = labels[classesData[i]];
+      const label = labels[classesData[i]];
       const score = (scoresData[i] * 100).toFixed(1);
 
       let [x1, y1, x2, y2] = boxesData.slice(i * 4, (i + 1) * 4);
@@ -46,7 +46,7 @@ const renderBoxes = (
 
       // Draw the label background.
       ctx.fillStyle = '#00FF00';
-      const textWidth = ctx.measureText(`${klass} - ${score}%`).width;
+      const textWidth = ctx.measureText(`${label} - ${score}%`).width;
       const textHeight = parseInt(font, 10); // base 10
       const yText = y1 - (textHeight + ctx.lineWidth);
       ctx.fillRect(
@@ -58,7 +58,7 @@ const renderBoxes = (
 
       // Draw labels
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(`${klass} - ${score}%`, x1 - 1, yText < 0 ? 0 : yText);
+      ctx.fillText(`${label} - ${score}%`, x1 - 1, yText < 0 ? 0 : yText);
     }
   }
 };
