@@ -9,13 +9,20 @@ export type Model = {
 /**
  * Function to detect video from every source.
  */
-const detect = (vidSource: HTMLVideoElement, model: Model, classThreshold: number, canvasRef: HTMLCanvasElement) => {
+const detect = (
+  vidSource: HTMLVideoElement | null,
+  model: Model,
+  classThreshold: number,
+  canvasRef: HTMLCanvasElement | null,
+) => {
   const [modelWidth, modelHeight] = model.inputShape.slice(1, 3); // get model width and height
 
   /**
    * Function to detect every frame from video
    */
   const detectFrame = async () => {
+    if (vidSource == null || canvasRef == null) return; // handle if source is null
+
     if (vidSource.videoWidth === 0 && vidSource.srcObject === null) return; // handle if source is closed
 
     tf.engine().startScope(); // start scoping tf engine

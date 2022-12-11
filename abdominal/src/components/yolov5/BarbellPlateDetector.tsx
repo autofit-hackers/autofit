@@ -17,7 +17,7 @@ function BarbellPlateDetector() {
 
   // references
   const cameraRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // model configs
   const modelName = 'yolov5n';
