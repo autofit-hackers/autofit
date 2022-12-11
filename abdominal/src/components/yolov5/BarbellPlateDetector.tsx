@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import ButtonHandler from './components/btn-handler';
 import Loader from './components/loader';
 import './style/App.css';
-import { detect } from './utils/detect';
+import detect from './utils/detect';
 
 function BarbellPlateDetector() {
   const [loading, setLoading] = useState({ loading: true, progress: 0 }); // loading state
@@ -16,7 +16,6 @@ function BarbellPlateDetector() {
 
   // references
   const cameraRef = useRef(null);
-  const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
   // model configs
@@ -74,16 +73,10 @@ function BarbellPlateDetector() {
           ref={cameraRef}
           onPlay={() => detect(cameraRef.current, model, classThreshold, canvasRef.current)}
         />
-        <video
-          autoPlay
-          muted
-          ref={videoRef}
-          onPlay={() => detect(videoRef.current, model, classThreshold, canvasRef.current)}
-        />
         <canvas width={model.inputShape[1]} height={model.inputShape[2]} ref={canvasRef} />
       </div>
 
-      <ButtonHandler cameraRef={cameraRef} videoRef={videoRef} />
+      <ButtonHandler cameraRef={cameraRef} />
     </div>
   );
 }

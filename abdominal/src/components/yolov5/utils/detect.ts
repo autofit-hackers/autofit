@@ -8,7 +8,7 @@ import { renderBoxes } from './renderBox';
  * @param {Number} classThreshold class threshold
  * @param {HTMLCanvasElement} canvasRef canvas reference
  */
-const detect = (vidSource, model: tf.GraphModel, classThreshold, canvasRef) => {
+const detect = (vidSource, model, classThreshold, canvasRef) => {
   const [modelWidth, modelHeight] = model.inputShape.slice(1, 3) as number; // get model width and height
 
   /**
@@ -41,4 +41,4 @@ const detect = (vidSource, model: tf.GraphModel, classThreshold, canvasRef) => {
   detectFrame(); // initialize to detect every frame
 };
 
-export { detect };
+export default detect;
