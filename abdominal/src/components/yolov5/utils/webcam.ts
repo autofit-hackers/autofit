@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Class to handle webcam
  */

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState } from 'react';
 import Webcam from '../utils/webcam';
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import '../style/loader.css';
 
 function Loader(props) {

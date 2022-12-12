@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as tf from '@tensorflow/tfjs';
 import renderBoxes from './renderBox';
 
