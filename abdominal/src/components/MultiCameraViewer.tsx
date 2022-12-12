@@ -1,4 +1,4 @@
-import { Button, Grid } from '@mui/material';
+import { Button, CardMedia, Grid } from '@mui/material';
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
@@ -11,6 +11,8 @@ function MultiCameraViewer() {
   const webcamRefs = useRef<RefObject<Webcam>[]>([]);
   const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
   const [capturing, setCapturing] = useState(false);
+  const [replay, setReplay] = useState(false);
+  const [blobURLs, setBlobURLs] = useState<string[]>([]);
 
   const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
     const buffer = await blob.arrayBuffer();
@@ -19,7 +21,7 @@ function MultiCameraViewer() {
     });
   };
 
-  const startCapturingWebcam = useCallback((webcam: Webcam, cameraId: number): MediaRecorder => {
+  const createWebcamStream = useCallback((webcam: Webcam, cameraId: number): MediaRecorder => {
     window.log.info(`Start capturing webcam ${cameraId}`);
     const now = dayjs().format('YYYY-MM-DD-HH-mm-ss');
     const dirPath = `${process.cwd()}/log/${now}`;
@@ -54,6 +56,7 @@ function MultiCameraViewer() {
       if (blob.size > 0) {
         window.log.info(`Write captured video to camera${cameraId}.mp4 in ${dirPath}`);
         void writeVideoToFile(blob, dirPath, `camera${cameraId}.mp4`);
+        setBlobURLs((prev) => [...prev, URL.createObjectURL(blob)]);
       }
     };
 
@@ -67,7 +70,7 @@ function MultiCameraViewer() {
         mediaRecorderRefs.current[i].current = startCapturingWebcam(webcamRefs.current[i].current, i);
       }
     }
-  }, [startCapturingWebcam]);
+  }, [createWebcamStream]);
 
   const stopCapturing = useCallback(() => {
     mediaRecorderRefs.current.forEach((mediaRecorderRef) => {
@@ -76,9 +79,10 @@ function MultiCameraViewer() {
       }
     });
     setCapturing(false);
+    setReplay(true);
   }, []);
 
-  const handleDevices = useCallback(
+  const searchDevicesForWebcam = useCallback(
     (mediaDevices: MediaDeviceInfo[]) =>
       setDevices(
         mediaDevices
@@ -90,12 +94,12 @@ function MultiCameraViewer() {
   );
 
   useEffect(() => {
-    void navigator.mediaDevices.enumerateDevices().then(handleDevices);
+    void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
     for (let i = 0; i < devices.length; i += 1) {
       webcamRefs.current[i] = createRef<Webcam>();
       mediaRecorderRefs.current[i] = createRef<MediaRecorder | null>();
     }
-  }, [devices.length, handleDevices]);
+  }, [devices.length, searchDevicesForWebcam]);
 
   return (
     <>
@@ -106,17 +110,39 @@ function MultiCameraViewer() {
       ) : (
         <Button onClick={startCapturing}>Start Capture</Button>
       )}
-      <Grid container spacing={1}>
-        {devices.map((device, key) => (
-          <Grid item xs={6}>
-            <Webcam
-              audio={false}
-              videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
-              ref={webcamRefs.current[key]}
-            />
+      {replay ? (
+        <>
+          <Button
+            onClick={() => {
+              blobURLs.forEach((blobURL) => URL.revokeObjectURL(blobURL));
+              setBlobURLs([]);
+              setReplay(false);
+            }}
+            variant="contained"
+          >
+            Stop Replay
+          </Button>
+          <Grid container spacing={1}>
+            {devices.map((device, key) => (
+              <Grid item xs={6}>
+                <CardMedia component="video" src={blobURLs[key]} controls autoPlay loop />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
+        </>
+      ) : (
+        <Grid container spacing={1}>
+          {devices.map((device, key) => (
+            <Grid item xs={6}>
+              <Webcam
+                audio={false}
+                videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
+                ref={webcamRefs.current[key]}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
     </>
   );
 }
