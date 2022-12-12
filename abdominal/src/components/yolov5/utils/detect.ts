@@ -39,7 +39,6 @@ const detect = (
       const boxesData = boxes.dataSync();
       const scoresData = scores.dataSync();
       const classesData = classes.dataSync();
-      window.log.debug(boxesData, scoresData, classesData);
       renderBoxes(canvasRef, classThreshold, boxesData, scoresData, classesData); // render boxes
       tf.dispose(res); // clear memory
     });
