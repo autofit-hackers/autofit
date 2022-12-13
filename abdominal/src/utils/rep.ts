@@ -1,4 +1,4 @@
-import { heightInWorld, Pose } from './pose';
+import { getLengthKneeToShoulder, Pose } from './pose';
 
 type KeyframesIndex = {
   top: number | undefined;
@@ -39,7 +39,7 @@ export const resetRep = (repIndex: number): Rep => ({
 });
 
 export const calculateKeyframes = (prevRep: Rep): Rep => {
-  const bodyHeights = prevRep.form.map((pose) => heightInWorld(pose));
+  const bodyHeights = prevRep.form.map((pose) => getLengthKneeToShoulder(pose));
 
   // calculate top
   const topHeight = Math.max(...bodyHeights);

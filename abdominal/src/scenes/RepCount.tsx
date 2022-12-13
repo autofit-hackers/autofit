@@ -4,9 +4,9 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { heightInWorld, Pose, rotateWorldLandmarks } from '../utils/pose';
+import { getInterestJointsDistance, Pose, rotateWorldLandmarks } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
-import { checkIfRepFinish, resetRepState, setStandingHeight } from '../utils/repState';
+import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
 
 function RepCount() {
@@ -29,6 +29,7 @@ function RepCount() {
   const repState = useRef(resetRepState());
 
   // 種目とカメラの設定
+  const exerciseType: 'squat' | 'bench' = 'squat';
   const poseRotateAxis: 'x' | 'y' | 'z' = 'x';
   const poseRotateAngle = 0; // radians
 
@@ -54,7 +55,6 @@ function RepCount() {
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
       if ('poseLandmarks' in results) {
-        console.log(results);
         // mediapipeの推論結果を自作のPoseクラスに代入
         const rawCurrentPose: Pose = rotateWorldLandmarks(
           {
@@ -97,20 +97,30 @@ function RepCount() {
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
           if (set.current.reps.length === 0) {
-            repState.current = setStandingHeight(repState.current, heightInWorld(currentPose));
+            repState.current = setInterestJointsDistance(
+              repState.current,
+              getInterestJointsDistance(currentPose, exerciseType),
+            );
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
             if (firstRepTopPose !== undefined) {
-              repState.current = setStandingHeight(repState.current, heightInWorld(firstRepTopPose));
+              repState.current = setInterestJointsDistance(
+                repState.current,
+                getInterestJointsDistance(firstRepTopPose, exerciseType),
+              );
             }
           }
-
           // レップの開始フラグをoffにする
           repState.current.isFirstFrameInRep = false;
         }
 
         // フォームを分析し、レップの状態を更新する
-        repState.current = checkIfRepFinish(repState.current, heightInWorld(currentPose), 0.8, 0.95);
+        repState.current = checkIfRepFinish(
+          repState.current,
+          getInterestJointsDistance(currentPose, exerciseType),
+          0.8,
+          0.95,
+        );
 
         // 現フレームの推定Poseをレップのフォームに追加
         rep.current = appendPoseToForm(rep.current, currentPose);
