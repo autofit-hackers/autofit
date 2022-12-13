@@ -4,7 +4,7 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointsDistance, Pose, rotateWorldLandmarks } from '../utils/pose';
+import { getInterestJointsDistance, getLiftingVelocity, Pose, rotateWorldLandmarks } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -16,7 +16,7 @@ function RepCount() {
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
-  const prevPoseRef = useRef<Pose | null>(null);
+  const prevPose = useRef<Pose | null>(null);
   const fixOutlier = new FixOutlier(fixOutlierParams);
   const fixWorldOutlier = new FixOutlier(fixWorldOutlierPrams);
 
@@ -27,6 +27,7 @@ function RepCount() {
   const set = useRef(resetSet());
   const rep = useRef(resetRep(0));
   const repState = useRef(resetRepState());
+  const liftingVelocityList: number[] = [];
 
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
@@ -60,6 +61,7 @@ function RepCount() {
           {
             landmarks: results.poseLandmarks,
             worldLandmarks: results.poseWorldLandmarks,
+            timestamp: new Date().getTime(),
           },
           poseRotateAxis,
           poseRotateAngle,
@@ -67,19 +69,19 @@ function RepCount() {
 
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
-        if (prevPoseRef.current != null) {
+        if (prevPose.current != null) {
           const fixedLandmarks = fixOutlier.fixOutlierOfLandmarkList(
-            prevPoseRef.current.landmarks,
+            prevPose.current.landmarks,
             rawCurrentPose.landmarks,
           );
           currentPose.landmarks = fixedLandmarks;
           const fixedWorldLandmarks = fixWorldOutlier.fixOutlierOfLandmarkList(
-            prevPoseRef.current.worldLandmarks,
+            prevPose.current.worldLandmarks,
             rawCurrentPose.worldLandmarks,
           );
           currentPose.worldLandmarks = fixedWorldLandmarks;
         }
-        prevPoseRef.current = currentPose;
+        prevPose.current = currentPose;
 
         // pose estimationの結果を描画
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
@@ -124,6 +126,10 @@ function RepCount() {
 
         // 現フレームの推定Poseをレップのフォームに追加
         rep.current = appendPoseToForm(rep.current, currentPose);
+
+        // 挙上速度を計算しリストに追加
+        const liftingVelocity = prevPose.current ? getLiftingVelocity(prevPose.current, currentPose, exerciseType) : 0;
+        liftingVelocityList.push(liftingVelocity);
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {

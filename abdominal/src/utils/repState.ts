@@ -3,7 +3,7 @@ export type RepState = {
   didTouchBottom: boolean;
   didTouchTop: boolean;
   isRepEnd: boolean;
-  interestJointsDistanceInFirstFrame: number | undefined;
+  interestJointsDistanceInFirstFrame: number | undefined; // スクワットは膝と肩の距離。ベンチプレスは肩と肩の距離。
 };
 
 export const resetRepState = (): RepState => ({

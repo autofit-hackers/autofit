@@ -3,7 +3,7 @@ import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList } fr
 export type Pose = {
   landmarks: NormalizedLandmarkList;
   worldLandmarks: LandmarkList;
-  timestamp?: number; // UNIX time(ms単位)
+  timestamp: number; // UNIX time(ms単位)
 };
 
 export const rotateWorldLandmarks = (pose: Pose, axis: 'x' | 'y' | 'z', angleRadian: number): Pose => {
@@ -109,3 +109,12 @@ const getArmLength = (pose: Pose): { left: number; right: number; mean: number }
 
 export const getInterestJointsDistance = (pose: Pose, exerciseType: 'squat' | 'bench'): number =>
   exerciseType === 'squat' ? getLengthKneeToShoulder(pose).mean : getArmLength(pose).mean;
+
+export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exerciseType: 'squat' | 'bench'): number => {
+  const prevDistance = getInterestJointsDistance(prevPose, exerciseType);
+  const currentDistance = getInterestJointsDistance(currentPose, exerciseType);
+  const time = currentPose.timestamp - prevPose.timestamp;
+  const velocity = (currentDistance - prevDistance) / time;
+
+  return velocity;
+};
