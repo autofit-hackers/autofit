@@ -125,7 +125,9 @@
     "ondataavailable",
     "streamsaver",
     "UNBINNED",
-    "uttr"
+    "uttr",
+    "yolov",
+    "tfjs"
   ],
   "color-picker.languages": ["typescript"]
 }
