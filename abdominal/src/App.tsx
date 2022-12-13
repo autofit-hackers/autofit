@@ -1,7 +1,7 @@
-import FisheyeCorrection from './scenes/FisheyeCorrection';
+import RepCount from './scenes/RepCount';
 
 function App() {
-  return <FisheyeCorrection />;
+  return <RepCount />;
 }
 
 export default App;
