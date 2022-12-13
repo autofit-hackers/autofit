@@ -3,6 +3,7 @@ import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
+import RealtimeChart from '../components/RealtimeChart';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { getInterestJointsDistance, getLiftingVelocity, Pose, rotateWorldLandmarks } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
@@ -27,7 +28,10 @@ function RepCount() {
   const set = useRef(resetSet());
   const rep = useRef(resetRep(0));
   const repState = useRef(resetRepState());
+
+  // リアルタイムグラフ
   const liftingVelocityList: number[] = [];
+  const [data, setData] = useState<number[]>([]);
 
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
@@ -185,7 +189,15 @@ function RepCount() {
         void camera.start();
       }, 1000);
     }
-  }, [onResults]);
+
+    // グラフ更新用
+    const timer = setInterval(() => {
+      setData(liftingVelocityList);
+    }, 100);
+
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -200,6 +212,7 @@ function RepCount() {
           textAlign: 'center',
         }}
       />
+      <RealtimeChart data={data} />
     </>
   );
 }
