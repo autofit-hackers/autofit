@@ -128,7 +128,7 @@ function RepCount() {
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           // 完了したレップのフォームを分析・評価
-          rep.current = calculateKeyframes(rep.current);
+          rep.current = calculateKeyframes(rep.current, exerciseType);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           set.current.reps = [...set.current.reps, rep.current];

@@ -1,4 +1,4 @@
-import { getLengthKneeToShoulder, Pose } from './pose';
+import { getInterestJointsDistance, Pose } from './pose';
 
 type KeyframesIndex = {
   top: number | undefined;
@@ -38,31 +38,31 @@ export const resetRep = (repIndex: number): Rep => ({
   coordinateErrors: [],
 });
 
-export const calculateKeyframes = (prevRep: Rep): Rep => {
-  const bodyHeights = prevRep.form.map((pose) => getLengthKneeToShoulder(pose));
+export const calculateKeyframes = (prevRep: Rep, exerciseType: 'squat' | 'bench'): Rep => {
+  const jointsDistances = prevRep.form.map((pose) => getInterestJointsDistance(pose, exerciseType));
 
   // calculate top
-  const topHeight = Math.max(...bodyHeights);
-  const topIdx = bodyHeights.indexOf(topHeight);
+  const maxDistance = Math.max(...jointsDistances);
+  const maxIdx = jointsDistances.indexOf(maxDistance);
 
   // calculate bottom
-  const bottomHeight = Math.min(...bodyHeights);
-  const bottomIdx = bodyHeights.indexOf(bottomHeight);
+  const minDistances = Math.min(...jointsDistances);
+  const minIdx = jointsDistances.indexOf(minDistances);
 
-  let descendingMiddleIdx = topIdx;
-  let ascendingMiddleIdx = bottomIdx;
+  let descendingMiddleIdx = maxIdx;
+  let ascendingMiddleIdx = minIdx;
 
   // top should be before bottom
-  if (topIdx < bottomIdx) {
-    const middleHeight = (topHeight + bottomHeight) / 2;
+  if (maxIdx < minIdx) {
+    const middleHeight = (maxDistance + minDistances) / 2;
 
     // calculate descending_middle
-    while (bodyHeights[descendingMiddleIdx] > middleHeight) {
+    while (jointsDistances[descendingMiddleIdx] > middleHeight) {
       descendingMiddleIdx += 1;
     }
 
     // calculate ascending_middle
-    while (bodyHeights[ascendingMiddleIdx] < middleHeight && ascendingMiddleIdx < bodyHeights.length - 1) {
+    while (jointsDistances[ascendingMiddleIdx] < middleHeight && ascendingMiddleIdx < jointsDistances.length - 1) {
       ascendingMiddleIdx += 1;
     }
   }
@@ -70,8 +70,8 @@ export const calculateKeyframes = (prevRep: Rep): Rep => {
   return {
     ...prevRep,
     keyframesIndex: {
-      top: topIdx,
-      bottom: bottomIdx,
+      top: maxIdx,
+      bottom: minIdx,
       ascendingMiddle: ascendingMiddleIdx,
       descendingMiddle: descendingMiddleIdx,
     },
