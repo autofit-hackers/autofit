@@ -4,7 +4,7 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { heightInWorld, Pose } from '../utils/pose';
+import { heightInWorld, Pose, rotateWorldLandmarks } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setStandingHeight } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -23,9 +23,14 @@ function RepCount() {
   // コンポーネントの再レンダリングを強制するためのstate
   const [, causeReRendering] = useState(0);
 
+  // トレーニング記録
   const set = useRef(resetSet());
   const rep = useRef(resetRep(0));
   const repState = useRef(resetRepState());
+
+  // 種目とカメラの設定
+  const poseRotateAxis: 'x' | 'y' | 'z' = 'x';
+  const poseRotateAngle = 0; // radians
 
   const onResults = useCallback(
     (results: Results) => {
@@ -51,7 +56,14 @@ function RepCount() {
       if ('poseLandmarks' in results) {
         console.log(results);
         // mediapipeの推論結果を自作のPoseクラスに代入
-        const rawCurrentPose: Pose = { landmarks: results.poseLandmarks, worldLandmarks: results.poseWorldLandmarks };
+        const rawCurrentPose: Pose = rotateWorldLandmarks(
+          {
+            landmarks: results.poseLandmarks,
+            worldLandmarks: results.poseWorldLandmarks,
+          },
+          poseRotateAxis,
+          poseRotateAngle,
+        );
 
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;

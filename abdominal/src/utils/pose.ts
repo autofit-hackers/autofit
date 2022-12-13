@@ -6,6 +6,42 @@ export type Pose = {
   timestamp?: number; // UNIX time(ms単位)
 };
 
+export const rotateWorldLandmarks = (pose: Pose, axis: 'x' | 'y' | 'z', angleRadian: number): Pose => {
+  const { worldLandmarks } = pose;
+  const rotatedWorldLandmarks: LandmarkList = [];
+
+  for (let i = 0; i < worldLandmarks.length; i += 1) {
+    const worldLandmark = worldLandmarks[i];
+
+    if (axis === 'x') {
+      rotatedWorldLandmarks.push({
+        x: worldLandmark.x,
+        y: worldLandmark.y * Math.cos(angleRadian) - worldLandmark.z * Math.sin(angleRadian),
+        z: worldLandmark.y * Math.sin(angleRadian) + worldLandmark.z * Math.cos(angleRadian),
+      });
+    }
+    if (axis === 'y') {
+      rotatedWorldLandmarks.push({
+        x: worldLandmark.x * Math.cos(angleRadian) + worldLandmark.z * Math.sin(angleRadian),
+        y: worldLandmark.y,
+        z: -worldLandmark.x * Math.sin(angleRadian) + worldLandmark.z * Math.cos(angleRadian),
+      });
+    }
+    if (axis === 'z') {
+      rotatedWorldLandmarks.push({
+        x: worldLandmark.x * Math.cos(angleRadian) - worldLandmark.y * Math.sin(angleRadian),
+        y: worldLandmark.x * Math.sin(angleRadian) + worldLandmark.y * Math.cos(angleRadian),
+        z: worldLandmark.z,
+      });
+    }
+  }
+
+  return {
+    ...pose,
+    worldLandmarks: rotatedWorldLandmarks,
+  };
+};
+
 export const getDistance = (start: Landmark, end: Landmark) => ({
   x: Math.abs(start.x - end.x),
   y: Math.abs(start.y - end.y),
