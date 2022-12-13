@@ -111,10 +111,10 @@ export const getInterestJointsDistance = (pose: Pose, exerciseType: 'squat' | 'b
   exerciseType === 'squat' ? getLengthKneeToShoulder(pose).mean : getArmLength(pose).mean;
 
 export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exerciseType: 'squat' | 'bench'): number => {
-  const prevDistance = getInterestJointsDistance(prevPose, exerciseType);
-  const currentDistance = getInterestJointsDistance(currentPose, exerciseType);
-  const time = currentPose.timestamp - prevPose.timestamp;
-  const velocity = (currentDistance - prevDistance) / time;
+  const prevDistance = getInterestJointsDistance(prevPose, exerciseType) / 10; // cm単位
+  const currentDistance = getInterestJointsDistance(currentPose, exerciseType) / 10;
+  const time = currentPose.timestamp - prevPose.timestamp / 1000; // 秒単位
+  const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 
   return velocity;
 };
