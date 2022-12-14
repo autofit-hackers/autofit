@@ -40,9 +40,9 @@ export type PoseGridConfig = {
 
 export const DEFAULT_POSE_GRID_CONFIG: PoseGridConfig = {
   backgroundColor: 0,
-  camera: { projectionMode: 'parallel', distance: 20, fov: 75 },
+  camera: { projectionMode: 'perspective', distance: 250, fov: 60 },
   cameraTarget: new Vector3(0, 0, 0),
-  gridPlane: { size: 10, divisions: 10, y: 0 },
+  gridPlane: { size: 200, divisions: 10, y: 0 },
   connectionWidth: 4,
   connectionColor: 0x00ffff,
   landmarkSize: 2,

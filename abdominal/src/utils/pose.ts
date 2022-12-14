@@ -6,40 +6,42 @@ export type Pose = {
   timestamp: number; // UNIX time(ms単位)
 };
 
-export const rotateWorldLandmarks = (pose: Pose, axis: 'x' | 'y' | 'z', angleRadian: number): Pose => {
-  const { worldLandmarks } = pose;
+export const rotateWorldLandmarks = (
+  worldLandmarks: LandmarkList,
+  angle: { roll: number; pitch: number; yaw: number }, // degree
+): LandmarkList => {
   const rotatedWorldLandmarks: LandmarkList = [];
+  // convert unit of angle from degree to radian
+  const roll = (angle.roll * Math.PI) / 180;
+  const pitch = (angle.pitch * Math.PI) / 180;
+  const yaw = (angle.yaw * Math.PI) / 180;
 
   for (let i = 0; i < worldLandmarks.length; i += 1) {
     const worldLandmark = worldLandmarks[i];
+    // rotate world landmarks with roll
+    const rotatedX = worldLandmark.x * Math.cos(roll) - worldLandmark.y * Math.sin(roll);
+    const rotatedY = worldLandmark.x * Math.sin(roll) + worldLandmark.y * Math.cos(roll);
+    const rotatedZ = worldLandmark.z;
 
-    if (axis === 'x') {
-      rotatedWorldLandmarks.push({
-        x: worldLandmark.x,
-        y: worldLandmark.y * Math.cos(angleRadian) - worldLandmark.z * Math.sin(angleRadian),
-        z: worldLandmark.y * Math.sin(angleRadian) + worldLandmark.z * Math.cos(angleRadian),
-      });
-    }
-    if (axis === 'y') {
-      rotatedWorldLandmarks.push({
-        x: worldLandmark.x * Math.cos(angleRadian) + worldLandmark.z * Math.sin(angleRadian),
-        y: worldLandmark.y,
-        z: -worldLandmark.x * Math.sin(angleRadian) + worldLandmark.z * Math.cos(angleRadian),
-      });
-    }
-    if (axis === 'z') {
-      rotatedWorldLandmarks.push({
-        x: worldLandmark.x * Math.cos(angleRadian) - worldLandmark.y * Math.sin(angleRadian),
-        y: worldLandmark.x * Math.sin(angleRadian) + worldLandmark.y * Math.cos(angleRadian),
-        z: worldLandmark.z,
-      });
-    }
+    // rotate world landmarks with pitch
+    const rotatedX2 = rotatedX * Math.cos(pitch) + rotatedZ * Math.sin(pitch);
+    const rotatedY2 = rotatedY;
+    const rotatedZ2 = -rotatedX * Math.sin(pitch) + rotatedZ * Math.cos(pitch);
+
+    // rotate world landmarks with yaw
+    const rotatedX3 = rotatedX2;
+    const rotatedY3 = rotatedY2 * Math.cos(yaw) - rotatedZ2 * Math.sin(yaw);
+    const rotatedZ3 = rotatedY2 * Math.sin(yaw) + rotatedZ2 * Math.cos(yaw);
+
+    // converts unit of world landmarks from m to cm
+    rotatedWorldLandmarks.push({
+      x: rotatedX3 * 100,
+      y: rotatedY3 * 100,
+      z: rotatedZ3 * 100,
+    });
   }
 
-  return {
-    ...pose,
-    worldLandmarks: rotatedWorldLandmarks,
-  };
+  return rotatedWorldLandmarks;
 };
 
 export const getDistance = (start: Landmark, end: Landmark) => ({
@@ -111,8 +113,8 @@ export const getInterestJointsDistance = (pose: Pose, exerciseType: 'squat' | 'b
   exerciseType === 'squat' ? getLengthAnkleToShoulder(pose).mean : getArmLength(pose).mean;
 
 export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exerciseType: 'squat' | 'bench'): number => {
-  const prevDistance = getInterestJointsDistance(prevPose, exerciseType) / 10; // cm単位
-  const currentDistance = getInterestJointsDistance(currentPose, exerciseType) / 10;
+  const prevDistance = getInterestJointsDistance(prevPose, exerciseType);
+  const currentDistance = getInterestJointsDistance(currentPose, exerciseType);
   const time = currentPose.timestamp - prevPose.timestamp / 1000; // 秒単位
   const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 

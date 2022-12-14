@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import RealtimeChart from '../components/RealtimeChart';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointsDistance, getLiftingVelocity, Pose } from '../utils/pose';
+import { getInterestJointsDistance, getLiftingVelocity, Pose, rotateWorldLandmarks } from '../utils/pose';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
@@ -64,12 +64,9 @@ function RepCount() {
 
       if ('poseLandmarks' in results) {
         // mediapipeの推論結果を自作のPoseクラスに代入
-        console.log('image', results.poseLandmarks);
-        console.log('world', results.poseWorldLandmarks);
-
         const rawCurrentPose: Pose = {
           landmarks: results.poseLandmarks,
-          worldLandmarks: results.poseWorldLandmarks,
+          worldLandmarks: rotateWorldLandmarks(results.poseWorldLandmarks, { roll: 0, pitch: 0, yaw: 0 }),
           timestamp: new Date().getTime(),
         };
 
@@ -144,8 +141,6 @@ function RepCount() {
           set.current.reps = [...set.current.reps, rep.current];
           rep.current = resetRep(set.current.reps.length);
 
-          console.log('rep count', set.current.reps.length);
-
           // RepStateの初期化
           repState.current = resetRepState();
 
@@ -204,7 +199,6 @@ function RepCount() {
     if (!poseGrid.current && gridDivRef.current) {
       poseGrid.current = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
-        camera: { projectionMode: 'perspective', distance: 20, fov: 75 },
       });
       poseGrid.current.setCameraAngle();
       poseGrid.current.isAutoRotating = false;
