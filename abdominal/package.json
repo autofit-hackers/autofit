@@ -67,6 +67,7 @@
     "react-player": "^2.10.1",
     "react-router-dom": "^6.3.0",
     "react-webcam": "^7.0.1",
+    "three": "^0.147.0",
     "typeface-roboto": "^1.1.13",
     "web-vitals": "^2.1.4"
   },
