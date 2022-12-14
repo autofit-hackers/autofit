@@ -67,7 +67,7 @@ function MultiCameraViewer() {
     setCapturing(true);
     for (let i = 0; i < mediaRecorderRefs.current.length; i += 1) {
       if (webcamRefs.current[i].current != null) {
-        mediaRecorderRefs.current[i].current = startCapturingWebcam(webcamRefs.current[i].current, i);
+        mediaRecorderRefs.current[i].current = createWebcamStream(webcamRefs.current[i].current, i);
       }
     }
   }, [createWebcamStream]);

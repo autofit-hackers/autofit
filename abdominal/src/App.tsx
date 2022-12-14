@@ -1,8 +1,8 @@
-import BarbellPlateDetector from './components/yolov5/BarbellPlateDetector';
+import WeightDetector from './components/yolov5/WeightDetector';
 
 function App() {
-  // return MultiCameraViewer();
-  return BarbellPlateDetector();
+  // return TrainingViewer();
+  return <WeightDetector />;
 }
 
 export default App;
