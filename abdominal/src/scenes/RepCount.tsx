@@ -6,8 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import RealtimeChart from '../components/RealtimeChart';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointsDistance, getLiftingVelocity, Pose, rotateWorldLandmarks } from '../utils/pose';
-import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
+import { getInterestJointsDistance, getLiftingVelocity, Pose } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -38,10 +37,6 @@ function RepCount() {
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
 
-  // poseGrid
-  const gridDivRef = useRef<HTMLDivElement | null>(null);
-  const poseGrid = useRef<PoseGrid | null>(null);
-
   const onResults = useCallback(
     (results: Results) => {
       if (canvasRef.current === null || webcamRef.current === null || webcamRef.current.video === null) {
@@ -66,7 +61,7 @@ function RepCount() {
         // mediapipeの推論結果を自作のPoseクラスに代入
         const rawCurrentPose: Pose = {
           landmarks: results.poseLandmarks,
-          worldLandmarks: rotateWorldLandmarks(results.poseWorldLandmarks, { roll: -90, pitch: 0, yaw: 0 }),
+          worldLandmarks: results.poseWorldLandmarks,
           timestamp: new Date().getTime(),
         };
 
@@ -97,11 +92,6 @@ function RepCount() {
           radius: 8,
           fillColor: 'lightgreen',
         });
-
-        // PoseGridの描画
-        if (poseGrid.current) {
-          poseGrid.current.updateLandmarks(currentPose.worldLandmarks, POSE_CONNECTIONS);
-        }
 
         const interestJointsDistance = getInterestJointsDistance(currentPose, exerciseType);
         // レップの最初のフレームの場合
@@ -148,11 +138,6 @@ function RepCount() {
           causeReRendering((prev) => prev + 1);
         }
       }
-      // 姿勢推定結果が空の場合、
-      else if (poseGrid.current) {
-        // poseGridのマウス操作だけ更新する
-        poseGrid.current.updateOrbitControls();
-      }
 
       canvasCtx.restore();
     },
@@ -195,15 +180,6 @@ function RepCount() {
       setData(liftingVelocityList);
     }, 100);
 
-    // poseGrid
-    if (!poseGrid.current && gridDivRef.current) {
-      poseGrid.current = new PoseGrid(gridDivRef.current, {
-        ...DEFAULT_POSE_GRID_CONFIG,
-      });
-      poseGrid.current.setCameraPosition();
-      poseGrid.current.isAutoRotating = false;
-    }
-
     return () => {
       clearInterval(chartUpdatingTimer);
     };
@@ -230,29 +206,6 @@ function RepCount() {
           <RealtimeChart data={data} style={{ height: '50vh', width: '50vw' }} />
         </Grid>
       </Grid>
-      <div
-        className="square-box"
-        style={{
-          position: 'absolute',
-          width: '55vh',
-          height: '55vh',
-          top: '40vh',
-          left: '5vh',
-        }}
-      >
-        <div
-          className="pose-grid-container"
-          ref={gridDivRef}
-          style={{
-            position: 'relative',
-            height: '100%',
-            width: '100%',
-            top: 0,
-            left: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          }}
-        />
-      </div>
     </Box>
   );
 }
