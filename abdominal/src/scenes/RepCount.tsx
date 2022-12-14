@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import RealtimeChart from '../components/RealtimeChart';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointsDistance, getLiftingVelocity, Pose, rotateWorldLandmarks } from '../utils/pose';
+import { getInterestJointsDistance, getLiftingVelocity, Pose } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -35,8 +35,6 @@ function RepCount() {
 
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
-  const poseRotateAxis: 'x' | 'y' | 'z' = 'x';
-  const poseRotateAngle = 0; // radians
 
   const onResults = useCallback(
     (results: Results) => {
@@ -61,15 +59,11 @@ function RepCount() {
 
       if ('poseLandmarks' in results) {
         // mediapipeの推論結果を自作のPoseクラスに代入
-        const rawCurrentPose: Pose = rotateWorldLandmarks(
-          {
-            landmarks: results.poseLandmarks,
-            worldLandmarks: results.poseWorldLandmarks,
-            timestamp: new Date().getTime(),
-          },
-          poseRotateAxis,
-          poseRotateAngle,
-        );
+        const rawCurrentPose: Pose = {
+          landmarks: results.poseLandmarks,
+          worldLandmarks: results.poseWorldLandmarks,
+          timestamp: new Date().getTime(),
+        };
 
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
@@ -212,7 +206,7 @@ function RepCount() {
           textAlign: 'center',
         }}
       />
-      <RealtimeChart data={data} />
+      <RealtimeChart data={data} style={{ position: 'absolute', marginTop: '10vw', height: '50vh', left: '50vw' }} />
     </>
   );
 }

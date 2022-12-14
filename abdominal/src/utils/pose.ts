@@ -73,14 +73,14 @@ export const getMidpoint = (
   z: (p1.z + p2.z) / 2,
 });
 
-const getLengthKneeToShoulder = (pose: Pose): { left: number; right: number; mean: number } => {
+const getLengthAnkleToShoulder = (pose: Pose): { left: number; right: number; mean: number } => {
   const leftShoulder = pose.worldLandmarks[11];
   const leftKnee = pose.worldLandmarks[25];
   const rightShoulder = pose.worldLandmarks[12];
   const rightKnee = pose.worldLandmarks[26];
 
-  const leftLength = getDistance(leftShoulder, leftKnee).z;
-  const rightLength = getDistance(rightShoulder, rightKnee).z;
+  const leftLength = getDistance(leftShoulder, leftKnee).xyz;
+  const rightLength = getDistance(rightShoulder, rightKnee).xyz;
   const mean = leftLength + rightLength / 2;
 
   return {
@@ -96,8 +96,8 @@ const getArmLength = (pose: Pose): { left: number; right: number; mean: number }
   const rightShoulder = pose.worldLandmarks[12];
   const rightWrist = pose.worldLandmarks[16];
 
-  const leftArmLength = getDistance(leftShoulder, leftWrist).z;
-  const rightArmLength = getDistance(rightShoulder, rightWrist).z;
+  const leftArmLength = getDistance(leftShoulder, leftWrist).xyz;
+  const rightArmLength = getDistance(rightShoulder, rightWrist).xyz;
   const mean = leftArmLength + rightArmLength / 2;
 
   return {
@@ -108,7 +108,7 @@ const getArmLength = (pose: Pose): { left: number; right: number; mean: number }
 };
 
 export const getInterestJointsDistance = (pose: Pose, exerciseType: 'squat' | 'bench'): number =>
-  exerciseType === 'squat' ? getLengthKneeToShoulder(pose).mean : getArmLength(pose).mean;
+  exerciseType === 'squat' ? getLengthAnkleToShoulder(pose).mean : getArmLength(pose).mean;
 
 export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exerciseType: 'squat' | 'bench'): number => {
   const prevDistance = getInterestJointsDistance(prevPose, exerciseType) / 10; // cm単位
