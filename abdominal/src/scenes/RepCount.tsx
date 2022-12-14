@@ -50,7 +50,6 @@ function RepCount() {
       if (canvasCtx == null) {
         return;
       }
-      canvasCtx.font = '50px serif';
 
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
@@ -164,8 +163,8 @@ function RepCount() {
       smoothLandmarks: true,
       enableSegmentation: false,
       smoothSegmentation: false,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.8,
     });
 
     poseEstimator.onResults(onResults);
@@ -194,22 +193,20 @@ function RepCount() {
   }, []);
 
   return (
-    <>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw' }}>
       <Webcam ref={webcamRef} hidden />
       <canvas
         ref={canvasRef}
         className="output_canvas"
         style={{
-          position: 'absolute',
-          marginLeft: 'auto',
-          marginRight: 'auto',
           textAlign: 'center',
-          scale: '0.2',
+          scale: '1.0',
           transform: 'rotate(90deg)',
         }}
       />
-      <RealtimeChart data={data} style={{ position: 'absolute', marginTop: '10vw', height: '50vh', left: '50vw' }} />
-    </>
+      <RealtimeChart data={data} style={{ height: '50vh', width: '50vw' }} />
+      <p>{set.current.reps.length}</p>
+    </div>
   );
 }
 

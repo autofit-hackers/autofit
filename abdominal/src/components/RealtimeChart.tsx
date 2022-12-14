@@ -5,7 +5,6 @@ function RealtimeChart(props: { data: number[]; style: CSSProperties }) {
   const { data, style } = props;
 
   const op = {
-    // innerHeight: '100vh',
     xAxis: {
       type: 'category',
       data: data.map((v, i) => i),
