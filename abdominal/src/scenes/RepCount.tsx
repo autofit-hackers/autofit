@@ -1,11 +1,13 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
+import { Box, Grid } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import RealtimeChart from '../components/RealtimeChart';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { getInterestJointsDistance, getLiftingVelocity, Pose } from '../utils/pose';
+import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -32,10 +34,13 @@ function RepCount() {
   // リアルタイムグラフ
   const liftingVelocityList: number[] = [];
   const [data, setData] = useState<number[]>([]);
-  let timer: NodeJS.Timer;
 
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
+
+  // poseGrid
+  const gridDivRef = useRef<HTMLDivElement | null>(null);
+  const poseGrid = useRef<PoseGrid | null>(null);
 
   const onResults = useCallback(
     (results: Results) => {
@@ -59,6 +64,9 @@ function RepCount() {
 
       if ('poseLandmarks' in results) {
         // mediapipeの推論結果を自作のPoseクラスに代入
+        console.log('image', results.poseLandmarks);
+        console.log('world', results.poseWorldLandmarks);
+
         const rawCurrentPose: Pose = {
           landmarks: results.poseLandmarks,
           worldLandmarks: results.poseWorldLandmarks,
@@ -93,14 +101,17 @@ function RepCount() {
           fillColor: 'lightgreen',
         });
 
+        // PoseGridの描画
+        if (poseGrid.current) {
+          poseGrid.current.updateLandmarks(currentPose.worldLandmarks, POSE_CONNECTIONS);
+        }
+
+        const interestJointsDistance = getInterestJointsDistance(currentPose, exerciseType);
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
           if (set.current.reps.length === 0) {
-            repState.current = setInterestJointsDistance(
-              repState.current,
-              getInterestJointsDistance(currentPose, exerciseType),
-            );
+            repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
             if (firstRepTopPose !== undefined) {
@@ -115,12 +126,7 @@ function RepCount() {
         }
 
         // フォームを分析し、レップの状態を更新する
-        repState.current = checkIfRepFinish(
-          repState.current,
-          getInterestJointsDistance(currentPose, exerciseType),
-          0.8,
-          0.95,
-        );
+        repState.current = checkIfRepFinish(repState.current, interestJointsDistance, 0.8, 0.95);
 
         // 現フレームの推定Poseをレップのフォームに追加
         rep.current = appendPoseToForm(rep.current, currentPose);
@@ -147,6 +153,11 @@ function RepCount() {
           causeReRendering((prev) => prev + 1);
         }
       }
+      // 姿勢推定結果が空の場合、
+      else if (poseGrid.current) {
+        // poseGridのマウス操作だけ更新する
+        poseGrid.current.updateOrbitControls();
+      }
 
       canvasCtx.restore();
     },
@@ -154,7 +165,7 @@ function RepCount() {
     [],
   );
 
-  const onWebcamStart = () => {
+  useEffect(() => {
     const poseEstimator = new PoseMediapipe({
       locateFile: (file) => `./public/mediapipe-pose/${file}`,
     });
@@ -176,36 +187,82 @@ function RepCount() {
           if (webcamRef.current === null || webcamRef.current.video === null) return;
           await poseEstimator.send({ image: webcamRef.current.video });
         },
-        height: 1080,
-        width: 1920,
+        height: 720,
+        width: 1280,
       });
-      void camera.start();
+      setTimeout(() => {
+        void camera.start();
+      }, 1000);
     }
 
     // グラフ更新用
-    timer = setInterval(() => {
+    const chartUpdatingTimer = setInterval(() => {
       setData(liftingVelocityList);
     }, 100);
-  };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => clearInterval(timer), []);
+    // poseGrid
+    if (!poseGrid.current && gridDivRef.current) {
+      poseGrid.current = new PoseGrid(gridDivRef.current, {
+        ...DEFAULT_POSE_GRID_CONFIG,
+        camera: { projectionMode: 'perspective', distance: 20, fov: 75 },
+      });
+      poseGrid.current.setCameraAngle();
+      poseGrid.current.isAutoRotating = false;
+    }
+
+    return () => {
+      clearInterval(chartUpdatingTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw' }}>
-      <Webcam ref={webcamRef} videoConstraints={{ facingMode: 'environment' }} hidden onUserMedia={onWebcamStart} />
-      <canvas
-        ref={canvasRef}
-        className="output_canvas"
-        style={{
-          textAlign: 'center',
-          scale: '0.7',
-          transform: 'rotate(90deg)',
-        }}
-      />
-      <RealtimeChart data={data} style={{ height: '50vh', width: '50vw' }} />
-      <p>{set.current.reps.length}</p>
-    </div>
+    <Box>
+      <Webcam ref={webcamRef} videoConstraints={{ facingMode: 'environment' }} hidden />
+      <Grid container spacing={0}>
+        <Grid item xs={6}>
+          <canvas
+            ref={canvasRef}
+            className="output_canvas"
+            style={{
+              textAlign: 'center',
+              left: '0',
+              scale: '0.8',
+              transform: 'rotate(90deg)',
+            }}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <RealtimeChart data={data} style={{ height: '50vh', width: '50vw' }} />
+        </Grid>
+        <Grid item xs={6}>
+          <div
+            className="square-box"
+            style={{
+              zIndex: 2,
+              position: 'absolute',
+              width: '55vh',
+              height: '55vh',
+              top: '15vh',
+              left: '5vh',
+            }}
+          >
+            <div
+              className="pose-grid-container"
+              ref={gridDivRef}
+              style={{
+                position: 'relative',
+                height: '100%',
+                width: '100%',
+                top: 0,
+                left: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              }}
+            />
+          </div>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
 
