@@ -176,8 +176,8 @@ function RepCount() {
           if (webcamRef.current === null || webcamRef.current.video === null) return;
           await poseEstimator.send({ image: webcamRef.current.video });
         },
-        height: 720,
-        width: 1280,
+        height: 1080,
+        width: 1920,
       });
       setTimeout(() => {
         void camera.start();
@@ -204,6 +204,8 @@ function RepCount() {
           marginLeft: 'auto',
           marginRight: 'auto',
           textAlign: 'center',
+          scale: '0.2',
+          transform: 'rotate(90deg)',
         }}
       />
       <RealtimeChart data={data} style={{ position: 'absolute', marginTop: '10vw', height: '50vh', left: '50vw' }} />
