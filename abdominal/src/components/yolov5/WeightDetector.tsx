@@ -92,7 +92,7 @@ function WeightDetector() {
       tf.dispose(result);
     });
 
-    requestAnimationFrame(() => detectFrame()); // get another frame
+    requestAnimationFrame(detectFrame); // get another frame
     tf.engine().endScope();
   };
 
@@ -136,7 +136,7 @@ function WeightDetector() {
       )}
 
       <div className="content">
-        <video autoPlay playsInline muted ref={videoRef} onPlay={() => detectFrame()} />
+        <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
         <canvas width={640} height={640} ref={canvasRef} />
       </div>
       <Typography>Estimated Weight: {weight}</Typography>

@@ -1,8 +1,7 @@
-import WeightDetector from './components/yolov5/WeightDetector';
+import TrainingViewer from './components/TrainingViewer';
 
 function App() {
-  // return TrainingViewer();
-  return <WeightDetector />;
+  return TrainingViewer();
 }
 
 export default App;
