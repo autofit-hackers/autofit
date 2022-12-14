@@ -32,6 +32,7 @@ function RepCount() {
   // リアルタイムグラフ
   const liftingVelocityList: number[] = [];
   const [data, setData] = useState<number[]>([]);
+  let timer: NodeJS.Timer;
 
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
@@ -153,7 +154,7 @@ function RepCount() {
     [],
   );
 
-  useEffect(() => {
+  const onWebcamStart = () => {
     const poseEstimator = new PoseMediapipe({
       locateFile: (file) => `./public/mediapipe-pose/${file}`,
     });
@@ -178,29 +179,27 @@ function RepCount() {
         height: 1080,
         width: 1920,
       });
-      setTimeout(() => {
-        void camera.start();
-      }, 1000);
+      void camera.start();
     }
 
     // グラフ更新用
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
       setData(liftingVelocityList);
     }, 100);
+  };
 
-    return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => clearInterval(timer), []);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw' }}>
-      <Webcam ref={webcamRef} hidden />
+      <Webcam ref={webcamRef} videoConstraints={{ facingMode: 'environment' }} hidden onUserMedia={onWebcamStart} />
       <canvas
         ref={canvasRef}
         className="output_canvas"
         style={{
           textAlign: 'center',
-          scale: '1.0',
+          scale: '0.7',
           transform: 'rotate(90deg)',
         }}
       />
