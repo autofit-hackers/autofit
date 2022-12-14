@@ -1,7 +1,8 @@
 import ReactECharts from 'echarts-for-react';
+import { CSSProperties } from 'react';
 
-function RealtimeChart(props: { data: number[] }) {
-  const { data } = props;
+function RealtimeChart(props: { data: number[]; style: CSSProperties }) {
+  const { data, style } = props;
 
   const op = {
     // innerHeight: '100vh',
@@ -26,7 +27,7 @@ function RealtimeChart(props: { data: number[] }) {
     ],
   };
 
-  return <ReactECharts option={op} style={{ marginTop: '10vw', height: '50vw' }} />;
+  return <ReactECharts option={op} style={style} />;
 }
 
 export default RealtimeChart;
