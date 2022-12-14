@@ -66,7 +66,7 @@ function WeightDetector() {
    * @param {tf.GraphModel} model loaded YOLOv5 tensorflow.js model
    */
   const detectFrame = async () => {
-    if (videoRef.current == null || canvasRef == null) return; // handle if source is null
+    if (videoRef.current == null || canvasRef.current == null) return; // handle if source is null
 
     tf.engine().startScope();
     const input = tf.tidy(() =>
@@ -128,7 +128,7 @@ function WeightDetector() {
   }, []);
 
   return (
-    <div className="App">
+    <div className="WeightDetector">
       {loading.loading ? (
         <Loader>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader>
       ) : (
