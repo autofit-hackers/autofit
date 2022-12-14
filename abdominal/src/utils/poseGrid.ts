@@ -1,5 +1,6 @@
 import { LandmarkConnectionArray, NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
 import {
+  AxesHelper,
   BufferGeometry,
   Camera,
   Color,
@@ -132,6 +133,9 @@ export class PoseGrid {
     this.scene.add(this.guidelineGroup);
     this.connectionGroup = new Group();
     this.scene.add(this.connectionGroup);
+
+    const axesHelper = new AxesHelper(50);
+    this.scene.add(axesHelper);
     this.requestFrame();
   }
 
@@ -143,7 +147,7 @@ export class PoseGrid {
     // カメラの回転;
     if (this.isAutoRotating) {
       this.phiForAutoRotation += 0.7;
-      this.setCameraAngle({ theta: 90, phi: this.phiForAutoRotation });
+      this.setCameraPosition({ theta: 90, phi: this.phiForAutoRotation });
     }
   }
 
@@ -153,32 +157,12 @@ export class PoseGrid {
     });
   }
 
-  changeCameraType(): void {
-    const prevCameraPosition = this.camera.position.clone();
-    if (this.camera instanceof PerspectiveCamera) {
-      this.camera = new OrthographicCamera(
-        -this.config.camera.distance * 0.7,
-        this.config.camera.distance * 0.7,
-        this.config.camera.distance * 0.7,
-        -this.config.camera.distance * 0.7,
-      );
-    } else {
-      this.camera = new PerspectiveCamera(this.config.camera.fov, this.parentBox.width / this.parentBox.height, 1);
-    }
-    this.orbitControls = new OrbitControls(this.camera, this.canvas);
-    this.orbitControls.enableDamping = true;
-    this.orbitControls.dampingFactor = 0.2;
-    this.orbitControls.target = this.config.cameraTarget;
-    this.camera.position.set(prevCameraPosition.x, prevCameraPosition.y, prevCameraPosition.z);
-    this.camera.lookAt(this.config.cameraTarget);
-  }
-
   /**
    * @public: カメラ位置を三次元極座標（角度は度数法）で指定する
    */
   // Default parameters are set so that the grid is viewed from the side
   // TODO: rename as setCameraPosition
-  setCameraAngle(cameraAngle: CameraAngle = { theta: 90, phi: 0 }): void {
+  setCameraPosition(cameraAngle: CameraAngle = { theta: 90, phi: 0 }): void {
     const { theta, phi } = cameraAngle;
     const thetaRad = (theta * Math.PI) / 180;
     const phiRad = (phi * Math.PI) / 180;
@@ -193,7 +177,7 @@ export class PoseGrid {
    */
   updateLandmarks(landmarks: NormalizedLandmarkList, connections: LandmarkConnectionArray): void {
     this.clearResources();
-    this.drawConnections(landmarks, connections);
+    this.drawBones(landmarks, connections);
     const meshLength: number = this.landmarkGroup.children.length;
     if (meshLength < landmarks.length) {
       for (let i = meshLength; i < landmarks.length; i += 1) {
@@ -209,7 +193,7 @@ export class PoseGrid {
     // カメラの回転;
     if (this.isAutoRotating) {
       this.phiForAutoRotation += 0.7;
-      this.setCameraAngle({ theta: 90, phi: this.phiForAutoRotation });
+      this.setCameraPosition({ theta: 90, phi: this.phiForAutoRotation });
     }
 
     this.requestFrame();
@@ -236,7 +220,7 @@ export class PoseGrid {
     }
   }
 
-  drawConnections(landmarks: NormalizedLandmarkList, connections: LandmarkConnectionArray): void {
+  drawBones(landmarks: NormalizedLandmarkList, connections: LandmarkConnectionArray): void {
     const color: Material = this.connectionMaterial;
     const lines: Array<Vector3> = [];
     connections.forEach((connection): void => {

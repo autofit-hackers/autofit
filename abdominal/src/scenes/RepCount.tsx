@@ -66,7 +66,7 @@ function RepCount() {
         // mediapipeの推論結果を自作のPoseクラスに代入
         const rawCurrentPose: Pose = {
           landmarks: results.poseLandmarks,
-          worldLandmarks: rotateWorldLandmarks(results.poseWorldLandmarks, { roll: 0, pitch: 0, yaw: 0 }),
+          worldLandmarks: rotateWorldLandmarks(results.poseWorldLandmarks, { roll: -90, pitch: 0, yaw: 0 }),
           timestamp: new Date().getTime(),
         };
 
@@ -200,7 +200,7 @@ function RepCount() {
       poseGrid.current = new PoseGrid(gridDivRef.current, {
         ...DEFAULT_POSE_GRID_CONFIG,
       });
-      poseGrid.current.setCameraAngle();
+      poseGrid.current.setCameraPosition();
       poseGrid.current.isAutoRotating = false;
     }
 
@@ -229,33 +229,30 @@ function RepCount() {
         <Grid item xs={6}>
           <RealtimeChart data={data} style={{ height: '50vh', width: '50vw' }} />
         </Grid>
-        <Grid item xs={6}>
-          <div
-            className="square-box"
-            style={{
-              zIndex: 2,
-              position: 'absolute',
-              width: '55vh',
-              height: '55vh',
-              top: '15vh',
-              left: '5vh',
-            }}
-          >
-            <div
-              className="pose-grid-container"
-              ref={gridDivRef}
-              style={{
-                position: 'relative',
-                height: '100%',
-                width: '100%',
-                top: 0,
-                left: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              }}
-            />
-          </div>
-        </Grid>
       </Grid>
+      <div
+        className="square-box"
+        style={{
+          position: 'absolute',
+          width: '55vh',
+          height: '55vh',
+          top: '40vh',
+          left: '5vh',
+        }}
+      >
+        <div
+          className="pose-grid-container"
+          ref={gridDivRef}
+          style={{
+            position: 'relative',
+            height: '100%',
+            width: '100%',
+            top: 0,
+            left: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        />
+      </div>
     </Box>
   );
 }
