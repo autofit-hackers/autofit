@@ -16,25 +16,30 @@ export type Model = {
 
 interface EstimateWeightProps {
   threshold: number;
+  boxesData: number[];
   scoresData: number[];
   classesData: number[];
 }
 
-const estimateWeight = ({ threshold, scoresData, classesData }: EstimateWeightProps) => {
+const estimateWeight = ({ threshold, boxesData, scoresData, classesData }: EstimateWeightProps) => {
   let weight = 0;
   const plates = [];
   for (let i = 0; i < scoresData.length; i += 1) {
     if (scoresData[i] > threshold) {
+      console.log((boxesData[i * 4] + boxesData[i * 4 + 2]) / 2);
       const klass = labels[classesData[i]];
-      if (klass === '20kg_olympic_barbell') {
+      if (klass === '20kg-bar') {
         weight += 20;
         plates.push('バーベル');
-      } else if (klass === '20kg_olympic_rubber_plate') {
-        weight += 40;
-        plates.push('20kg');
-      } else if (klass === '10kg_olympic_rubber_plate') {
+      } else if (klass === '10kg-plate') {
         weight += 20;
         plates.push('10kg');
+      } else if (klass === '5kg-plate') {
+        weight += 10;
+        plates.push('5kg');
+      } else if (klass === '2.5kg-plate') {
+        weight += 5;
+        plates.push('2.5kg');
       } else {
         console.warn(`Unknown class: ${klass}`);
       }
@@ -59,7 +64,7 @@ function WeightDetector() {
 
   // configs
   const modelName = 'yolov5n';
-  const threshold = 0;
+  const threshold = 0.25;
 
   /**
    * Function to detect every frame loaded from webcam in video tag.
@@ -79,10 +84,10 @@ function WeightDetector() {
     await model.net.executeAsync(input).then((result) => {
       if (!Array.isArray(result)) throw new Error('Model output is not an array');
       const [boxes, scores, classes] = result.slice(0, 3);
-      const boxesData = boxes.dataSync();
+      const boxesData = boxes.dataSync() as unknown as number[];
       const scoresData = scores.dataSync() as unknown as number[];
       const classesData = classes.dataSync() as unknown as number[];
-      const estimatedWeight = estimateWeight({ threshold, scoresData, classesData });
+      const estimatedWeight = estimateWeight({ threshold, boxesData, scoresData, classesData });
       if (estimatedWeight.weight !== weight) {
         setWeight(estimatedWeight.weight);
         setPlates(estimatedWeight.plates);
