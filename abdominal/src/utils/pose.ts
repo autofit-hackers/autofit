@@ -75,14 +75,15 @@ export const getMidpoint = (
   z: (p1.z + p2.z) / 2,
 });
 
+// worldLandmarksではなくlandmarksを使う
 const getLengthAnkleToShoulder = (pose: Pose): { left: number; right: number; mean: number } => {
-  const leftShoulder = pose.worldLandmarks[11];
-  const leftKnee = pose.worldLandmarks[25];
-  const rightShoulder = pose.worldLandmarks[12];
-  const rightKnee = pose.worldLandmarks[26];
+  const leftShoulder = pose.landmarks[11];
+  const leftKnee = pose.landmarks[25];
+  const rightShoulder = pose.landmarks[12];
+  const rightKnee = pose.landmarks[26];
 
-  const leftLength = getDistance(leftShoulder, leftKnee).xyz;
-  const rightLength = getDistance(rightShoulder, rightKnee).xyz;
+  const leftLength = getDistance(leftShoulder, leftKnee).y;
+  const rightLength = getDistance(rightShoulder, rightKnee).y;
   const mean = leftLength + rightLength / 2;
 
   return {
@@ -92,14 +93,15 @@ const getLengthAnkleToShoulder = (pose: Pose): { left: number; right: number; me
   };
 };
 
+// worldLandmarksではなくlandmarksを使う
 const getArmLength = (pose: Pose): { left: number; right: number; mean: number } => {
-  const leftShoulder = pose.worldLandmarks[11];
-  const leftWrist = pose.worldLandmarks[15];
-  const rightShoulder = pose.worldLandmarks[12];
-  const rightWrist = pose.worldLandmarks[16];
+  const leftShoulder = pose.landmarks[11];
+  const leftWrist = pose.landmarks[15];
+  const rightShoulder = pose.landmarks[12];
+  const rightWrist = pose.landmarks[16];
 
-  const leftArmLength = getDistance(leftShoulder, leftWrist).xyz;
-  const rightArmLength = getDistance(rightShoulder, rightWrist).xyz;
+  const leftArmLength = getDistance(leftShoulder, leftWrist).y;
+  const rightArmLength = getDistance(rightShoulder, rightWrist).y;
   const mean = leftArmLength + rightArmLength / 2;
 
   return {

@@ -40,23 +40,17 @@ function RepCount() {
 
   const onResults = useCallback(
     (results: Results) => {
-      if (canvasRef.current === null || webcamRef.current === null || webcamRef.current.video === null) {
-        return;
-      }
-      const { videoWidth, videoHeight } = webcamRef.current.video;
-      canvasRef.current.width = videoWidth;
-      canvasRef.current.height = videoHeight;
+      if (canvasRef.current === null || inputCanvasRef.current === null) return;
+
+      canvasRef.current.width = inputCanvasRef.current.width;
+      canvasRef.current.height = inputCanvasRef.current.height;
       const canvasElement = canvasRef.current;
       const canvasCtx = canvasElement.getContext('2d');
 
-      if (canvasCtx == null) {
-        return;
-      }
+      if (canvasCtx == null) return;
 
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-      canvasCtx.scale(-1, 1);
-      canvasCtx.rotate(Math.PI / 2);
       // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
@@ -180,7 +174,7 @@ function RepCount() {
           inputCanvasCtx.save();
           inputCanvasCtx.clearRect(0, 0, inputCanvasRef.current.width, inputCanvasRef.current.height);
           inputCanvasCtx.scale(-1, 1);
-          inputCanvasCtx.rotate(90 * (Math.PI / 180));
+          inputCanvasCtx.rotate(Math.PI / 2);
           inputCanvasCtx.drawImage(
             webcamRef.current.video,
             0,
@@ -189,7 +183,7 @@ function RepCount() {
             inputCanvasRef.current.height,
           );
           inputCanvasCtx.restore();
-          await poseEstimator.send({ image: webcamRef.current.video });
+          await poseEstimator.send({ image: inputCanvasRef.current });
         },
         height: 720,
         width: 1280,
@@ -213,7 +207,8 @@ function RepCount() {
   return (
     <Box>
       <Webcam ref={webcamRef} videoConstraints={{ facingMode: 'environment' }} hidden />
-      <canvas ref={inputCanvasRef} className="rotated_canvas" hidden />
+      <canvas ref={inputCanvasRef} className="rotated_canvas" />
+      <p>{set.current.reps.length}</p>
       <Grid container spacing={0}>
         <Grid item xs={6}>
           <canvas
