@@ -14,6 +14,7 @@ import { resetSet } from '../utils/set';
 function RepCount() {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const inputCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
@@ -54,6 +55,8 @@ function RepCount() {
 
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      canvasCtx.scale(-1, 1);
+      canvasCtx.rotate(Math.PI / 2);
       // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
@@ -64,6 +67,8 @@ function RepCount() {
           worldLandmarks: results.poseWorldLandmarks,
           timestamp: new Date().getTime(),
         };
+
+        console.log(rawCurrentPose.landmarks[0].x);
 
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
@@ -151,7 +156,7 @@ function RepCount() {
     });
 
     poseEstimator.setOptions({
-      modelComplexity: 2,
+      modelComplexity: 1,
       smoothLandmarks: true,
       enableSegmentation: false,
       smoothSegmentation: false,
@@ -164,7 +169,26 @@ function RepCount() {
     if (webcamRef.current !== null && webcamRef.current.video !== null) {
       const camera = new Camera(webcamRef.current.video, {
         onFrame: async () => {
-          if (webcamRef.current === null || webcamRef.current.video === null) return;
+          if (webcamRef.current === null || webcamRef.current.video === null || inputCanvasRef.current === null)
+            return;
+          const { videoWidth } = webcamRef.current.video;
+          const { videoHeight } = webcamRef.current.video;
+          inputCanvasRef.current.width = videoWidth;
+          inputCanvasRef.current.height = videoHeight;
+          const inputCanvasCtx = inputCanvasRef.current.getContext('2d');
+          if (inputCanvasCtx == null) return;
+          inputCanvasCtx.save();
+          inputCanvasCtx.clearRect(0, 0, inputCanvasRef.current.width, inputCanvasRef.current.height);
+          inputCanvasCtx.scale(-1, 1);
+          inputCanvasCtx.rotate(90 * (Math.PI / 180));
+          inputCanvasCtx.drawImage(
+            webcamRef.current.video,
+            0,
+            0,
+            inputCanvasRef.current.width,
+            inputCanvasRef.current.height,
+          );
+          inputCanvasCtx.restore();
           await poseEstimator.send({ image: webcamRef.current.video });
         },
         height: 720,
@@ -189,6 +213,7 @@ function RepCount() {
   return (
     <Box>
       <Webcam ref={webcamRef} videoConstraints={{ facingMode: 'environment' }} hidden />
+      <canvas ref={inputCanvasRef} className="rotated_canvas" hidden />
       <Grid container spacing={0}>
         <Grid item xs={6}>
           <canvas
@@ -198,7 +223,6 @@ function RepCount() {
               textAlign: 'center',
               left: '0',
               scale: '0.8',
-              transform: 'rotate(90deg)',
             }}
           />
         </Grid>
