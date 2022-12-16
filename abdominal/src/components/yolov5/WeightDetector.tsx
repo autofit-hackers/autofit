@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Chip, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
@@ -24,13 +24,14 @@ interface EstimateWeightProps {
 const estimateWeight = ({ threshold, boxesData, scoresData, classesData }: EstimateWeightProps) => {
   let weight = 0;
   const plates = [];
+  let barbellCenterZ = 0;
   for (let i = 0; i < scoresData.length; i += 1) {
     if (scoresData[i] > threshold) {
-      console.log((boxesData[i * 4] + boxesData[i * 4 + 2]) / 2);
       const klass = labels[classesData[i]];
       if (klass === '20kg-bar') {
         weight += 20;
         plates.push('バーベル');
+        barbellCenterZ = (boxesData[i * 4] + boxesData[i * 4 + 2]) / 2;
       } else if (klass === '10kg-plate') {
         weight += 20;
         plates.push('10kg');
@@ -46,7 +47,7 @@ const estimateWeight = ({ threshold, boxesData, scoresData, classesData }: Estim
     }
   }
 
-  return { weight, plates };
+  return { weight, plates, barbellCenterZ };
 };
 
 function WeightDetector() {
@@ -55,6 +56,7 @@ function WeightDetector() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [weight, setWeight] = useState(0);
   const [plates, setPlates] = useState<string[]>([]);
+  const [repStart, setRepStart] = useState(false);
 
   const [model, setModel] = useState<Model>({
     net: null as unknown as tf.GraphModel<string | io.IOHandler>,
@@ -88,10 +90,11 @@ function WeightDetector() {
       const scoresData = scores.dataSync() as unknown as number[];
       const classesData = classes.dataSync() as unknown as number[];
       const estimatedWeight = estimateWeight({ threshold, boxesData, scoresData, classesData });
-      if (estimatedWeight.weight !== weight) {
+      if (estimatedWeight.weight !== weight || estimatedWeight.barbellCenterZ !== 0) {
         setWeight(estimatedWeight.weight);
         setPlates(estimatedWeight.plates);
-        console.log(estimatedWeight);
+        setRepStart(estimatedWeight.barbellCenterZ < 0.5);
+        console.log(estimatedWeight.barbellCenterZ);
       }
       renderBoxes(canvasRef.current, threshold, boxesData, scoresData, classesData);
       tf.dispose(result);
@@ -146,6 +149,7 @@ function WeightDetector() {
       </div>
       <Typography>Estimated Weight: {weight}</Typography>
       <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
+      <Chip label={repStart ? 'no' : 'yes'} />
 
       <ButtonHandler cameraRef={videoRef} />
     </div>
