@@ -6,6 +6,9 @@ export type Pose = {
   timestamp: number; // UNIX time(ms単位)
 };
 
+export type Exercise = 'squat' | 'bench_press' | 'dead_lift' | 'shoulder_press';
+export type RepCountThresholds = { lower: number; upper: number };
+
 export const rotateWorldLandmarks = (
   worldLandmarks: LandmarkList,
   angle: { roll: number; pitch: number; yaw: number }, // degree
@@ -75,6 +78,21 @@ export const getMidpoint = (
   z: (p1.z + p2.z) / 2,
 });
 
+export const getRepCountParameters = (exercise: Exercise): RepCountThresholds => {
+  switch (exercise) {
+    case 'squat':
+      return { lower: 0.8, upper: 0.95 };
+    case 'bench_press':
+      return { lower: 0.8, upper: 0.95 };
+    case 'dead_lift':
+      return { lower: 0.8, upper: 0.95 };
+    case 'shoulder_press':
+      return { lower: 0.8, upper: 0.95 };
+    default:
+      return { lower: 0, upper: 0 };
+  }
+};
+
 // worldLandmarksではなくlandmarksを使う
 const getLengthAnkleToShoulder = (pose: Pose): { left: number; right: number; mean: number } => {
   const leftShoulder = pose.landmarks[11];
@@ -111,17 +129,18 @@ const getArmLength = (pose: Pose): { left: number; right: number; mean: number }
   };
 };
 
-export const getInterestJointsDistance = (pose: Pose, exerciseType: 'squat' | 'bench'): number =>
-  exerciseType === 'squat' ? getLengthAnkleToShoulder(pose).mean : getArmLength(pose).mean;
+export const getInterestJointsDistance = (pose: Pose, exercise: Exercise): number => {
+  if (exercise === 'squat' || exercise === 'dead_lift') return getLengthAnkleToShoulder(pose).mean;
+  if (exercise === 'bench_press' || exercise === 'shoulder_press') return getArmLength(pose).mean;
 
-export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exerciseType: 'squat' | 'bench'): number => {
-  const prevDistance = getInterestJointsDistance(prevPose, exerciseType);
-  const currentDistance = getInterestJointsDistance(currentPose, exerciseType);
+  return 0;
+};
+
+export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exercise: Exercise): number => {
+  const prevDistance = getInterestJointsDistance(prevPose, exercise);
+  const currentDistance = getInterestJointsDistance(currentPose, exercise);
   const time = (currentPose.timestamp - prevPose.timestamp) / 1000; // 秒単位
   const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 
   return velocity;
 };
-
-export const getInterestJointPosition = (currentPose: Pose, exerciseType: 'squat' | 'bench') =>
-  getInterestJointsDistance(currentPose, exerciseType);
