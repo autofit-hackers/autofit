@@ -1,4 +1,4 @@
-import { Chip, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Button, Chip, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
@@ -120,7 +120,9 @@ function TrainingViewer() {
     (mediaDevices: MediaDeviceInfo[]) =>
       setDevices(
         mediaDevices
-          .filter(({ kind, label }) => kind === 'videoinput')
+          .filter(
+            ({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label),
+          )
           .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
       ),
 
@@ -188,7 +190,6 @@ function TrainingViewer() {
           value={webcamId}
           onChange={(event) => {
             setWebcamId(event.target.value);
-            console.log(event.target.value);
           }}
         >
           {devices.map((device) => (
@@ -199,6 +200,15 @@ function TrainingViewer() {
         </Select>
       </FormControl>
       <MultiCameraViewer />
+      <Button
+        onClick={() => {
+          void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
+          console.log(devices);
+          console.log(navigator.mediaDevices.enumerateDevices());
+        }}
+      >
+        get webcam
+      </Button>
     </>
   );
 }

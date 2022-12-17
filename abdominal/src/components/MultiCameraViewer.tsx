@@ -87,7 +87,9 @@ function MultiCameraViewer() {
     (mediaDevices: MediaDeviceInfo[]) =>
       setDevices(
         mediaDevices
-          .filter(({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera')
+          .filter(
+            ({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label),
+          )
           .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
       ),
 
