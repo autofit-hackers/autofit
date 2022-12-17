@@ -4,8 +4,9 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { Box, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
+import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointPosition, getInterestJointsDistance, Pose } from '../utils/pose';
+import { getInterestJointsDistance as getInterestJointsDist, Pose } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -35,7 +36,7 @@ function RepCount() {
   const [DistOfInterestJointsList, setDistOfInterestJointsList] = useState<number[]>([]);
 
   // 種目とカメラの設定
-  const exerciseType: 'squat' | 'bench' = 'squat';
+  const exercise: Exercise = 'squat';
 
   const onResults = useCallback(
     (results: Results) => {
@@ -83,7 +84,7 @@ function RepCount() {
         });
         canvasCtx.restore();
 
-        const interestJointsDistance = getInterestJointsDistance(currentPose, exerciseType);
+        const interestJointsDistance = getInterestJointsDist(currentPose, exercise);
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
@@ -101,18 +102,18 @@ function RepCount() {
         }
 
         // フォームを分析し、レップの状態を更新する
-        repState.current = checkIfRepFinish(repState.current, interestJointsDistance, 0.8, 0.95);
+        repState.current = checkIfRepFinish(repState.current, interestJointsDistance, exercise);
 
         // 現フレームの推定Poseをレップのフォームに追加
         rep.current = appendPoseToForm(rep.current, currentPose);
 
         // 挙上速度を計算しリストに追加
-        distOfInterestJoints.current = getInterestJointPosition(currentPose, exerciseType);
+        distOfInterestJoints.current = getInterestJointsDist(currentPose, exercise);
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
           // 完了したレップのフォームを分析・評価
-          rep.current = calculateKeyframes(rep.current, exerciseType);
+          rep.current = calculateKeyframes(rep.current, exercise);
 
           // 完了したレップの情報をセットに追加し、レップをリセットする
           set.current.reps = [...set.current.reps, rep.current];

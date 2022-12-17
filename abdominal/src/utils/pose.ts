@@ -1,4 +1,5 @@
 import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
+import { Exercise } from './Exercise';
 
 export type Pose = {
   landmarks: NormalizedLandmarkList;
@@ -111,17 +112,18 @@ const getArmLength = (pose: Pose): { left: number; right: number; mean: number }
   };
 };
 
-export const getInterestJointsDistance = (pose: Pose, exerciseType: 'squat' | 'bench'): number =>
-  exerciseType === 'squat' ? getLengthAnkleToShoulder(pose).mean : getArmLength(pose).mean;
+export const getInterestJointsDistance = (pose: Pose, exercise: Exercise): number => {
+  if (exercise === 'squat' || exercise === 'dead_lift') return getLengthAnkleToShoulder(pose).mean;
+  if (exercise === 'bench_press' || exercise === 'shoulder_press') return getArmLength(pose).mean;
 
-export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exerciseType: 'squat' | 'bench'): number => {
-  const prevDistance = getInterestJointsDistance(prevPose, exerciseType);
-  const currentDistance = getInterestJointsDistance(currentPose, exerciseType);
+  return 0;
+};
+
+export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exercise: Exercise): number => {
+  const prevDistance = getInterestJointsDistance(prevPose, exercise);
+  const currentDistance = getInterestJointsDistance(currentPose, exercise);
   const time = (currentPose.timestamp - prevPose.timestamp) / 1000; // 秒単位
   const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 
   return velocity;
 };
-
-export const getInterestJointPosition = (currentPose: Pose, exerciseType: 'squat' | 'bench') =>
-  getInterestJointsDistance(currentPose, exerciseType);

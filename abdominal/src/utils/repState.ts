@@ -1,3 +1,5 @@
+import { Exercise, getRepCountThresholds } from './Exercise';
+
 export type RepState = {
   isFirstFrameInRep: boolean;
   didTouchBottom: boolean;
@@ -22,24 +24,24 @@ export const setInterestJointsDistance = (prevRepState: RepState, interestJoints
 export const checkIfRepFinish = (
   prevRepState: RepState,
   interestJointLength: number,
-  lowerThreshold: number,
-  upperThreshold: number,
+  exercise: Exercise,
 ): RepState => {
   if (prevRepState.interestJointsDistInFirstFrame === undefined) {
     throw Error('standingHeight is undefined');
   }
+  const { lower, upper } = getRepCountThresholds(exercise);
 
   const repState = prevRepState;
   // bottomに達してない場合（下がっている時）
   if (!prevRepState.didTouchBottom) {
     // 体長が十分に小さくなったら、didTouchBottomをtrueにする
-    if (interestJointLength < prevRepState.interestJointsDistInFirstFrame * lowerThreshold) {
+    if (interestJointLength < prevRepState.interestJointsDistInFirstFrame * lower) {
       repState.didTouchBottom = true;
     }
   }
   // bottomに達している場合（上がっている時）
   // 体長が十分に大きくなったら、1レップ完了
-  else if (interestJointLength > prevRepState.interestJointsDistInFirstFrame * upperThreshold) {
+  else if (interestJointLength > prevRepState.interestJointsDistInFirstFrame * upper) {
     repState.didTouchBottom = false;
     repState.isRepEnd = true;
 
