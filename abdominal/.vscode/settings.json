@@ -117,6 +117,8 @@
     "echarts",
     "esbuild",
     "HANDTIP",
+    "imread",
+    "imshow",
     "Kinect",
     "klass",
     "linewidth",
