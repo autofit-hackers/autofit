@@ -103,16 +103,16 @@ function MultiCameraViewer() {
       webcamRefs.current[i] = createRef<Webcam>();
       mediaRecorderRefs.current[i] = createRef<MediaRecorder | null>();
     }
-  }, [devices.length, searchDevicesForWebcam]);
+  }, [devices, devices.length, searchDevicesForWebcam]);
 
   return (
     <>
       {capturing ? (
         <Button onClick={stopCapturing} variant="contained">
-          Stop Capture
+          Stop Capturing
         </Button>
       ) : (
-        <Button onClick={startCapturing}>Start Capture</Button>
+        <Button onClick={startCapturing}>Start Capturing</Button>
       )}
       {replay ? (
         <>

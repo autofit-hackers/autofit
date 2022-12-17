@@ -72,7 +72,7 @@ function WebcamOpenButton({ cameraRef }: { cameraRef: React.RefObject<HTMLVideoE
           console.log(navigator.mediaDevices.enumerateDevices());
         }}
       >
-        get webcam
+        refresh webcam
       </Button>
     </>
   );
