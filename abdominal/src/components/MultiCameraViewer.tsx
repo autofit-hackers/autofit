@@ -1,4 +1,4 @@
-import { Button, CardMedia, Grid } from '@mui/material';
+import { Button, CardMedia, Grid, Stack } from '@mui/material';
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
@@ -87,8 +87,7 @@ function MultiCameraViewer() {
       setDevices(
         mediaDevices
           .filter(
-            ({ kind, label }) =>
-              kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label) && !/GOPPA/.test(label),
+            ({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label),
           )
           .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
       ),
@@ -134,17 +133,21 @@ function MultiCameraViewer() {
           </Grid>
         </>
       ) : (
-        <Grid container spacing={1}>
+        <Stack
+          direction="column"
+          sx={{ transform: 'rotate(90deg)', width: '50%' }}
+          spacing={2}
+          marginLeft="300px"
+          justifyContent="center"
+        >
           {devices.map((device, key) => (
-            <Grid item xs={6}>
-              <Webcam
-                audio={false}
-                videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
-                ref={webcamRefs.current[key]}
-              />
-            </Grid>
+            <Webcam
+              audio={false}
+              videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
+              ref={webcamRefs.current[key]}
+            />
           ))}
-        </Grid>
+        </Stack>
       )}
     </>
   );

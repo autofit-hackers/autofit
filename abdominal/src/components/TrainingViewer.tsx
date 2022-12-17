@@ -106,7 +106,6 @@ function TrainingViewer() {
         setWeight(estimatedWeight.weight);
         setPlates(estimatedWeight.plates);
         setDoingExercise(estimatedWeight.barbellCenterZ < 0.5);
-        console.log(estimatedWeight.barbellCenterZ);
       }
       renderBoxes(canvasRef.current, threshold, boxesData, scoresData, classesData);
       tf.dispose(result);

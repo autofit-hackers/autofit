@@ -68,8 +68,6 @@ function WebcamOpenButton({ cameraRef, fps = 1 }: { cameraRef: React.RefObject<H
       <Button
         onClick={() => {
           void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
-          console.log(devices);
-          console.log(navigator.mediaDevices.enumerateDevices());
         }}
       >
         get webcam
