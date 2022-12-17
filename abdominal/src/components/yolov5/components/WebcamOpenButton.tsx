@@ -1,28 +1,60 @@
 /* eslint-disable */
-import { Button } from '@mui/material';
-import { useState } from 'react';
-import Webcam from '../utils/webCamWithId';
+import { Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
+import Webcam from '../utils/webcamWithId';
 
-function WebcamOpenButton({
-  cameraRef,
-  deviceId,
-}: {
-  cameraRef: React.RefObject<HTMLVideoElement>;
-  deviceId: string;
-}) {
+function WebcamOpenButton({ cameraRef }: { cameraRef: React.RefObject<HTMLVideoElement> }) {
   const [streaming, setStreaming] = useState(null); // streaming state
   const webcam = new Webcam(); // webcam handler
 
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [webcamId, setWebcamId] = useState('');
+
+  const searchDevicesForWebcam = useCallback(
+    (mediaDevices: MediaDeviceInfo[]) =>
+      setDevices(
+        mediaDevices
+          .filter(
+            ({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label),
+          )
+          .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
+      ),
+
+    [setDevices],
+  );
+
+  useEffect(() => {
+    void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
+  }, [searchDevicesForWebcam]);
+
   return (
     <>
+      <FormControl size="medium">
+        <InputLabel id="demo-simple-select-label">Age</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          label="Age"
+          value={webcamId}
+          onChange={(event) => {
+            setWebcamId(event.target.value);
+          }}
+        >
+          {devices.map((device) => (
+            <MenuItem key={device.deviceId} value={device.deviceId}>
+              {device.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
       <Button
         onClick={() => {
           if (streaming === null) {
             // if not streaming
-            webcam.open(cameraRef.current, deviceId); // open webcam
+            webcam.open(cameraRef.current, webcamId); // open webcam
             cameraRef.current.style.display = 'block'; // show camera
             setStreaming('camera'); // set streaming to camera
-            console.log(deviceId);
           } else if (streaming === 'camera') {
             // closing video streaming
             webcam.close(cameraRef.current);
@@ -32,6 +64,15 @@ function WebcamOpenButton({
         }}
       >
         {streaming === 'camera' ? 'Close' : 'Open'} Webcam
+      </Button>
+      <Button
+        onClick={() => {
+          void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
+          console.log(devices);
+          console.log(navigator.mediaDevices.enumerateDevices());
+        }}
+      >
+        get webcam
       </Button>
     </>
   );

@@ -1,10 +1,10 @@
-import { Button, Chip, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Chip, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MultiCameraViewer from './MultiCameraViewer';
-import Loader from './yolov5/components/loader';
+import Loader from './yolov5/components/Loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
 import './yolov5/style/App.css';
 import labels from './yolov5/utils/labels.json';
@@ -59,7 +59,6 @@ const estimateWeight = ({ threshold, boxesData, scoresData, classesData }: Estim
 function TrainingViewer() {
   // webcam preparation
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [webcamId, setWebcamId] = useState('');
 
   // ******** for weight detector *********
   const [loading, setLoading] = useState({ loading: true, progress: 0 });
@@ -116,22 +115,8 @@ function TrainingViewer() {
     tf.engine().endScope();
   };
 
-  const searchDevicesForWebcam = useCallback(
-    (mediaDevices: MediaDeviceInfo[]) =>
-      setDevices(
-        mediaDevices
-          .filter(
-            ({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label),
-          )
-          .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
-      ),
-
-    [setDevices],
-  );
-
   // initialize ml model
   useEffect(() => {
-    void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
     // load yolov5 model & warming up
     tf.ready()
       .then(async () => {
@@ -160,7 +145,7 @@ function TrainingViewer() {
       .catch((err) => {
         throw err;
       });
-  }, [searchDevicesForWebcam]);
+  }, []);
 
   return (
     <>
@@ -177,38 +162,11 @@ function TrainingViewer() {
         </div>
         <Typography>Estimated Weight: {weight}</Typography>
         <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
-        <Chip label={repStart ? 'no' : 'yes'} />
+        <Chip label={repStart ? 'REST' : 'WORKOUT'} />
 
-        <WebcamOpenButton cameraRef={videoRef} deviceId={webcamId} />
+        <WebcamOpenButton cameraRef={videoRef} />
       </div>
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Age</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          label="Age"
-          value={webcamId}
-          onChange={(event) => {
-            setWebcamId(event.target.value);
-          }}
-        >
-          {devices.map((device) => (
-            <MenuItem key={device.deviceId} value={device.deviceId}>
-              {device.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
       <MultiCameraViewer />
-      <Button
-        onClick={() => {
-          void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
-          console.log(devices);
-          console.log(navigator.mediaDevices.enumerateDevices());
-        }}
-      >
-        get webcam
-      </Button>
     </>
   );
 }
