@@ -4,8 +4,9 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { Box, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
+import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { Exercise, getInterestJointsDistance as getInterestJointsDist, Pose } from '../utils/pose';
+import { getInterestJointsDistance as getInterestJointsDist, Pose } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';

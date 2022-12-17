@@ -1,13 +1,11 @@
 import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
+import { Exercise } from './Exercise';
 
 export type Pose = {
   landmarks: NormalizedLandmarkList;
   worldLandmarks: LandmarkList;
   timestamp: number; // UNIX time(ms単位)
 };
-
-export type Exercise = 'squat' | 'bench_press' | 'dead_lift' | 'shoulder_press';
-export type RepCountThresholds = { lower: number; upper: number };
 
 export const rotateWorldLandmarks = (
   worldLandmarks: LandmarkList,
@@ -77,21 +75,6 @@ export const getMidpoint = (
   y: (p1.y + p2.y) / 2,
   z: (p1.z + p2.z) / 2,
 });
-
-export const getRepCountParameters = (exercise: Exercise): RepCountThresholds => {
-  switch (exercise) {
-    case 'squat':
-      return { lower: 0.8, upper: 0.95 };
-    case 'bench_press':
-      return { lower: 0.8, upper: 0.95 };
-    case 'dead_lift':
-      return { lower: 0.8, upper: 0.95 };
-    case 'shoulder_press':
-      return { lower: 0.8, upper: 0.95 };
-    default:
-      return { lower: 0, upper: 0 };
-  }
-};
 
 // worldLandmarksではなくlandmarksを使う
 const getLengthAnkleToShoulder = (pose: Pose): { left: number; right: number; mean: number } => {
