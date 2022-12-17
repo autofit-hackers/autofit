@@ -13,6 +13,7 @@ class Webcam {
           audio: false,
           video: {
             deviceId: deviceId,
+            frameRate: 1,
           },
         })
         .then((stream) => {
