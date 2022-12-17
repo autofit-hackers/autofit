@@ -10,8 +10,13 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../u
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
+import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
 
-function RepCount() {
+interface RepCountProps {
+  doingExercise: boolean;
+}
+
+function RepCount({ doingExercise }: RepCountProps) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -37,9 +42,13 @@ function RepCount() {
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
 
+  // webcam
+  const [camMode, setCamMode] = useState(false);
+  const cameraRef = useRef<HTMLVideoElement | null>(null);
+
   const onResults = useCallback(
     (results: Results) => {
-      if (canvasRef.current === null || canvasRef.current === null) return;
+      if (canvasRef.current === null) return;
 
       const canvasElement = canvasRef.current;
       const canvasCtx = canvasElement.getContext('2d');
@@ -147,12 +156,12 @@ function RepCount() {
 
     poseEstimator.onResults(onResults);
 
-    if (webcamRef.current !== null && webcamRef.current.video !== null) {
-      const camera = new Camera(webcamRef.current.video, {
+    if (cameraRef.current !== null) {
+      const camera = new Camera(cameraRef.current, {
         onFrame: async () => {
-          if (webcamRef.current === null || webcamRef.current.video === null || canvasRef.current === null) return;
-          const { videoWidth } = webcamRef.current.video;
-          const { videoHeight } = webcamRef.current.video;
+          if (cameraRef.current === null || cameraRef.current === null || canvasRef.current === null) return;
+          const { videoWidth } = cameraRef.current;
+          const { videoHeight } = cameraRef.current;
           canvasRef.current.width = videoHeight;
           canvasRef.current.height = videoWidth;
           const canvasCtx = canvasRef.current.getContext('2d');
@@ -161,7 +170,7 @@ function RepCount() {
           canvasCtx.save();
           canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
           canvasCtx.rotate(Math.PI / 2);
-          canvasCtx.drawImage(webcamRef.current.video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
+          canvasCtx.drawImage(cameraRef.current, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
           canvasCtx.restore();
           await poseEstimator.send({ image: canvasRef.current });
         },
@@ -193,24 +202,32 @@ function RepCount() {
 
   return (
     <Box>
-      <Webcam ref={webcamRef} videoConstraints={{ facingMode: { exact: 'environment' } }} hidden />
-      <Typography variant="h1" sx={{}}>
-        {set.current.reps.length}
-      </Typography>
+      {doingExercise ? (
+        <>
+          <Typography variant="h1" sx={{}}>
+            {set.current.reps.length}
+          </Typography>
+          <RealtimeChart
+            data={DistOfInterestJointsList}
+            style={{ position: 'relative', height: '50vh', width: '50vw' }}
+          />
+          <video autoPlay playsInline muted ref={cameraRef} hidden />
+        </>
+      ) : (
+        <Typography>Let's start workout</Typography>
+      )}
       <canvas
         ref={canvasRef}
         className="output_canvas"
         style={{
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          scale: '0.4',
+          position: 'relative',
+          maxWidth: '500px',
+          maxHeight: '720px',
+          zIndex: 9,
         }}
       />
-      <RealtimeChart
-        data={DistOfInterestJointsList}
-        style={{ position: 'absolute', top: '30vw', left: '30vh', height: '50vh', width: '50vw' }}
-      />
+
+      <WebcamOpenButton cameraRef={cameraRef} fps={30} />
     </Box>
   );
 }

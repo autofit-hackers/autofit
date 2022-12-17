@@ -12,7 +12,6 @@ function MultiCameraViewer() {
   const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
   const [capturing, setCapturing] = useState(false);
   const [replay, setReplay] = useState(false);
-  const [deviceId, setDeviceId] = useState('');
   const [blobURLs, setBlobURLs] = useState<string[]>([]);
 
   const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
@@ -88,7 +87,8 @@ function MultiCameraViewer() {
       setDevices(
         mediaDevices
           .filter(
-            ({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label),
+            ({ kind, label }) =>
+              kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label) && !/GOPPA/.test(label),
           )
           .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
       ),
@@ -98,7 +98,6 @@ function MultiCameraViewer() {
 
   useEffect(() => {
     void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
-    console.log(devices);
     for (let i = 0; i < devices.length; i += 1) {
       webcamRefs.current[i] = createRef<Webcam>();
       mediaRecorderRefs.current[i] = createRef<MediaRecorder | null>();
@@ -143,7 +142,6 @@ function MultiCameraViewer() {
                 videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
                 ref={webcamRefs.current[key]}
               />
-              <p>{device.deviceId}</p>
             </Grid>
           ))}
         </Grid>

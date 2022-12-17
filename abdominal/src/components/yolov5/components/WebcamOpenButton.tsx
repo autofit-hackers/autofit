@@ -3,8 +3,8 @@ import { Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material
 import { useCallback, useEffect, useState } from 'react';
 import Webcam from '../utils/webCamWithId';
 
-function WebcamOpenButton({ cameraRef }: { cameraRef: React.RefObject<HTMLVideoElement> }) {
-  const [streaming, setStreaming] = useState(null); // streaming state
+function WebcamOpenButton({ cameraRef, fps = 1 }: { cameraRef: React.RefObject<HTMLVideoElement>; fps?: number }) {
+  const [streaming, setStreaming] = useState<null | string>(null); // streaming state
   const webcam = new Webcam(); // webcam handler
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
@@ -50,12 +50,12 @@ function WebcamOpenButton({ cameraRef }: { cameraRef: React.RefObject<HTMLVideoE
 
       <Button
         onClick={() => {
-          if (streaming === null) {
+          if (streaming === null && cameraRef.current !== null) {
             // if not streaming
-            webcam.open(cameraRef.current, webcamId); // open webcam
+            webcam.open(cameraRef.current, webcamId, fps); // open webcam
             cameraRef.current.style.display = 'block'; // show camera
             setStreaming('camera'); // set streaming to camera
-          } else if (streaming === 'camera') {
+          } else if (streaming === 'camera' && cameraRef.current !== null) {
             // closing video streaming
             webcam.close(cameraRef.current);
             cameraRef.current.style.display = 'none';
