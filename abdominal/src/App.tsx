@@ -1,7 +1,7 @@
-import RepCount from './components/RepCount';
+import TrainingViewer from './components/TrainingViewer';
 
 function App() {
-  return <RepCount />;
+  return TrainingViewer();
 }
 
 export default App;
