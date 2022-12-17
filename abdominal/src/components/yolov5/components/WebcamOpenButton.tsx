@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import Webcam from '../utils/webcamWithId';
+import Webcam from '../utils/webCamWithId';
 
 function WebcamOpenButton({ cameraRef }: { cameraRef: React.RefObject<HTMLVideoElement> }) {
   const [streaming, setStreaming] = useState(null); // streaming state
