@@ -4,7 +4,7 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { Box, Grid } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import RealtimeChart from '../components/RealtimeChart';
+import RealtimeChart from './RealtimeChart';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { getInterestJointsDistance, getLiftingVelocity, Pose } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';

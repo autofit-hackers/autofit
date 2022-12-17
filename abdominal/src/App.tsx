@@ -1,4 +1,4 @@
-import RepCount from './scenes/RepCount';
+import RepCount from './components/RepCount';
 
 function App() {
   return <RepCount />;
