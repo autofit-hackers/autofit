@@ -12,6 +12,7 @@ function MultiCameraViewer() {
   const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
   const [capturing, setCapturing] = useState(false);
   const [replay, setReplay] = useState(false);
+  const [deviceId, setDeviceId] = useState('');
   const [blobURLs, setBlobURLs] = useState<string[]>([]);
 
   const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
@@ -67,7 +68,7 @@ function MultiCameraViewer() {
     setCapturing(true);
     for (let i = 0; i < mediaRecorderRefs.current.length; i += 1) {
       if (webcamRefs.current[i].current != null) {
-        mediaRecorderRefs.current[i].current = startCapturingWebcam(webcamRefs.current[i].current, i);
+        mediaRecorderRefs.current[i].current = createWebcamStream(webcamRefs.current[i].current, i);
       }
     }
   }, [createWebcamStream]);
@@ -86,7 +87,9 @@ function MultiCameraViewer() {
     (mediaDevices: MediaDeviceInfo[]) =>
       setDevices(
         mediaDevices
-          .filter(({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera')
+          .filter(
+            ({ kind, label }) => kind === 'videoinput' && label !== 'FaceTime HD Camera' && !/iPhone/.test(label),
+          )
           .sort((a, b) => Number(a.deviceId) + Number(b.deviceId)),
       ),
 
@@ -95,6 +98,7 @@ function MultiCameraViewer() {
 
   useEffect(() => {
     void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
+    console.log(devices);
     for (let i = 0; i < devices.length; i += 1) {
       webcamRefs.current[i] = createRef<Webcam>();
       mediaRecorderRefs.current[i] = createRef<MediaRecorder | null>();

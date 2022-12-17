@@ -118,16 +118,17 @@
     "esbuild",
     "HANDTIP",
     "Kinect",
+    "klass",
     "linewidth",
     "mediapipe",
     "meshline",
     "NFOV",
     "ondataavailable",
     "streamsaver",
+    "tfjs",
     "UNBINNED",
     "uttr",
-    "yolov",
-    "tfjs"
+    "yolov"
   ],
   "color-picker.languages": ["typescript"]
 }

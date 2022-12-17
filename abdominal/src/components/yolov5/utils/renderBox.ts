@@ -4,13 +4,13 @@ import labels from './labels.json';
  * Render prediction boxes
  */
 const renderBoxes = (
-  canvasRef: HTMLCanvasElement,
+  canvas: HTMLCanvasElement,
   classThreshold: number,
   boxesData: Float32Array | Int32Array | Uint8Array,
   scoresData: Float32Array | Int32Array | Uint8Array,
   classesData: Float32Array | Int32Array | Uint8Array,
 ) => {
-  const ctx = canvasRef.getContext('2d');
+  const ctx = canvas.getContext('2d');
   if (ctx == null) throw new Error('Canvas context is null');
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // clean canvas
@@ -27,10 +27,10 @@ const renderBoxes = (
       const score = (scoresData[i] * 100).toFixed(1);
 
       let [x1, y1, x2, y2] = boxesData.slice(i * 4, (i + 1) * 4);
-      x1 *= canvasRef.width;
-      x2 *= canvasRef.width;
-      y1 *= canvasRef.height;
-      y2 *= canvasRef.height;
+      x1 *= canvas.width;
+      x2 *= canvas.width;
+      y1 *= canvas.height;
+      y2 *= canvas.height;
       const width = x2 - x1;
       const height = y2 - y1;
 
