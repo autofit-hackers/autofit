@@ -31,8 +31,8 @@ function RepCount() {
   const repState = useRef(resetRepState());
 
   // リアルタイムグラフ
-  const interestJointPosition = useRef<number>(0);
-  const [interestJointPositionList, setInterestPositionList] = useState<number[]>([]);
+  const distOfInterestJoints = useRef<number>(0);
+  const [DistOfInterestJointsList, setDistOfInterestJointsList] = useState<number[]>([]);
 
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
@@ -107,7 +107,7 @@ function RepCount() {
         rep.current = appendPoseToForm(rep.current, currentPose);
 
         // 挙上速度を計算しリストに追加
-        interestJointPosition.current = getInterestJointPosition(currentPose, exerciseType);
+        distOfInterestJoints.current = getInterestJointPosition(currentPose, exerciseType);
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
@@ -178,8 +178,8 @@ function RepCount() {
   useEffect(() => {
     // グラフ更新用
     const chartUpdatingTimer = setInterval(() => {
-      setInterestPositionList((prevList) => {
-        prevList.push(interestJointPosition.current);
+      setDistOfInterestJointsList((prevList) => {
+        prevList.push(distOfInterestJoints.current);
 
         return prevList;
       });
@@ -208,7 +208,7 @@ function RepCount() {
         }}
       />
       <RealtimeChart
-        data={interestJointPositionList}
+        data={DistOfInterestJointsList}
         style={{ position: 'absolute', top: '30vw', left: '30vh', height: '50vh', width: '50vw' }}
       />
     </Box>
