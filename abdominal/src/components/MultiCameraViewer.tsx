@@ -139,6 +139,7 @@ function MultiCameraViewer() {
                 videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
                 ref={webcamRefs.current[key]}
               />
+              <p>{device.deviceId}</p>
             </Grid>
           ))}
         </Grid>

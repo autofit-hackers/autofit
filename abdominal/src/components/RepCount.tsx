@@ -1,20 +1,19 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { Box, Grid } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import RealtimeChart from './RealtimeChart';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointsDistance, getLiftingVelocity, Pose } from '../utils/pose';
+import { getInterestJointPosition, getInterestJointsDistance, Pose } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
+import RealtimeChart from './RealtimeChart';
 
 function RepCount() {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const inputCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
@@ -32,27 +31,20 @@ function RepCount() {
   const repState = useRef(resetRepState());
 
   // リアルタイムグラフ
-  const liftingVelocityList: number[] = [];
-  const [data, setData] = useState<number[]>([]);
+  const interestJointPosition = useRef<number>(0);
+  const [interestJointPositionList, setInterestPositionList] = useState<number[]>([]);
 
   // 種目とカメラの設定
   const exerciseType: 'squat' | 'bench' = 'squat';
 
   const onResults = useCallback(
     (results: Results) => {
-      if (canvasRef.current === null || inputCanvasRef.current === null) return;
+      if (canvasRef.current === null || canvasRef.current === null) return;
 
-      canvasRef.current.width = inputCanvasRef.current.width;
-      canvasRef.current.height = inputCanvasRef.current.height;
       const canvasElement = canvasRef.current;
       const canvasCtx = canvasElement.getContext('2d');
 
       if (canvasCtx == null) return;
-
-      canvasCtx.save();
-      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-      // このあとbeginPath()が必要らしい：https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D/clearRect
-      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
       if ('poseLandmarks' in results) {
         // mediapipeの推論結果を自作のPoseクラスに代入
@@ -61,8 +53,6 @@ function RepCount() {
           worldLandmarks: results.poseWorldLandmarks,
           timestamp: new Date().getTime(),
         };
-
-        console.log(rawCurrentPose.landmarks[0].x);
 
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
@@ -78,9 +68,9 @@ function RepCount() {
           );
           currentPose.worldLandmarks = fixedWorldLandmarks;
         }
-        prevPose.current = currentPose;
 
         // pose estimationの結果を描画
+        canvasCtx.save();
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
           color: 'white',
           lineWidth: 4,
@@ -91,8 +81,10 @@ function RepCount() {
           radius: 8,
           fillColor: 'lightgreen',
         });
+        canvasCtx.restore();
 
         const interestJointsDistance = getInterestJointsDistance(currentPose, exerciseType);
+
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
@@ -101,10 +93,7 @@ function RepCount() {
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
             if (firstRepTopPose !== undefined) {
-              repState.current = setInterestJointsDistance(
-                repState.current,
-                getInterestJointsDistance(firstRepTopPose, exerciseType),
-              );
+              repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
             }
           }
           // レップの開始フラグをoffにする
@@ -118,8 +107,7 @@ function RepCount() {
         rep.current = appendPoseToForm(rep.current, currentPose);
 
         // 挙上速度を計算しリストに追加
-        const liftingVelocity = prevPose.current ? getLiftingVelocity(prevPose.current, currentPose, exerciseType) : 0;
-        liftingVelocityList.push(liftingVelocity);
+        interestJointPosition.current = getInterestJointPosition(currentPose, exerciseType);
 
         // レップが終了したとき
         if (repState.current.isRepEnd) {
@@ -136,9 +124,8 @@ function RepCount() {
           // レップカウント更新のため再レンダリングさせる
           causeReRendering((prev) => prev + 1);
         }
+        prevPose.current = currentPose;
       }
-
-      canvasCtx.restore();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -150,11 +137,11 @@ function RepCount() {
     });
 
     poseEstimator.setOptions({
-      modelComplexity: 1,
+      modelComplexity: 2,
       smoothLandmarks: true,
       enableSegmentation: false,
       smoothSegmentation: false,
-      minDetectionConfidence: 0.5,
+      minDetectionConfidence: 0.3,
       minTrackingConfidence: 0.8,
     });
 
@@ -163,68 +150,67 @@ function RepCount() {
     if (webcamRef.current !== null && webcamRef.current.video !== null) {
       const camera = new Camera(webcamRef.current.video, {
         onFrame: async () => {
-          if (webcamRef.current === null || webcamRef.current.video === null || inputCanvasRef.current === null)
-            return;
+          if (webcamRef.current === null || webcamRef.current.video === null || canvasRef.current === null) return;
           const { videoWidth } = webcamRef.current.video;
           const { videoHeight } = webcamRef.current.video;
-          inputCanvasRef.current.width = videoWidth;
-          inputCanvasRef.current.height = videoHeight;
-          const inputCanvasCtx = inputCanvasRef.current.getContext('2d');
-          if (inputCanvasCtx == null) return;
-          inputCanvasCtx.save();
-          inputCanvasCtx.clearRect(0, 0, inputCanvasRef.current.width, inputCanvasRef.current.height);
-          inputCanvasCtx.scale(-1, 1);
-          inputCanvasCtx.rotate(Math.PI / 2);
-          inputCanvasCtx.drawImage(
-            webcamRef.current.video,
-            0,
-            0,
-            inputCanvasRef.current.width,
-            inputCanvasRef.current.height,
-          );
-          inputCanvasCtx.restore();
-          await poseEstimator.send({ image: inputCanvasRef.current });
+          canvasRef.current.width = videoHeight;
+          canvasRef.current.height = videoWidth;
+          const canvasCtx = canvasRef.current.getContext('2d');
+          if (canvasCtx == null) return;
+          canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          canvasCtx.save();
+          canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
+          canvasCtx.rotate(Math.PI / 2);
+          canvasCtx.drawImage(webcamRef.current.video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
+          canvasCtx.restore();
+          await poseEstimator.send({ image: canvasRef.current });
         },
-        height: 720,
-        width: 1280,
+        height: 1080,
+        width: 1920,
       });
       setTimeout(() => {
         void camera.start();
       }, 1000);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  useEffect(() => {
     // グラフ更新用
     const chartUpdatingTimer = setInterval(() => {
-      setData(liftingVelocityList);
-    }, 100);
+      setInterestPositionList((prevList) => {
+        prevList.push(interestJointPosition.current);
+
+        return prevList;
+      });
+      causeReRendering((prev) => prev + 1);
+    }, 10);
 
     return () => {
       clearInterval(chartUpdatingTimer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Box>
-      <Webcam ref={webcamRef} videoConstraints={{ facingMode: 'environment' }} hidden />
-      <canvas ref={inputCanvasRef} className="rotated_canvas" />
-      <p>{set.current.reps.length}</p>
-      <Grid container spacing={0}>
-        <Grid item xs={6}>
-          <canvas
-            ref={canvasRef}
-            className="output_canvas"
-            style={{
-              textAlign: 'center',
-              left: '0',
-              scale: '0.8',
-            }}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <RealtimeChart data={data} style={{ height: '50vh', width: '50vw' }} />
-        </Grid>
-      </Grid>
+      <Webcam ref={webcamRef} videoConstraints={{ facingMode: { exact: 'environment' } }} hidden />
+      <Typography variant="h1" sx={{}}>
+        {set.current.reps.length}
+      </Typography>
+      <canvas
+        ref={canvasRef}
+        className="output_canvas"
+        style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          scale: '0.4',
+        }}
+      />
+      <RealtimeChart
+        data={interestJointPositionList}
+        style={{ position: 'absolute', top: '30vw', left: '30vh', height: '50vh', width: '50vw' }}
+      />
     </Box>
   );
 }

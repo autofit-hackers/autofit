@@ -117,8 +117,11 @@ export const getInterestJointsDistance = (pose: Pose, exerciseType: 'squat' | 'b
 export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exerciseType: 'squat' | 'bench'): number => {
   const prevDistance = getInterestJointsDistance(prevPose, exerciseType);
   const currentDistance = getInterestJointsDistance(currentPose, exerciseType);
-  const time = currentPose.timestamp - prevPose.timestamp / 1000; // 秒単位
+  const time = (currentPose.timestamp - prevPose.timestamp) / 1000; // 秒単位
   const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 
   return velocity;
 };
+
+export const getInterestJointPosition = (currentPose: Pose, exerciseType: 'squat' | 'bench') =>
+  getInterestJointsDistance(currentPose, exerciseType);
