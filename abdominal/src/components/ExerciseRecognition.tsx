@@ -4,18 +4,14 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { Box, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Exercise } from '../utils/Exercise';
+import { identifyExercise, squat } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import {
-  getInterestJointsDistance as getInterestJointsDist,
-  identifyExercise,
-  Pose,
-  rotateWorldLandmarks,
-} from '../utils/pose';
+import { Pose, rotateWorldLandmarks } from '../utils/pose';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
+import RealtimeChart from './RealtimeChart';
 
 function RepCount() {
   const webcamRef = useRef<Webcam>(null);
@@ -36,8 +32,12 @@ function RepCount() {
   const rep = useRef(resetRep(0));
   const repState = useRef(resetRepState());
 
+  // リアルタイムグラフ
+  const interestJointsDistance = useRef<number>(0);
+  const [interestJointsDistanceList, setInterestJointsDistanceList] = useState<number[]>([]);
+
   // 種目とカメラの設定
-  const exercise: Exercise = 'squat';
+  const exercise = squat;
 
   // poseGrid
   const gridDivRef = useRef<HTMLDivElement | null>(null);
@@ -90,7 +90,8 @@ function RepCount() {
         // draw text on left-top of canvasCtx
         canvasCtx.font = '100px Arial';
         canvasCtx.fillStyle = 'white';
-        canvasCtx.fillText(identifyExercise(currentPose), 10, 60);
+        const estimatedExercise = identifyExercise(currentPose);
+        canvasCtx.fillText(estimatedExercise === 'unknown' ? 'unknown' : estimatedExercise.name, 10, 60);
         canvasCtx.restore();
 
         // PoseGridの描画
@@ -98,17 +99,18 @@ function RepCount() {
           poseGrid.current.updateLandmarks(currentPose.worldLandmarks, POSE_CONNECTIONS);
         }
 
-        const interestJointsDistance = getInterestJointsDist(currentPose, exercise);
+        // 挙上速度を計算
+        interestJointsDistance.current = exercise.getInterestJointsDistance(currentPose);
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
           if (set.current.reps.length === 0) {
-            repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+            repState.current = setInterestJointsDistance(repState.current, interestJointsDistance.current);
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
             if (firstRepTopPose !== undefined) {
-              repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+              repState.current = setInterestJointsDistance(repState.current, interestJointsDistance.current);
             }
           }
           // レップの開始フラグをoffにする
@@ -116,7 +118,7 @@ function RepCount() {
         }
 
         // フォームを分析し、レップの状態を更新する
-        repState.current = checkIfRepFinish(repState.current, interestJointsDistance, exercise);
+        repState.current = checkIfRepFinish(repState.current, interestJointsDistance.current, exercise);
 
         // 現フレームの推定Poseをレップのフォームに追加
         rep.current = appendPoseToForm(rep.current, currentPose);
@@ -197,6 +199,20 @@ function RepCount() {
       poseGrid.current.setCameraPosition();
       poseGrid.current.isAutoRotating = false;
     }
+
+    // グラフ更新用
+    const chartUpdatingTimer = setInterval(() => {
+      setInterestJointsDistanceList((prevList) => {
+        prevList.push(interestJointsDistance.current);
+
+        return prevList;
+      });
+      causeReRendering((prev) => prev + 1);
+    }, 10);
+
+    return () => {
+      clearInterval(chartUpdatingTimer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -217,6 +233,10 @@ function RepCount() {
           maxWidth: '100%',
           maxHeight: '100%',
         }}
+      />
+      <RealtimeChart
+        data={interestJointsDistanceList}
+        style={{ position: 'absolute', top: '30vw', left: '30vh', height: '50vh', width: '50vw' }}
       />
       <div
         className="square-box"

@@ -1,4 +1,4 @@
-import { Exercise, getRepCountThresholds } from './Exercise';
+import { Exercise } from './Exercise';
 
 export type RepState = {
   isFirstFrameInRep: boolean;
@@ -29,7 +29,7 @@ export const checkIfRepFinish = (
   if (prevRepState.interestJointsDistInFirstFrame === undefined) {
     throw Error('standingHeight is undefined');
   }
-  const { lower, upper } = getRepCountThresholds(exercise);
+  const { lower, upper } = exercise.repCountThresholds;
 
   const repState = prevRepState;
   // bottomに達してない場合（下がっている時）

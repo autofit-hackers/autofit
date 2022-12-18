@@ -1,4 +1,5 @@
-import { getInterestJointsDistance, Pose } from './pose';
+import { Exercise } from './Exercise';
+import { Pose } from './pose';
 
 type KeyframesIndex = {
   top: number | undefined;
@@ -38,8 +39,8 @@ export const resetRep = (repIndex: number): Rep => ({
   coordinateErrors: [],
 });
 
-export const calculateKeyframes = (prevRep: Rep, exerciseType: 'squat' | 'bench'): Rep => {
-  const jointsDistances = prevRep.form.map((pose) => getInterestJointsDistance(pose, exerciseType));
+export const calculateKeyframes = (prevRep: Rep, exercise: Exercise): Rep => {
+  const jointsDistances = prevRep.form.map((pose) => exercise.getInterestJointsDistance(pose));
 
   // calculate top
   const maxDistance = Math.max(...jointsDistances);
