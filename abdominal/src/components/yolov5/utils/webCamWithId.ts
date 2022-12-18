@@ -6,14 +6,14 @@ class Webcam {
   /**
    * Open webcam and stream it through video tag.
    */
-  open = (videoRef: HTMLVideoElement, deviceId: string) => {
+  open = (videoRef: HTMLVideoElement, deviceId: string, fps: number) => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
         .getUserMedia({
           audio: false,
           video: {
             deviceId: deviceId,
-            frameRate: 1,
+            frameRate: fps,
           },
         })
         .then((stream) => {

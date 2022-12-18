@@ -1,10 +1,10 @@
-import { Chip, Typography } from '@mui/material';
+import { Button, Chip, Stack, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
 import { useEffect, useRef, useState } from 'react';
-import MultiCameraViewer from './MultiCameraViewer';
-import Loader from './yolov5/components/Loader';
+import RepCount from './RepCount';
+import Loader from './yolov5/components/loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
 import './yolov5/style/App.css';
 import labels from './yolov5/utils/labels.json';
@@ -66,7 +66,7 @@ function TrainingViewer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [weight, setWeight] = useState(0);
   const [plates, setPlates] = useState<string[]>([]);
-  const [repStart, setRepStart] = useState(false);
+  const [doingExercise, setDoingExercise] = useState(false);
 
   const [model, setModel] = useState<Model>({
     net: null as unknown as tf.GraphModel<string | io.IOHandler>,
@@ -104,8 +104,7 @@ function TrainingViewer() {
       if (estimatedWeight.weight !== weight || estimatedWeight.barbellCenterZ !== 0) {
         setWeight(estimatedWeight.weight);
         setPlates(estimatedWeight.plates);
-        setRepStart(estimatedWeight.barbellCenterZ < 0.5);
-        console.log(estimatedWeight.barbellCenterZ);
+        setDoingExercise(() => estimatedWeight.barbellCenterZ < 0.5);
       }
       renderBoxes(canvasRef.current, threshold, boxesData, scoresData, classesData);
       tf.dispose(result);
@@ -149,24 +148,29 @@ function TrainingViewer() {
 
   return (
     <>
-      <div className="WeightDetector">
-        {loading.loading ? (
-          <Loader>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader>
-        ) : (
-          <Typography>Currently running model : YOLOv5{modelName.slice(6)}</Typography>
-        )}
-
-        <div className="content">
-          <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
-          <canvas width={640} height={640} ref={canvasRef} />
+      {loading.loading ? (
+        <Loader style={{ top: 0, height: '10vh' }}>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader>
+      ) : null}
+      <Stack direction="row" spacing={2}>
+        <div className="WeightDetector">
+          <div className="content">
+            <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
+            <canvas width={640} height={640} ref={canvasRef} />
+          </div>
         </div>
-        <Typography>Estimated Weight: {weight}</Typography>
-        <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
-        <Chip label={repStart ? 'REST' : 'WORKOUT'} />
-
-        <WebcamOpenButton cameraRef={videoRef} />
-      </div>
-      <MultiCameraViewer />
+        <RepCount doingExercise={doingExercise} />
+      </Stack>
+      {doingExercise ? <Chip label="WORKOUT" /> : <Chip label="REST" variant="outlined" />}
+      <Typography>Estimated Weight: {weight}</Typography>
+      <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
+      <WebcamOpenButton cameraRef={videoRef} />
+      <Button
+        onClick={() => {
+          console.log('clicked', doingExercise);
+        }}
+      >
+        test
+      </Button>
     </>
   );
 }
