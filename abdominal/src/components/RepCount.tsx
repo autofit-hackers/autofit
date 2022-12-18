@@ -45,8 +45,11 @@ function RepCount({ doingExercise }: RepCountProps) {
 
   // webcam
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-  const cameraRef = useRef<HTMLVideoElement | null>(null);
   const [webcamId, setWebcamId] = useState('');
+
+  const exRef = useRef(false);
+
+  exRef.current = doingExercise;
 
   const onResults = useCallback(
     (results: Results) => {
@@ -121,7 +124,7 @@ function RepCount({ doingExercise }: RepCountProps) {
         distOfInterestJoints.current = getInterestJointsDist(currentPose, exercise);
 
         // レップが終了したとき
-        if (repState.current.isRepEnd) {
+        if (repState.current.isRepEnd && exRef.current) {
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current, exercise);
 
@@ -139,7 +142,7 @@ function RepCount({ doingExercise }: RepCountProps) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [doingExercise],
   );
 
   useEffect(() => {
@@ -207,10 +210,35 @@ function RepCount({ doingExercise }: RepCountProps) {
   return (
     <>
       {isWebcamOpen ? (
-        <Webcam ref={webcamRef} videoConstraints={{ deviceId: webcamId }} hidden />
+        <>
+          <Webcam ref={webcamRef} videoConstraints={{ deviceId: webcamId }} hidden />
+          <canvas
+            ref={canvasRef}
+            className="output_canvas"
+            style={{
+              position: 'relative',
+              maxWidth: '500px',
+              maxHeight: '720px',
+              zIndex: 5,
+            }}
+          />
+          <Button
+            onClick={() => {
+              setIsWebcamOpen(false);
+            }}
+          >
+            Close Webcam
+          </Button>
+        </>
       ) : (
         <>
-          <Button onClick={() => setIsWebcamOpen(true)}>Open Webcam</Button>
+          <Button
+            onClick={() => {
+              setIsWebcamOpen(true);
+            }}
+          >
+            Open Webcam
+          </Button>
           <WebcamSelectButton selectedDeviceId={webcamId} setSelectedDeviceId={setWebcamId} />
         </>
       )}
@@ -229,16 +257,6 @@ function RepCount({ doingExercise }: RepCountProps) {
           backgroundColor: 'white',
           borderRadius: '10px',
           zIndex: 9,
-        }}
-      />
-      <canvas
-        ref={canvasRef}
-        className="output_canvas"
-        style={{
-          position: 'relative',
-          maxWidth: '500px',
-          maxHeight: '720px',
-          zIndex: 5,
         }}
       />
     </>

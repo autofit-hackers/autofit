@@ -1,4 +1,4 @@
-import { Chip, Stack, Typography } from '@mui/material';
+import { Button, Chip, Stack, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
@@ -104,7 +104,7 @@ function TrainingViewer() {
       if (estimatedWeight.weight !== weight || estimatedWeight.barbellCenterZ !== 0) {
         setWeight(estimatedWeight.weight);
         setPlates(estimatedWeight.plates);
-        setDoingExercise(estimatedWeight.barbellCenterZ < 0.5);
+        setDoingExercise(() => estimatedWeight.barbellCenterZ < 0.5);
       }
       renderBoxes(canvasRef.current, threshold, boxesData, scoresData, classesData);
       tf.dispose(result);
@@ -148,9 +148,11 @@ function TrainingViewer() {
 
   return (
     <>
+      {loading.loading ? (
+        <Loader style={{ top: 0, height: '10vh' }}>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader>
+      ) : null}
       <Stack direction="row" spacing={2}>
         <div className="WeightDetector">
-          {loading.loading ? <Loader>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader> : null}
           <div className="content">
             <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
             <canvas width={640} height={640} ref={canvasRef} />
@@ -162,7 +164,13 @@ function TrainingViewer() {
       <Typography>Estimated Weight: {weight}</Typography>
       <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
       <WebcamOpenButton cameraRef={videoRef} />
-      {/* <MultiCameraViewer /> */}
+      <Button
+        onClick={() => {
+          console.log('clicked', doingExercise);
+        }}
+      >
+        test
+      </Button>
     </>
   );
 }
