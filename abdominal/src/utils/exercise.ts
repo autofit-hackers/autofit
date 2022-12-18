@@ -38,12 +38,6 @@ export const shoulderPress: Exercise = {
   getInterestJointsDistance: (pose: Pose) => getArmLength(pose).mean,
 };
 
-export const pullUp: Exercise = {
-  name: 'pull_up',
-  repCountThresholds: { lower: 0.8, upper: 0.95 },
-  getInterestJointsDistance: (pose: Pose) => getArmLength(pose).mean,
-};
-
 export const identifyExercise = (pose: Pose): Exercise | 'unknown' => {
   const { worldLandmarks } = pose;
   const shoulderCenter = getMidpoint(worldLandmarks[11], worldLandmarks[12]);
