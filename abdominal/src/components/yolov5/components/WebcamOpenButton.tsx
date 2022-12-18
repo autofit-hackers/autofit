@@ -1,5 +1,6 @@
 /* eslint-disable */
-import { Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import WebcamSelectButton from '@/components/WebcamSelectButton';
+import { Button } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import Webcam from '../utils/webCamWithId';
 
@@ -29,25 +30,6 @@ function WebcamOpenButton({ cameraRef, fps = 1 }: { cameraRef: React.RefObject<H
 
   return (
     <>
-      <FormControl size="medium" sx={{ minWidth: 300 }}>
-        <InputLabel id="demo-simple-select-label">Webcam</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          label="webcam"
-          value={webcamId}
-          onChange={(event) => {
-            setWebcamId(event.target.value);
-          }}
-        >
-          {devices.map((device) => (
-            <MenuItem key={device.deviceId} value={device.deviceId}>
-              {device.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
       <Button
         onClick={() => {
           if (streaming === null && cameraRef.current !== null) {
@@ -65,13 +47,7 @@ function WebcamOpenButton({ cameraRef, fps = 1 }: { cameraRef: React.RefObject<H
       >
         {streaming === 'camera' ? 'Close' : 'Open'} Webcam
       </Button>
-      <Button
-        onClick={() => {
-          void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
-        }}
-      >
-        get webcam
-      </Button>
+      <WebcamSelectButton selectedDeviceId={webcamId} setSelectedDeviceId={setWebcamId} />
     </>
   );
 }

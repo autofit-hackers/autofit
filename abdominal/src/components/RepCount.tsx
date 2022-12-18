@@ -1,7 +1,7 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { Box, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
@@ -11,7 +11,7 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../u
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
-import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
+import WebcamSelectButton from './WebcamSelectButton';
 
 interface RepCountProps {
   doingExercise: boolean;
@@ -44,8 +44,9 @@ function RepCount({ doingExercise }: RepCountProps) {
   const exercise: Exercise = 'squat';
 
   // webcam
-  const [camMode, setCamMode] = useState(false);
+  const [isWebcamOpen, setIsWebcamOpen] = useState(false);
   const cameraRef = useRef<HTMLVideoElement | null>(null);
+  const [webcamId, setWebcamId] = useState('');
 
   const onResults = useCallback(
     (results: Results) => {
@@ -142,48 +143,50 @@ function RepCount({ doingExercise }: RepCountProps) {
   );
 
   useEffect(() => {
-    const poseEstimator = new PoseMediapipe({
-      locateFile: (file) => `./public/mediapipe-pose/${file}`,
-    });
-
-    poseEstimator.setOptions({
-      modelComplexity: 2,
-      smoothLandmarks: true,
-      enableSegmentation: false,
-      smoothSegmentation: false,
-      minDetectionConfidence: 0.3,
-      minTrackingConfidence: 0.8,
-    });
-
-    poseEstimator.onResults(onResults);
-
-    if (cameraRef.current !== null) {
-      const camera = new Camera(cameraRef.current, {
-        onFrame: async () => {
-          if (cameraRef.current === null || cameraRef.current === null || canvasRef.current === null) return;
-          const { videoWidth } = cameraRef.current;
-          const { videoHeight } = cameraRef.current;
-          canvasRef.current.width = videoHeight;
-          canvasRef.current.height = videoWidth;
-          const canvasCtx = canvasRef.current.getContext('2d');
-          if (canvasCtx == null) return;
-          canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-          canvasCtx.save();
-          canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
-          canvasCtx.rotate(Math.PI / 2);
-          canvasCtx.drawImage(cameraRef.current, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
-          canvasCtx.restore();
-          await poseEstimator.send({ image: canvasRef.current });
-        },
-        height: 1080,
-        width: 1920,
+    if (isWebcamOpen) {
+      const poseEstimator = new PoseMediapipe({
+        locateFile: (file) => `./public/mediapipe-pose/${file}`,
       });
-      setTimeout(() => {
-        void camera.start();
-      }, 1000);
+
+      poseEstimator.setOptions({
+        modelComplexity: 2,
+        smoothLandmarks: true,
+        enableSegmentation: false,
+        smoothSegmentation: false,
+        minDetectionConfidence: 0.3,
+        minTrackingConfidence: 0.8,
+      });
+
+      poseEstimator.onResults(onResults);
+
+      if (webcamRef.current !== null && webcamRef.current.video !== null) {
+        const camera = new Camera(webcamRef.current.video, {
+          onFrame: async () => {
+            if (webcamRef.current === null || webcamRef.current.video === null || canvasRef.current === null) return;
+            const { videoWidth } = webcamRef.current.video;
+            const { videoHeight } = webcamRef.current.video;
+            canvasRef.current.width = videoHeight;
+            canvasRef.current.height = videoWidth;
+            const canvasCtx = canvasRef.current.getContext('2d');
+            if (canvasCtx == null) return;
+            canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            canvasCtx.save();
+            canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
+            canvasCtx.rotate(Math.PI / 2);
+            canvasCtx.drawImage(webcamRef.current.video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
+            canvasCtx.restore();
+            await poseEstimator.send({ image: canvasRef.current });
+          },
+          height: 1080,
+          width: 1920,
+        });
+        setTimeout(() => {
+          void camera.start();
+        }, 1000);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isWebcamOpen]);
 
   useEffect(() => {
     // グラフ更新用
@@ -202,7 +205,16 @@ function RepCount({ doingExercise }: RepCountProps) {
   }, []);
 
   return (
-    <Box>
+    <>
+      {isWebcamOpen ? (
+        <Webcam ref={webcamRef} videoConstraints={{ deviceId: webcamId }} hidden />
+      ) : (
+        <>
+          <Button onClick={() => setIsWebcamOpen(true)}>Open Webcam</Button>
+          <WebcamSelectButton selectedDeviceId={webcamId} setSelectedDeviceId={setWebcamId} />
+        </>
+      )}
+
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
         Reps: {set.current.reps.length}
       </Typography>
@@ -219,7 +231,6 @@ function RepCount({ doingExercise }: RepCountProps) {
           zIndex: 9,
         }}
       />
-
       <canvas
         ref={canvasRef}
         className="output_canvas"
@@ -230,9 +241,7 @@ function RepCount({ doingExercise }: RepCountProps) {
           zIndex: 5,
         }}
       />
-      <WebcamOpenButton cameraRef={cameraRef} fps={20} />
-      <video autoPlay muted ref={cameraRef} hidden style={{ position: 'relative' }} />
-    </Box>
+    </>
   );
 }
 

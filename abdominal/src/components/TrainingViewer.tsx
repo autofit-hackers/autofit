@@ -1,9 +1,8 @@
-import { Chip, Typography } from '@mui/material';
+import { Chip, Stack, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
 import { useEffect, useRef, useState } from 'react';
-import MultiCameraViewer from './MultiCameraViewer';
 import RepCount from './RepCount';
 import Loader from './yolov5/components/loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
@@ -149,27 +148,21 @@ function TrainingViewer() {
 
   return (
     <>
-      <div className="WeightDetector">
-        {loading.loading ? (
-          <Loader>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader>
-        ) : (
-          <Typography>Currently running model : YOLOv5{modelName.slice(6)}</Typography>
-        )}
-        <div className="content">
-          <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
-          <canvas width={640} height={640} ref={canvasRef} />
+      <Stack direction="row" spacing={2}>
+        <div className="WeightDetector">
+          {loading.loading ? <Loader>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader> : null}
+          <div className="content">
+            <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
+            <canvas width={640} height={640} ref={canvasRef} />
+          </div>
         </div>
-        <Typography>Estimated Weight: {weight}</Typography>
-        <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
-        {doingExercise ? (
-          <Chip label="WORKOUT" sx={{ fontSize: 40 }} />
-        ) : (
-          <Chip label="REST" variant="outlined" sx={{ fontSize: 40 }} />
-        )}
-        <WebcamOpenButton cameraRef={videoRef} />
-      </div>
-      <MultiCameraViewer />
-      <RepCount doingExercise={doingExercise} />
+        <RepCount doingExercise={doingExercise} />
+      </Stack>
+      {doingExercise ? <Chip label="WORKOUT" /> : <Chip label="REST" variant="outlined" />}
+      <Typography>Estimated Weight: {weight}</Typography>
+      <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
+      <WebcamOpenButton cameraRef={videoRef} />
+      {/* <MultiCameraViewer /> */}
     </>
   );
 }
