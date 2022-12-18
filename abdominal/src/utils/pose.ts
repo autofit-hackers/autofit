@@ -191,17 +191,15 @@ export const identifyExercise = (pose: Pose): Exercise | 'unknown' => {
   const { worldLandmarks } = pose;
   const shoulderCenter = getMidpoint(worldLandmarks[11], worldLandmarks[12]);
   const hipCenter = getMidpoint(worldLandmarks[23], worldLandmarks[24]);
-  const upperBodyAngle = getAngleOfLine(hipCenter, shoulderCenter).z;
-  console.log(upperBodyAngle);
-  if (upperBodyAngle < 50 || upperBodyAngle > 150) return 'bench_press';
-
   const wristCenter = getMidpoint(worldLandmarks[15], worldLandmarks[16]);
-  if (wristCenter.y < hipCenter.y + 5) return 'dead_lift';
-
-  if (wristCenter.y > worldLandmarks[MJ.NOSE].y + 3) return 'shoulder_press';
-
   const kneeCenter = getMidpoint(worldLandmarks[25], worldLandmarks[26]);
+  const upperBodyAngle = getAngleOfLine(hipCenter, shoulderCenter).z;
   const hipJointAngle = getAngleOfThreePoints(shoulderCenter, hipCenter, kneeCenter);
+
+  // WARN: ハードコードもりもり
+  if (upperBodyAngle < 50 || upperBodyAngle > 150) return 'bench_press';
+  if (wristCenter.y < hipCenter.y + 5) return 'dead_lift';
+  if (wristCenter.y > worldLandmarks[MJ.NOSE].y + 3) return 'shoulder_press';
   if (Math.abs(hipJointAngle) > 10) return 'squat';
 
   return 'unknown';
