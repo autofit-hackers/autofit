@@ -1,4 +1,4 @@
-import { Button, CardMedia, Grid } from '@mui/material';
+import { Button, CardMedia, Grid, Stack } from '@mui/material';
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
@@ -12,7 +12,6 @@ function MultiCameraViewer() {
   const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
   const [capturing, setCapturing] = useState(false);
   const [replay, setReplay] = useState(false);
-  const [deviceId, setDeviceId] = useState('');
   const [blobURLs, setBlobURLs] = useState<string[]>([]);
 
   const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
@@ -98,7 +97,6 @@ function MultiCameraViewer() {
 
   useEffect(() => {
     void navigator.mediaDevices.enumerateDevices().then(searchDevicesForWebcam);
-    console.log(devices);
     for (let i = 0; i < devices.length; i += 1) {
       webcamRefs.current[i] = createRef<Webcam>();
       mediaRecorderRefs.current[i] = createRef<MediaRecorder | null>();
@@ -135,18 +133,21 @@ function MultiCameraViewer() {
           </Grid>
         </>
       ) : (
-        <Grid container spacing={1}>
+        <Stack
+          direction="column"
+          sx={{ transform: 'rotate(90deg)', width: '50%' }}
+          spacing={2}
+          marginLeft="300px"
+          justifyContent="center"
+        >
           {devices.map((device, key) => (
-            <Grid item xs={6}>
-              <Webcam
-                audio={false}
-                videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
-                ref={webcamRefs.current[key]}
-              />
-              <p>{device.deviceId}</p>
-            </Grid>
+            <Webcam
+              audio={false}
+              videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
+              ref={webcamRefs.current[key]}
+            />
           ))}
-        </Grid>
+        </Stack>
       )}
     </>
   );

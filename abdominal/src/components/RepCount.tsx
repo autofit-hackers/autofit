@@ -1,7 +1,7 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { Box, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
@@ -11,8 +11,13 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../u
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
+import WebcamSelectButton from './WebcamSelectButton';
 
-function RepCount() {
+interface RepCountProps {
+  doingExercise: boolean;
+}
+
+function RepCount({ doingExercise }: RepCountProps) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -38,9 +43,17 @@ function RepCount() {
   // 種目とカメラの設定
   const exercise: Exercise = 'squat';
 
+  // webcam
+  const [isWebcamOpen, setIsWebcamOpen] = useState(false);
+  const [webcamId, setWebcamId] = useState('');
+
+  const exRef = useRef(false);
+
+  exRef.current = doingExercise;
+
   const onResults = useCallback(
     (results: Results) => {
-      if (canvasRef.current === null || canvasRef.current === null) return;
+      if (canvasRef.current === null) return;
 
       const canvasElement = canvasRef.current;
       const canvasCtx = canvasElement.getContext('2d');
@@ -111,7 +124,7 @@ function RepCount() {
         distOfInterestJoints.current = getInterestJointsDist(currentPose, exercise);
 
         // レップが終了したとき
-        if (repState.current.isRepEnd) {
+        if (repState.current.isRepEnd && exRef.current) {
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current, exercise);
 
@@ -129,52 +142,54 @@ function RepCount() {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [doingExercise],
   );
 
   useEffect(() => {
-    const poseEstimator = new PoseMediapipe({
-      locateFile: (file) => `./public/mediapipe-pose/${file}`,
-    });
-
-    poseEstimator.setOptions({
-      modelComplexity: 2,
-      smoothLandmarks: true,
-      enableSegmentation: false,
-      smoothSegmentation: false,
-      minDetectionConfidence: 0.3,
-      minTrackingConfidence: 0.8,
-    });
-
-    poseEstimator.onResults(onResults);
-
-    if (webcamRef.current !== null && webcamRef.current.video !== null) {
-      const camera = new Camera(webcamRef.current.video, {
-        onFrame: async () => {
-          if (webcamRef.current === null || webcamRef.current.video === null || canvasRef.current === null) return;
-          const { videoWidth } = webcamRef.current.video;
-          const { videoHeight } = webcamRef.current.video;
-          canvasRef.current.width = videoHeight;
-          canvasRef.current.height = videoWidth;
-          const canvasCtx = canvasRef.current.getContext('2d');
-          if (canvasCtx == null) return;
-          canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-          canvasCtx.save();
-          canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
-          canvasCtx.rotate(Math.PI / 2);
-          canvasCtx.drawImage(webcamRef.current.video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
-          canvasCtx.restore();
-          await poseEstimator.send({ image: canvasRef.current });
-        },
-        height: 1080,
-        width: 1920,
+    if (isWebcamOpen) {
+      const poseEstimator = new PoseMediapipe({
+        locateFile: (file) => `./public/mediapipe-pose/${file}`,
       });
-      setTimeout(() => {
-        void camera.start();
-      }, 1000);
+
+      poseEstimator.setOptions({
+        modelComplexity: 2,
+        smoothLandmarks: true,
+        enableSegmentation: false,
+        smoothSegmentation: false,
+        minDetectionConfidence: 0.3,
+        minTrackingConfidence: 0.8,
+      });
+
+      poseEstimator.onResults(onResults);
+
+      if (webcamRef.current !== null && webcamRef.current.video !== null) {
+        const camera = new Camera(webcamRef.current.video, {
+          onFrame: async () => {
+            if (webcamRef.current === null || webcamRef.current.video === null || canvasRef.current === null) return;
+            const { videoWidth } = webcamRef.current.video;
+            const { videoHeight } = webcamRef.current.video;
+            canvasRef.current.width = videoHeight;
+            canvasRef.current.height = videoWidth;
+            const canvasCtx = canvasRef.current.getContext('2d');
+            if (canvasCtx == null) return;
+            canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            canvasCtx.save();
+            canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
+            canvasCtx.rotate(Math.PI / 2);
+            canvasCtx.drawImage(webcamRef.current.video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
+            canvasCtx.restore();
+            await poseEstimator.send({ image: canvasRef.current });
+          },
+          height: 1080,
+          width: 1920,
+        });
+        setTimeout(() => {
+          void camera.start();
+        }, 1000);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isWebcamOpen]);
 
   useEffect(() => {
     // グラフ更新用
@@ -193,26 +208,58 @@ function RepCount() {
   }, []);
 
   return (
-    <Box>
-      <Webcam ref={webcamRef} videoConstraints={{ facingMode: { exact: 'environment' } }} hidden />
-      <Typography variant="h1" sx={{}}>
-        {set.current.reps.length}
+    <>
+      {isWebcamOpen ? (
+        <>
+          <Webcam ref={webcamRef} videoConstraints={{ deviceId: webcamId }} hidden />
+          <canvas
+            ref={canvasRef}
+            className="output_canvas"
+            style={{
+              position: 'relative',
+              maxWidth: '500px',
+              maxHeight: '720px',
+              zIndex: 5,
+            }}
+          />
+          <Button
+            onClick={() => {
+              setIsWebcamOpen(false);
+            }}
+          >
+            Close Webcam
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            onClick={() => {
+              setIsWebcamOpen(true);
+            }}
+          >
+            Open Webcam
+          </Button>
+          <WebcamSelectButton selectedDeviceId={webcamId} setSelectedDeviceId={setWebcamId} />
+        </>
+      )}
+
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
+        Reps: {set.current.reps.length}
       </Typography>
-      <canvas
-        ref={canvasRef}
-        className="output_canvas"
-        style={{
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          scale: '0.4',
-        }}
-      />
       <RealtimeChart
         data={DistOfInterestJointsList}
-        style={{ position: 'absolute', top: '30vw', left: '30vh', height: '50vh', width: '50vw' }}
+        style={{
+          position: 'fixed',
+          height: '30vh',
+          width: '30vw',
+          left: '69vw',
+          top: '69vh',
+          backgroundColor: 'white',
+          borderRadius: '10px',
+          zIndex: 9,
+        }}
       />
-    </Box>
+    </>
   );
 }
 
