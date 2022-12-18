@@ -202,10 +202,22 @@ function RepCount({ doingExercise }: RepCountProps) {
 
   return (
     <Box>
-      <Typography variant="h1" sx={{}}>
-        {set.current.reps.length}
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
+        Reps: {set.current.reps.length}
       </Typography>
-      <RealtimeChart data={DistOfInterestJointsList} style={{ position: 'relative', height: '50vh', width: '50vw' }} />
+      <RealtimeChart
+        data={DistOfInterestJointsList}
+        style={{
+          position: 'fixed',
+          height: '30vh',
+          width: '30vw',
+          left: '69vw',
+          top: '69vh',
+          backgroundColor: 'white',
+          borderRadius: '10px',
+          zIndex: 9,
+        }}
+      />
 
       <canvas
         ref={canvasRef}
@@ -214,11 +226,11 @@ function RepCount({ doingExercise }: RepCountProps) {
           position: 'relative',
           maxWidth: '500px',
           maxHeight: '720px',
-          zIndex: 9,
+          zIndex: 5,
         }}
       />
-      <WebcamOpenButton cameraRef={cameraRef} fps={30} />
-      <video autoPlay playsInline muted ref={cameraRef} hidden />
+      <WebcamOpenButton cameraRef={cameraRef} fps={20} />
+      <video autoPlay muted ref={cameraRef} hidden style={{ position: 'relative' }} />
     </Box>
   );
 }

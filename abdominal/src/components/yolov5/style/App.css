@@ -4,8 +4,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: start;
+  align-items: start;
+  max-width: 500px;
 }
 
 .WeightDetector > * {
@@ -33,13 +34,15 @@
   max-width: 720px;
   max-height: 500px;
   border-radius: 10px;
-  transform: rotate(90deg);
+  /* transform: rotate(90deg); */
 }
 
 .content {
   position: relative;
   margin-top: 160px;
   margin-bottom: 160px;
+  transform: rotate(90deg);
+  margin-inline: -160px;
 }
 
 .content > canvas {
@@ -48,9 +51,9 @@
   left: 0;
   width: 100%;
   height: 100%;
-  transform: rotate(90deg);
+  /* transform: rotate(90deg); */
 }
-
+/*
 button {
   text-decoration: none;
   color: white;
@@ -66,4 +69,4 @@ button:hover {
   color: black;
   background-color: white;
   border: 2px solid black;
-}
+} */

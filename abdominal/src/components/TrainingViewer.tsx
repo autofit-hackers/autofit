@@ -155,15 +155,17 @@ function TrainingViewer() {
         ) : (
           <Typography>Currently running model : YOLOv5{modelName.slice(6)}</Typography>
         )}
-
         <div className="content">
           <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
           <canvas width={640} height={640} ref={canvasRef} />
         </div>
         <Typography>Estimated Weight: {weight}</Typography>
         <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
-        <Chip label={doingExercise ? 'WORKOUT' : 'REST'} />
-
+        {doingExercise ? (
+          <Chip label="WORKOUT" sx={{ fontSize: 40 }} />
+        ) : (
+          <Chip label="REST" variant="outlined" sx={{ fontSize: 40 }} />
+        )}
         <WebcamOpenButton cameraRef={videoRef} />
       </div>
       <MultiCameraViewer />

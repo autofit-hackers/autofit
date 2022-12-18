@@ -29,12 +29,12 @@ function WebcamOpenButton({ cameraRef, fps = 1 }: { cameraRef: React.RefObject<H
 
   return (
     <>
-      <FormControl size="medium">
-        <InputLabel id="demo-simple-select-label">Age</InputLabel>
+      <FormControl size="medium" sx={{ minWidth: 300 }}>
+        <InputLabel id="demo-simple-select-label">Webcam</InputLabel>
         <Select
           labelId="demo-simple-select-label"
           id="demo-simple-select"
-          label="Age"
+          label="webcam"
           value={webcamId}
           onChange={(event) => {
             setWebcamId(event.target.value);
