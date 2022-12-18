@@ -4,7 +4,7 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { Box } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { identifyExercise, squat } from '../utils/exercise';
+import { Exercise, identifyExercise as estimateExerciseInCurrentFrame, squat } from '../utils/exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { Pose, rotateWorldLandmarks } from '../utils/pose';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
@@ -37,8 +37,9 @@ function DuringSet() {
   const interestJointsDistance = useRef<number>(0);
   const [interestJointsDistanceList, setInterestJointsDistanceList] = useState<number[]>([]);
 
-  // 種目とカメラの設定
+  // 種目の設定
   const exercise = squat;
+  const estimatedExerciseList: Exercise[] = [];
 
   // poseGrid
   const gridDivRef = useRef<HTMLDivElement | null>(null);
@@ -76,6 +77,12 @@ function DuringSet() {
           currentPose.worldLandmarks = fixedWorldLandmarks;
         }
 
+        // 種目の推定
+        const estimatedExercise = estimateExerciseInCurrentFrame(currentPose);
+        if (estimatedExercise !== undefined) {
+          estimatedExerciseList.push(estimatedExercise);
+        }
+
         // pose estimationの結果を描画
         canvasCtx.save();
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
@@ -88,11 +95,10 @@ function DuringSet() {
           radius: 8,
           fillColor: 'lightgreen',
         });
-        // draw text on left-top of canvasCtx
+
         canvasCtx.font = '100px Arial';
         canvasCtx.fillStyle = 'white';
-        const estimatedExercise = identifyExercise(currentPose);
-        canvasCtx.fillText(estimatedExercise === 'unknown' ? 'unknown' : estimatedExercise.name, 10, 60);
+        canvasCtx.fillText(estimatedExercise === undefined ? 'unknown' : estimatedExercise.name, 10, 60);
         canvasCtx.restore();
 
         // PoseGridの描画

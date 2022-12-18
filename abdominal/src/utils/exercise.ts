@@ -38,7 +38,7 @@ export const shoulderPress: Exercise = {
   getInterestJointsDistance: (pose: Pose) => getArmLength(pose).mean,
 };
 
-export const identifyExercise = (pose: Pose): Exercise | 'unknown' => {
+export const identifyExercise = (pose: Pose): Exercise | undefined => {
   const { worldLandmarks } = pose;
   const shoulderCenter = getMidpoint(worldLandmarks[11], worldLandmarks[12]);
   const hipCenter = getMidpoint(worldLandmarks[23], worldLandmarks[24]);
@@ -53,5 +53,5 @@ export const identifyExercise = (pose: Pose): Exercise | 'unknown' => {
   if (wristCenter.y > worldLandmarks[MJ.NOSE].y + 3) return shoulderPress;
   if (Math.abs(hipJointAngle) > 10) return squat;
 
-  return 'unknown';
+  return undefined;
 };
