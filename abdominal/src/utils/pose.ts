@@ -7,6 +7,43 @@ export type Pose = {
   timestamp: number; // UNIX time(ms単位)
 };
 
+export const MJ = {
+  // mediapipe joint name list
+  NOSE: 0,
+  LEFT_EYE_INNER: 1,
+  LEFT_EYE: 2,
+  LEFT_EYE_OUTER: 3,
+  RIGHT_EYE_INNER: 4,
+  RIGHT_EYE: 5,
+  RIGHT_EYE_OUTER: 6,
+  LEFT_EAR: 7,
+  RIGHT_EAR: 8,
+  MOUTH_LEFT: 9,
+  MOUTH_RIGHT: 10,
+  LEFT_SHOULDER: 11,
+  RIGHT_SHOULDER: 12,
+  LEFT_ELBOW: 13,
+  RIGHT_ELBOW: 14,
+  LEFT_WRIST: 15,
+  RIGHT_WRIST: 16,
+  LEFT_PINKY: 17,
+  RIGHT_PINKY: 18,
+  LEFT_INDEX: 19,
+  RIGHT_INDEX: 20,
+  LEFT_THUMB: 21,
+  RIGHT_THUMB: 22,
+  LEFT_HIP: 23,
+  RIGHT_HIP: 24,
+  LEFT_KNEE: 25,
+  RIGHT_KNEE: 26,
+  LEFT_ANKLE: 27,
+  RIGHT_ANKLE: 28,
+  LEFT_HEEL: 29,
+  RIGHT_HEEL: 30,
+  LEFT_FOOT_INDEX: 31,
+  RIGHT_FOOT_INDEX: 32,
+} as const;
+
 export const rotateWorldLandmarks = (
   worldLandmarks: LandmarkList,
   angle: { roll: number; pitch: number; yaw: number }, // degree
@@ -55,16 +92,38 @@ export const getDistance = (start: Landmark, end: Landmark) => ({
   xyz: Math.sqrt((start.x - end.x) ** 2 + (start.y - end.y) ** 2 + (start.z - end.z) ** 2),
 });
 
-export const getAngle = (start: Landmark, end: Landmark) => {
-  const x = end.x - start.x;
-  const y = end.y - start.y;
-  const z = end.z - start.z;
-
-  return {
-    xy: (Math.atan2(y, x) * 180) / Math.PI, // x軸となす角度
-    yz: (Math.atan2(z, -y) * 180) / Math.PI, // y軸となす角度
-    zx: (Math.atan2(x, -z) * 180) / Math.PI, // z軸となす角度
+export const getAngleOfLine = (start: Landmark, end: Landmark) => {
+  // 直線の方向ベクトルを計算する
+  const direction = {
+    x: end.x - start.x,
+    y: end.y - start.y,
+    z: end.z - start.z,
   };
+
+  // x平面との角度を計算する
+  const X = Math.atan2(direction.y, direction.z);
+
+  // y平面との角度を計算する
+  const Y = Math.atan2(direction.x, direction.z);
+
+  // z平面との角度を計算する
+  const Z = Math.atan2(direction.y, direction.x);
+
+  // 角度を度数法に変換して返す
+  return {
+    x: (X * 180) / Math.PI,
+    y: (Y * 180) / Math.PI,
+    z: (Z * 180) / Math.PI,
+  };
+};
+
+const getAngleOfThreePoints = (p1: Landmark, p2: Landmark, p3: Landmark) => {
+  const a = Math.sqrt((p2.x - p3.x) ** 2 + (p2.y - p3.y) ** 2 + (p2.z - p3.z) ** 2);
+  const b = Math.sqrt((p1.x - p3.x) ** 2 + (p1.y - p3.y) ** 2 + (p1.z - p3.z) ** 2);
+  const c = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
+
+  // return angle as degrees between 0 and 180
+  return (Math.acos((a ** 2 + b ** 2 - c ** 2) / (2 * a * b)) * 180) / Math.PI;
 };
 
 export const getMidpoint = (
@@ -126,4 +185,24 @@ export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exercise: 
   const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 
   return velocity;
+};
+
+export const identifyExercise = (pose: Pose): Exercise | 'unknown' => {
+  const { worldLandmarks } = pose;
+  const shoulderCenter = getMidpoint(worldLandmarks[11], worldLandmarks[12]);
+  const hipCenter = getMidpoint(worldLandmarks[23], worldLandmarks[24]);
+  const upperBodyAngle = getAngleOfLine(hipCenter, shoulderCenter).z;
+  console.log(upperBodyAngle);
+  if (upperBodyAngle < 50 || upperBodyAngle > 150) return 'bench_press';
+
+  const wristCenter = getMidpoint(worldLandmarks[15], worldLandmarks[16]);
+  if (wristCenter.y < hipCenter.y + 5) return 'dead_lift';
+
+  if (wristCenter.y > worldLandmarks[MJ.NOSE].y + 3) return 'shoulder_press';
+
+  const kneeCenter = getMidpoint(worldLandmarks[25], worldLandmarks[26]);
+  const hipJointAngle = getAngleOfThreePoints(shoulderCenter, hipCenter, kneeCenter);
+  if (Math.abs(hipJointAngle) > 10) return 'squat';
+
+  return 'unknown';
 };
