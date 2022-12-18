@@ -13,7 +13,7 @@ import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../u
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
 
-function RepCount() {
+function DuringSet() {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -265,4 +265,4 @@ function RepCount() {
   );
 }
 
-export default RepCount;
+export default DuringSet;
