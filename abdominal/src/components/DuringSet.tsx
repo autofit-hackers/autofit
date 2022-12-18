@@ -1,7 +1,7 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { identifyExercise, squat } from '../utils/exercise';
@@ -11,6 +11,7 @@ import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
+import PoseGridView from './PoseGridView';
 import RealtimeChart from './RealtimeChart';
 
 function DuringSet() {
@@ -219,9 +220,6 @@ function DuringSet() {
   return (
     <Box>
       <Webcam ref={webcamRef} videoConstraints={{ facingMode: { exact: 'environment' } }} hidden />
-      <Typography variant="h1" sx={{}}>
-        {set.current.reps.length}
-      </Typography>
       <canvas
         ref={canvasRef}
         className="output_canvas"
@@ -238,29 +236,10 @@ function DuringSet() {
         data={interestJointsDistanceList}
         style={{ position: 'absolute', top: '30vw', left: '30vh', height: '50vh', width: '50vw' }}
       />
-      <div
-        className="square-box"
-        style={{
-          position: 'absolute',
-          width: '55vh',
-          height: '55vh',
-          top: '20vh',
-          left: '60vh',
-        }}
-      >
-        <div
-          className="pose-grid-container"
-          ref={gridDivRef}
-          style={{
-            position: 'relative',
-            height: '100%',
-            width: '100%',
-            top: 0,
-            left: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          }}
-        />
-      </div>
+      <PoseGridView
+        gridDivRef={gridDivRef}
+        style={{ position: 'absolute', width: '55vh', height: '55vh', top: '20vh', left: '60vh' }}
+      />
     </Box>
   );
 }
