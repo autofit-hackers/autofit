@@ -1,4 +1,4 @@
-import { Exercise } from './Exercise';
+import { Exercise } from './exercise';
 import { Pose } from './pose';
 
 type KeyframesIndex = {

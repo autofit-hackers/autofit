@@ -4,7 +4,7 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { Box, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { identifyExercise, squat } from '../utils/Exercise';
+import { identifyExercise, squat } from '../utils/exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import { Pose, rotateWorldLandmarks } from '../utils/pose';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
