@@ -6,7 +6,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointsDistance as getInterestJointsDist, Pose } from '../utils/pose';
+import {
+  getInterestJointsDistance as getInterestJointsDist,
+  identifyExercise,
+  Pose,
+  rotateWorldLandmarks,
+} from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -47,9 +52,10 @@ function RepCount({ doingExercise }: RepCountProps) {
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
   const [webcamId, setWebcamId] = useState('');
 
-  const exRef = useRef(false);
+  const doingExerciseRef = useRef(false);
+  doingExerciseRef.current = doingExercise;
 
-  exRef.current = doingExercise;
+  const menuRef = useRef('');
 
   const onResults = useCallback(
     (results: Results) => {
@@ -64,7 +70,7 @@ function RepCount({ doingExercise }: RepCountProps) {
         // mediapipeの推論結果を自作のPoseクラスに代入
         const rawCurrentPose: Pose = {
           landmarks: results.poseLandmarks,
-          worldLandmarks: results.poseWorldLandmarks,
+          worldLandmarks: rotateWorldLandmarks(results.poseWorldLandmarks, { roll: 180, pitch: 0, yaw: 0 }),
           timestamp: new Date().getTime(),
         };
 
@@ -99,6 +105,9 @@ function RepCount({ doingExercise }: RepCountProps) {
 
         const interestJointsDistance = getInterestJointsDist(currentPose, exercise);
 
+        // 種目検出
+        menuRef.current = identifyExercise(currentPose);
+
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
@@ -124,7 +133,7 @@ function RepCount({ doingExercise }: RepCountProps) {
         distOfInterestJoints.current = getInterestJointsDist(currentPose, exercise);
 
         // レップが終了したとき
-        if (repState.current.isRepEnd && exRef.current) {
+        if (repState.current.isRepEnd && doingExerciseRef.current) {
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current, exercise);
 
@@ -243,6 +252,9 @@ function RepCount({ doingExercise }: RepCountProps) {
         </>
       )}
 
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
+        種目: {menuRef.current}
+      </Typography>
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
         Reps: {set.current.reps.length}
       </Typography>

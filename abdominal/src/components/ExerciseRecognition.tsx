@@ -45,7 +45,7 @@ function RepCount() {
 
   const onResults = useCallback(
     (results: Results) => {
-      if (canvasRef.current === null || canvasRef.current === null) return;
+      if (canvasRef.current === null) return;
 
       const canvasElement = canvasRef.current;
       const canvasCtx = canvasElement.getContext('2d');
