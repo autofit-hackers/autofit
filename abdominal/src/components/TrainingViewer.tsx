@@ -4,7 +4,7 @@ import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
 import { useEffect, useRef, useState } from 'react';
 import estimateWeight from '../utils/barbellEstimator';
-import { mediaRecorder } from '../utils/recorder';
+import mediaRecorder from '../utils/recorder';
 import PoseEstimator from './PoseEstimator';
 import Loader from './yolov5/components/loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
