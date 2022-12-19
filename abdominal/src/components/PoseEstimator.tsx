@@ -24,9 +24,6 @@ interface PoseEstimatorProps {
 }
 
 function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
-  const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
@@ -52,6 +49,8 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   const identifiedExerciseListRef = useRef<Exercise[]>([]);
 
   // カメラの設定
+  const webcamRef = useRef<Webcam>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
   const [selectedWebcamId, setSelectedWebcamId] = useState('');
 
@@ -63,8 +62,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
     (results: Results) => {
       if (canvasRef.current === null) return;
 
-      const canvasElement = canvasRef.current;
-      const canvasCtx = canvasElement.getContext('2d');
+      const canvasCtx = canvasRef.current.getContext('2d');
 
       if (canvasCtx == null) return;
 
@@ -105,12 +103,15 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         });
         canvasCtx.restore();
 
-        const interestJointsDistance = getJointsDistanceForRepCount(currentPose, exercise);
+        // WARN: レスト中なら処理を中断。動作未確認
+        if (!doingExerciseRef.current) return;
+
+        const jointsDistanceForRepCount = getJointsDistanceForRepCount(currentPose, exercise);
 
         // 種目検出
         const identifiedExercise = identifyExercise(currentPose);
         // 最初の100フレームについて、検出を行う
-        if (identifiedExercise !== undefined && identifiedExerciseListRef.current.length < 10) {
+        if (identifiedExercise !== undefined && identifiedExerciseListRef.current.length < 100) {
           identifiedExerciseListRef.current.push(identifiedExercise);
           menuRef.current = getMostFrequentExercise(identifiedExerciseListRef.current);
         }
@@ -119,11 +120,11 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
           if (set.current.reps.length === 0) {
-            repState.current = setJointsDistanceForRepCount(repState.current, interestJointsDistance);
+            repState.current = setJointsDistanceForRepCount(repState.current, jointsDistanceForRepCount);
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
             if (firstRepTopPose !== undefined) {
-              repState.current = setJointsDistanceForRepCount(repState.current, interestJointsDistance);
+              repState.current = setJointsDistanceForRepCount(repState.current, jointsDistanceForRepCount);
             }
           }
           // レップの開始フラグをoffにする
@@ -131,7 +132,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         }
 
         // フォームを分析し、レップの状態を更新する
-        repState.current = checkIfRepFinish(repState.current, interestJointsDistance, exercise);
+        repState.current = checkIfRepFinish(repState.current, jointsDistanceForRepCount, exercise);
 
         // 現フレームの推定Poseをレップのフォームに追加
         rep.current = appendPoseToForm(rep.current, currentPose);
@@ -210,6 +211,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   useEffect(() => {
     // グラフ更新用
     const chartUpdatingTimer = setInterval(() => {
+      if (doingExerciseRef.current === false) return;
       setDistOfInterestJointsList((prevList) => {
         prevList.push(distOfInterestJoints.current);
 
@@ -260,7 +262,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
       )}
 
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
-        {menuRef.current}
+        menu: {menuRef.current}
       </Typography>
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
         Reps: {set.current.reps.length}

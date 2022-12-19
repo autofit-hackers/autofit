@@ -1,4 +1,4 @@
-import { Button, Chip, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
@@ -62,7 +62,7 @@ function TrainingViewer() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [weight, setWeight] = useState(0);
-  const [plates, setPlates] = useState<string[]>([]);
+  const [, setPlates] = useState<string[]>([]);
   const [doingExercise, setDoingExercise] = useState(false);
 
   const [model, setModel] = useState<Model>({
@@ -81,7 +81,7 @@ function TrainingViewer() {
    * @param {tf.GraphModel} model loaded YOLOv5 tensorflow.js model
    */
   const detectFrame = async () => {
-    if (videoRef.current !== null || canvasRef.current !== null) return; // handle if source is null
+    if (videoRef.current == null || canvasRef.current == null) return; // handle if source is null
 
     tf.engine().startScope();
     const input = tf.tidy(() =>
@@ -161,17 +161,27 @@ function TrainingViewer() {
         </div>
         <PoseEstimator doingExercise={doingExercise} />
       </Stack>
-      {doingExercise ? <Chip label="WORKOUT" /> : <Chip label="REST" variant="outlined" />}
-      <Typography>Estimated Weight: {weight}</Typography>
-      <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
-      <WebcamOpenButton cameraRef={videoRef} />
-      <Button
-        onClick={() => {
-          console.log('clicked', doingExercise);
+
+      <Typography
+        variant="h3"
+        sx={{
+          position: 'fixed',
+          right: '5vw',
+          bottom: '43vh',
+          zIndex: 9,
+          border: 3,
+          paddingBlock: 1.5,
+          paddingInline: 4,
+          borderRadius: 3,
+          backgroundColor: doingExercise ? 'black' : 'white',
+          color: doingExercise ? 'white' : 'black',
         }}
       >
-        test
-      </Button>
+        {doingExercise ? 'WORKOUT' : 'REST'}
+      </Typography>
+      {/* <Typography>Estimated Weight: {weight}</Typography>
+      <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography> */}
+      <WebcamOpenButton cameraRef={videoRef} />
     </>
   );
 }
