@@ -2,41 +2,6 @@ import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
 
-export const canvasRecorder = (canvas: HTMLCanvasElement): MediaRecorder => {
-  const stream = canvas.captureStream();
-  const recorder = new MediaRecorder(stream, {
-    mimeType: 'video/webm',
-  });
-  const rec: { data: Array<Blob>; type: string } = { data: [], type: '' };
-  recorder.ondataavailable = (e) => {
-    rec.type = e.data.type;
-    rec.data.push(e.data);
-  };
-
-  recorder.onstart = () => {
-    // 開始10分でレコーダーを自動停止
-    setTimeout(() => {
-      if (recorder.state === 'recording') {
-        console.warn('Finishing rep video recorder: 10 min passed since the recording started');
-        recorder.stop();
-      }
-    }, 60000);
-  };
-
-  recorder.onstop = () => {
-    const blob = new Blob(rec.data, { type: rec.type });
-    if (blob.size > 0) {
-      const url = URL.createObjectURL(blob);
-
-      return { blob, url };
-    }
-
-    return null;
-  };
-
-  return recorder;
-};
-
 const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
   const buffer = await blob.arrayBuffer();
   writeFile(join(dirPath, fileName), new DataView(buffer), (err) => {
@@ -44,7 +9,7 @@ const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) =
   });
 };
 
-export const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: string): MediaRecorder => {
+const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: string): MediaRecorder => {
   let stream: MediaStream;
   if (media instanceof HTMLCanvasElement) {
     stream = media.captureStream();
@@ -94,3 +59,5 @@ export const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, camer
 
   return recorder;
 };
+
+export default mediaRecorder;
