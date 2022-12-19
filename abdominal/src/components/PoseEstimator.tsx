@@ -40,8 +40,8 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   const repState = useRef(resetRepState());
 
   // リアルタイムグラフ
-  const distOfInterestJoints = useRef<number>(0);
-  const [DistOfInterestJointsList, setDistOfInterestJointsList] = useState<number[]>([]);
+  const distanceOfInterestJoints = useRef<number>(0);
+  const [distanceOfInterestJointsList, setDistanceOfInterestJointsList] = useState<number[]>([]);
 
   // 種目の設定
   const exercise: Exercise = 'squat';
@@ -104,14 +104,14 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         canvasCtx.restore();
 
         // WARN: レスト中なら処理を中断。動作未確認
-        if (!doingExerciseRef.current) return;
+        if (doingExerciseRef.current === false) return;
 
         const jointsDistanceForRepCount = getJointsDistanceForRepCount(currentPose, exercise);
 
         // 種目検出
         const identifiedExercise = identifyExercise(currentPose);
         // 最初の100フレームについて、検出を行う
-        if (identifiedExercise !== undefined && identifiedExerciseListRef.current.length < 100) {
+        if (identifiedExercise != null && identifiedExerciseListRef.current.length < 100) {
           identifiedExerciseListRef.current.push(identifiedExercise);
           menuRef.current = getMostFrequentExercise(identifiedExerciseListRef.current);
         }
@@ -123,7 +123,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
             repState.current = setJointsDistanceForRepCount(repState.current, jointsDistanceForRepCount);
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
-            if (firstRepTopPose !== undefined) {
+            if (firstRepTopPose != null) {
               repState.current = setJointsDistanceForRepCount(repState.current, jointsDistanceForRepCount);
             }
           }
@@ -138,7 +138,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         rep.current = appendPoseToForm(rep.current, currentPose);
 
         // 挙上速度を計算しリストに追加
-        distOfInterestJoints.current = getJointsDistanceForRepCount(currentPose, exercise);
+        distanceOfInterestJoints.current = getJointsDistanceForRepCount(currentPose, exercise);
 
         // レップが終了したとき
         if (repState.current.isRepEnd && doingExerciseRef.current) {
@@ -182,7 +182,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
       if (webcamRef.current !== null && webcamRef.current.video !== null) {
         const camera = new Camera(webcamRef.current.video, {
           onFrame: async () => {
-            if (webcamRef.current === null || webcamRef.current.video === null || canvasRef.current === null) return;
+            if (webcamRef.current == null || webcamRef.current.video == null || canvasRef.current == null) return;
             const { videoWidth } = webcamRef.current.video;
             const { videoHeight } = webcamRef.current.video;
             canvasRef.current.width = videoHeight;
@@ -212,8 +212,8 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
     // グラフ更新用
     const chartUpdatingTimer = setInterval(() => {
       if (doingExerciseRef.current === false) return;
-      setDistOfInterestJointsList((prevList) => {
-        prevList.push(distOfInterestJoints.current);
+      setDistanceOfInterestJointsList((prevList) => {
+        prevList.push(distanceOfInterestJoints.current);
 
         return prevList;
       });
@@ -268,7 +268,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         Reps: {set.current.reps.length}
       </Typography>
       <RealtimeChart
-        data={DistOfInterestJointsList}
+        data={distanceOfInterestJointsList}
         style={{
           position: 'fixed',
           height: '30vh',

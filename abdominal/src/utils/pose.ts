@@ -207,7 +207,7 @@ export const identifyExercise = (pose: Pose): Exercise | undefined => {
 
 export const getMostFrequentExercise = (exercises: Exercise[]): Exercise => {
   const exerciseCount = exercises.reduce((acc, exercise) => {
-    if (!acc[exercise]) acc[exercise] = 0;
+    if (acc[exercise] !== null) acc[exercise] = 0;
     acc[exercise] += 1;
 
     return acc;
