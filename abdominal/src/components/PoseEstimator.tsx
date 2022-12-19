@@ -6,21 +6,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getInterestJointsDistance as getInterestJointsDist, Pose } from '../utils/pose';
+import {
+  getJointsDistanceForRepCount,
+  getMostFrequentExercise,
+  identifyExercise,
+  Pose,
+  rotateWorldLandmarks,
+} from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
-import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
+import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
 import WebcamSelectButton from './WebcamSelectButton';
 
-interface RepCountProps {
+interface PoseEstimatorProps {
   doingExercise: boolean;
 }
 
-function RepCount({ doingExercise }: RepCountProps) {
-  const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
+function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
@@ -37,26 +40,29 @@ function RepCount({ doingExercise }: RepCountProps) {
   const repState = useRef(resetRepState());
 
   // リアルタイムグラフ
-  const distOfInterestJoints = useRef<number>(0);
-  const [DistOfInterestJointsList, setDistOfInterestJointsList] = useState<number[]>([]);
+  const distanceOfInterestJoints = useRef<number>(0);
+  const [distanceOfInterestJointsList, setDistanceOfInterestJointsList] = useState<number[]>([]);
 
-  // 種目とカメラの設定
+  // 種目の設定
   const exercise: Exercise = 'squat';
+  const menuRef = useRef('');
+  const identifiedExerciseListRef = useRef<Exercise[]>([]);
 
-  // webcam
+  // カメラの設定
+  const webcamRef = useRef<Webcam>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-  const [webcamId, setWebcamId] = useState('');
+  const [selectedWebcamId, setSelectedWebcamId] = useState('');
 
-  const exRef = useRef(false);
-
-  exRef.current = doingExercise;
+  // セットの開始終了フラグ
+  const doingExerciseRef = useRef(false);
+  doingExerciseRef.current = doingExercise;
 
   const onResults = useCallback(
     (results: Results) => {
       if (canvasRef.current === null) return;
 
-      const canvasElement = canvasRef.current;
-      const canvasCtx = canvasElement.getContext('2d');
+      const canvasCtx = canvasRef.current.getContext('2d');
 
       if (canvasCtx == null) return;
 
@@ -64,7 +70,7 @@ function RepCount({ doingExercise }: RepCountProps) {
         // mediapipeの推論結果を自作のPoseクラスに代入
         const rawCurrentPose: Pose = {
           landmarks: results.poseLandmarks,
-          worldLandmarks: results.poseWorldLandmarks,
+          worldLandmarks: rotateWorldLandmarks(results.poseWorldLandmarks, { roll: 180, pitch: 0, yaw: 0 }),
           timestamp: new Date().getTime(),
         };
 
@@ -97,17 +103,28 @@ function RepCount({ doingExercise }: RepCountProps) {
         });
         canvasCtx.restore();
 
-        const interestJointsDistance = getInterestJointsDist(currentPose, exercise);
+        // WARN: レスト中なら処理を中断。動作未確認
+        if (doingExerciseRef.current === false) return;
+
+        const jointsDistanceForRepCount = getJointsDistanceForRepCount(currentPose, exercise);
+
+        // 種目検出
+        const identifiedExercise = identifyExercise(currentPose);
+        // 最初の100フレームについて、検出を行う
+        if (identifiedExercise != null && identifiedExerciseListRef.current.length < 100) {
+          identifiedExerciseListRef.current.push(identifiedExercise);
+          menuRef.current = getMostFrequentExercise(identifiedExerciseListRef.current);
+        }
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
           if (set.current.reps.length === 0) {
-            repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+            repState.current = setJointsDistanceForRepCount(repState.current, jointsDistanceForRepCount);
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
-            if (firstRepTopPose !== undefined) {
-              repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+            if (firstRepTopPose != null) {
+              repState.current = setJointsDistanceForRepCount(repState.current, jointsDistanceForRepCount);
             }
           }
           // レップの開始フラグをoffにする
@@ -115,16 +132,16 @@ function RepCount({ doingExercise }: RepCountProps) {
         }
 
         // フォームを分析し、レップの状態を更新する
-        repState.current = checkIfRepFinish(repState.current, interestJointsDistance, exercise);
+        repState.current = checkIfRepFinish(repState.current, jointsDistanceForRepCount, exercise);
 
         // 現フレームの推定Poseをレップのフォームに追加
         rep.current = appendPoseToForm(rep.current, currentPose);
 
         // 挙上速度を計算しリストに追加
-        distOfInterestJoints.current = getInterestJointsDist(currentPose, exercise);
+        distanceOfInterestJoints.current = getJointsDistanceForRepCount(currentPose, exercise);
 
         // レップが終了したとき
-        if (repState.current.isRepEnd && exRef.current) {
+        if (repState.current.isRepEnd && doingExerciseRef.current) {
           // 完了したレップのフォームを分析・評価
           rep.current = calculateKeyframes(rep.current, exercise);
 
@@ -165,7 +182,7 @@ function RepCount({ doingExercise }: RepCountProps) {
       if (webcamRef.current !== null && webcamRef.current.video !== null) {
         const camera = new Camera(webcamRef.current.video, {
           onFrame: async () => {
-            if (webcamRef.current === null || webcamRef.current.video === null || canvasRef.current === null) return;
+            if (webcamRef.current == null || webcamRef.current.video == null || canvasRef.current == null) return;
             const { videoWidth } = webcamRef.current.video;
             const { videoHeight } = webcamRef.current.video;
             canvasRef.current.width = videoHeight;
@@ -194,8 +211,9 @@ function RepCount({ doingExercise }: RepCountProps) {
   useEffect(() => {
     // グラフ更新用
     const chartUpdatingTimer = setInterval(() => {
-      setDistOfInterestJointsList((prevList) => {
-        prevList.push(distOfInterestJoints.current);
+      if (doingExerciseRef.current === false) return;
+      setDistanceOfInterestJointsList((prevList) => {
+        prevList.push(distanceOfInterestJoints.current);
 
         return prevList;
       });
@@ -211,7 +229,7 @@ function RepCount({ doingExercise }: RepCountProps) {
     <>
       {isWebcamOpen ? (
         <>
-          <Webcam ref={webcamRef} videoConstraints={{ deviceId: webcamId }} hidden />
+          <Webcam ref={webcamRef} videoConstraints={{ deviceId: selectedWebcamId }} hidden />
           <canvas
             ref={canvasRef}
             className="output_canvas"
@@ -239,15 +257,18 @@ function RepCount({ doingExercise }: RepCountProps) {
           >
             Open Webcam
           </Button>
-          <WebcamSelectButton selectedDeviceId={webcamId} setSelectedDeviceId={setWebcamId} />
+          <WebcamSelectButton selectedDeviceId={selectedWebcamId} setSelectedDeviceId={setSelectedWebcamId} />
         </>
       )}
 
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
+        menu: {menuRef.current}
+      </Typography>
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
         Reps: {set.current.reps.length}
       </Typography>
       <RealtimeChart
-        data={DistOfInterestJointsList}
+        data={distanceOfInterestJointsList}
         style={{
           position: 'fixed',
           height: '30vh',
@@ -263,4 +284,4 @@ function RepCount({ doingExercise }: RepCountProps) {
   );
 }
 
-export default RepCount;
+export default PoseEstimator;

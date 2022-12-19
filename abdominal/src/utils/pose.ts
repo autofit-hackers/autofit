@@ -171,7 +171,7 @@ const getArmLength = (pose: Pose): { left: number; right: number; mean: number }
   };
 };
 
-export const getInterestJointsDistance = (pose: Pose, exercise: Exercise): number => {
+export const getJointsDistanceForRepCount = (pose: Pose, exercise: Exercise): number => {
   if (exercise === 'squat' || exercise === 'dead_lift') return getLengthAnkleToShoulder(pose).mean;
   if (exercise === 'bench_press' || exercise === 'shoulder_press') return getArmLength(pose).mean;
 
@@ -179,15 +179,15 @@ export const getInterestJointsDistance = (pose: Pose, exercise: Exercise): numbe
 };
 
 export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exercise: Exercise): number => {
-  const prevDistance = getInterestJointsDistance(prevPose, exercise);
-  const currentDistance = getInterestJointsDistance(currentPose, exercise);
+  const prevDistance = getJointsDistanceForRepCount(prevPose, exercise);
+  const currentDistance = getJointsDistanceForRepCount(currentPose, exercise);
   const time = (currentPose.timestamp - prevPose.timestamp) / 1000; // 秒単位
   const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 
   return velocity;
 };
 
-export const identifyExercise = (pose: Pose): Exercise | 'unknown' => {
+export const identifyExercise = (pose: Pose): Exercise | undefined => {
   const { worldLandmarks } = pose;
   const shoulderCenter = getMidpoint(worldLandmarks[11], worldLandmarks[12]);
   const hipCenter = getMidpoint(worldLandmarks[23], worldLandmarks[24]);
@@ -202,5 +202,18 @@ export const identifyExercise = (pose: Pose): Exercise | 'unknown' => {
   if (wristCenter.y > worldLandmarks[MJ.NOSE].y + 3) return 'shoulder_press';
   if (Math.abs(hipJointAngle) > 10) return 'squat';
 
-  return 'unknown';
+  return undefined;
+};
+
+export const getMostFrequentExercise = (exercises: Exercise[]): Exercise => {
+  const exerciseCount = exercises.reduce((acc, exercise) => {
+    if (acc[exercise] !== null) acc[exercise] = 0;
+    acc[exercise] += 1;
+
+    return acc;
+  }, {} as { [key in Exercise]: number });
+
+  const sortedExerciseCount = Object.entries(exerciseCount).sort((a, b) => b[1] - a[1]);
+
+  return sortedExerciseCount[0][0] as Exercise;
 };

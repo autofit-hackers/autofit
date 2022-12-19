@@ -1,9 +1,9 @@
-import { Button, Chip, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
 import { useEffect, useRef, useState } from 'react';
-import RepCount from './RepCount';
+import PoseEstimator from './PoseEstimator';
 import Loader from './yolov5/components/loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
 import './yolov5/style/App.css';
@@ -57,15 +57,12 @@ const estimateWeight = ({ threshold, boxesData, scoresData, classesData }: Estim
 };
 
 function TrainingViewer() {
-  // webcam preparation
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-
   // ******** for weight detector *********
   const [loading, setLoading] = useState({ loading: true, progress: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [weight, setWeight] = useState(0);
-  const [plates, setPlates] = useState<string[]>([]);
+  const [, setPlates] = useState<string[]>([]);
   const [doingExercise, setDoingExercise] = useState(false);
 
   const [model, setModel] = useState<Model>({
@@ -110,6 +107,8 @@ function TrainingViewer() {
       tf.dispose(result);
     });
 
+    // WARN: how to handle this error?
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     requestAnimationFrame(detectFrame); // get another frame
     tf.engine().endScope();
   };
@@ -154,23 +153,35 @@ function TrainingViewer() {
       <Stack direction="row" spacing={2}>
         <div className="WeightDetector">
           <div className="content">
+            {/* WARN: how to handle this error? */}
+            {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
             <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
             <canvas width={640} height={640} ref={canvasRef} />
           </div>
         </div>
-        <RepCount doingExercise={doingExercise} />
+        <PoseEstimator doingExercise={doingExercise} />
       </Stack>
-      {doingExercise ? <Chip label="WORKOUT" /> : <Chip label="REST" variant="outlined" />}
-      <Typography>Estimated Weight: {weight}</Typography>
-      <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
-      <WebcamOpenButton cameraRef={videoRef} />
-      <Button
-        onClick={() => {
-          console.log('clicked', doingExercise);
+
+      <Typography
+        variant="h3"
+        sx={{
+          position: 'fixed',
+          right: '5vw',
+          bottom: '43vh',
+          zIndex: 9,
+          border: 3,
+          paddingBlock: 1.5,
+          paddingInline: 4,
+          borderRadius: 3,
+          backgroundColor: doingExercise ? 'black' : 'white',
+          color: doingExercise ? 'white' : 'black',
         }}
       >
-        test
-      </Button>
+        {doingExercise ? 'WORKOUT' : 'REST'}
+      </Typography>
+      {/* <Typography>Estimated Weight: {weight}</Typography>
+      <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography> */}
+      <WebcamOpenButton cameraRef={videoRef} />
     </>
   );
 }
