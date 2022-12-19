@@ -6,7 +6,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import { getJointsDistanceForRepCount, identifyExercise, Pose, rotateWorldLandmarks } from '../utils/pose';
+import {
+  getJointsDistanceForRepCount,
+  getMostFrequentExercise,
+  identifyExercise,
+  Pose,
+  rotateWorldLandmarks,
+} from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
 import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
 import { resetSet } from '../utils/set';
@@ -40,17 +46,18 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   const distOfInterestJoints = useRef<number>(0);
   const [DistOfInterestJointsList, setDistOfInterestJointsList] = useState<number[]>([]);
 
-  // 種目とカメラの設定
+  // 種目の設定
   const exercise: Exercise = 'squat';
+  const menuRef = useRef('');
+  const identifiedExerciseListRef = useRef<Exercise[]>([]);
+
+  // カメラの設定
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
   const [selectedWebcamId, setSelectedWebcamId] = useState('');
 
   // セットの開始終了フラグ
   const doingExerciseRef = useRef(false);
   doingExerciseRef.current = doingExercise;
-
-  // メニュー検出用の設定
-  const menuRef = useRef('');
 
   const onResults = useCallback(
     (results: Results) => {
@@ -103,7 +110,8 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         // 種目検出
         const identifiedExercise = identifyExercise(currentPose);
         if (identifiedExercise !== undefined) {
-          menuRef.current = identifiedExercise;
+          identifiedExerciseListRef.current.push(identifiedExercise);
+          menuRef.current = getMostFrequentExercise(identifiedExerciseListRef.current);
         }
 
         // レップの最初のフレームの場合

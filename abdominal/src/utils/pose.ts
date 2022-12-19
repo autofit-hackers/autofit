@@ -204,3 +204,16 @@ export const identifyExercise = (pose: Pose): Exercise | undefined => {
 
   return undefined;
 };
+
+export const getMostFrequentExercise = (exercises: Exercise[]): Exercise => {
+  const exerciseCount = exercises.reduce((acc, exercise) => {
+    if (!acc[exercise]) acc[exercise] = 0;
+    acc[exercise] += 1;
+
+    return acc;
+  }, {} as { [key in Exercise]: number });
+
+  const sortedExerciseCount = Object.entries(exerciseCount).sort((a, b) => b[1] - a[1]);
+
+  return sortedExerciseCount[0][0] as Exercise;
+};
