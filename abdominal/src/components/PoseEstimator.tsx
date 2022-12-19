@@ -109,7 +109,8 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
         // 種目検出
         const identifiedExercise = identifyExercise(currentPose);
-        if (identifiedExercise !== undefined) {
+        // 最初の100フレームについて、検出を行う
+        if (identifiedExercise !== undefined && identifiedExerciseListRef.current.length < 10) {
           identifiedExerciseListRef.current.push(identifiedExercise);
           menuRef.current = getMostFrequentExercise(identifiedExerciseListRef.current);
         }
