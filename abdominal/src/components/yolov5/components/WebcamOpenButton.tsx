@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import Webcam from '../utils/webCamWithId';
 
-function WebcamOpenButton({ cameraRef, fps = 10 }: { cameraRef: React.RefObject<HTMLVideoElement>; fps?: number }) {
+function WebcamOpenButton({ cameraRef, fps = 30 }: { cameraRef: React.RefObject<HTMLVideoElement>; fps?: number }) {
   const [streaming, setStreaming] = useState<null | string>(null); // streaming state
   const webcam = new Webcam(); // webcam handler
 
