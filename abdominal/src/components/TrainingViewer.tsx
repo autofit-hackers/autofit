@@ -1,4 +1,4 @@
-import { Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
@@ -162,6 +162,21 @@ function TrainingViewer() {
       <Typography>Estimated Weight: {weight}</Typography>
       <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
       <WebcamOpenButton cameraRef={barbellVideoRef} />
+
+      <Button
+        onClick={() => {
+          setDoingExercise(true);
+        }}
+      >
+        Start
+      </Button>
+      <Button
+        onClick={() => {
+          setDoingExercise(false);
+        }}
+      >
+        Stop
+      </Button>
     </>
   );
 }
