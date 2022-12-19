@@ -3,7 +3,7 @@ import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
 import { useEffect, useRef, useState } from 'react';
-import RepCount from './RepCount';
+import PoseEstimator from './PoseEstimator';
 import Loader from './yolov5/components/loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
 import './yolov5/style/App.css';
@@ -57,9 +57,6 @@ const estimateWeight = ({ threshold, boxesData, scoresData, classesData }: Estim
 };
 
 function TrainingViewer() {
-  // webcam preparation
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-
   // ******** for weight detector *********
   const [loading, setLoading] = useState({ loading: true, progress: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -84,7 +81,7 @@ function TrainingViewer() {
    * @param {tf.GraphModel} model loaded YOLOv5 tensorflow.js model
    */
   const detectFrame = async () => {
-    if (videoRef.current == null || canvasRef.current == null) return; // handle if source is null
+    if (videoRef.current !== null || canvasRef.current !== null) return; // handle if source is null
 
     tf.engine().startScope();
     const input = tf.tidy(() =>
@@ -110,6 +107,8 @@ function TrainingViewer() {
       tf.dispose(result);
     });
 
+    // WARN: how to handle this error?
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     requestAnimationFrame(detectFrame); // get another frame
     tf.engine().endScope();
   };
@@ -154,11 +153,13 @@ function TrainingViewer() {
       <Stack direction="row" spacing={2}>
         <div className="WeightDetector">
           <div className="content">
+            {/* WARN: how to handle this error? */}
+            {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
             <video autoPlay playsInline muted ref={videoRef} onPlay={detectFrame} />
             <canvas width={640} height={640} ref={canvasRef} />
           </div>
         </div>
-        <RepCount doingExercise={doingExercise} />
+        <PoseEstimator doingExercise={doingExercise} />
       </Stack>
       {doingExercise ? <Chip label="WORKOUT" /> : <Chip label="REST" variant="outlined" />}
       <Typography>Estimated Weight: {weight}</Typography>

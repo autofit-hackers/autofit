@@ -6,23 +6,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
-import {
-  getInterestJointsDistance as getInterestJointsDist,
-  identifyExercise,
-  Pose,
-  rotateWorldLandmarks,
-} from '../utils/pose';
+import { getJointsDistanceForRepCount, identifyExercise, Pose, rotateWorldLandmarks } from '../utils/pose';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
-import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
+import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
 import WebcamSelectButton from './WebcamSelectButton';
 
-interface RepCountProps {
+interface PoseEstimatorProps {
   doingExercise: boolean;
 }
 
-function RepCount({ doingExercise }: RepCountProps) {
+function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -47,14 +42,14 @@ function RepCount({ doingExercise }: RepCountProps) {
 
   // 種目とカメラの設定
   const exercise: Exercise = 'squat';
-
-  // webcam
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-  const [webcamId, setWebcamId] = useState('');
+  const [selectedWebcamId, setSelectedWebcamId] = useState('');
 
+  // セットの開始終了フラグ
   const doingExerciseRef = useRef(false);
   doingExerciseRef.current = doingExercise;
 
+  // メニュー検出用の設定
   const menuRef = useRef('');
 
   const onResults = useCallback(
@@ -103,20 +98,23 @@ function RepCount({ doingExercise }: RepCountProps) {
         });
         canvasCtx.restore();
 
-        const interestJointsDistance = getInterestJointsDist(currentPose, exercise);
+        const interestJointsDistance = getJointsDistanceForRepCount(currentPose, exercise);
 
         // 種目検出
-        menuRef.current = identifyExercise(currentPose);
+        const identifiedExercise = identifyExercise(currentPose);
+        if (identifiedExercise !== undefined) {
+          menuRef.current = identifiedExercise;
+        }
 
         // レップの最初のフレームの場合
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
           if (set.current.reps.length === 0) {
-            repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+            repState.current = setJointsDistanceForRepCount(repState.current, interestJointsDistance);
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
             if (firstRepTopPose !== undefined) {
-              repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+              repState.current = setJointsDistanceForRepCount(repState.current, interestJointsDistance);
             }
           }
           // レップの開始フラグをoffにする
@@ -130,7 +128,7 @@ function RepCount({ doingExercise }: RepCountProps) {
         rep.current = appendPoseToForm(rep.current, currentPose);
 
         // 挙上速度を計算しリストに追加
-        distOfInterestJoints.current = getInterestJointsDist(currentPose, exercise);
+        distOfInterestJoints.current = getJointsDistanceForRepCount(currentPose, exercise);
 
         // レップが終了したとき
         if (repState.current.isRepEnd && doingExerciseRef.current) {
@@ -220,7 +218,7 @@ function RepCount({ doingExercise }: RepCountProps) {
     <>
       {isWebcamOpen ? (
         <>
-          <Webcam ref={webcamRef} videoConstraints={{ deviceId: webcamId }} hidden />
+          <Webcam ref={webcamRef} videoConstraints={{ deviceId: selectedWebcamId }} hidden />
           <canvas
             ref={canvasRef}
             className="output_canvas"
@@ -248,12 +246,12 @@ function RepCount({ doingExercise }: RepCountProps) {
           >
             Open Webcam
           </Button>
-          <WebcamSelectButton selectedDeviceId={webcamId} setSelectedDeviceId={setWebcamId} />
+          <WebcamSelectButton selectedDeviceId={selectedWebcamId} setSelectedDeviceId={setSelectedWebcamId} />
         </>
       )}
 
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
-        種目: {menuRef.current}
+        {menuRef.current}
       </Typography>
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
         Reps: {set.current.reps.length}
@@ -275,4 +273,4 @@ function RepCount({ doingExercise }: RepCountProps) {
   );
 }
 
-export default RepCount;
+export default PoseEstimator;

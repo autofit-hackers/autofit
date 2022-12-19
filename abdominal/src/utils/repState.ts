@@ -16,7 +16,7 @@ export const resetRepState = (): RepState => ({
   interestJointsDistInFirstFrame: undefined,
 });
 
-export const setInterestJointsDistance = (prevRepState: RepState, interestJointsDistance: number): RepState => ({
+export const setJointsDistanceForRepCount = (prevRepState: RepState, interestJointsDistance: number): RepState => ({
   ...prevRepState,
   interestJointsDistInFirstFrame: interestJointsDistance,
 });

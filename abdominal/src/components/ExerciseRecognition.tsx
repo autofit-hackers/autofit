@@ -7,14 +7,14 @@ import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import {
-  getInterestJointsDistance as getInterestJointsDist,
+  getJointsDistanceForRepCount as getInterestJointsDist,
   identifyExercise,
   Pose,
   rotateWorldLandmarks,
 } from '../utils/pose';
 import { DEFAULT_POSE_GRID_CONFIG, PoseGrid } from '../utils/poseGrid';
 import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
-import { checkIfRepFinish, resetRepState, setInterestJointsDistance } from '../utils/repState';
+import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
 import { resetSet } from '../utils/set';
 
 function RepCount() {
@@ -104,11 +104,11 @@ function RepCount() {
         if (repState.current.isFirstFrameInRep) {
           // セットの最初の身長を記録
           if (set.current.reps.length === 0) {
-            repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+            repState.current = setJointsDistanceForRepCount(repState.current, interestJointsDistance);
           } else {
             const firstRepTopPose = getTopPose(set.current.reps[0]);
             if (firstRepTopPose !== undefined) {
-              repState.current = setInterestJointsDistance(repState.current, interestJointsDistance);
+              repState.current = setJointsDistanceForRepCount(repState.current, interestJointsDistance);
             }
           }
           // レップの開始フラグをoffにする
