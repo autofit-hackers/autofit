@@ -216,13 +216,14 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   // グラフ更新
   useEffect(() => {
     const chartUpdatingTimer = setInterval(() => {
-      if (doingExerciseRef.current === false) return;
-      setDistanceOfInterestJointsList((prevList) => {
-        prevList.push(distanceOfInterestJoints.current);
+      if (doingExerciseRef.current) {
+        setDistanceOfInterestJointsList((prevList) => {
+          prevList.push(distanceOfInterestJoints.current);
 
-        return prevList;
-      });
-      causeReRendering((prev) => prev + 1);
+          return prevList;
+        });
+        causeReRendering((prev) => prev + 1);
+      }
     }, 10);
 
     return () => {
