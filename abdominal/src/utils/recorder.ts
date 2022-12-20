@@ -9,7 +9,11 @@ const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) =
   });
 };
 
-const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: string): MediaRecorder => {
+const mediaRecorder = (
+  media: HTMLCanvasElement | HTMLVideoElement,
+  cameraName: string,
+  setUrl: (url: string) => void,
+): MediaRecorder => {
   let stream: MediaStream;
   if (media instanceof HTMLCanvasElement) {
     stream = media.captureStream();
@@ -50,8 +54,9 @@ const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: 
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
       void writeVideoToFile(blob, dirPath, `camera${cameraName}.mp4`);
+      setUrl(url);
 
-      return { blob, url };
+      // return { blob, url };
     }
 
     return null;
