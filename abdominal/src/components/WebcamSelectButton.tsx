@@ -29,7 +29,7 @@ function WebcamSelectButton({ selectedDeviceId, setSelectedDeviceId }: WebcamSel
 
   return (
     <Stack direction="row" alignItems="center">
-      <FormControl size="medium" sx={{ minWidth: 300 }}>
+      <FormControl size="medium" sx={{ minWidth: 200 }}>
         <InputLabel>Webcam</InputLabel>
         <Select
           label="webcam"

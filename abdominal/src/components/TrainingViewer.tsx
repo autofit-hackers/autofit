@@ -38,6 +38,8 @@ function TrainingViewer() {
 
   // 録画
   const frontVideoRecorderRef = useRef<MediaRecorder>();
+  const subVideoRef = useRef<HTMLVideoElement>(null);
+  const sub2VideoRef = useRef<HTMLVideoElement>(null);
 
   /**
    * Function to detect every frame loaded from webcam in video tag.
@@ -136,10 +138,44 @@ function TrainingViewer() {
             {/* WARN: how to handle this error? */}
             {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
             <video autoPlay playsInline muted ref={barbellVideoRef} onPlay={detectFrame} />
-            <canvas width={640} height={640} ref={barbellCanvasRef} />
+            <canvas ref={barbellCanvasRef} />
           </div>
         </div>
         <PoseEstimator doingExercise={doingExercise} />
+        <Stack direction="column">
+          <video
+            autoPlay
+            playsInline
+            muted
+            ref={subVideoRef}
+            style={{
+              display: 'none',
+              maxWidth: '720px',
+              maxHeight: '500px',
+              borderRadius: '10px',
+              transform: 'rotate(90deg)',
+              marginBlock: '160px',
+            }}
+          />
+          <WebcamOpenButton cameraRef={subVideoRef} />
+        </Stack>
+        <Stack direction="column">
+          <video
+            autoPlay
+            playsInline
+            muted
+            ref={sub2VideoRef}
+            style={{
+              display: 'none',
+              maxWidth: '720px',
+              maxHeight: '500px',
+              borderRadius: '10px',
+              transform: 'rotate(90deg)',
+              marginBlock: '160px',
+            }}
+          />
+          <WebcamOpenButton cameraRef={sub2VideoRef} />
+        </Stack>
       </Stack>
 
       <Typography
