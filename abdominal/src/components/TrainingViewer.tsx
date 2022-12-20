@@ -161,7 +161,6 @@ function TrainingViewer() {
         </div>
         <PoseEstimator doingExercise={doingExercise} />
       </Stack>
-
       <Typography
         variant="h3"
         sx={{
