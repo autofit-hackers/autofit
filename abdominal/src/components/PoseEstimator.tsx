@@ -188,31 +188,29 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
       return;
     }
-    setTimeout(() => {
-      const camera = new Camera(webcamRef.current, {
-        onFrame: async () => {
-          console.log('onFrame');
-          if (webcamRef.current == null || canvasRef.current == null || poseEstimator.current === null) return;
-          const { videoWidth } = webcamRef.current;
-          const { videoHeight } = webcamRef.current;
-          canvasRef.current.width = videoHeight;
-          canvasRef.current.height = videoWidth;
-          const canvasCtx = canvasRef.current.getContext('2d');
-          if (canvasCtx == null) return;
-          canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-          canvasCtx.save();
-          canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
-          canvasCtx.rotate(Math.PI / 2);
-          canvasCtx.drawImage(webcamRef.current, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
-          canvasCtx.restore();
-          await poseEstimator.current.send({ image: canvasRef.current });
-        },
-        height: 1080,
-        width: 1920,
-      });
-      console.log('camera start');
-      void camera.start();
-    }, 2000);
+    const camera = new Camera(webcamRef.current, {
+      onFrame: async () => {
+        console.log('onFrame');
+        if (webcamRef.current == null || canvasRef.current == null || poseEstimator.current === null) return;
+        const { videoWidth } = webcamRef.current;
+        const { videoHeight } = webcamRef.current;
+        canvasRef.current.width = videoHeight;
+        canvasRef.current.height = videoWidth;
+        const canvasCtx = canvasRef.current.getContext('2d');
+        if (canvasCtx == null) return;
+        canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        canvasCtx.save();
+        canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
+        canvasCtx.rotate(Math.PI / 2);
+        canvasCtx.drawImage(webcamRef.current, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
+        canvasCtx.restore();
+        await poseEstimator.current.send({ image: canvasRef.current });
+      },
+      height: 1080,
+      width: 1920,
+    });
+    console.log('camera start');
+    void camera.start();
   }, []);
 
   // グラフ更新
