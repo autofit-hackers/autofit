@@ -3,8 +3,8 @@ import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
 import { useEffect, useRef, useState } from 'react';
-import estimateWeight from '../utils/barbellEstimator';
-import mediaRecorder from '../utils/recorder';
+import estimateWeight, { modelLoader } from '../utils/barbellEstimator';
+import { handleRecordingState } from '../utils/recorder';
 import PoseEstimator from './PoseEstimator';
 import Loader from './yolov5/components/loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
@@ -15,6 +15,8 @@ export type Model = {
   net: tf.GraphModel<string | tf.io.IOHandler>;
   inputShape: number[];
 };
+
+export type LoadingProps = { loading: boolean; progress: number };
 
 function TrainingViewer() {
   // ******** for weight detector *********
@@ -89,72 +91,15 @@ function TrainingViewer() {
   // doingExerciseが変更されたら録画を開始・終了する
   useEffect(() => {
     // バーベルカメラの録画
-    if (doingExercise && barbellVideoRef.current != null) {
-      barbellVideoRecorderRef.current = mediaRecorder(barbellVideoRef.current, 'barbell', setReplayBlobURL);
-      barbellVideoRecorderRef.current.start();
-    } else if (
-      !doingExercise &&
-      barbellVideoRecorderRef.current != null &&
-      barbellVideoRecorderRef.current.state === 'recording'
-    ) {
-      barbellVideoRecorderRef.current.stop();
-    }
-
-    // サブカメラの録画
-    if (doingExercise && subVideoRef.current != null) {
-      subVideoRecorderRef.current = mediaRecorder(subVideoRef.current, 'sub', setReplaySubBlobURL);
-      subVideoRecorderRef.current.start();
-    } else if (
-      !doingExercise &&
-      subVideoRecorderRef.current != null &&
-      subVideoRecorderRef.current.state === 'recording'
-    ) {
-      subVideoRecorderRef.current.stop();
-    }
-
-    // サブカメラ2の録画
-    if (doingExercise && sub2VideoRef.current != null) {
-      sub2VideoRecorderRef.current = mediaRecorder(sub2VideoRef.current, 'sub2', setReplaySub2BlobURL);
-      sub2VideoRecorderRef.current.start();
-    } else if (
-      !doingExercise &&
-      sub2VideoRecorderRef.current != null &&
-      sub2VideoRecorderRef.current.state === 'recording'
-    ) {
-      sub2VideoRecorderRef.current.stop();
-    }
+    handleRecordingState(doingExercise, barbellVideoRef.current, barbellVideoRecorderRef, 'barbell', setReplayBlobURL);
+    handleRecordingState(doingExercise, subVideoRef.current, subVideoRecorderRef, 'sub', setReplaySubBlobURL);
+    handleRecordingState(doingExercise, sub2VideoRef.current, sub2VideoRecorderRef, 'sub2', setReplaySub2BlobURL);
   }, [doingExercise]);
 
   // initialize ml model
   useEffect(() => {
     // load yolov5 model & warming up
-    tf.ready()
-      .then(async () => {
-        // load model
-        const yolov5 = await tf.loadGraphModel(`${window.location.origin}/${modelName}_web_model/model.json`, {
-          onProgress: (fractions) => {
-            setLoading({ loading: true, progress: fractions }); // set loading fractions
-          },
-        });
-
-        if (yolov5.inputs[0].shape == null) {
-          throw new Error('Invalid model input shape');
-        }
-        // warming up model
-        const dummyInput = tf.ones(yolov5.inputs[0].shape);
-        const warmupResult = await yolov5.executeAsync(dummyInput);
-        tf.dispose(warmupResult); // cleanup memory
-        tf.dispose(dummyInput); // cleanup memory
-
-        setLoading({ loading: false, progress: 1 });
-        setModel({
-          net: yolov5,
-          inputShape: yolov5.inputs[0].shape,
-        }); // set model & input shape
-      })
-      .catch((err) => {
-        throw err;
-      });
+    modelLoader(modelName, setLoading, setModel);
   }, []);
 
   return (
