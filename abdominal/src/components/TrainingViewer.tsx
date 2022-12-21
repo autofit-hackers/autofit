@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from '@mui/material';
+import { Button, CardMedia, Stack, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
@@ -37,7 +37,16 @@ function TrainingViewer() {
   // ******** for weight detector *********
 
   // 録画
-  const frontVideoRecorderRef = useRef<MediaRecorder>();
+  const barbellVideoRecorderRef = useRef<MediaRecorder>();
+  const subVideoRef = useRef<HTMLVideoElement>(null);
+  const subVideoRecorderRef = useRef<MediaRecorder>();
+  const sub2VideoRef = useRef<HTMLVideoElement>(null);
+  const sub2VideoRecorderRef = useRef<MediaRecorder>();
+
+  // リプレイ
+  const [replayBlobURL, setReplayBlobURL] = useState<string | null>(null);
+  const [replaySubBlobURL, setReplaySubBlobURL] = useState<string | null>(null);
+  const [replaySub2BlobURL, setReplaySub2BlobURL] = useState<string | null>(null);
 
   /**
    * Function to detect every frame loaded from webcam in video tag.
@@ -79,18 +88,41 @@ function TrainingViewer() {
 
   // doingExerciseが変更されたら録画を開始・終了する
   useEffect(() => {
+    // バーベルカメラの録画
     if (doingExercise && barbellVideoRef.current != null) {
-      frontVideoRecorderRef.current = mediaRecorder(barbellVideoRef.current, 'front');
-      frontVideoRecorderRef.current.start();
-    }
-    if (
+      barbellVideoRecorderRef.current = mediaRecorder(barbellVideoRef.current, 'barbell', setReplayBlobURL);
+      barbellVideoRecorderRef.current.start();
+    } else if (
       !doingExercise &&
-      frontVideoRecorderRef.current != null &&
-      frontVideoRecorderRef.current.state === 'recording'
+      barbellVideoRecorderRef.current != null &&
+      barbellVideoRecorderRef.current.state === 'recording'
     ) {
-      frontVideoRecorderRef.current.stop();
+      barbellVideoRecorderRef.current.stop();
     }
-    console.log(doingExercise);
+
+    // サブカメラの録画
+    if (doingExercise && subVideoRef.current != null) {
+      subVideoRecorderRef.current = mediaRecorder(subVideoRef.current, 'sub', setReplaySubBlobURL);
+      subVideoRecorderRef.current.start();
+    } else if (
+      !doingExercise &&
+      subVideoRecorderRef.current != null &&
+      subVideoRecorderRef.current.state === 'recording'
+    ) {
+      subVideoRecorderRef.current.stop();
+    }
+
+    // サブカメラ2の録画
+    if (doingExercise && sub2VideoRef.current != null) {
+      sub2VideoRecorderRef.current = mediaRecorder(sub2VideoRef.current, 'sub2', setReplaySub2BlobURL);
+      sub2VideoRecorderRef.current.start();
+    } else if (
+      !doingExercise &&
+      sub2VideoRecorderRef.current != null &&
+      sub2VideoRecorderRef.current.state === 'recording'
+    ) {
+      sub2VideoRecorderRef.current.stop();
+    }
   }, [doingExercise]);
 
   // initialize ml model
@@ -136,9 +168,44 @@ function TrainingViewer() {
             {/* WARN: how to handle this error? */}
             {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
             <video autoPlay playsInline muted ref={barbellVideoRef} onPlay={detectFrame} />
-            <canvas width={640} height={640} ref={barbellCanvasRef} />
+            <canvas ref={barbellCanvasRef} />
           </div>
         </div>
+
+        <Stack direction="column">
+          <video
+            autoPlay
+            playsInline
+            muted
+            ref={subVideoRef}
+            style={{
+              display: 'none',
+              maxWidth: '720px',
+              maxHeight: '500px',
+              borderRadius: '10px',
+              transform: 'rotate(90deg)',
+              marginBlock: '160px',
+            }}
+          />
+          <WebcamOpenButton cameraRef={subVideoRef} />
+        </Stack>
+        <Stack direction="column">
+          <video
+            autoPlay
+            playsInline
+            muted
+            ref={sub2VideoRef}
+            style={{
+              display: 'none',
+              maxWidth: '720px',
+              maxHeight: '500px',
+              borderRadius: '10px',
+              transform: 'rotate(90deg)',
+              marginBlock: '160px',
+            }}
+          />
+          <WebcamOpenButton cameraRef={sub2VideoRef} />
+        </Stack>
         <PoseEstimator doingExercise={doingExercise} />
       </Stack>
 
@@ -177,6 +244,38 @@ function TrainingViewer() {
       >
         Stop
       </Button>
+      <Stack direction="row">
+        {replayBlobURL != null ? (
+          <CardMedia
+            component="video"
+            src={replayBlobURL}
+            controls
+            autoPlay
+            loop
+            sx={{ transform: 'rotate(90deg)' }}
+          />
+        ) : null}
+        {replaySubBlobURL != null ? (
+          <CardMedia
+            component="video"
+            src={replaySubBlobURL}
+            controls
+            autoPlay
+            loop
+            sx={{ transform: 'rotate(90deg)' }}
+          />
+        ) : null}
+        {replaySub2BlobURL != null ? (
+          <CardMedia
+            component="video"
+            src={replaySub2BlobURL}
+            controls
+            autoPlay
+            loop
+            sx={{ transform: 'rotate(90deg)' }}
+          />
+        ) : null}
+      </Stack>
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { Button, Typography } from '@mui/material';
+import { Button, Stack, Switch, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
@@ -57,6 +57,9 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   // セットの開始終了フラグ
   const doingExerciseRef = useRef(false);
   doingExerciseRef.current = doingExercise;
+
+  // 表示切り替え
+  const [isShowChart, setIsShowChart] = useState(true);
 
   const onResults = useCallback(
     (results: Results) => {
@@ -229,7 +232,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   return (
     <>
       {isWebcamOpen ? (
-        <>
+        <Stack direction="column">
           <Webcam ref={webcamRef} videoConstraints={{ deviceId: selectedWebcamId }} hidden />
           <canvas
             ref={canvasRef}
@@ -248,9 +251,9 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
           >
             Close Webcam
           </Button>
-        </>
+        </Stack>
       ) : (
-        <>
+        <Stack direction="column">
           <Button
             onClick={() => {
               setIsWebcamOpen(true);
@@ -259,28 +262,43 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
             Open Webcam
           </Button>
           <WebcamSelectButton selectedDeviceId={selectedWebcamId} setSelectedDeviceId={setSelectedWebcamId} />
-        </>
+        </Stack>
       )}
 
-      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
-        menu: {menuRef.current}
-      </Typography>
-      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
-        Reps: {set.current.reps.length}
-      </Typography>
-      <RealtimeChart
-        data={distanceOfInterestJointsList}
+      <Switch
+        checked={isShowChart}
+        onChange={() => {
+          setIsShowChart((prev) => !prev);
+        }}
+        inputProps={{ 'aria-label': 'controlled' }}
         style={{
           position: 'fixed',
-          height: '30vh',
-          width: '30vw',
-          left: '69vw',
-          top: '69vh',
-          backgroundColor: 'white',
-          borderRadius: '10px',
           zIndex: 9,
         }}
       />
+      {isShowChart ? (
+        <>
+          <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
+            menu: {menuRef.current}
+          </Typography>
+          <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
+            Reps: {set.current.reps.length}
+          </Typography>
+          <RealtimeChart
+            data={distanceOfInterestJointsList}
+            style={{
+              position: 'fixed',
+              height: '30vh',
+              width: '30vw',
+              left: '69vw',
+              top: '69vh',
+              backgroundColor: 'white',
+              borderRadius: '10px',
+              zIndex: 9,
+            }}
+          />
+        </>
+      ) : null}
     </>
   );
 }
