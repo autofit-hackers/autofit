@@ -1,4 +1,4 @@
-import { Button, CardMedia, Grid, Stack } from '@mui/material';
+import { Button, CardMedia, Grid, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
@@ -141,11 +141,14 @@ function MultiCameraViewer() {
           justifyContent="center"
         >
           {devices.map((device, key) => (
-            <Webcam
-              audio={false}
-              videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
-              ref={webcamRefs.current[key]}
-            />
+            <>
+              <Webcam
+                audio={false}
+                videoConstraints={{ deviceId: device.deviceId, width: 640 * numRows, height: 360 * numRows }}
+                ref={webcamRefs.current[key]}
+              />
+              <Typography>{device.deviceId}</Typography>
+            </>
           ))}
         </Stack>
       )}
