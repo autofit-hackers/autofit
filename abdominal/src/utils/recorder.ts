@@ -39,7 +39,6 @@ const mediaRecorder = (
   }
 
   recorder.onstart = () => {
-    console.log('recorder start');
     // 開始10分でレコーダーを自動停止
     setTimeout(() => {
       if (recorder.state === 'recording') {
@@ -50,7 +49,6 @@ const mediaRecorder = (
   };
 
   recorder.onstop = () => {
-    console.log('recorder stop');
     const blob = new Blob(rec.data, { type: rec.type });
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
