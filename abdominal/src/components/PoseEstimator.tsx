@@ -59,7 +59,6 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
   const onResults = useCallback(
     (results: Results) => {
-      console.log('onResults');
       if (canvasRef.current === null) return;
 
       const canvasCtx = canvasRef.current.getContext('2d');
@@ -182,15 +181,11 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
   // ビデオの初期化
   const onWebcamReady = useCallback(() => {
-    console.log('webcam ready');
     if (webcamRef.current === null) {
-      console.log('null');
-
       return;
     }
     const camera = new Camera(webcamRef.current, {
       onFrame: async () => {
-        console.log('onFrame');
         if (webcamRef.current == null || canvasRef.current == null || poseEstimator.current === null) return;
         const { videoWidth } = webcamRef.current;
         const { videoHeight } = webcamRef.current;
@@ -209,7 +204,6 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
       height: 1080,
       width: 1920,
     });
-    console.log('camera start');
     void camera.start();
   }, []);
 
