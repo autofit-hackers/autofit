@@ -87,8 +87,8 @@ export const modelLoader = (
 };
 
 export const barbellDetector = (
-  barbellVideo: HTMLVideoElement,
-  barbellCanvas: HTMLCanvasElement,
+  barbellVideo: HTMLVideoElement | null,
+  barbellCanvas: HTMLCanvasElement | null,
   model: Model,
   modelWidth: number,
   modelHeight: number,
@@ -133,5 +133,5 @@ export const barbellDetector = (
     tf.engine().endScope();
   };
 
-  void detectFrame;
+  void detectFrame();
 };
