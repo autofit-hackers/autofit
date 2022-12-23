@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
+import { MutableRefObject } from 'react';
 
 const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
   const buffer = await blob.arrayBuffer();
@@ -38,7 +39,6 @@ const mediaRecorder = (
   }
 
   recorder.onstart = () => {
-    console.log('recorder start');
     // 開始10分でレコーダーを自動停止
     setTimeout(() => {
       if (recorder.state === 'recording') {
@@ -49,7 +49,6 @@ const mediaRecorder = (
   };
 
   recorder.onstop = () => {
-    console.log('recorder stop');
     const blob = new Blob(rec.data, { type: rec.type });
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
@@ -66,3 +65,19 @@ const mediaRecorder = (
 };
 
 export default mediaRecorder;
+
+export const handleRecordingState = (
+  doingExercise: boolean,
+  mediaElement: HTMLVideoElement | HTMLCanvasElement | null,
+  mediaRecorderRef: MutableRefObject<MediaRecorder | undefined>,
+  cameraName: string,
+  setUrl: (url: string) => void,
+) => {
+  if (doingExercise && mediaElement != null) {
+    // eslint-disable-next-line no-param-reassign
+    mediaRecorderRef.current = mediaRecorder(mediaElement, cameraName, setUrl);
+    mediaRecorderRef.current.start();
+  } else if (!doingExercise && mediaRecorderRef.current != null && mediaRecorderRef.current.state === 'recording') {
+    mediaRecorderRef.current.stop();
+  }
+};
