@@ -3,19 +3,12 @@ import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
 import { useEffect, useRef, useState } from 'react';
-import { barbellDetector, modelLoader } from '../utils/barbellEstimator';
+import { barbellDetector, Model, modelLoader } from '../utils/barbellEstimator';
 import { handleRecordingState } from '../utils/recorder';
 import PoseEstimator from './PoseEstimator';
 import Loader from './yolov5/components/loader';
 import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
 import './yolov5/style/App.css';
-
-export type Model = {
-  net: tf.GraphModel<string | tf.io.IOHandler>;
-  inputShape: number[];
-};
-
-export type LoadingProps = { loading: boolean; progress: number };
 
 function TrainingViewer() {
   // ******** for weight detector *********
