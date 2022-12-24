@@ -13,7 +13,7 @@ const renderBoxes = (
   const ctx = canvas.getContext('2d');
   if (ctx == null) throw new Error('Canvas context is null');
 
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // clean canvas
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   // font configs
   const font = '20px sans-serif';
@@ -33,6 +33,7 @@ const renderBoxes = (
       y2 *= canvas.height;
       const width = x2 - x1;
       const height = y2 - y1;
+      console.log(`x1: ${x1}, y1: ${y1}, width: ${width}, height: ${height}`);
 
       // Draw the bounding box.
       ctx.strokeStyle = '#00FF00';

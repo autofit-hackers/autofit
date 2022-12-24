@@ -27,7 +27,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   // カメラとcanvasの設定
   const webcamRef = useRef<Webcam>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const poseCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
@@ -61,11 +61,11 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
   const onResults = useCallback(
     (results: Results) => {
-      if (canvasRef.current === null) return;
-      canvasRef.current.width = results.image.width;
-      canvasRef.current.height = results.image.height;
+      if (poseCanvasRef.current === null) return;
+      poseCanvasRef.current.width = results.image.width;
+      poseCanvasRef.current.height = results.image.height;
 
-      const canvasCtx = canvasRef.current.getContext('2d');
+      const canvasCtx = poseCanvasRef.current.getContext('2d');
 
       if (canvasCtx == null) return;
 
@@ -94,7 +94,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
         // pose estimationの結果を描画
         canvasCtx.save();
-        canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        canvasCtx.clearRect(0, 0, poseCanvasRef.current.width, poseCanvasRef.current.height);
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
           color: 'white',
           lineWidth: 4,
@@ -226,7 +226,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
           }}
         />
         <canvas
-          ref={canvasRef}
+          ref={poseCanvasRef}
           style={{
             zIndex: 2,
             position: 'absolute',
