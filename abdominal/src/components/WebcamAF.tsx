@@ -1,10 +1,9 @@
-import { Camera } from '@mediapipe/camera_utils';
-import { RefObject, useCallback, useRef } from 'react';
+import { FormControl, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 
 type Props = {
   webcamRef: RefObject<Webcam>;
-  deviceId: string | undefined;
   inputWidth: number;
   inputHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
@@ -13,7 +12,9 @@ type Props = {
 };
 
 function WebcamAF(props: Props) {
-  const { webcamRef, deviceId, inputWidth, inputHeight, rotation, onFrame, style } = props;
+  const { webcamRef, inputWidth, inputHeight, rotation, onFrame, style } = props;
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
+  const [webcamList, setWebcamList] = useState<MediaDeviceInfo[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let rotationAngle: number;
   switch (rotation) {
@@ -47,43 +48,67 @@ function WebcamAF(props: Props) {
     }
   }, [rotationAngle, webcamRef]);
 
-  const startCamera = useCallback(() => {
-    if (webcamRef.current === null || webcamRef.current.video === null) {
-      return;
+  const processFrame = useCallback(async () => {
+    if (canvasRef.current === null) return;
+    renderVideoOnCanvas();
+    if (onFrame) {
+      await onFrame(canvasRef.current);
     }
-    const camera = new Camera(webcamRef.current.video, {
-      onFrame: async () => {
-        renderVideoOnCanvas();
-        if (onFrame) {
-          await onFrame(canvasRef.current as HTMLCanvasElement);
-        }
-      },
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    requestAnimationFrame(processFrame);
+  }, [onFrame, renderVideoOnCanvas]);
+
+  const startCamera = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    requestAnimationFrame(processFrame);
+  }, [processFrame]);
+
+  useEffect(() => {
+    // Get a list of available webcams
+    void navigator.mediaDevices.enumerateDevices().then((devices) => {
+      setWebcamList(devices.filter((device) => device.kind === 'videoinput'));
+      setSelectedDeviceId(devices[0]?.deviceId);
     });
-    void camera.start();
-  }, [onFrame, renderVideoOnCanvas, webcamRef]);
+  }, []);
+
+  const handleSwitchCamera = (event: SelectChangeEvent<string>) => {
+    setSelectedDeviceId(event.target.value);
+  };
 
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        width={rotation === 'none' || rotation === 'flip' ? inputWidth : inputHeight}
-        height={rotation === 'none' || rotation === 'flip' ? inputHeight : inputWidth}
-        style={style}
-      />
-      <Webcam
-        ref={webcamRef}
-        audio={false}
-        videoConstraints={{ deviceId, width: inputWidth, height: inputHeight }}
-        onUserMedia={startCamera}
-        style={{ display: 'none' }}
-      />
-    </>
+    <div style={style}>
+      {selectedDeviceId && (
+        <>
+          <canvas
+            ref={canvasRef}
+            width={rotation === 'none' || rotation === 'flip' ? inputWidth : inputHeight}
+            height={rotation === 'none' || rotation === 'flip' ? inputHeight : inputWidth}
+          />
+          <Webcam
+            ref={webcamRef}
+            audio={false}
+            videoConstraints={{ deviceId: selectedDeviceId, width: inputWidth, height: inputHeight }}
+            onUserMedia={startCamera}
+            style={{ display: 'none' }}
+          />
+          <FormControl>
+            <Select value={selectedDeviceId} onChange={handleSwitchCamera}>
+              {webcamList.map((webcam) => (
+                <MenuItem key={webcam.deviceId} value={webcam.deviceId}>
+                  {webcam.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </>
+      )}
+    </div>
   );
 }
 
 WebcamAF.defaultProps = {
   onFrame: undefined,
-  style: { backgroundColor: 'rgba(0,0,0, 0.5)' },
+  style: {},
 };
 
 export default WebcamAF;

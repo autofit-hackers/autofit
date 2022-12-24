@@ -2,7 +2,6 @@ import cv from 'opencv-ts';
 import { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import WebcamAF from './WebcamAF';
-import WebcamSelector from './WebcamSelector';
 
 function FisheyeCorrection() {
   // const map1: Mat = new cv.Mat(1, 1, cv.CV_8UC4);
@@ -10,7 +9,6 @@ function FisheyeCorrection() {
 
   const webcamRef = useRef<Webcam>(null);
   const dstCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
   const [cvIsLoaded, setCvIsLoaded] = useState(false);
 
   cv.onRuntimeInitialized = () => {
@@ -33,15 +31,7 @@ function FisheyeCorrection() {
     <div>
       {cvIsLoaded && (
         <>
-          <WebcamSelector selectedDeviceId={selectedDeviceId} setSelectedDeviceId={setSelectedDeviceId} />
-          <WebcamAF
-            webcamRef={webcamRef}
-            onFrame={processCV}
-            deviceId={selectedDeviceId}
-            inputWidth={720}
-            inputHeight={480}
-            rotation="left"
-          />
+          <WebcamAF webcamRef={webcamRef} onFrame={processCV} inputWidth={720} inputHeight={480} rotation="left" />
           <canvas ref={dstCanvasRef} />
         </>
       )}
