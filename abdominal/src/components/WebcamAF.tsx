@@ -8,7 +8,7 @@ type Props = {
   inputWidth: number;
   inputHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
-  onFrame?: (frame: HTMLCanvasElement) => Promise<void>;
+  onFrame?: (frame: HTMLCanvasElement) => Promise<void> | void;
   style?: React.CSSProperties;
 };
 

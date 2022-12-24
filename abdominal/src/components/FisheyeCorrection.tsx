@@ -1,58 +1,51 @@
-import cv, { Mat } from 'opencv-ts';
-import { useEffect, useRef } from 'react';
+import cv from 'opencv-ts';
+import { useCallback, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
+import WebcamAF from './WebcamAF';
+import WebcamSelector from './WebcamSelector';
 
 function FisheyeCorrection() {
   // const map1: Mat = new cv.Mat(1, 1, cv.CV_8UC4);
   // const map2: Mat = new cv.Mat(1, 1, cv.CV_8UC4);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const FPS = 30;
+  const webcamRef = useRef<Webcam>(null);
+  const dstCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
+  const [cvIsLoaded, setCvIsLoaded] = useState(false);
 
-  useEffect(() => {
-    cv.onRuntimeInitialized = () => {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: false })
-        .then((stream) => {
-          if (videoRef.current == null) return;
-          videoRef.current.srcObject = stream;
-          void videoRef.current.play();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-      if (videoRef.current == null) return;
-      const src = new cv.Mat(videoRef.current.height, videoRef.current.width, cv.CV_8UC4);
-      const dst: Mat = new cv.Mat(videoRef.current.height, videoRef.current.width, cv.CV_8UC1);
-      const cap = new cv.VideoCapture(videoRef.current);
+  cv.onRuntimeInitialized = () => {
+    setCvIsLoaded(true);
+  };
 
-      const processVideo = () => {
-        try {
-          const begin = Date.now();
-          cap.read(src);
-          cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-          // cv.remap(dst, dst, map1, map2, cv.INTER_LINEAR, cv.BORDER_CONSTANT);
-          cv.imshow('canvasOutput', dst);
-          // schedule next one.
-          const delay = 1000 / FPS - (Date.now() - begin);
-          setTimeout(processVideo, delay);
-        } catch (err) {
-          console.log(err);
-        }
-      };
-
-      // schedule the first one.
-      setTimeout(() => processVideo(), 0);
-    };
-  });
+  const processCV = useCallback((frame: HTMLCanvasElement) => {
+    if (dstCanvasRef.current === null) return;
+    dstCanvasRef.current.width = frame.width;
+    dstCanvasRef.current.height = frame.height;
+    const src = cv.imread(frame);
+    const dst = new cv.Mat();
+    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY, 0);
+    cv.imshow(dstCanvasRef.current, dst);
+    src.delete();
+    dst.delete();
+  }, []);
 
   return (
-    <>
-      <video ref={videoRef} id="videoInput" autoPlay>
-        <track kind="captions" />
-      </video>
-      <canvas ref={canvasRef} id="canvasOutput" />
-    </>
+    <div>
+      {cvIsLoaded && (
+        <>
+          <WebcamSelector selectedDeviceId={selectedDeviceId} setSelectedDeviceId={setSelectedDeviceId} />
+          <WebcamAF
+            webcamRef={webcamRef}
+            onFrame={processCV}
+            deviceId={selectedDeviceId}
+            inputWidth={720}
+            inputHeight={480}
+            rotation="left"
+          />
+          <canvas ref={dstCanvasRef} />
+        </>
+      )}
+    </div>
   );
 }
 
