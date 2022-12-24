@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
+import { MutableRefObject } from 'react';
 
 const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
   const buffer = await blob.arrayBuffer();
@@ -9,7 +10,11 @@ const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) =
   });
 };
 
-const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: string): MediaRecorder => {
+export const mediaRecorder = (
+  media: HTMLCanvasElement | HTMLVideoElement,
+  cameraName: string,
+  setUrl: (url: string) => void,
+): MediaRecorder => {
   let stream: MediaStream;
   if (media instanceof HTMLCanvasElement) {
     stream = media.captureStream();
@@ -34,7 +39,6 @@ const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: 
   }
 
   recorder.onstart = () => {
-    console.log('recorder start');
     // 開始10分でレコーダーを自動停止
     setTimeout(() => {
       if (recorder.state === 'recording') {
@@ -45,13 +49,13 @@ const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: 
   };
 
   recorder.onstop = () => {
-    console.log('recorder stop');
     const blob = new Blob(rec.data, { type: rec.type });
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
       void writeVideoToFile(blob, dirPath, `camera${cameraName}.mp4`);
+      setUrl(url);
 
-      return { blob, url };
+      // return { blob, url };
     }
 
     return null;
@@ -60,4 +64,18 @@ const mediaRecorder = (media: HTMLCanvasElement | HTMLVideoElement, cameraName: 
   return recorder;
 };
 
-export default mediaRecorder;
+export const handleRecordingState = (
+  doingExercise: boolean,
+  mediaElement: HTMLVideoElement | HTMLCanvasElement | null,
+  mediaRecorderRef: MutableRefObject<MediaRecorder | undefined>,
+  cameraName: string,
+  setUrl: (url: string) => void,
+) => {
+  if (doingExercise && mediaElement != null) {
+    // eslint-disable-next-line no-param-reassign
+    mediaRecorderRef.current = mediaRecorder(mediaElement, cameraName, setUrl);
+    mediaRecorderRef.current.start();
+  } else if (!doingExercise && mediaRecorderRef.current != null && mediaRecorderRef.current.state === 'recording') {
+    mediaRecorderRef.current.stop();
+  }
+};

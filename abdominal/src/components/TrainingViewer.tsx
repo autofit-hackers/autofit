@@ -5,7 +5,6 @@ import { io } from '@tensorflow/tfjs-core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactWebcam from 'react-webcam';
 import estimateWeight from '../utils/barbellEstimator';
-import mediaRecorder from '../utils/recorder';
 import WebcamAF from './WebcamAF';
 import Loader from './yolov5/components/loader';
 import renderBoxes from './yolov5/utils/renderBox';
@@ -79,8 +78,9 @@ function TrainingViewer() {
   // doingExerciseが変更されたら録画を開始・終了する
   useEffect(() => {
     if (doingExercise && webcamRef.current != null && webcamRef.current.video != null) {
-      frontVideoRecorderRef.current = mediaRecorder(webcamRef.current.video, 'front');
-      frontVideoRecorderRef.current.start();
+      // WARN: 一時的にコメントアウト
+      // frontVideoRecorderRef.current = mediaRecorder(webcamRef.current.video, 'front');
+      // frontVideoRecorderRef.current.start();
     }
     if (
       !doingExercise &&

@@ -9,7 +9,7 @@ function MultiCameraViewer() {
   const numRows = 2;
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const webcamRefs = useRef<RefObject<Webcam>[]>([]);
-  const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
+  const mediaRecorderRefs = useRef<RefObject<MediaRecorder>[]>([]);
   const [capturing, setCapturing] = useState(false);
   const [replay, setReplay] = useState(false);
   const [blobURLs, setBlobURLs] = useState<string[]>([]);
