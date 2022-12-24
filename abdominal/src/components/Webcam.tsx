@@ -1,16 +1,18 @@
-import { RefObject, useRef } from 'react';
-import ReactWebcam from 'react-webcam';
+import { Camera } from '@mediapipe/camera_utils';
+import { RefObject, useCallback, useRef } from 'react';
+import Webcam from 'react-webcam';
 
 type Props = {
-  webcamRef: RefObject<ReactWebcam>;
+  webcamRef: RefObject<Webcam>;
   deviceId: string | undefined;
   inputWidth: number;
   inputHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
+  onFrame?: () => Promise<void>;
 };
 
-function Webcam(props: Props) {
-  const { webcamRef, deviceId, inputWidth, inputHeight, rotation } = props;
+function WebcamAF(props: Props) {
+  const { webcamRef, deviceId, inputWidth, inputHeight, rotation, onFrame } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let rotationAngle: number;
   switch (rotation) {
@@ -28,7 +30,7 @@ function Webcam(props: Props) {
       break;
   }
 
-  const rotateVideo = () => {
+  const renderVideoOnCanvas = useCallback(() => {
     if (webcamRef.current && webcamRef.current.video && canvasRef.current) {
       const canvas = canvasRef.current;
       const { video } = webcamRef.current;
@@ -42,9 +44,22 @@ function Webcam(props: Props) {
       canvasCtx.drawImage(webcamRef.current.video, -video.videoWidth / 2, -video.videoHeight / 2);
       canvasCtx.restore();
     }
+  }, [rotationAngle, webcamRef]);
 
-    requestAnimationFrame(rotateVideo);
-  };
+  const startCamera = useCallback(() => {
+    if (webcamRef.current === null || webcamRef.current.video === null) {
+      return;
+    }
+    const camera = new Camera(webcamRef.current.video, {
+      onFrame: async () => {
+        renderVideoOnCanvas();
+        if (onFrame) {
+          await onFrame();
+        }
+      },
+    });
+    void camera.start();
+  }, [onFrame, renderVideoOnCanvas, webcamRef]);
 
   return (
     <>
@@ -54,15 +69,19 @@ function Webcam(props: Props) {
         height={rotation === 'none' || rotation === 'flip' ? inputHeight : inputWidth}
         style={{ backgroundColor: 'rgba(0,0,0, 0.5)' }}
       />
-      <ReactWebcam
+      <Webcam
         ref={webcamRef}
         audio={false}
         videoConstraints={{ deviceId, width: inputWidth, height: inputHeight }}
-        onUserMedia={rotateVideo}
+        onUserMedia={startCamera}
         style={{ display: 'none' }}
       />
     </>
   );
 }
 
-export default Webcam;
+WebcamAF.defaultProps = {
+  onFrame: undefined,
+};
+
+export default WebcamAF;
