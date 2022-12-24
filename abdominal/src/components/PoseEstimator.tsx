@@ -16,7 +16,7 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../u
 import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
-import WebcamAF from './Webcam';
+import WebcamAF from './WebcamAF';
 import WebcamSelector from './WebcamSelector';
 
 type PoseEstimatorProps = {
