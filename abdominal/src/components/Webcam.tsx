@@ -8,7 +8,7 @@ type Props = {
   inputWidth: number;
   inputHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
-  onFrame?: () => Promise<void>;
+  onFrame?: (frame: HTMLCanvasElement) => Promise<void>;
   style?: React.CSSProperties;
 };
 
@@ -55,7 +55,7 @@ function WebcamAF(props: Props) {
       onFrame: async () => {
         renderVideoOnCanvas();
         if (onFrame) {
-          await onFrame();
+          await onFrame(canvasRef.current as HTMLCanvasElement);
         }
       },
     });

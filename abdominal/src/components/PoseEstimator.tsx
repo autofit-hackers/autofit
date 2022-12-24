@@ -1,8 +1,8 @@
-import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
 import { Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
 import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
 import {
@@ -16,13 +16,19 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../u
 import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
-import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
+import WebcamAF from './Webcam';
+import WebcamSelector from './WebcamSelector';
 
-interface PoseEstimatorProps {
+type PoseEstimatorProps = {
   doingExercise: boolean;
-}
+};
 
 function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
+  // カメラとcanvasの設定
+  const webcamRef = useRef<Webcam>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
@@ -47,10 +53,6 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   const menuRef = useRef('');
   const identifiedExerciseListRef = useRef<Exercise[]>([]);
 
-  // カメラの設定
-  const webcamRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
   // セットの開始終了フラグ
   const doingExerciseRef = useRef(false);
   doingExerciseRef.current = doingExercise;
@@ -60,6 +62,8 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   const onResults = useCallback(
     (results: Results) => {
       if (canvasRef.current === null) return;
+      canvasRef.current.width = results.image.width;
+      canvasRef.current.height = results.image.height;
 
       const canvasCtx = canvasRef.current.getContext('2d');
 
@@ -90,6 +94,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
         // pose estimationの結果を描画
         canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
           color: 'white',
           lineWidth: 4,
@@ -179,32 +184,9 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
     poseEstimator.current.onResults(onResults);
   }, [onResults]);
 
-  // ビデオの初期化
-  const onWebcamReady = useCallback(() => {
-    if (webcamRef.current === null) {
-      return;
-    }
-    const camera = new Camera(webcamRef.current, {
-      onFrame: async () => {
-        if (webcamRef.current == null || canvasRef.current == null || poseEstimator.current === null) return;
-        const { videoWidth } = webcamRef.current;
-        const { videoHeight } = webcamRef.current;
-        canvasRef.current.width = videoHeight;
-        canvasRef.current.height = videoWidth;
-        const canvasCtx = canvasRef.current.getContext('2d');
-        if (canvasCtx == null) return;
-        canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        canvasCtx.save();
-        canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
-        canvasCtx.rotate(Math.PI / 2);
-        canvasCtx.drawImage(webcamRef.current, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
-        canvasCtx.restore();
-        await poseEstimator.current.send({ image: canvasRef.current });
-      },
-      height: 1080,
-      width: 1920,
-    });
-    void camera.start();
+  const estimatePose = useCallback(async (canvas: HTMLCanvasElement) => {
+    if (poseEstimator.current === null || canvas === null) return;
+    await poseEstimator.current.send({ image: canvas });
   }, []);
 
   // グラフ更新
@@ -227,26 +209,32 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
   return (
     <>
-      <video
-        ref={webcamRef}
-        autoPlay
-        playsInline
-        muted
-        onCanPlay={onWebcamReady}
-        hidden
-        style={{ display: 'none', visibility: 'hidden' }}
-      />
-      <canvas
-        ref={canvasRef}
-        className="output_canvas"
-        style={{
-          position: 'relative',
-          maxWidth: '500px',
-          maxHeight: '720px',
-          zIndex: 5,
-        }}
-      />
-      <WebcamOpenButton cameraRef={webcamRef} />
+      <WebcamSelector selectedDeviceId={selectedDeviceId} setSelectedDeviceId={setSelectedDeviceId} />
+      <div style={{ position: 'relative' }}>
+        <WebcamAF
+          webcamRef={webcamRef}
+          onFrame={estimatePose}
+          deviceId={selectedDeviceId}
+          inputWidth={720}
+          inputHeight={480}
+          rotation="left"
+          style={{
+            zIndex: 1,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+        <canvas
+          ref={canvasRef}
+          style={{
+            zIndex: 2,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
       <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
         menu: {menuRef.current}
       </Typography>
