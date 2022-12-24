@@ -17,7 +17,6 @@ import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '.
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
 import WebcamAF from './WebcamAF';
-import WebcamSelector from './WebcamSelector';
 
 type PoseEstimatorProps = {
   doingExercise: boolean;
@@ -26,7 +25,6 @@ type PoseEstimatorProps = {
 function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   // カメラとcanvasの設定
   const webcamRef = useRef<Webcam>(null);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
   const poseCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // 外れ値処理の設定
@@ -209,12 +207,10 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
   return (
     <>
-      <WebcamSelector selectedDeviceId={selectedDeviceId} setSelectedDeviceId={setSelectedDeviceId} />
       <div style={{ position: 'relative' }}>
         <WebcamAF
           webcamRef={webcamRef}
           onFrame={estimatePose}
-          deviceId={selectedDeviceId}
           inputWidth={720}
           inputHeight={480}
           rotation="left"

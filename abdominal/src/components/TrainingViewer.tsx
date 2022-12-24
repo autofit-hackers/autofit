@@ -7,7 +7,6 @@ import ReactWebcam from 'react-webcam';
 import estimateWeight from '../utils/barbellEstimator';
 import mediaRecorder from '../utils/recorder';
 import WebcamAF from './WebcamAF';
-import WebcamSelector from './WebcamSelector';
 import Loader from './yolov5/components/loader';
 import renderBoxes from './yolov5/utils/renderBox';
 
@@ -20,7 +19,6 @@ function TrainingViewer() {
   // ******** for weight detector *********
   const [loading, setLoading] = useState({ loading: true, progress: 0 });
   const webcamRef = useRef<ReactWebcam>(null);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
   const BoxCanvasRef = useRef<HTMLCanvasElement>(null);
   const [weight, setWeight] = useState(0);
   const [plates, setPlates] = useState<string[]>([]);
@@ -127,34 +125,30 @@ function TrainingViewer() {
       {loading.loading ? (
         <Loader style={{ top: 0, height: '10vh' }}>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader>
       ) : (
-        <>
-          <WebcamSelector selectedDeviceId={selectedDeviceId} setSelectedDeviceId={setSelectedDeviceId} />
-          <div style={{ position: 'relative' }}>
-            <WebcamAF
-              webcamRef={webcamRef}
-              onFrame={detectFrame}
-              deviceId={selectedDeviceId}
-              inputWidth={720}
-              inputHeight={480}
-              rotation="left"
-              style={{
-                zIndex: 1,
-                position: 'absolute',
-                top: 0,
-                left: 0,
-              }}
-            />
-            <canvas
-              ref={BoxCanvasRef}
-              style={{
-                zIndex: 2,
-                position: 'absolute',
-                top: 0,
-                left: 0,
-              }}
-            />
-          </div>
-        </>
+        <div style={{ position: 'relative' }}>
+          <WebcamAF
+            webcamRef={webcamRef}
+            onFrame={detectFrame}
+            inputWidth={720}
+            inputHeight={480}
+            rotation="left"
+            style={{
+              zIndex: 1,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
+          <canvas
+            ref={BoxCanvasRef}
+            style={{
+              zIndex: 2,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
+        </div>
       )}
 
       {/* WARN: テストのため一旦コメントアウト */}
