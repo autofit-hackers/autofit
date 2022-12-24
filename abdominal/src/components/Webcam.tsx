@@ -9,10 +9,11 @@ type Props = {
   inputHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
   onFrame?: () => Promise<void>;
+  style?: React.CSSProperties;
 };
 
 function WebcamAF(props: Props) {
-  const { webcamRef, deviceId, inputWidth, inputHeight, rotation, onFrame } = props;
+  const { webcamRef, deviceId, inputWidth, inputHeight, rotation, onFrame, style } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let rotationAngle: number;
   switch (rotation) {
@@ -67,7 +68,7 @@ function WebcamAF(props: Props) {
         ref={canvasRef}
         width={rotation === 'none' || rotation === 'flip' ? inputWidth : inputHeight}
         height={rotation === 'none' || rotation === 'flip' ? inputHeight : inputWidth}
-        style={{ backgroundColor: 'rgba(0,0,0, 0.5)' }}
+        style={style}
       />
       <Webcam
         ref={webcamRef}
@@ -82,6 +83,7 @@ function WebcamAF(props: Props) {
 
 WebcamAF.defaultProps = {
   onFrame: undefined,
+  style: { backgroundColor: 'rgba(0,0,0, 0.5)' },
 };
 
 export default WebcamAF;
