@@ -9,10 +9,10 @@ function FisheyeCorrection() {
 
   const webcamRef = useRef<Webcam>(null);
   const dstCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [cvIsLoaded, setCvIsLoaded] = useState(false);
+  const [isCvLoaded, setIsCvLoaded] = useState(false);
 
   cv.onRuntimeInitialized = () => {
-    setCvIsLoaded(true);
+    setIsCvLoaded(true);
   };
 
   const processCV = useCallback((frame: HTMLCanvasElement) => {
@@ -29,7 +29,7 @@ function FisheyeCorrection() {
 
   return (
     <div>
-      {cvIsLoaded && (
+      {isCvLoaded && (
         <>
           <WebcamAF webcamRef={webcamRef} onFrame={processCV} inputWidth={720} inputHeight={480} rotation="left" />
           <canvas ref={dstCanvasRef} />
