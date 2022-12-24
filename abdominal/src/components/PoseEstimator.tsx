@@ -1,6 +1,6 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { Button, Stack, Switch, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
@@ -26,7 +26,6 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   // カメラとcanvasの設定
   const webcamRef = useRef<Webcam>(null);
   const poseCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [isWebcamOpen, setIsWebcamOpen] = useState(false);
 
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
@@ -57,8 +56,6 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   doingExerciseRef.current = doingExercise;
 
   const poseEstimator = useRef<PoseMediapipe | null>(null);
-  // 表示切り替え
-  const [isShowChart, setIsShowChart] = useState(true);
 
   const onResults = useCallback(
     (results: Results) => {
@@ -210,84 +207,49 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
   return (
     <>
-      {isWebcamOpen ? (
-        <Stack direction="column">
-          <WebcamAF
-            webcamRef={webcamRef}
-            onFrame={estimatePose}
-            inputWidth={720}
-            inputHeight={480}
-            rotation="left"
-            style={{
-              zIndex: 1,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-            }}
-          />
-          <canvas
-            ref={poseCanvasRef}
-            style={{
-              zIndex: 2,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-            }}
-          />
-          <Button
-            onClick={() => {
-              setIsWebcamOpen(false);
-            }}
-          >
-            Close Webcam
-          </Button>
-        </Stack>
-      ) : (
-        <Stack direction="column">
-          <Button
-            onClick={() => {
-              setIsWebcamOpen(true);
-            }}
-          >
-            Open Webcam
-          </Button>
-        </Stack>
-      )}
-
-      <Switch
-        checked={isShowChart}
-        onChange={() => {
-          setIsShowChart((prev) => !prev);
-        }}
-        inputProps={{ 'aria-label': 'controlled' }}
+      <div style={{ position: 'relative' }}>
+        <WebcamAF
+          webcamRef={webcamRef}
+          onFrame={estimatePose}
+          inputWidth={720}
+          inputHeight={480}
+          rotation="left"
+          style={{
+            zIndex: 1,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+        <canvas
+          ref={poseCanvasRef}
+          style={{
+            zIndex: 2,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
+        menu: {menuRef.current}
+      </Typography>
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
+        Reps: {set.current.reps.length}
+      </Typography>
+      <RealtimeChart
+        data={distanceOfInterestJointsList}
         style={{
           position: 'fixed',
+          height: '30vh',
+          width: '30vw',
+          left: '69vw',
+          top: '69vh',
+          backgroundColor: 'white',
+          borderRadius: '10px',
           zIndex: 9,
         }}
       />
-      {isShowChart ? (
-        <>
-          <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
-            menu: {menuRef.current}
-          </Typography>
-          <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
-            Reps: {set.current.reps.length}
-          </Typography>
-          <RealtimeChart
-            data={distanceOfInterestJointsList}
-            style={{
-              position: 'fixed',
-              height: '30vh',
-              width: '30vw',
-              left: '69vw',
-              top: '69vh',
-              backgroundColor: 'white',
-              borderRadius: '10px',
-              zIndex: 9,
-            }}
-          />
-        </>
-      ) : null}
     </>
   );
 }
