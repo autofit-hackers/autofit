@@ -10,7 +10,7 @@ const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) =
   });
 };
 
-const mediaRecorder = (
+export const mediaRecorder = (
   media: HTMLCanvasElement | HTMLVideoElement,
   cameraName: string,
   setUrl: (url: string) => void,
@@ -63,8 +63,6 @@ const mediaRecorder = (
 
   return recorder;
 };
-
-export default mediaRecorder;
 
 export const handleRecordingState = (
   doingExercise: boolean,

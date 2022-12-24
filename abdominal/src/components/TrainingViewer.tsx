@@ -1,20 +1,24 @@
-import { Button, CardMedia, Stack, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl'; // set backend to webgl
 import { io } from '@tensorflow/tfjs-core';
-import { useEffect, useRef, useState } from 'react';
-import { barbellDetector, Model, modelLoader } from '../utils/barbellEstimator';
-import { handleRecordingState } from '../utils/recorder';
-import PoseEstimator from './PoseEstimator';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import ReactWebcam from 'react-webcam';
+import estimateWeight from '../utils/barbellEstimator';
+import WebcamAF from './WebcamAF';
 import Loader from './yolov5/components/loader';
-import WebcamOpenButton from './yolov5/components/WebcamOpenButton';
-import './yolov5/style/App.css';
+import renderBoxes from './yolov5/utils/renderBox';
+
+export type Model = {
+  net: tf.GraphModel<string | tf.io.IOHandler>;
+  inputShape: number[];
+};
 
 function TrainingViewer() {
   // ******** for weight detector *********
   const [loading, setLoading] = useState({ loading: true, progress: 0 });
-  const barbellVideoRef = useRef<HTMLVideoElement>(null);
-  const barbellCanvasRef = useRef<HTMLCanvasElement>(null);
+  const webcamRef = useRef<ReactWebcam>(null);
+  const BoxCanvasRef = useRef<HTMLCanvasElement>(null);
   const [weight, setWeight] = useState(0);
   const [plates, setPlates] = useState<string[]>([]);
   const [doingExercise, setDoingExercise] = useState(false);
@@ -31,100 +35,124 @@ function TrainingViewer() {
   // ******** for weight detector *********
 
   // 録画
-  const barbellVideoRecorderRef = useRef<MediaRecorder>();
-  const subVideoRef = useRef<HTMLVideoElement>(null);
-  const subVideoRecorderRef = useRef<MediaRecorder>();
-  const sub2VideoRef = useRef<HTMLVideoElement>(null);
-  const sub2VideoRecorderRef = useRef<MediaRecorder>();
+  const frontVideoRecorderRef = useRef<MediaRecorder>();
 
-  // リプレイ
-  const [replayBlobURL, setReplayBlobURL] = useState<string | null>(null);
-  const [replaySubBlobURL, setReplaySubBlobURL] = useState<string | null>(null);
-  const [replaySub2BlobURL, setReplaySub2BlobURL] = useState<string | null>(null);
+  const detectFrame = useCallback(
+    async (cameraCanvas: HTMLCanvasElement) => {
+      if (cameraCanvas === null) return;
+      if (model.net == null) throw new Error('Model is null or undefined');
+      if (BoxCanvasRef.current == null) throw new Error('Canvas is null or undefined');
+      BoxCanvasRef.current.width = cameraCanvas.width;
+      BoxCanvasRef.current.height = cameraCanvas.height;
+
+      tf.engine().startScope();
+      const input = tf.tidy(() =>
+        tf.image
+          .resizeBilinear(tf.browser.fromPixels(cameraCanvas), [modelWidth, modelHeight])
+          .div(255.0)
+          .expandDims(0),
+      );
+
+      await model.net.executeAsync(input).then((result) => {
+        if (!Array.isArray(result)) throw new Error('Model output is not an array');
+        if (BoxCanvasRef.current == null) throw new Error('Canvas is null or undefined');
+        const [boxes, scores, classes] = result.slice(0, 3);
+        const boxesData = boxes.dataSync();
+        const scoresData = scores.dataSync();
+        const classesData = classes.dataSync();
+        const estimatedWeight = estimateWeight({ threshold, boxesData, scoresData, classesData });
+        if (estimatedWeight.weight !== weight || estimatedWeight.barbellCenterZ !== 0) {
+          setWeight(estimatedWeight.weight);
+          setPlates(estimatedWeight.plates);
+          setDoingExercise(estimatedWeight.barbellCenterZ < 0.5);
+        }
+        renderBoxes(BoxCanvasRef.current, threshold, boxesData, scoresData, classesData);
+        tf.dispose(result);
+      });
+
+      tf.engine().endScope();
+    },
+    [model.net, modelHeight, modelWidth, weight],
+  );
 
   // doingExerciseが変更されたら録画を開始・終了する
   useEffect(() => {
-    // バーベルカメラの録画
-    handleRecordingState(doingExercise, barbellVideoRef.current, barbellVideoRecorderRef, 'barbell', setReplayBlobURL);
-    handleRecordingState(doingExercise, subVideoRef.current, subVideoRecorderRef, 'sub', setReplaySubBlobURL);
-    handleRecordingState(doingExercise, sub2VideoRef.current, sub2VideoRecorderRef, 'sub2', setReplaySub2BlobURL);
+    if (doingExercise && webcamRef.current != null && webcamRef.current.video != null) {
+      // WARN: 一時的にコメントアウト
+      // frontVideoRecorderRef.current = mediaRecorder(webcamRef.current.video, 'front');
+      // frontVideoRecorderRef.current.start();
+    }
+    if (
+      !doingExercise &&
+      frontVideoRecorderRef.current != null &&
+      frontVideoRecorderRef.current.state === 'recording'
+    ) {
+      frontVideoRecorderRef.current.stop();
+    }
   }, [doingExercise]);
 
-  // initialize ml model
+  // Initialize ML model
   useEffect(() => {
-    // load yolov5 model & warming up
-    modelLoader(modelName, setLoading, setModel);
+    tf.ready()
+      .then(async () => {
+        const yolov5 = await tf.loadGraphModel(`${window.location.origin}/${modelName}_web_model/model.json`, {
+          onProgress: (fractions) => {
+            setLoading({ loading: true, progress: fractions }); // set loading fractions
+          },
+        });
+
+        if (yolov5.inputs[0].shape == null) {
+          throw new Error('Invalid model input shape');
+        }
+        const dummyInput = tf.ones(yolov5.inputs[0].shape);
+        const warmupResult = await yolov5.executeAsync(dummyInput);
+        tf.dispose(warmupResult); // cleanup memory
+        tf.dispose(dummyInput); // cleanup memory
+
+        setLoading({ loading: false, progress: 1 });
+        setModel({
+          net: yolov5,
+          inputShape: yolov5.inputs[0].shape,
+        });
+      })
+      .catch((err) => {
+        throw err;
+      });
   }, []);
 
   return (
     <>
       {loading.loading ? (
         <Loader style={{ top: 0, height: '10vh' }}>Loading model... {(loading.progress * 100).toFixed(2)}%</Loader>
-      ) : null}
-      <Stack direction="row" spacing={2}>
-        <div className="WeightDetector">
-          <div className="content">
-            <video
-              autoPlay
-              playsInline
-              muted
-              ref={barbellVideoRef}
-              onPlay={() =>
-                barbellDetector(
-                  barbellVideoRef.current,
-                  barbellCanvasRef.current,
-                  model,
-                  modelWidth,
-                  modelHeight,
-                  threshold,
-                  weight,
-                  setWeight,
-                  setPlates,
-                  setDoingExercise,
-                )
-              }
-            />
-            <canvas ref={barbellCanvasRef} />
-          </div>
+      ) : (
+        <div style={{ position: 'relative' }}>
+          <WebcamAF
+            webcamRef={webcamRef}
+            onFrame={detectFrame}
+            inputWidth={720}
+            inputHeight={480}
+            rotation="left"
+            style={{
+              zIndex: 1,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
+          <canvas
+            ref={BoxCanvasRef}
+            style={{
+              zIndex: 2,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
         </div>
+      )}
 
-        <Stack direction="column">
-          <video
-            autoPlay
-            playsInline
-            muted
-            ref={subVideoRef}
-            style={{
-              display: 'none',
-              maxWidth: '720px',
-              maxHeight: '500px',
-              borderRadius: '10px',
-              transform: 'rotate(90deg)',
-              marginBlock: '160px',
-            }}
-          />
-          <WebcamOpenButton cameraRef={subVideoRef} />
-        </Stack>
-        <Stack direction="column">
-          <video
-            autoPlay
-            playsInline
-            muted
-            ref={sub2VideoRef}
-            style={{
-              display: 'none',
-              maxWidth: '720px',
-              maxHeight: '500px',
-              borderRadius: '10px',
-              transform: 'rotate(90deg)',
-              marginBlock: '160px',
-            }}
-          />
-          <WebcamOpenButton cameraRef={sub2VideoRef} />
-        </Stack>
-        <PoseEstimator doingExercise={doingExercise} />
-      </Stack>
-
+      {/* WARN: テストのため一旦コメントアウト */}
+      {/* <PoseEstimator doingExercise={doingExercise} /> */}
       <Typography
         variant="h3"
         sx={{
@@ -144,7 +172,6 @@ function TrainingViewer() {
       </Typography>
       <Typography>Estimated Weight: {weight}</Typography>
       <Typography>Detected Plate: {plates.map((p) => `${p} `)}</Typography>
-      <WebcamOpenButton cameraRef={barbellVideoRef} />
 
       <Button
         onClick={() => {
@@ -160,38 +187,6 @@ function TrainingViewer() {
       >
         Stop
       </Button>
-      <Stack direction="row">
-        {replayBlobURL != null ? (
-          <CardMedia
-            component="video"
-            src={replayBlobURL}
-            controls
-            autoPlay
-            loop
-            sx={{ transform: 'rotate(90deg)' }}
-          />
-        ) : null}
-        {replaySubBlobURL != null ? (
-          <CardMedia
-            component="video"
-            src={replaySubBlobURL}
-            controls
-            autoPlay
-            loop
-            sx={{ transform: 'rotate(90deg)' }}
-          />
-        ) : null}
-        {replaySub2BlobURL != null ? (
-          <CardMedia
-            component="video"
-            src={replaySub2BlobURL}
-            controls
-            autoPlay
-            loop
-            sx={{ transform: 'rotate(90deg)' }}
-          />
-        ) : null}
-      </Stack>
     </>
   );
 }

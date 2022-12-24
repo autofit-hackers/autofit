@@ -1,7 +1,6 @@
-import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
-import { Button, Stack, Switch, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Exercise } from '../utils/Exercise';
@@ -17,13 +16,17 @@ import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../u
 import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
 import { resetSet } from '../utils/set';
 import RealtimeChart from './RealtimeChart';
-import WebcamSelectButton from './WebcamSelectButton';
+import WebcamAF from './WebcamAF';
 
-interface PoseEstimatorProps {
+type PoseEstimatorProps = {
   doingExercise: boolean;
-}
+};
 
 function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
+  // カメラとcanvasの設定
+  const webcamRef = useRef<Webcam>(null);
+  const poseCanvasRef = useRef<HTMLCanvasElement>(null);
+
   // 外れ値処理の設定
   const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
   const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
@@ -48,24 +51,19 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   const menuRef = useRef('');
   const identifiedExerciseListRef = useRef<Exercise[]>([]);
 
-  // カメラの設定
-  const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-  const [selectedWebcamId, setSelectedWebcamId] = useState('');
-
   // セットの開始終了フラグ
   const doingExerciseRef = useRef(false);
   doingExerciseRef.current = doingExercise;
 
-  // 表示切り替え
-  const [isShowChart, setIsShowChart] = useState(true);
+  const poseEstimator = useRef<PoseMediapipe | null>(null);
 
   const onResults = useCallback(
     (results: Results) => {
-      if (canvasRef.current === null) return;
+      if (poseCanvasRef.current === null) return;
+      poseCanvasRef.current.width = results.image.width;
+      poseCanvasRef.current.height = results.image.height;
 
-      const canvasCtx = canvasRef.current.getContext('2d');
+      const canvasCtx = poseCanvasRef.current.getContext('2d');
 
       if (canvasCtx == null) return;
 
@@ -94,6 +92,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
         // pose estimationの結果を描画
         canvasCtx.save();
+        canvasCtx.clearRect(0, 0, poseCanvasRef.current.width, poseCanvasRef.current.height);
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
           color: 'white',
           lineWidth: 4,
@@ -165,54 +164,31 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
     [doingExercise],
   );
 
+  // mediapipeの初期化
   useEffect(() => {
-    if (isWebcamOpen) {
-      const poseEstimator = new PoseMediapipe({
-        locateFile: (file) => `./public/mediapipe-pose/${file}`,
-      });
+    poseEstimator.current = new PoseMediapipe({
+      locateFile: (file) => `./public/mediapipe-pose/${file}`,
+    });
 
-      poseEstimator.setOptions({
-        modelComplexity: 2,
-        smoothLandmarks: true,
-        enableSegmentation: false,
-        smoothSegmentation: false,
-        minDetectionConfidence: 0.3,
-        minTrackingConfidence: 0.8,
-      });
+    poseEstimator.current.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      smoothSegmentation: false,
+      minDetectionConfidence: 0.3,
+      minTrackingConfidence: 0.8,
+    });
 
-      poseEstimator.onResults(onResults);
+    poseEstimator.current.onResults(onResults);
+  }, [onResults]);
 
-      if (webcamRef.current !== null && webcamRef.current.video !== null) {
-        const camera = new Camera(webcamRef.current.video, {
-          onFrame: async () => {
-            if (webcamRef.current == null || webcamRef.current.video == null || canvasRef.current == null) return;
-            const { videoWidth } = webcamRef.current.video;
-            const { videoHeight } = webcamRef.current.video;
-            canvasRef.current.width = videoHeight;
-            canvasRef.current.height = videoWidth;
-            const canvasCtx = canvasRef.current.getContext('2d');
-            if (canvasCtx == null) return;
-            canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-            canvasCtx.save();
-            canvasCtx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
-            canvasCtx.rotate(Math.PI / 2);
-            canvasCtx.drawImage(webcamRef.current.video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
-            canvasCtx.restore();
-            await poseEstimator.send({ image: canvasRef.current });
-          },
-          height: 1080,
-          width: 1920,
-        });
-        setTimeout(() => {
-          void camera.start();
-        }, 1000);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWebcamOpen]);
+  const estimatePose = useCallback(async (canvas: HTMLCanvasElement) => {
+    if (poseEstimator.current === null || canvas === null) return;
+    await poseEstimator.current.send({ image: canvas });
+  }, []);
 
+  // グラフ更新
   useEffect(() => {
-    // グラフ更新用
     const chartUpdatingTimer = setInterval(() => {
       if (doingExerciseRef.current) {
         setDistanceOfInterestJointsList((prevList) => {
@@ -231,74 +207,49 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
 
   return (
     <>
-      {isWebcamOpen ? (
-        <Stack direction="column">
-          <Webcam ref={webcamRef} videoConstraints={{ deviceId: selectedWebcamId }} hidden />
-          <canvas
-            ref={canvasRef}
-            className="output_canvas"
-            style={{
-              position: 'relative',
-              maxWidth: '500px',
-              maxHeight: '720px',
-              zIndex: 5,
-            }}
-          />
-          <Button
-            onClick={() => {
-              setIsWebcamOpen(false);
-            }}
-          >
-            Close Webcam
-          </Button>
-        </Stack>
-      ) : (
-        <Stack direction="column">
-          <Button
-            onClick={() => {
-              setIsWebcamOpen(true);
-            }}
-          >
-            Open Webcam
-          </Button>
-          <WebcamSelectButton selectedDeviceId={selectedWebcamId} setSelectedDeviceId={setSelectedWebcamId} />
-        </Stack>
-      )}
-
-      <Switch
-        checked={isShowChart}
-        onChange={() => {
-          setIsShowChart((prev) => !prev);
-        }}
-        inputProps={{ 'aria-label': 'controlled' }}
+      <div style={{ position: 'relative' }}>
+        <WebcamAF
+          webcamRef={webcamRef}
+          onFrame={estimatePose}
+          inputWidth={720}
+          inputHeight={480}
+          rotation="left"
+          style={{
+            zIndex: 1,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+        <canvas
+          ref={poseCanvasRef}
+          style={{
+            zIndex: 2,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
+        menu: {menuRef.current}
+      </Typography>
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
+        Reps: {set.current.reps.length}
+      </Typography>
+      <RealtimeChart
+        data={distanceOfInterestJointsList}
         style={{
           position: 'fixed',
+          height: '30vh',
+          width: '30vw',
+          left: '69vw',
+          top: '69vh',
+          backgroundColor: 'white',
+          borderRadius: '10px',
           zIndex: 9,
         }}
       />
-      {isShowChart ? (
-        <>
-          <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
-            menu: {menuRef.current}
-          </Typography>
-          <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
-            Reps: {set.current.reps.length}
-          </Typography>
-          <RealtimeChart
-            data={distanceOfInterestJointsList}
-            style={{
-              position: 'fixed',
-              height: '30vh',
-              width: '30vw',
-              left: '69vw',
-              top: '69vh',
-              backgroundColor: 'white',
-              borderRadius: '10px',
-              zIndex: 9,
-            }}
-          />
-        </>
-      ) : null}
     </>
   );
 }
