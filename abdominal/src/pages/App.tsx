@@ -1,4 +1,4 @@
-import TrainingViewer from './components/TrainingViewer';
+import TrainingViewer from './RealtimeViewer';
 
 // import WebcamHandler from './components/WebcamHandler';
 
