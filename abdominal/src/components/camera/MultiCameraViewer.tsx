@@ -9,7 +9,7 @@ function MultiCameraViewer() {
   const numRows = 2;
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const webcamRefs = useRef<RefObject<Webcam>[]>([]);
-  const mediaRecorderRefs = useRef<RefObject<MediaRecorder>[]>([]);
+  const mediaRecorderRefs = useRef<RefObject<MediaRecorder | null>[]>([]);
   const [capturing, setCapturing] = useState(false);
   const [replay, setReplay] = useState(false);
   const [blobURLs, setBlobURLs] = useState<string[]>([]);
@@ -67,6 +67,8 @@ function MultiCameraViewer() {
     setCapturing(true);
     for (let i = 0; i < mediaRecorderRefs.current.length; i += 1) {
       if (webcamRefs.current[i].current != null) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         mediaRecorderRefs.current[i].current = createWebcamStream(webcamRefs.current[i].current, i);
       }
     }
