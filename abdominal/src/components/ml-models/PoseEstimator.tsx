@@ -96,15 +96,16 @@ function PoseEstimator(props: PoseEstimatorProps) {
         // pose estimationの結果を描画
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, poseCanvasRef.current.width, poseCanvasRef.current.height);
+        const color = doingExerciseRef.current ? 'lightgreen' : 'red';
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
           color: 'white',
-          lineWidth: 4,
+          lineWidth: 2,
         });
         drawLandmarks(canvasCtx, results.poseLandmarks, {
           color: 'white',
           lineWidth: 4,
           radius: 8,
-          fillColor: 'lightgreen',
+          fillColor: color,
         });
         canvasCtx.restore();
 
