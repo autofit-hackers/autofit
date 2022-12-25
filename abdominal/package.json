@@ -43,6 +43,7 @@
     "node": ">= 10.16.0"
   },
   "dependencies": {
+    "@aws-amplify/ui-react": "^4.3.1",
     "@emotion/css": "^11.10.0",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
