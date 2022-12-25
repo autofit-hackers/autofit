@@ -8,9 +8,8 @@ function RealtimeChart(props: { data: number[]; style: CSSProperties }) {
     xAxis: {
       type: 'category',
       data: data.map((v, i) => i),
-      // 最新300個のデータを表示する
-      min: data.length - 301,
-      max: data.length - 1,
+      min: 0,
+      max: data.length,
     },
     yAxis: {
       type: 'value',

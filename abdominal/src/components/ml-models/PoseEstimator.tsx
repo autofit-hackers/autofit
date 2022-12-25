@@ -20,9 +20,11 @@ import RealtimeChart from '../RealtimeChart';
 
 type PoseEstimatorProps = {
   doingExercise: boolean;
+  displayGraph: boolean;
 };
 
-function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
+function PoseEstimator(props: PoseEstimatorProps) {
+  const { doingExercise, displayGraph } = props;
   // カメラとcanvasの設定
   const webcamRef = useRef<Webcam>(null);
   const poseCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -45,6 +47,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
   // リアルタイムグラフ
   const distanceOfInterestJoints = useRef<number>(0);
   const [distanceOfInterestJointsList, setDistanceOfInterestJointsList] = useState<number[]>([]);
+  const graphLength = 300;
 
   // 種目の設定
   const exercise: Exercise = 'squat';
@@ -194,7 +197,7 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
         setDistanceOfInterestJointsList((prevList) => {
           prevList.push(distanceOfInterestJoints.current);
 
-          return prevList;
+          return prevList.slice(-graphLength);
         });
         causeReRendering((prev) => prev + 1);
       }
@@ -231,25 +234,27 @@ function PoseEstimator({ doingExercise }: PoseEstimatorProps) {
           }}
         />
       </div>
-      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 9 }}>
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '37vh', zIndex: 2 }}>
         menu: {menuRef.current}
       </Typography>
-      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 9 }}>
+      <Typography variant="h3" sx={{ position: 'fixed', right: '5vw', bottom: '31vh', zIndex: 2 }}>
         Reps: {set.current.reps.length}
       </Typography>
-      <RealtimeChart
-        data={distanceOfInterestJointsList}
-        style={{
-          position: 'fixed',
-          height: '30vh',
-          width: '30vw',
-          left: '69vw',
-          top: '69vh',
-          backgroundColor: 'white',
-          borderRadius: '10px',
-          zIndex: 9,
-        }}
-      />
+      {displayGraph && (
+        <RealtimeChart
+          data={distanceOfInterestJointsList}
+          style={{
+            position: 'fixed',
+            height: '30vh',
+            width: '30vw',
+            left: '69vw',
+            top: '69vh',
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            zIndex: 2,
+          }}
+        />
+      )}
     </>
   );
 }
