@@ -6,12 +6,13 @@ import labels from './labels.json';
 const renderBoxes = (
   canvas: HTMLCanvasElement,
   classThreshold: number,
-  boxesData: Float32Array | Int32Array | Uint8Array,
-  scoresData: Float32Array | Int32Array | Uint8Array,
-  classesData: Float32Array | Int32Array | Uint8Array,
+  boxesData: Float32Array | Int32Array | Uint8Array | undefined,
+  scoresData: Float32Array | Int32Array | Uint8Array | undefined,
+  classesData: Float32Array | Int32Array | Uint8Array | undefined,
 ) => {
   const ctx = canvas.getContext('2d');
   if (ctx == null) throw new Error('Canvas context is null');
+  if (boxesData === undefined || scoresData === undefined || classesData === undefined) return;
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -33,7 +34,6 @@ const renderBoxes = (
       y2 *= canvas.height;
       const width = x2 - x1;
       const height = y2 - y1;
-      console.log(`x1: ${x1}, y1: ${y1}, width: ${width}, height: ${height}`);
 
       // Draw the bounding box.
       ctx.strokeStyle = '#00FF00';
