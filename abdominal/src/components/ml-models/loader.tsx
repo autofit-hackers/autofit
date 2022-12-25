@@ -1,7 +1,12 @@
 /* eslint-disable */
 import '../style/loader.css';
 
-function Loader(props) {
+interface LoaderProps {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}
+
+function Loader(props: LoaderProps) {
   return (
     <div className="wrapper" {...props}>
       <div className="spinner" />

@@ -5,9 +5,9 @@ import { io } from '@tensorflow/tfjs-core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactWebcam from 'react-webcam';
 import WebcamAF from '../components/camera/WebcamAF';
-import Loader from '../components/yolov5/components/loader';
-import renderBoxes from '../components/yolov5/utils/renderBox';
-import estimateWeight from '../utils/barbellEstimator';
+import estimateWeight from '../components/ml-models/barbellEstimator';
+import Loader from '../components/ml-models/loader';
+import renderBoxes from '../components/ml-models/renderBox';
 
 export type Model = {
   net: tf.GraphModel<string | tf.io.IOHandler>;

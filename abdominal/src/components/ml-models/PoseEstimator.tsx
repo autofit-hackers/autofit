@@ -3,20 +3,20 @@ import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pos
 import { Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Exercise } from '../utils/Exercise';
-import { FixOutlier, FixOutlierParams } from '../utils/fixOutlier';
+import { Exercise } from '../../utils/Exercise';
+import { FixOutlier, FixOutlierParams } from '../../utils/fixOutlier';
 import {
   getJointsDistanceForRepCount,
   getMostFrequentExercise,
   identifyExercise,
   Pose,
   rotateWorldLandmarks,
-} from '../utils/pose';
-import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../utils/rep';
-import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../utils/repState';
-import { resetSet } from '../utils/set';
-import WebcamAF from './camera/WebcamAF';
-import RealtimeChart from './RealtimeChart';
+} from '../../utils/pose';
+import { appendPoseToForm, calculateKeyframes, getTopPose, resetRep } from '../../utils/rep';
+import { checkIfRepFinish, resetRepState, setJointsDistanceForRepCount } from '../../utils/repState';
+import { resetSet } from '../../utils/set';
+import WebcamAF from '../camera/WebcamAF';
+import RealtimeChart from '../RealtimeChart';
 
 type PoseEstimatorProps = {
   doingExercise: boolean;
