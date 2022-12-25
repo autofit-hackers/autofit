@@ -1,8 +1,5 @@
-import labels from './labels.json';
+const labels = ['20kg-bar', '2.5kg-plate', '5kg-plate', '10kg-plate'];
 
-/**
- * Render prediction boxes
- */
 const renderBoxes = (
   canvas: HTMLCanvasElement,
   classThreshold: number,
@@ -35,13 +32,31 @@ const renderBoxes = (
       const width = x2 - x1;
       const height = y2 - y1;
 
+      let color: string;
+      switch (label) {
+        case '20kg-bar':
+          color = '#e02929b4';
+          break;
+        case '2.5kg-plate':
+          color = '#20b320d7';
+          break;
+        case '5kg-plate':
+          color = '#2f2fba';
+          break;
+        case '10kg-plate':
+          color = '#bee219ea';
+          break;
+        default:
+          color = '#000000';
+      }
+
       // Draw the bounding box.
-      ctx.strokeStyle = '#00FF00';
+      ctx.strokeStyle = color;
       ctx.lineWidth = 3.5;
       ctx.strokeRect(x1, y1, width, height);
 
       // Draw the label background.
-      ctx.fillStyle = '#00FF00';
+      ctx.fillStyle = color;
       const textWidth = ctx.measureText(`${label} - ${score}%`).width;
       const textHeight = parseInt(font, 10); // base 10
       const yText = y1 - (textHeight + ctx.lineWidth);
