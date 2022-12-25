@@ -234,3 +234,27 @@ export class PoseGrid {
     this.connectionGroup.add(wireFrame);
   }
 }
+
+export function PoseGridView(props: {
+  divRef: React.MutableRefObject<HTMLDivElement | null>;
+  style: React.CSSProperties;
+}) {
+  const { divRef, style } = props;
+
+  return (
+    <div className="square-box" style={style}>
+      <div
+        className="pose-grid-container"
+        ref={divRef}
+        style={{
+          position: 'relative',
+          height: '100%',
+          width: '100%',
+          top: 0,
+          left: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}
+      />
+    </div>
+  );
+}
