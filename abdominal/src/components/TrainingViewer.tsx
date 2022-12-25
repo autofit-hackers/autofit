@@ -28,6 +28,9 @@ function TrainingViewer() {
     inputShape: [1, 0, 0, 3],
   }); // init model & input shape
   const [modelWidth, modelHeight] = model.inputShape.slice(1, 3); // get model width and height
+  const boxesData = useRef<Float32Array | Int32Array | Uint8Array>();
+  const scoresData = useRef<Float32Array | Int32Array | Uint8Array>();
+  const classesData = useRef<Float32Array | Int32Array | Uint8Array>();
 
   // configs
   const modelName = 'yolov5n';
@@ -45,6 +48,7 @@ function TrainingViewer() {
       BoxCanvasRef.current.width = cameraCanvas.width;
       BoxCanvasRef.current.height = cameraCanvas.height;
 
+      renderBoxes(BoxCanvasRef.current, threshold, boxesData.current, scoresData.current, classesData.current);
       tf.engine().startScope();
       const input = tf.tidy(() =>
         tf.image
@@ -57,16 +61,20 @@ function TrainingViewer() {
         if (!Array.isArray(result)) throw new Error('Model output is not an array');
         if (BoxCanvasRef.current == null) throw new Error('Canvas is null or undefined');
         const [boxes, scores, classes] = result.slice(0, 3);
-        const boxesData = boxes.dataSync();
-        const scoresData = scores.dataSync();
-        const classesData = classes.dataSync();
-        const estimatedWeight = estimateWeight({ threshold, boxesData, scoresData, classesData });
+        boxesData.current = boxes.dataSync();
+        scoresData.current = scores.dataSync();
+        classesData.current = classes.dataSync();
+        const estimatedWeight = estimateWeight({
+          threshold,
+          boxesData: boxesData.current,
+          scoresData: scoresData.current,
+          classesData: classesData.current,
+        });
         if (estimatedWeight.weight !== weight || estimatedWeight.barbellCenterZ !== 0) {
           setWeight(estimatedWeight.weight);
           setPlates(estimatedWeight.plates);
           setDoingExercise(estimatedWeight.barbellCenterZ < 0.5);
         }
-        renderBoxes(BoxCanvasRef.current, threshold, boxesData, scoresData, classesData);
         tf.dispose(result);
       });
 
