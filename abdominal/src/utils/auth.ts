@@ -1,7 +1,7 @@
 import { CognitoUser } from '@aws-amplify/auth';
-import { Amplify, Auth } from 'aws-amplify';
+import { Auth } from 'aws-amplify';
 
-Amplify.configure({
+export const amplifyConfig = {
   Auth: {
     // REQUIRED only for Federated Authentication - Amazon Cognito Identity Pool ID
     identityPoolId: 'us-west-2:47bf8c84-9a1f-41f2-a8dc-ad2f9d68b96d',
@@ -60,7 +60,7 @@ Amplify.configure({
       responseType: 'code', // or 'token', note that REFRESH token will only be generated when the responseType is code
     },
   },
-});
+};
 
 export async function signIn(username: string, password: string): Promise<typeof CognitoUser | false> {
   try {
