@@ -1,21 +1,19 @@
 import { Box, Stack, Typography } from '@mui/material';
-import TrainingCard from '../0_parts/TrainingCard';
+import SessionCard from '../0_parts/TrainingCard';
+import { Session } from '../utils/training';
 
 interface LatestTrainingListProps {
-  trainings: {
-    title: string;
-    image: string;
-  }[];
+  sessions: Session[];
 }
 
-export default function LatestTrainingList({ trainings }: LatestTrainingListProps) {
+export default function LatestSessionList({ sessions }: LatestTrainingListProps) {
   return (
     <>
       <Typography sx={{ ml: 2, mt: 2, fontWeight: 700, fontSize: 'large' }}>直近のトレーニング</Typography>
       <Box sx={{ overflow: 'scroll' }}>
-        <Stack direction="row" spacing={2} sx={{ width: `${trainings.length * 80 + 20}%`, m: 2 }}>
-          {trainings.map((training) => (
-            <TrainingCard title={training.title} image={training.image} />
+        <Stack direction="row" spacing={2} sx={{ width: `${sessions.length * 80 + 20}%`, m: 2 }}>
+          {sessions.map((session) => (
+            <SessionCard session={session} />
           ))}
         </Stack>
       </Box>
