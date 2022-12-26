@@ -1,19 +1,19 @@
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { join } from 'path';
-import { MutableRefObject } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 
-const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
+export const writeVideoToFile = async (blob: Blob, dirPath: string, fileName: string) => {
   const buffer = await blob.arrayBuffer();
   writeFile(join(dirPath, fileName), new DataView(buffer), (err) => {
     if (err) throw err;
   });
 };
 
-export const mediaRecorder = (
+export const createMediaRecorder = (
   media: HTMLCanvasElement | HTMLVideoElement,
   cameraName: string,
-  setUrl: (url: string) => void,
+  setUrl?: Dispatch<SetStateAction<string>>,
 ): MediaRecorder => {
   let stream: MediaStream;
   if (media instanceof HTMLCanvasElement) {
@@ -53,29 +53,13 @@ export const mediaRecorder = (
     if (blob.size > 0) {
       const url = URL.createObjectURL(blob);
       void writeVideoToFile(blob, dirPath, `camera${cameraName}.mp4`);
-      setUrl(url);
-
-      // return { blob, url };
+      if (setUrl) {
+        setUrl(url);
+      }
     }
 
     return null;
   };
 
   return recorder;
-};
-
-export const handleRecordingState = (
-  doingExercise: boolean,
-  mediaElement: HTMLVideoElement | HTMLCanvasElement | null,
-  mediaRecorderRef: MutableRefObject<MediaRecorder | undefined>,
-  cameraName: string,
-  setUrl: (url: string) => void,
-) => {
-  if (doingExercise && mediaElement != null) {
-    // eslint-disable-next-line no-param-reassign
-    mediaRecorderRef.current = mediaRecorder(mediaElement, cameraName, setUrl);
-    mediaRecorderRef.current.start();
-  } else if (!doingExercise && mediaRecorderRef.current != null && mediaRecorderRef.current.state === 'recording') {
-    mediaRecorderRef.current.stop();
-  }
 };
