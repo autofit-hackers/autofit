@@ -1,10 +1,9 @@
-import { FormControl, MenuItem, Select, SelectChangeEvent } from '@mui/material';
-import { Dispatch, RefObject, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { FormControl, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { createMediaRecorder } from './recorder';
 
 type Props = {
-  webcamRef: RefObject<Webcam>;
   inputWidth: number;
   inputHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
@@ -16,8 +15,8 @@ type Props = {
 };
 
 function WebcamAF(props: Props) {
-  const { webcamRef, inputWidth, inputHeight, rotation, cameraName, recordingFlag, setRecordURL, onFrame, style } =
-    props;
+  const { inputWidth, inputHeight, rotation, cameraName, recordingFlag, setRecordURL, onFrame, style } = props;
+  const webcamRef = useRef<Webcam>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
   const [webcamList, setWebcamList] = useState<MediaDeviceInfo[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -96,6 +95,7 @@ function WebcamAF(props: Props) {
 
   return (
     <div style={style}>
+      <Typography variant="h6">{cameraName || 'Webcam'}</Typography>
       {selectedDeviceId && (
         <>
           <canvas
