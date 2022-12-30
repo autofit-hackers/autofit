@@ -77,7 +77,7 @@
   },
 
   // todo-tree
-  "todo-tree.general.tags": ["TODO", "TICKET", "DISCUSS", "REF", "WARN"],
+  "todo-tree.general.tags": ["TODO", "DISCUSS", "REF", "WARN"],
   "todo-tree.highlights.defaultHighlight": {
     "gutterIcon": true
   },
