@@ -73,7 +73,9 @@
     "test/**/__snapshots__": true,
     "package-lock.json": true,
     "*.{css,sass,scss}.d.ts": true,
-    "yarn.lock": true
+    "yarn.lock": true,
+    "**/resources/**": true,
+    "**/public/**": true
   },
 
   // todo-tree
