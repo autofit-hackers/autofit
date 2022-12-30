@@ -1,10 +1,7 @@
-import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
-import { Pose as PoseMediapipe, POSE_CONNECTIONS, Results } from '@mediapipe/pose';
+import { Pose as PoseMediapipe, Results } from '@mediapipe/pose';
 import { Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Webcam from 'react-webcam';
 import { Exercise } from '../../utils/Exercise';
-import { FixOutlier, FixOutlierParams } from '../../utils/fixOutlier';
 import {
   getJointsDistanceForRepCount,
   getMostFrequentExercise,
@@ -26,15 +23,10 @@ type PoseEstimatorProps = {
 function PoseEstimator(props: PoseEstimatorProps) {
   const { doingExercise, displayGraph } = props;
   // カメラとcanvasの設定
-  const webcamRef = useRef<Webcam>(null);
   const poseCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // 外れ値処理の設定
-  const fixOutlierParams: FixOutlierParams = { alpha: 0.5, threshold: 0.1, maxConsecutiveOutlierCount: 5 };
-  const fixWorldOutlierPrams: FixOutlierParams = { alpha: 0.5, threshold: 20, maxConsecutiveOutlierCount: 10 };
   const prevPose = useRef<Pose | null>(null);
-  const fixOutlier = new FixOutlier(fixOutlierParams);
-  const fixWorldOutlier = new FixOutlier(fixWorldOutlierPrams);
 
   // コンポーネントの再レンダリングを強制するためのstate
   const [, causeReRendering] = useState(0);
@@ -62,14 +54,6 @@ function PoseEstimator(props: PoseEstimatorProps) {
 
   const onResults = useCallback(
     (results: Results) => {
-      if (poseCanvasRef.current === null) return;
-      poseCanvasRef.current.width = results.image.width;
-      poseCanvasRef.current.height = results.image.height;
-
-      const canvasCtx = poseCanvasRef.current.getContext('2d');
-
-      if (canvasCtx == null) return;
-
       if ('poseLandmarks' in results) {
         // mediapipeの推論結果を自作のPoseクラスに代入
         const rawCurrentPose: Pose = {
@@ -80,34 +64,6 @@ function PoseEstimator(props: PoseEstimatorProps) {
 
         // 外れ値処理
         const currentPose: Pose = rawCurrentPose;
-        if (prevPose.current != null) {
-          const fixedLandmarks = fixOutlier.fixOutlierOfLandmarkList(
-            prevPose.current.landmarks,
-            rawCurrentPose.landmarks,
-          );
-          currentPose.landmarks = fixedLandmarks;
-          const fixedWorldLandmarks = fixWorldOutlier.fixOutlierOfLandmarkList(
-            prevPose.current.worldLandmarks,
-            rawCurrentPose.worldLandmarks,
-          );
-          currentPose.worldLandmarks = fixedWorldLandmarks;
-        }
-
-        // pose estimationの結果を描画
-        canvasCtx.save();
-        canvasCtx.clearRect(0, 0, poseCanvasRef.current.width, poseCanvasRef.current.height);
-        const color = doingExerciseRef.current ? 'lightgreen' : 'red';
-        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-          color: 'white',
-          lineWidth: 2,
-        });
-        drawLandmarks(canvasCtx, results.poseLandmarks, {
-          color: 'white',
-          lineWidth: 4,
-          radius: 8,
-          fillColor: color,
-        });
-        canvasCtx.restore();
 
         // WARN: レスト中なら処理を中断。動作未確認
         if (doingExerciseRef.current === false) return;
@@ -213,7 +169,6 @@ function PoseEstimator(props: PoseEstimatorProps) {
     <>
       <div style={{ position: 'relative' }}>
         <WebcamAF
-          webcamRef={webcamRef}
           onFrame={estimatePose}
           inputWidth={720}
           inputHeight={480}
