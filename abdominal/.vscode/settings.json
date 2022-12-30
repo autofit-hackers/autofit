@@ -84,11 +84,6 @@
   "todo-tree.highlights.customHighlight": {
     "TODO": {
       "icon": "bell-fill",
-      "foreground": "#ff9800",
-      "iconColour": "#ff9800"
-    },
-    "TICKET": {
-      "icon": "tasklist",
       "foreground": "#00bfff",
       "iconColour": "#00bfff"
     },
@@ -104,8 +99,8 @@
     },
     "WARN": {
       "icon": "alert",
-      "foreground": "#ffff00",
-      "iconColour": "#ffff00"
+      "foreground": "#ff9800",
+      "iconColour": "#ff9800"
     }
   },
   "editor.tabSize": 2,
