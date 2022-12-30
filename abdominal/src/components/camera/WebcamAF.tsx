@@ -3,19 +3,23 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } fr
 import Webcam from 'react-webcam';
 import { createMediaRecorder } from './recorder';
 
+type RecordingConfig = {
+  cameraName: string;
+  flag: boolean;
+  setURL: Dispatch<SetStateAction<string>>;
+};
+
 type Props = {
   inputWidth: number;
   inputHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
-  cameraName?: string;
-  recordingFlag?: boolean;
-  setRecordURL?: Dispatch<SetStateAction<string>>;
+  recordingConfig?: RecordingConfig;
   onFrame?: (frame: HTMLCanvasElement) => Promise<void> | void;
   style?: React.CSSProperties;
 };
 
 function WebcamAF(props: Props) {
-  const { inputWidth, inputHeight, rotation, cameraName, recordingFlag, setRecordURL, onFrame, style } = props;
+  const { inputWidth, inputHeight, rotation, recordingConfig, onFrame, style } = props;
   const webcamRef = useRef<Webcam>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
   const [webcamList, setWebcamList] = useState<MediaDeviceInfo[]>([]);
@@ -70,12 +74,13 @@ function WebcamAF(props: Props) {
 
   // record video
   useEffect(() => {
-    if (recordingFlag && mediaRecorder && mediaRecorder.state === 'inactive') {
+    if (recordingConfig === undefined) return;
+    if (recordingConfig.flag && mediaRecorder && mediaRecorder.state === 'inactive') {
       mediaRecorder.start();
-    } else if (!recordingFlag && mediaRecorder && mediaRecorder.state === 'recording') {
+    } else if (!recordingConfig.flag && mediaRecorder && mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
     }
-  }, [mediaRecorder, recordingFlag]);
+  }, [mediaRecorder, recordingConfig]);
 
   // Get a list of available webcams
   useEffect(() => {
@@ -83,11 +88,10 @@ function WebcamAF(props: Props) {
       setWebcamList(devices.filter((device) => device.kind === 'videoinput'));
       setSelectedDeviceId(devices[0]?.deviceId);
     });
-    if (recordingFlag && canvasRef.current) {
-      setMediaRecorder(createMediaRecorder(canvasRef.current, cameraName || 'webcam', setRecordURL));
+    if (recordingConfig && recordingConfig.flag && canvasRef.current) {
+      setMediaRecorder(createMediaRecorder(canvasRef.current, recordingConfig.cameraName, recordingConfig.setURL));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [recordingConfig]);
 
   const handleSwitchCamera = (event: SelectChangeEvent<string>) => {
     setSelectedDeviceId(event.target.value);
@@ -95,7 +99,7 @@ function WebcamAF(props: Props) {
 
   return (
     <div style={style}>
-      <Typography variant="h6">{cameraName || 'Webcam'}</Typography>
+      {recordingConfig && <Typography variant="h6">{recordingConfig.cameraName}</Typography>}
       {selectedDeviceId && (
         <>
           <canvas
@@ -126,9 +130,7 @@ function WebcamAF(props: Props) {
 }
 
 WebcamAF.defaultProps = {
-  cameraName: 'webcam',
-  recordingFlag: false,
-  setRecordURL: undefined,
+  recordingConfig: undefined,
   onFrame: undefined,
   style: {},
 };
