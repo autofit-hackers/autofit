@@ -17,8 +17,11 @@ export const loadPoseEstimator = (options: Options, onResults: (results: Results
   return poseEstimator;
 };
 
-export const sendFrameToPoseEstimator = async (poseEstimator: PoseMediapipe, canvas: HTMLCanvasElement) => {
-  if (poseEstimator === null || canvas === null) return;
+export const sendFrameToPoseEstimator = async (
+  poseEstimator: PoseMediapipe | undefined,
+  canvas: HTMLCanvasElement,
+) => {
+  if (poseEstimator === undefined || canvas === null) return;
   await poseEstimator.send({ image: canvas });
 };
 
