@@ -1,5 +1,5 @@
 /* eslint-disable */
-import '../style/loader.css';
+import './loader.css';
 
 interface LoaderProps {
   children: React.ReactNode;
