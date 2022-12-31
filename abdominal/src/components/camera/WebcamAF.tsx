@@ -1,4 +1,4 @@
-import { FormControl, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Box, FormControl, Grid, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { createMediaRecorder } from './recorder';
@@ -98,8 +98,7 @@ function WebcamAF(props: Props) {
   };
 
   return (
-    <div style={style}>
-      {recordingConfig && <Typography variant="h6">{recordingConfig.cameraName}</Typography>}
+    <Box style={style}>
       {selectedDeviceId && (
         <>
           <canvas
@@ -114,18 +113,23 @@ function WebcamAF(props: Props) {
             onUserMedia={startCamera}
             style={{ display: 'none' }}
           />
-          <FormControl>
-            <Select value={selectedDeviceId} onChange={handleSwitchCamera}>
-              {webcamList.map((webcam) => (
-                <MenuItem key={webcam.deviceId} value={webcam.deviceId}>
-                  {webcam.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Grid container>
+            <Grid item>{recordingConfig && <Typography variant="h6">{recordingConfig.cameraName}</Typography>}</Grid>
+            <Grid item>
+              <FormControl>
+                <Select value={selectedDeviceId} onChange={handleSwitchCamera}>
+                  {webcamList.map((webcam) => (
+                    <MenuItem key={webcam.deviceId} value={webcam.deviceId}>
+                      {webcam.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
         </>
       )}
-    </div>
+    </Box>
   );
 }
 
