@@ -5,7 +5,7 @@ import { Pose, rotateWorldLandmarks, getJointsDistanceForRepCount } from '../../
 import { getTopPose, appendPoseToForm, calculateKeyframes, resetRep, Rep } from '../../utils/rep';
 import { setJointsDistanceForRepCount, checkIfRepFinish, resetRepState, RepState } from '../../utils/repState';
 import { Set } from '../../utils/set';
-import { Exercise } from '../../utils/Exercise';
+import { Exercise } from '../../utils/exercise';
 
 export const loadPoseEstimator = (options: Options, onResults: (results: Results) => void): PoseMediapipe => {
   const poseEstimator = new PoseMediapipe({

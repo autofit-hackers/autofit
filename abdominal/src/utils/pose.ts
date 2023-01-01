@@ -1,5 +1,5 @@
 import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
-import { Exercise } from './Exercise';
+import { Exercise } from './exercise';
 
 export type Pose = {
   landmarks: NormalizedLandmarkList;

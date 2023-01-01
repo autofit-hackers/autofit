@@ -1,7 +1,7 @@
 import { Pose as PoseMediapipe, Results } from '@mediapipe/pose';
 import { Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Exercise } from '../../utils/Exercise';
+import { Exercise } from '../../utils/exercise';
 import {
   getJointsDistanceForRepCount,
   getMostFrequentExercise,

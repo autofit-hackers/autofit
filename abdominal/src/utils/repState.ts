@@ -1,4 +1,4 @@
-import { Exercise, getRepCountThresholds } from './Exercise';
+import { Exercise, getRepCountThresholds } from './exercise';
 
 export type RepState = {
   isFirstFrameInRep: boolean;
