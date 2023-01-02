@@ -23,7 +23,7 @@ export const updateTrainingState = (prevState: TrainingState, pose: Pose): Train
   const currentState = prevState;
 
   // レップカウント
-  const { lower, upper } = { lower: 0.8, upper: 1.2 };
+  const { lower, upper } = { lower: 120, upper: 160 }; // TODO: resolve hard-coded values
   const leftElbowAngle = getAngleOfThreePoints(
     pose.worldLandmarks[MJ.LEFT_SHOULDER],
     pose.worldLandmarks[MJ.LEFT_ELBOW],

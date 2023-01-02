@@ -117,7 +117,7 @@ export const getAngleOfLine = (start: Landmark, end: Landmark) => {
   };
 };
 
-const getAngleOfThreePoints = (p1: Landmark, p2: Landmark, p3: Landmark) => {
+export const getAngleOfThreePoints = (p1: Landmark, p2: Landmark, p3: Landmark) => {
   const a = Math.sqrt((p2.x - p3.x) ** 2 + (p2.y - p3.y) ** 2 + (p2.z - p3.z) ** 2);
   const b = Math.sqrt((p1.x - p3.x) ** 2 + (p1.y - p3.y) ** 2 + (p1.z - p3.z) ** 2);
   const c = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
@@ -136,7 +136,7 @@ export const getMidpoint = (
 });
 
 // worldLandmarksではなくlandmarksを使う
-const getLengthAnkleToShoulder = (pose: Pose): { left: number; right: number; mean: number } => {
+const getAnkleToShoulderLength = (pose: Pose): { left: number; right: number; mean: number } => {
   const leftShoulder = pose.landmarks[11];
   const leftKnee = pose.landmarks[25];
   const rightShoulder = pose.landmarks[12];
@@ -154,7 +154,7 @@ const getLengthAnkleToShoulder = (pose: Pose): { left: number; right: number; me
 };
 
 // worldLandmarksではなくlandmarksを使う
-const getArmLength = (pose: Pose): { left: number; right: number; mean: number } => {
+const getWristToShoulderLength = (pose: Pose): { left: number; right: number; mean: number } => {
   const leftShoulder = pose.landmarks[11];
   const leftWrist = pose.landmarks[15];
   const rightShoulder = pose.landmarks[12];
@@ -171,23 +171,23 @@ const getArmLength = (pose: Pose): { left: number; right: number; mean: number }
   };
 };
 
-export const getJointsDistanceForRepCount = (pose: Pose, exercise: Exercise): number => {
-  if (exercise === 'squat' || exercise === 'dead_lift') return getLengthAnkleToShoulder(pose).mean;
-  if (exercise === 'bench_press' || exercise === 'shoulder_press') return getArmLength(pose).mean;
+export const getJointsDistance = (pose: Pose, exercise: Exercise): number => {
+  if (exercise === 'squat' || exercise === 'dead_lift') return getAnkleToShoulderLength(pose).mean;
+  if (exercise === 'bench_press' || exercise === 'shoulder_press') return getWristToShoulderLength(pose).mean;
 
   return 0;
 };
 
 export const getLiftingVelocity = (prevPose: Pose, currentPose: Pose, exercise: Exercise): number => {
-  const prevDistance = getJointsDistanceForRepCount(prevPose, exercise);
-  const currentDistance = getJointsDistanceForRepCount(currentPose, exercise);
+  const prevDistance = getJointsDistance(prevPose, exercise);
+  const currentDistance = getJointsDistance(currentPose, exercise);
   const time = (currentPose.timestamp - prevPose.timestamp) / 1000; // 秒単位
   const velocity = Math.abs(currentDistance - prevDistance) / time; // 正の値でcm/s
 
   return velocity;
 };
 
-export const identifyExercise = (pose: Pose): Exercise | undefined => {
+export const identifyExerciseByPose = (pose: Pose): Exercise | undefined => {
   const { worldLandmarks } = pose;
   const shoulderCenter = getMidpoint(worldLandmarks[11], worldLandmarks[12]);
   const hipCenter = getMidpoint(worldLandmarks[23], worldLandmarks[24]);
