@@ -1,9 +1,7 @@
-import TrainingViewer from './RealtimeViewer';
-
-// import WebcamHandler from './components/WebcamHandler';
+import Dashboard from './Dashboard';
 
 function App() {
-  return <TrainingViewer />;
+  return <Dashboard />;
 }
 
 export default App;
