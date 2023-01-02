@@ -8,8 +8,13 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
 
-export default function Header() {
+interface HeaderProps {
+  title: string;
+}
+
+export default function Header(headerProps: HeaderProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { title } = headerProps;
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -26,7 +31,7 @@ export default function Header() {
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Photos
+          {title}
         </Typography>
         <div>
           <IconButton

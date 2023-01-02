@@ -9,7 +9,7 @@ interface SessionCardProps {
 
 export default function SessionCard({ session }: SessionCardProps) {
   return (
-    <Card sx={{ p: 2, boxShadow: 'none', borderRadius: 2 }} component={Link} to="/detail">
+    <Card sx={{ p: 2, boxShadow: 'none', borderRadius: 2, textDecoration: 'none' }} component={Link} to="/detail">
       <Stack spacing={0.5}>
         <CardMedia
           component="img"
