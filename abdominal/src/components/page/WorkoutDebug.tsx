@@ -2,10 +2,10 @@ import { Options, Pose as PoseMediapipe, Results } from '@mediapipe/pose';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import drawPose from 'src/library/ml-models/pose-estimation/drawPose';
+import { Pose, rotateWorldLandmarks } from '../../core/training-monitor/pose';
+import { resetWorkoutState, updateWorkoutState } from '../../core/training-monitor/workoutState';
 import Camera from '../../library/camera/Camera';
 import { loadPoseEstimator, sendFrameToPoseEstimator } from '../../library/ml-models/pose-estimation/poseEstimator';
-import { Pose, rotateWorldLandmarks } from '../../library/training-monitor/pose';
-import { resetWorkoutState, updateWorkoutState } from '../../library/training-monitor/workoutState';
 
 function WorkoutDebug() {
   // 表示設定
