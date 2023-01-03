@@ -35,7 +35,7 @@ export const getDetectedEquipment = (result: DetectionResult, threshold: number)
         weight += 5;
         plates.push('2.5kg');
       } else {
-        console.warn(`Unknown category: ${category}`);
+        throw new Error(`Unknown category: ${category}`);
       }
     }
   }
