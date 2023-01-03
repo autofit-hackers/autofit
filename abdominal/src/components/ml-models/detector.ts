@@ -2,60 +2,20 @@ import * as tf from '@tensorflow/tfjs';
 import { Dispatch, SetStateAction } from 'react';
 import labels from './labels.json';
 
-export type DetectionResults = {
+export type DetectionResult = {
   boxesData: Float32Array | Int32Array | Uint8Array;
   scoresData: Float32Array | Int32Array | Uint8Array;
-  classesData: Float32Array | Int32Array | Uint8Array;
-};
-
-export type DetectorOptions = {
-  threshold: number;
-  setWeight: (weight: number) => void;
-  setPlates: (plates: string[]) => void;
-  setIsExercising: (doingExercise: boolean) => void;
+  categoryData: Float32Array | Int32Array | Uint8Array;
 };
 
 export type Detector = {
   model: tf.GraphModel<string | tf.io.IOHandler>;
   inputWidth: number;
   inputHeight: number;
-  options: DetectorOptions;
-};
-
-export type LoadingProps = { loading: boolean; progress: number };
-
-export const getTotalWeight = ({ boxesData, scoresData, classesData }: DetectionResults, threshold: number) => {
-  let weight = 0;
-  const plates = [];
-  let barbellCenterZ = 0;
-  for (let i = 0; i < scoresData.length; i += 1) {
-    if (scoresData[i] > threshold) {
-      const klass = labels[classesData[i]];
-      if (klass === '20kg-bar') {
-        weight += 20;
-        plates.push('バーベル');
-        barbellCenterZ = (boxesData[i * 4] + boxesData[i * 4 + 2]) / 2;
-      } else if (klass === '10kg-plate') {
-        weight += 20;
-        plates.push('10kg');
-      } else if (klass === '5kg-plate') {
-        weight += 10;
-        plates.push('5kg');
-      } else if (klass === '2.5kg-plate') {
-        weight += 5;
-        plates.push('2.5kg');
-      } else {
-        console.warn(`Unknown class: ${klass}`);
-      }
-    }
-  }
-
-  return { weight, plates, barbellCenterZ };
 };
 
 export const loadDetectionModel = (
   modelName: string,
-  options: DetectorOptions,
   setLoading: Dispatch<
     SetStateAction<{
       loading: boolean;
@@ -87,7 +47,6 @@ export const loadDetectionModel = (
         model,
         inputWidth: model.inputs[0].shape[0],
         inputHeight: model.inputs[0].shape[3],
-        options,
       };
     })
     .catch((err) => {
@@ -95,7 +54,11 @@ export const loadDetectionModel = (
     });
 };
 
-export const detectObjectsOnFrame = async (detector: Detector | undefined, cameraCanvas: HTMLCanvasElement) => {
+export const detectOnFrame = async (
+  detector: Detector | undefined,
+  cameraCanvas: HTMLCanvasElement,
+  onResults: (result: DetectionResult) => void,
+) => {
   if (cameraCanvas === null) return;
   if (!detector) throw new Error('Model is null or undefined');
 
@@ -107,43 +70,24 @@ export const detectObjectsOnFrame = async (detector: Detector | undefined, camer
       .expandDims(0),
   );
 
-  const { threshold } = detector.options;
-  await detector.model.executeAsync(input).then((result) => {
-    if (!Array.isArray(result)) throw new Error('Model output is not an array');
-    const [boxes, scores, classes] = result.slice(0, 3);
+  await detector.model.executeAsync(input).then((outputTensors) => {
+    if (!Array.isArray(outputTensors)) throw new Error('Model output is not an array');
+    const [boxes, scores, classes] = outputTensors.slice(0, 3);
     const boxesData = boxes.dataSync();
     const scoresData = scores.dataSync();
-    const classesData = classes.dataSync();
-    const { weight, plates, barbellCenterZ } = getTotalWeight(
-      {
-        boxesData,
-        scoresData,
-        classesData,
-      },
-      threshold,
-    );
-    if (barbellCenterZ !== 0) {
-      detector.options.setWeight(weight);
-      detector.options.setPlates(plates);
-      detector.options.setIsExercising(barbellCenterZ < 0.5);
-    }
-    tf.dispose(result);
+    const categoryData = classes.dataSync();
+    onResults({ boxesData, scoresData, categoryData });
+    tf.dispose(outputTensors);
   });
 
   tf.engine().endScope();
 };
 
-export const renderBoxes = (
-  canvas: HTMLCanvasElement,
-  videoCanvas: HTMLCanvasElement,
-  ConfidenceThre: number,
-  boxesData: Float32Array | Int32Array | Uint8Array | undefined,
-  scoresData: Float32Array | Int32Array | Uint8Array | undefined,
-  classesData: Float32Array | Int32Array | Uint8Array | undefined,
-) => {
+export const drawBoundingBoxes = (canvas: HTMLCanvasElement | null, result: DetectionResult, threshold: number) => {
+  const { boxesData, scoresData, categoryData } = result;
+  if (canvas === null) return;
   const ctx = canvas.getContext('2d');
   if (ctx == null) throw new Error('Canvas context is null');
-  if (boxesData === undefined || scoresData === undefined || classesData === undefined) return;
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -154,8 +98,8 @@ export const renderBoxes = (
 
   for (let i = 0; i < scoresData.length; i += 1) {
     // filter based on class threshold
-    if (scoresData[i] > ConfidenceThre) {
-      const label = labels[classesData[i]];
+    if (scoresData[i] > threshold) {
+      const label = labels[categoryData[i]];
       const score = (scoresData[i] * 100).toFixed(1);
 
       let [x1, y1, x2, y2] = boxesData.slice(i * 4, (i + 1) * 4);
