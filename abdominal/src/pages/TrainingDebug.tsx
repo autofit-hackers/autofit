@@ -2,9 +2,13 @@ import { Options, Pose as PoseMediapipe, Results } from '@mediapipe/pose';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Camera from '../components/camera/Camera';
-import { drawPose, loadPoseEstimator, sendFrameToPoseEstimator } from '../components/ml-models/poseEstimator';
-import { Pose, rotateWorldLandmarks } from '../utils/pose';
-import { resetTrainingState, updateTrainingState } from '../utils/trainingState';
+import {
+  drawPose,
+  loadPoseEstimator,
+  sendFrameToPoseEstimator,
+} from '../components/ml-models/pose-estimaiton/poseEstimator';
+import { Pose, rotateWorldLandmarks } from '../components/training/pose';
+import { resetTrainingState, updateTrainingState } from '../components/training/trainingState';
 
 function TrainingDebug() {
   // 表示設定

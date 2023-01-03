@@ -1,5 +1,5 @@
-import { DetectionResult } from '../components/ml-models/detector';
-import labels from '../components/ml-models/labels.json';
+import { DetectionResult } from '../ml-models/object-detection/detector';
+import labels from '../ml-models/object-detection/labels.json';
 
 export type MonitorState = {
   isExercising: boolean;

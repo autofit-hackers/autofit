@@ -32,11 +32,11 @@ type FixOutlierOfLandmarkReturn = {
 
 export class FixOutlier {
   readonly params: FixOutlierParams;
-  consecutiveOutlierCount: number | undefined;
+  consecutiveOutlierCount: number;
 
   constructor(params: FixOutlierParams) {
     this.params = params;
-    this.reset();
+    this.consecutiveOutlierCount = 0;
   }
 
   reset() {
