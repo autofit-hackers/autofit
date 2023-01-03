@@ -9,7 +9,7 @@ import {
   Detector,
   loadDetectionModel,
 } from '../../library/ml-models/object-detection/detector';
-import { resetMonitorState, updateMonitorState } from '../../library/training/monitorState';
+import { resetMonitorState, updateMonitorState } from '../../library/training-monitor/monitorState';
 import Loader from '../ui/Loader';
 
 function RestDebug() {
