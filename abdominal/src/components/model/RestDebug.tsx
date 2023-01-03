@@ -9,8 +9,8 @@ import {
   drawBoundingBoxes,
   loadDetectionModel,
 } from '../../library/ml-models/object-detection/detector';
-import Loader from '../../library/ml-models/object-detection/loader';
 import { resetMonitorState, updateMonitorState } from '../../library/training/monitorState';
+import Loader from '../ui/loader';
 
 function RestDebug() {
   // 表示設定
