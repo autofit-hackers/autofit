@@ -83,7 +83,7 @@ function RestDebug() {
         </Box>
       )}
       <Typography variant="h3" sx={labelSx}>
-        {sessionState.current.isExercising ? 'WORKOUT' : 'REST'}
+        {sessionState.current.isWorkingOut ? 'WORKOUT' : 'REST'}
       </Typography>
       <Typography>Weight: {sessionState.current.estimatedTotalWeight}kg</Typography>
       <Typography>Reps: </Typography>

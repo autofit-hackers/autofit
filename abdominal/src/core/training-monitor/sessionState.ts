@@ -2,13 +2,13 @@ import { DetectionResult } from '../../library/ml-models/object-detection/detect
 import labels from '../../library/ml-models/object-detection/labels.json';
 
 export type SessionState = {
-  isExercising: boolean;
+  isWorkingOut: boolean;
   estimatedTotalWeight: number;
   detectedPlates: string[];
 };
 
 export const resetSessionState = (): SessionState => ({
-  isExercising: false,
+  isWorkingOut: false,
   estimatedTotalWeight: 0,
   detectedPlates: [],
 });
@@ -49,9 +49,9 @@ export const updateSessionState = (
   confidenceThre: number,
 ): SessionState => {
   const { weight, plates, barbellCenterZ } = getDetectedEquipment(result, confidenceThre);
-  if (barbellCenterZ !== 0 && !prevState.isExercising) {
+  if (barbellCenterZ !== 0 && !prevState.isWorkingOut) {
     return {
-      isExercising: true,
+      isWorkingOut: true,
       estimatedTotalWeight: weight,
       detectedPlates: plates,
     };
