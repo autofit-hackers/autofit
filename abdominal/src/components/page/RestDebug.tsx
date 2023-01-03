@@ -9,7 +9,7 @@ import {
   Detector,
   loadDetectionModel,
 } from '../../library/ml-models/object-detection/detector';
-import { resetRackState, updateRackState } from '../../library/training-monitor/rackState';
+import { resetSessionState, updateSessionState } from '../../library/training-monitor/sessionState';
 import Loader from '../ui/Loader';
 
 function RestDebug() {
@@ -28,7 +28,7 @@ function RestDebug() {
   };
 
   // レストとトレーニングの状態
-  const rackState = useRef(resetRackState());
+  const sessionState = useRef(resetSessionState());
 
   // detection model
   const threshold = 0.5;
@@ -36,7 +36,7 @@ function RestDebug() {
   const BoxCanvasRef = useRef<HTMLCanvasElement>(null);
   const [detector, setDetector] = useState<Detector>();
   const onResults = useCallback((result: DetectionResult) => {
-    updateRackState(rackState.current, result, threshold);
+    updateSessionState(sessionState.current, result, threshold);
     drawBoundingBox(BoxCanvasRef.current, result, threshold);
   }, []);
   const detectEquipment = useCallback(
@@ -60,8 +60,7 @@ function RestDebug() {
         <Box sx={{ position: 'relative' }}>
           <Camera
             onFrame={detectEquipment}
-            originalWidth={canvasHeight}
-            originalHeight={canvasWidth}
+            originalSize={{ width: canvasHeight, height: canvasWidth }}
             rotation="left"
             style={{
               zIndex: 1,
@@ -84,11 +83,11 @@ function RestDebug() {
         </Box>
       )}
       <Typography variant="h3" sx={labelSx}>
-        {rackState.current.isExercising ? 'WORKOUT' : 'REST'}
+        {sessionState.current.isExercising ? 'WORKOUT' : 'REST'}
       </Typography>
-      <Typography>Weight: {rackState.current.estimatedTotalWeight}kg</Typography>
+      <Typography>Weight: {sessionState.current.estimatedTotalWeight}kg</Typography>
       <Typography>Reps: </Typography>
-      <Typography>Plates: {rackState.current.detectedPlates.map((p) => `${p} `)}</Typography>
+      <Typography>Plates: {sessionState.current.detectedPlates.map((p) => `${p} `)}</Typography>
     </>
   );
 }

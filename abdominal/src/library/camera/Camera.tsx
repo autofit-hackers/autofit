@@ -3,6 +3,11 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } fr
 import Webcam from 'react-webcam';
 import { createMediaRecorder } from './recordVideo';
 
+type ImageSize = {
+  width: number;
+  height: number;
+};
+
 type RecordingConfig = {
   cameraName: string;
   flag: boolean;
@@ -10,16 +15,16 @@ type RecordingConfig = {
 };
 
 type Props = {
-  originalWidth: number;
-  originalHeight: number;
-  rotation: 'none' | 'left' | 'right' | 'flip';
+  originalSize: ImageSize;
+  rotation?: 'left' | 'right' | 'v-flip';
   recordingConfig?: RecordingConfig;
   onFrame?: (frame: HTMLCanvasElement) => Promise<void> | void;
   style?: React.CSSProperties;
 };
 
 function Camera(props: Props) {
-  const { originalWidth, originalHeight, rotation, recordingConfig, onFrame, style } = props;
+  const { originalSize, rotation, recordingConfig, onFrame, style } = props;
+  const { width: originalWidth, height: originalHeight } = originalSize;
   const webcamRef = useRef<Webcam>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
   const [webcamList, setWebcamList] = useState<MediaDeviceInfo[]>([]);
@@ -33,7 +38,7 @@ function Camera(props: Props) {
     case 'right':
       rotationAngle = -90;
       break;
-    case 'flip':
+    case 'v-flip':
       rotationAngle = 180;
       break;
     default:
@@ -103,8 +108,8 @@ function Camera(props: Props) {
         <>
           <canvas
             ref={canvasRef}
-            width={rotation === 'none' || rotation === 'flip' ? originalWidth : originalHeight}
-            height={rotation === 'none' || rotation === 'flip' ? originalHeight : originalWidth}
+            width={rotation === undefined || rotation === 'v-flip' ? originalWidth : originalHeight}
+            height={rotation === undefined || rotation === 'v-flip' ? originalHeight : originalWidth}
           />
           <Webcam
             ref={webcamRef}
@@ -134,6 +139,7 @@ function Camera(props: Props) {
 }
 
 Camera.defaultProps = {
+  rotation: undefined,
   recordingConfig: undefined,
   onFrame: undefined,
   style: {},
