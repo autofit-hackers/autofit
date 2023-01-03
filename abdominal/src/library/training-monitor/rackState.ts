@@ -1,13 +1,13 @@
 import { DetectionResult } from '../ml-models/object-detection/detector';
 import labels from '../ml-models/object-detection/labels.json';
 
-export type MonitorState = {
+export type RackState = {
   isExercising: boolean;
   estimatedTotalWeight: number;
   detectedPlates: string[];
 };
 
-export const resetMonitorState = (): MonitorState => ({
+export const resetRackState = (): RackState => ({
   isExercising: false,
   estimatedTotalWeight: 0,
   detectedPlates: [],
@@ -43,11 +43,7 @@ export const getDetectedEquipment = (result: DetectionResult, threshold: number)
   return { weight, plates, barbellCenterZ };
 };
 
-export const updateMonitorState = (
-  prevState: MonitorState,
-  result: DetectionResult,
-  confidenceThre: number,
-): MonitorState => {
+export const updateRackState = (prevState: RackState, result: DetectionResult, confidenceThre: number): RackState => {
   const { weight, plates, barbellCenterZ } = getDetectedEquipment(result, confidenceThre);
   if (barbellCenterZ !== 0 && !prevState.isExercising) {
     return {

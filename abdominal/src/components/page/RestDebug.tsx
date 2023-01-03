@@ -9,7 +9,7 @@ import {
   Detector,
   loadDetectionModel,
 } from '../../library/ml-models/object-detection/detector';
-import { resetMonitorState, updateMonitorState } from '../../library/training-monitor/monitorState';
+import { resetRackState, updateRackState } from '../../library/training-monitor/rackState';
 import Loader from '../ui/Loader';
 
 function RestDebug() {
@@ -28,7 +28,7 @@ function RestDebug() {
   };
 
   // レストとトレーニングの状態
-  const monitorState = useRef(resetMonitorState());
+  const rackState = useRef(resetRackState());
 
   // detection model
   const threshold = 0.5;
@@ -36,7 +36,7 @@ function RestDebug() {
   const BoxCanvasRef = useRef<HTMLCanvasElement>(null);
   const [detector, setDetector] = useState<Detector>();
   const onResults = useCallback((result: DetectionResult) => {
-    updateMonitorState(monitorState.current, result, threshold);
+    updateRackState(rackState.current, result, threshold);
     drawBoundingBox(BoxCanvasRef.current, result, threshold);
   }, []);
   const detectEquipment = useCallback(
@@ -84,11 +84,11 @@ function RestDebug() {
         </Box>
       )}
       <Typography variant="h3" sx={labelSx}>
-        {monitorState.current.isExercising ? 'WORKOUT' : 'REST'}
+        {rackState.current.isExercising ? 'WORKOUT' : 'REST'}
       </Typography>
-      <Typography>Weight: {monitorState.current.estimatedTotalWeight}kg</Typography>
+      <Typography>Weight: {rackState.current.estimatedTotalWeight}kg</Typography>
       <Typography>Reps: </Typography>
-      <Typography>Plates: {monitorState.current.detectedPlates.map((p) => `${p} `)}</Typography>
+      <Typography>Plates: {rackState.current.detectedPlates.map((p) => `${p} `)}</Typography>
     </>
   );
 }
