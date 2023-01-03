@@ -18,7 +18,7 @@ type Props = {
   style?: React.CSSProperties;
 };
 
-function WebcamAF(props: Props) {
+function Camera(props: Props) {
   const { inputWidth, inputHeight, rotation, recordingConfig, onFrame, style } = props;
   const webcamRef = useRef<Webcam>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
@@ -133,10 +133,10 @@ function WebcamAF(props: Props) {
   );
 }
 
-WebcamAF.defaultProps = {
+Camera.defaultProps = {
   recordingConfig: undefined,
   onFrame: undefined,
   style: {},
 };
 
-export default WebcamAF;
+export default Camera;

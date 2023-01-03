@@ -1,7 +1,7 @@
 import { Options, Pose as PoseMediapipe, Results } from '@mediapipe/pose';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import WebcamAF from '../components/camera/WebcamAF';
+import Camera from '../components/camera/Camera';
 import { drawPose, loadPoseEstimator, sendFrameToPoseEstimator } from '../components/ml-models/poseEstimator';
 import { Pose, rotateWorldLandmarks } from '../utils/pose';
 import { resetTrainingState, updateTrainingState } from '../utils/trainingState';
@@ -54,7 +54,7 @@ function TrainingDebug() {
 
   return (
     <div style={{ position: 'relative' }}>
-      <WebcamAF
+      <Camera
         onFrame={estimatePose}
         inputWidth={canvasHeight}
         inputHeight={canvasWidth}

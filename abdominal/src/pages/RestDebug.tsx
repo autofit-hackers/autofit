@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import WebcamAF from '../components/camera/WebcamAF';
+import Camera from '../components/camera/Camera';
 import {
   DetectionResult,
   detectOnFrame,
@@ -58,7 +58,7 @@ function RestDebug() {
         </Loader>
       ) : (
         <Box sx={{ position: 'relative' }}>
-          <WebcamAF
+          <Camera
             onFrame={detectEquipment}
             inputWidth={canvasHeight}
             inputHeight={canvasWidth}
