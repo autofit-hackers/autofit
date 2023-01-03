@@ -4,7 +4,7 @@ import { CSSProperties } from 'react';
 function Chart(props: { data: number[]; style: CSSProperties }) {
   const { data, style } = props;
 
-  const op = {
+  const option = {
     xAxis: {
       type: 'category',
       data: data.map((v, i) => i),
@@ -25,7 +25,7 @@ function Chart(props: { data: number[]; style: CSSProperties }) {
     ],
   };
 
-  return <ReactECharts option={op} style={style} />;
+  return <ReactECharts option={option} style={style} />;
 }
 
 export default Chart;
