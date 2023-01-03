@@ -1,16 +1,16 @@
 import { Box, Typography } from '@mui/material';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Camera from '../components/camera/Camera';
+import Camera from '../../library/camera/Camera';
 import {
   DetectionResult,
   detectOnFrame,
   Detector,
   drawBoundingBoxes,
   loadDetectionModel,
-} from '../components/ml-models/object-detection/detector';
-import Loader from '../components/ml-models/object-detection/loader';
-import { resetMonitorState, updateMonitorState } from '../components/training/monitorState';
+} from '../../library/ml-models/object-detection/detector';
+import Loader from '../../library/ml-models/object-detection/loader';
+import { resetMonitorState, updateMonitorState } from '../../library/training/monitorState';
 
 function RestDebug() {
   // 表示設定
