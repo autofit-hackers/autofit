@@ -1,7 +1,7 @@
 import { Box, FormControl, Grid, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { createMediaRecorder } from './recorder';
+import { createMediaRecorder } from './recordVideo';
 
 type RecordingConfig = {
   cameraName: string;
