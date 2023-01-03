@@ -3,7 +3,7 @@ import { getAngleOfThreePoints, MJ, Pose, identifyExerciseByPose } from './pose'
 
 const numFramesToDetermine = 100;
 
-export type TrainingState = {
+export type WorkoutState = {
   estimatedExercise: { eachRepHistory: (Exercise | undefined)[]; determined: Exercise | undefined }; // candidates: フレームごとに予測された種目の履歴、 determined: 確定した種目
   repCountForElbow: number;
   repCountForKnee: number;
@@ -11,7 +11,7 @@ export type TrainingState = {
   hasKneeJointBend: boolean;
 };
 
-export const resetTrainingState = (): TrainingState => ({
+export const resetWorkoutState = (): WorkoutState => ({
   estimatedExercise: { eachRepHistory: [], determined: undefined },
   repCountForElbow: 0,
   repCountForKnee: 0,
@@ -19,7 +19,7 @@ export const resetTrainingState = (): TrainingState => ({
   hasKneeJointBend: false,
 });
 
-export const updateTrainingState = (prevState: TrainingState, pose: Pose): TrainingState => {
+export const updateWorkoutState = (prevState: WorkoutState, pose: Pose): WorkoutState => {
   const currentState = prevState;
 
   // レップカウント

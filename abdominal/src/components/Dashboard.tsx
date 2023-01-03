@@ -20,7 +20,7 @@ import { useState } from 'react';
 import History from './page/History';
 import RealtimeViewer from './page/RealtimeViewer';
 import RestDebug from './page/RestDebug';
-import TrainingDebug from './page/TrainingDebug';
+import WorkoutDebug from './page/WorkoutDebug';
 
 const drawerWidth = 240;
 
@@ -162,7 +162,7 @@ function DashboardContent() {
             {selectedPageIndex === 0 && <RealtimeViewer />}
             {selectedPageIndex === 1 && <History />}
             {selectedPageIndex === 2 && <RestDebug />}
-            {selectedPageIndex === 3 && <TrainingDebug />}
+            {selectedPageIndex === 3 && <WorkoutDebug />}
           </Container>
         </Box>
       </Box>

@@ -5,16 +5,16 @@ import drawPose from 'src/library/ml-models/pose-estimation/drawPose';
 import Camera from '../../library/camera/Camera';
 import { loadPoseEstimator, sendFrameToPoseEstimator } from '../../library/ml-models/pose-estimation/poseEstimator';
 import { Pose, rotateWorldLandmarks } from '../../library/training-monitor/pose';
-import { resetTrainingState, updateTrainingState } from '../../library/training-monitor/trainingState';
+import { resetWorkoutState, updateWorkoutState } from '../../library/training-monitor/workoutState';
 
-function TrainingDebug() {
+function WorkoutDebug() {
   // 表示設定
   const scale = 0.7;
   const canvasWidth = 480 * scale;
   const canvasHeight = 720 * scale;
 
   // レストとトレーニングの状態
-  const trainingState = useRef(resetTrainingState());
+  const workoutState = useRef(resetWorkoutState());
 
   // pose estimation models
   const poseCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,7 +34,7 @@ function TrainingDebug() {
       };
 
       // フォームを分析し、レップの状態を更新する
-      trainingState.current = updateTrainingState(trainingState.current, pose);
+      workoutState.current = updateWorkoutState(workoutState.current, pose);
     }
     drawPose(poseCanvasRef.current, results, 'limegreen');
   }, []);
@@ -81,4 +81,4 @@ function TrainingDebug() {
   );
 }
 
-export default TrainingDebug;
+export default WorkoutDebug;
