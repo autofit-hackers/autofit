@@ -17,10 +17,10 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useState } from 'react';
-import History from '../model/History';
-import RealtimeViewer from '../model/RealtimeViewer';
-import RestDebug from '../model/RestDebug';
-import TrainingDebug from '../model/TrainingDebug';
+import History from './page/History';
+import RealtimeViewer from './page/RealtimeViewer';
+import RestDebug from './page/RestDebug';
+import TrainingDebug from './page/TrainingDebug';
 
 const drawerWidth = 240;
 
