@@ -1,4 +1,4 @@
-import { DetectionResult } from 'src/library/ml-models/object-detection/detector';
+import { DetectionResult } from 'src/library/object-detection/detector';
 import labels from './labels.json';
 
 const drawBoundingBox = (canvas: HTMLCanvasElement | null, result: DetectionResult, threshold: number) => {

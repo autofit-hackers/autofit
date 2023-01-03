@@ -1,15 +1,10 @@
 import { Box, Typography } from '@mui/material';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import drawBoundingBox from 'src/library/ml-models/object-detection/drawBoundingBox';
+import drawBoundingBox from 'src/library/object-detection/drawBoundingBox';
 import { resetSessionState, updateSessionState } from '../../core/training-monitor/sessionState';
 import Camera from '../../library/camera/Camera';
-import {
-  DetectionResult,
-  detectOnFrame,
-  Detector,
-  loadDetectionModel,
-} from '../../library/ml-models/object-detection/detector';
+import { DetectionResult, detectOnFrame, Detector, loadDetectionModel } from '../../library/object-detection/detector';
 import Loader from '../ui/Loader';
 
 function RestDebug() {

@@ -1,5 +1,5 @@
-import { DetectionResult } from '../../library/ml-models/object-detection/detector';
-import labels from '../../library/ml-models/object-detection/labels.json';
+import { DetectionResult } from '../../library/object-detection/detector';
+import labels from '../../library/object-detection/labels.json';
 
 export type SessionState = {
   isWorkingOut: boolean;
