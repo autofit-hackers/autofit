@@ -24,7 +24,7 @@ function TrainingDebug() {
     [poseEstimator],
   );
   // TODO: 外れ値処理
-  const onPoseEstimation = useCallback((results: Results) => {
+  const onResults = useCallback((results: Results) => {
     if ('poseLandmarks' in results) {
       // mediapipeの推論結果を自作のPoseクラスに代入
       const pose: Pose = {
@@ -50,8 +50,8 @@ function TrainingDebug() {
       minDetectionConfidence: 0.3,
       minTrackingConfidence: 0.8,
     };
-    setPoseEstimator(loadPoseEstimator(poseOptions, onPoseEstimation));
-  }, [onPoseEstimation]);
+    setPoseEstimator(loadPoseEstimator(poseOptions, onResults));
+  }, [onResults]);
 
   return (
     <div style={{ position: 'relative' }}>

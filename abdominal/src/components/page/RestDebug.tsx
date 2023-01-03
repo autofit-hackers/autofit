@@ -1,16 +1,16 @@
 import { Box, Typography } from '@mui/material';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import drawBoundingBox from 'src/library/ml-models/object-detection/drawBoundingBox';
 import Camera from '../../library/camera/Camera';
 import {
   DetectionResult,
   detectOnFrame,
   Detector,
-  drawBoundingBoxes,
   loadDetectionModel,
 } from '../../library/ml-models/object-detection/detector';
 import { resetMonitorState, updateMonitorState } from '../../library/training/monitorState';
-import Loader from '../ui/loader';
+import Loader from '../ui/Loader';
 
 function RestDebug() {
   // 表示設定
@@ -37,7 +37,7 @@ function RestDebug() {
   const [detector, setDetector] = useState<Detector>();
   const onResults = useCallback((result: DetectionResult) => {
     updateMonitorState(monitorState.current, result, threshold);
-    drawBoundingBoxes(BoxCanvasRef.current, result, threshold);
+    drawBoundingBox(BoxCanvasRef.current, result, threshold);
   }, []);
   const detectEquipment = useCallback(
     (canvas: HTMLCanvasElement) => detectOnFrame(detector, canvas, onResults),
