@@ -29,7 +29,7 @@ function FisheyeCorrection() {
     <div>
       {isCvLoaded && (
         <>
-          <Camera onFrame={processCV} inputWidth={720} inputHeight={480} rotation="left" />
+          <Camera onFrame={processCV} originalWidth={720} originalHeight={480} rotation="left" />
           <canvas ref={dstCanvasRef} />
         </>
       )}

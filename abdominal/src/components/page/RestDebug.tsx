@@ -60,8 +60,8 @@ function RestDebug() {
         <Box sx={{ position: 'relative' }}>
           <Camera
             onFrame={detectEquipment}
-            inputWidth={canvasHeight}
-            inputHeight={canvasWidth}
+            originalWidth={canvasHeight}
+            originalHeight={canvasWidth}
             rotation="left"
             style={{
               zIndex: 1,

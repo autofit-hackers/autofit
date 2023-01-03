@@ -57,8 +57,8 @@ function TrainingDebug() {
     <div style={{ position: 'relative' }}>
       <Camera
         onFrame={estimatePose}
-        inputWidth={canvasHeight}
-        inputHeight={canvasWidth}
+        originalWidth={canvasHeight}
+        originalHeight={canvasWidth}
         rotation="left"
         style={{
           zIndex: 1,

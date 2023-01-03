@@ -10,8 +10,8 @@ type RecordingConfig = {
 };
 
 type Props = {
-  inputWidth: number;
-  inputHeight: number;
+  originalWidth: number;
+  originalHeight: number;
   rotation: 'none' | 'left' | 'right' | 'flip';
   recordingConfig?: RecordingConfig;
   onFrame?: (frame: HTMLCanvasElement) => Promise<void> | void;
@@ -19,7 +19,7 @@ type Props = {
 };
 
 function Camera(props: Props) {
-  const { inputWidth, inputHeight, rotation, recordingConfig, onFrame, style } = props;
+  const { originalWidth, originalHeight, rotation, recordingConfig, onFrame, style } = props;
   const webcamRef = useRef<Webcam>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>();
   const [webcamList, setWebcamList] = useState<MediaDeviceInfo[]>([]);
@@ -103,13 +103,13 @@ function Camera(props: Props) {
         <>
           <canvas
             ref={canvasRef}
-            width={rotation === 'none' || rotation === 'flip' ? inputWidth : inputHeight}
-            height={rotation === 'none' || rotation === 'flip' ? inputHeight : inputWidth}
+            width={rotation === 'none' || rotation === 'flip' ? originalWidth : originalHeight}
+            height={rotation === 'none' || rotation === 'flip' ? originalHeight : originalWidth}
           />
           <Webcam
             ref={webcamRef}
             audio={false}
-            videoConstraints={{ deviceId: selectedDeviceId, width: inputWidth, height: inputHeight }}
+            videoConstraints={{ deviceId: selectedDeviceId, width: originalWidth, height: originalHeight }}
             onUserMedia={startCamera}
             style={{ display: 'none' }}
           />
