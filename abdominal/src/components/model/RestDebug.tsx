@@ -1,7 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { resetMonitorState, updateMonitorState } from '../../global-states/monitorState';
 import Camera from '../../library/camera/Camera';
 import {
   DetectionResult,
@@ -10,6 +9,7 @@ import {
   drawBoundingBoxes,
   loadDetectionModel,
 } from '../../library/ml-models/object-detection/detector';
+import { resetMonitorState, updateMonitorState } from '../../library/training/monitorState';
 import Loader from '../ui/loader';
 
 function RestDebug() {
