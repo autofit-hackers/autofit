@@ -1,5 +1,5 @@
-import { Exercise } from './exercise';
-import { getAngleOfThreePoints, MJ, Pose, identifyExerciseByPose } from './pose';
+import { Exercise } from '../training-record/exercise';
+import { getAngleOfThreePoints, MJ, Pose, identifyExerciseByPose } from '../training-record/pose';
 
 const numFramesToDetermine = 100;
 

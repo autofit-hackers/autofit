@@ -1,11 +1,11 @@
 import { Options, Pose as PoseMediapipe, Results } from '@mediapipe/pose';
 import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import drawPose from 'src/library/ml-models/pose-estimation/drawPose';
-import { Pose, rotateWorldLandmarks } from '../../core/training-monitor/pose';
-import { resetWorkoutState, updateWorkoutState } from '../../core/training-monitor/workoutState';
+import drawPose from 'src/library/pose-estimation/drawPose';
+import { resetWorkoutState, updateWorkoutState } from '../../core/monitor-state/workoutState';
+import { Pose, rotateWorldLandmarks } from '../../core/training-record/pose';
 import Camera from '../../library/camera/Camera';
-import { loadPoseEstimator, sendFrameToPoseEstimator } from '../../library/ml-models/pose-estimation/poseEstimator';
+import { loadPoseEstimator, sendFrameToPoseEstimator } from '../../library/pose-estimation/poseEstimator';
 
 function WorkoutDebug() {
   // 表示設定
