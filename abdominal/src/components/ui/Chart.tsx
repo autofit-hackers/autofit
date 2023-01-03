@@ -1,7 +1,7 @@
 import ReactECharts from 'echarts-for-react';
 import { CSSProperties } from 'react';
 
-function RealtimeChart(props: { data: number[]; style: CSSProperties }) {
+function Chart(props: { data: number[]; style: CSSProperties }) {
   const { data, style } = props;
 
   const op = {
@@ -28,4 +28,4 @@ function RealtimeChart(props: { data: number[]; style: CSSProperties }) {
   return <ReactECharts option={op} style={style} />;
 }
 
-export default RealtimeChart;
+export default Chart;
