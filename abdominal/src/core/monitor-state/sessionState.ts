@@ -3,13 +3,13 @@ import labels from '../../library/object-detection/labels.json';
 
 export type SessionState = {
   isWorkingOut: boolean;
-  estimatedTotalWeight: number;
+  totalWeight: number;
   detectedPlates: string[];
 };
 
 export const resetSessionState = (): SessionState => ({
   isWorkingOut: false,
-  estimatedTotalWeight: 0,
+  totalWeight: 0,
   detectedPlates: [],
 });
 
@@ -52,10 +52,10 @@ export const updateSessionState = (
   if (barbellCenterZ !== 0 && !prevState.isWorkingOut) {
     return {
       isWorkingOut: true,
-      estimatedTotalWeight: weight,
+      totalWeight: weight,
       detectedPlates: plates,
     };
   }
 
-  return prevState;
+  return { isWorkingOut: false, totalWeight: weight, detectedPlates: plates };
 };
