@@ -1,11 +1,10 @@
 import { Box, Typography } from '@mui/material';
-import '@tensorflow/tfjs-backend-webgl';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Loader from 'src/components/ui/Loader';
 import drawBoundingBox from 'src/library/object-detection/drawBoundingBox';
 import { resetSessionState, updateSessionState } from '../../core/monitor-state/sessionState';
 import Camera from '../../library/camera/Camera';
 import { DetectionResult, detectOnFrame, Detector, loadDetectionModel } from '../../library/object-detection/detector';
-import Loader from '../ui/Loader';
 
 function RestDebug() {
   // 表示設定
@@ -80,7 +79,7 @@ function RestDebug() {
       <Typography variant="h3" sx={labelSx}>
         {sessionState.current.isWorkingOut ? 'WORKOUT' : 'REST'}
       </Typography>
-      <Typography>Weight: {sessionState.current.estimatedTotalWeight}kg</Typography>
+      <Typography>Weight: {sessionState.current.totalWeight}kg</Typography>
       <Typography>Reps: </Typography>
       <Typography>Plates: {sessionState.current.detectedPlates.map((p) => `${p} `)}</Typography>
     </>
