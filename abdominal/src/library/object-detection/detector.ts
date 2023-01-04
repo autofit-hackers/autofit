@@ -15,6 +15,7 @@ export type Detector = {
 
 export const loadDetectionModel = (
   modelName: string,
+  setDetector: Dispatch<SetStateAction<Detector | undefined>>,
   setLoading: Dispatch<
     SetStateAction<{
       loading: boolean;
@@ -42,11 +43,11 @@ export const loadDetectionModel = (
 
       setLoading({ loading: false, progress: 1 });
 
-      return {
+      setDetector({
         model,
-        inputWidth: model.inputs[0].shape[0],
-        inputHeight: model.inputs[0].shape[3],
-      };
+        inputWidth: model.inputs[0].shape[1],
+        inputHeight: model.inputs[0].shape[2],
+      });
     })
     .catch((err) => {
       throw err;
@@ -57,7 +58,7 @@ export const detectOnFrame = async (
   detector: Detector | undefined,
   cameraCanvas: HTMLCanvasElement,
   onResults: (result: DetectionResult) => void,
-) => {
+): Promise<void> => {
   if (cameraCanvas === null) return;
   if (!detector) throw new Error('Model is null or undefined');
 

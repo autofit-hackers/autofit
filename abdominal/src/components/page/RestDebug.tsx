@@ -8,7 +8,7 @@ import { DetectionResult, detectOnFrame, Detector, loadDetectionModel } from '..
 
 function RestDebug() {
   // 表示設定
-  const scale = 0.7;
+  const scale = 1;
   const canvasWidth = 480 * scale;
   const canvasHeight = 720 * scale;
   const labelSx = {
@@ -40,8 +40,7 @@ function RestDebug() {
 
   // Activate ML models
   useEffect(() => {
-    const model = loadDetectionModel('yolov5n', setIsLoadingDetectionModel);
-    if (model) setDetector(model);
+    loadDetectionModel('yolov5n', setDetector, setIsLoadingDetectionModel);
   }, []);
 
   return (
@@ -80,7 +79,6 @@ function RestDebug() {
         {sessionState.current.isWorkingOut ? 'WORKOUT' : 'REST'}
       </Typography>
       <Typography>Weight: {sessionState.current.totalWeight}kg</Typography>
-      <Typography>Reps: </Typography>
       <Typography>Plates: {sessionState.current.detectedPlates.map((p) => `${p} `)}</Typography>
     </>
   );
