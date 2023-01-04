@@ -7,7 +7,7 @@ export type SessionState = {
   detectedPlates: string[];
 };
 
-export const resetSessionState = (): SessionState => ({
+export const getDefaultSessionState = (): SessionState => ({
   isWorkingOut: false,
   totalWeight: 0,
   detectedPlates: [],

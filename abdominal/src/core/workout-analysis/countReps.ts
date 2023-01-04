@@ -1,61 +1,66 @@
 import { getAngleOfThreePoints, MJ, Pose } from 'src/core/training-data/pose';
 
 type Thresholds = { lower: number; upper: number };
+type JointState = { count: number; hasJointBend: boolean };
 
 export type RepCountState = {
-  repCountForElbow: number;
-  repCountForKnee: number;
-  hasElbowJointBend: boolean;
-  hasKneeJointBend: boolean;
+  elbow: JointState;
+  knee: JointState;
 };
 
-export const getIsElbowJointBend = (pose: Pose, prevState: RepCountState, thresholds: Thresholds): void => {
-  const { lower, upper } = thresholds;
-  const currentState = prevState;
-  const leftElbowAngle = getAngleOfThreePoints(
-    pose.worldLandmarks[MJ.LEFT_SHOULDER],
-    pose.worldLandmarks[MJ.LEFT_ELBOW],
-    pose.worldLandmarks[MJ.LEFT_WRIST],
-  );
-  const rightElbowAngle = getAngleOfThreePoints(
-    pose.worldLandmarks[MJ.RIGHT_SHOULDER],
-    pose.worldLandmarks[MJ.RIGHT_ELBOW],
-    pose.worldLandmarks[MJ.RIGHT_WRIST],
-  );
-  const averageElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
+export const getDefaultRepCountState = (): RepCountState => ({
+  elbow: { count: 0, hasJointBend: false },
+  knee: { count: 0, hasJointBend: false },
+});
 
-  if (!prevState.hasElbowJointBend) {
-    if (averageElbowAngle < lower) {
-      currentState.hasElbowJointBend = true;
+const updateJointState = (prevState: JointState, angle: number, thresholds: Thresholds): JointState => {
+  const currentState = prevState;
+  if (prevState.hasJointBend) {
+    if (angle > thresholds.upper) {
+      currentState.hasJointBend = false;
+      currentState.count += 1;
     }
-  } else if (averageElbowAngle > upper) {
-    currentState.hasElbowJointBend = false;
-    currentState.repCountForElbow += 1;
+  } else if (angle < thresholds.lower) {
+    currentState.hasJointBend = true;
   }
+
+  return currentState;
 };
 
-export const getIsKneeJointBend = (pose: Pose, prevState: RepCountState, thresholds: Thresholds): void => {
-  const { lower, upper } = thresholds;
-  const currentState = prevState;
+//  Called every frame
+export const updateRepCountState = (
+  prevState: RepCountState,
+  pose: Pose,
+  thresholds: Thresholds = { lower: 120, upper: 150 },
+) => {
+  const averageElbowAngle =
+    (getAngleOfThreePoints(
+      pose.worldLandmarks[MJ.LEFT_SHOULDER],
+      pose.worldLandmarks[MJ.LEFT_ELBOW],
+      pose.worldLandmarks[MJ.LEFT_WRIST],
+    ) +
+      getAngleOfThreePoints(
+        pose.worldLandmarks[MJ.RIGHT_SHOULDER],
+        pose.worldLandmarks[MJ.RIGHT_ELBOW],
+        pose.worldLandmarks[MJ.RIGHT_WRIST],
+      )) /
+    2;
 
-  const leftKneeAngle = getAngleOfThreePoints(
-    pose.worldLandmarks[MJ.LEFT_HIP],
-    pose.worldLandmarks[MJ.LEFT_KNEE],
-    pose.worldLandmarks[MJ.LEFT_ANKLE],
-  );
-  const rightKneeAngle = getAngleOfThreePoints(
-    pose.worldLandmarks[MJ.RIGHT_HIP],
-    pose.worldLandmarks[MJ.RIGHT_KNEE],
-    pose.worldLandmarks[MJ.RIGHT_ANKLE],
-  );
-  const averageKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+  const averageKneeAngle =
+    (getAngleOfThreePoints(
+      pose.worldLandmarks[MJ.RIGHT_HIP],
+      pose.worldLandmarks[MJ.RIGHT_KNEE],
+      pose.worldLandmarks[MJ.RIGHT_ANKLE],
+    ) +
+      getAngleOfThreePoints(
+        pose.worldLandmarks[MJ.LEFT_HIP],
+        pose.worldLandmarks[MJ.LEFT_KNEE],
+        pose.worldLandmarks[MJ.LEFT_ANKLE],
+      )) /
+    2;
 
-  if (!prevState.hasKneeJointBend) {
-    if (averageKneeAngle < lower) {
-      currentState.hasKneeJointBend = true;
-    }
-  } else if (averageKneeAngle > upper) {
-    currentState.hasKneeJointBend = false;
-    currentState.repCountForKnee += 1;
-  }
+  const currentElbowState = updateJointState(prevState.elbow, averageElbowAngle, thresholds);
+  const currentKneeState = updateJointState(prevState.knee, averageKneeAngle, thresholds);
+
+  return { elbow: currentElbowState, knee: currentKneeState };
 };

@@ -6,9 +6,12 @@ export type ExerciseEstimationState = {
   determined: Exercise | undefined;
 };
 
-const numFramesToDetermineExercise = 150; // 1sで約25frame
+export const getDefaultExerciseEstimationState = () => ({
+  history: [],
+  determined: undefined,
+});
 
-export const identifyExerciseByPose = (pose: Pose): Exercise | undefined => {
+const identifyExerciseByPose = (pose: Pose): Exercise | undefined => {
   const { worldLandmarks } = pose;
   const shoulderCenter = getMidpoint(worldLandmarks[11], worldLandmarks[12]);
   const hipCenter = getMidpoint(worldLandmarks[23], worldLandmarks[24]);
@@ -26,7 +29,7 @@ export const identifyExerciseByPose = (pose: Pose): Exercise | undefined => {
   return undefined;
 };
 
-export const getMostFrequentExercise = (prevState: ExerciseEstimationState): Exercise => {
+const getMostFrequentExercise = (prevState: ExerciseEstimationState): Exercise => {
   // 一定フレーム数分の履歴を取得したら、その中で最も多く出現した種目を確定する。undefinedは除外する。
   const historyWithoutUndefined = prevState.history.filter((exercise) => exercise !== undefined) as Exercise[];
   const countedExercises = historyWithoutUndefined.reduce((acc, exercise) => {
@@ -54,9 +57,11 @@ export const getMostFrequentExercise = (prevState: ExerciseEstimationState): Exe
   return mostFrequentExercise;
 };
 
+// Called every frame
 export const updateExerciseEstimationState = (
   prevState: ExerciseEstimationState,
   pose: Pose,
+  numFramesToDetermineExercise = 150,
 ): ExerciseEstimationState => {
   const currentState = prevState;
   const estimatedExerciseOfFrame = identifyExerciseByPose(pose);
