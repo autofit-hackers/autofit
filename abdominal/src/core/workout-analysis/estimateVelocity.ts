@@ -1,5 +1,5 @@
-import { Exercise } from 'src/core/training-record/exercise';
-import { getDistance, Pose } from 'src/core/training-record/pose';
+import { Exercise } from 'src/core/training-data/exercise';
+import { getDistance, Pose } from 'src/core/training-data/pose';
 
 // worldLandmarksではなくlandmarksを使う
 const getAnkleToShoulderLength = (pose: Pose): { left: number; right: number; mean: number } => {

@@ -1,5 +1,5 @@
-import { Exercise } from 'src/core/training-record/exercise';
-import { getMidpoint, getAngleOfLine, getAngleOfThreePoints, MJ, Pose } from 'src/core/training-record/pose';
+import { Exercise } from 'src/core/training-data/exercise';
+import { getMidpoint, getAngleOfLine, getAngleOfThreePoints, MJ, Pose } from 'src/core/training-data/pose';
 
 export type ExerciseEstimationState = {
   history: (Exercise | undefined)[];

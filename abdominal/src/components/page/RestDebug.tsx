@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Loader from 'src/components/ui/Loader';
 import drawBoundingBox from 'src/library/object-detection/drawBoundingBox';
-import { resetSessionState, updateSessionState } from '../../core/monitor-state/sessionState';
+import { resetSessionState, updateSessionState } from '../../core/global-state/sessionState';
 import Camera from '../../library/camera/Camera';
 import { DetectionResult, detectOnFrame, Detector, loadDetectionModel } from '../../library/object-detection/detector';
 

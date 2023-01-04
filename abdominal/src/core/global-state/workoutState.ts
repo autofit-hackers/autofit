@@ -1,4 +1,4 @@
-import { Exercise } from '../training-record/exercise';
+import { Exercise } from '../training-data/exercise';
 
 export type WorkoutState = {
   exercise: Exercise | undefined;

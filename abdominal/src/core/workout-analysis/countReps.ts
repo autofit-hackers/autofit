@@ -1,4 +1,4 @@
-import { getAngleOfThreePoints, MJ, Pose } from 'src/core/training-record/pose';
+import { getAngleOfThreePoints, MJ, Pose } from 'src/core/training-data/pose';
 
 type Thresholds = { lower: number; upper: number };
 
