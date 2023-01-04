@@ -11,7 +11,7 @@ rmSync(join(__dirname, 'dist'), { recursive: true, force: true }); // v14.14.0
 export default defineConfig({
   resolve: {
     alias: {
-      '@': join(__dirname, 'src'),
+      src: join(__dirname, 'src'),
       styles: join(__dirname, 'src/assets/styles'),
     },
   },
