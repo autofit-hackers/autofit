@@ -6,8 +6,8 @@ export type Pose = {
   timestamp: number; // UNIX time(ms単位)
 };
 
+// mediapipe joint name list
 export const MJ = {
-  // mediapipe joint name list
   NOSE: 0,
   LEFT_EYE_INNER: 1,
   LEFT_EYE: 2,
