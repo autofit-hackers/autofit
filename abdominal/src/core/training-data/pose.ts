@@ -1,7 +1,7 @@
 import { Landmark, LandmarkList, NormalizedLandmark, NormalizedLandmarkList } from '@mediapipe/pose';
 
 export type Pose = {
-  landmarks: NormalizedLandmarkList;
+  imageLandmarks: NormalizedLandmarkList;
   worldLandmarks: LandmarkList;
   timestamp: number; // UNIX time(ms単位)
 };

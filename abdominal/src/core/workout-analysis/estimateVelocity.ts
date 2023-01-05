@@ -1,12 +1,12 @@
 import { Exercise } from 'src/core/training-data/exercise';
 import { getDistance, Pose } from 'src/core/training-data/pose';
 
-// worldLandmarksではなくlandmarksを使う
+// WARN: worldLandmarksではなくlandmarksを使う
 const getAnkleToShoulderLength = (pose: Pose): { left: number; right: number; mean: number } => {
-  const leftShoulder = pose.landmarks[11];
-  const leftKnee = pose.landmarks[25];
-  const rightShoulder = pose.landmarks[12];
-  const rightKnee = pose.landmarks[26];
+  const leftShoulder = pose.imageLandmarks[11];
+  const leftKnee = pose.imageLandmarks[25];
+  const rightShoulder = pose.imageLandmarks[12];
+  const rightKnee = pose.imageLandmarks[26];
 
   const leftLength = getDistance(leftShoulder, leftKnee).y;
   const rightLength = getDistance(rightShoulder, rightKnee).y;
@@ -19,12 +19,12 @@ const getAnkleToShoulderLength = (pose: Pose): { left: number; right: number; me
   };
 };
 
-// worldLandmarksではなくlandmarksを使う
+// WARN: worldLandmarksではなくlandmarksを使う
 const getWristToShoulderLength = (pose: Pose): { left: number; right: number; mean: number } => {
-  const leftShoulder = pose.landmarks[11];
-  const leftWrist = pose.landmarks[15];
-  const rightShoulder = pose.landmarks[12];
-  const rightWrist = pose.landmarks[16];
+  const leftShoulder = pose.imageLandmarks[11];
+  const leftWrist = pose.imageLandmarks[15];
+  const rightShoulder = pose.imageLandmarks[12];
+  const rightWrist = pose.imageLandmarks[16];
 
   const leftArmLength = getDistance(leftShoulder, leftWrist).y;
   const rightArmLength = getDistance(rightShoulder, rightWrist).y;
