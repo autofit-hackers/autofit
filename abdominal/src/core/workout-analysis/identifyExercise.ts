@@ -6,7 +6,7 @@ export type ExerciseEstimationState = {
   determined: Exercise | undefined;
 };
 
-export const getDefaultExerciseEstimationState = () => ({
+export const getDefaultExerciseEstimationState = (): ExerciseEstimationState => ({
   history: [],
   determined: undefined,
 });

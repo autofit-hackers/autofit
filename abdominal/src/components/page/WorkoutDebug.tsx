@@ -1,9 +1,16 @@
-import { Options, Pose as PoseMediapipe, Results } from '@mediapipe/pose';
-import '@tensorflow/tfjs-backend-webgl';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import drawPose from 'src/library/pose-estimation/drawPose';
+import { Options, Results } from '@mediapipe/pose';
+import { Box } from '@mui/material';
+import { useCallback, useRef } from 'react';
+import { getDefaultWorkoutState, updateWorkoutState } from 'src/core/global-state/workoutState';
+import { Pose, rotateWorldLandmarks } from 'src/core/training-data/pose';
+import { getDefaultRepCountState, updateRepCountState } from 'src/core/workout-analysis/countReps';
+import {
+  getDefaultExerciseEstimationState,
+  updateExerciseEstimationState,
+} from 'src/core/workout-analysis/identifyExercise';
+import usePoseEstimator from 'src/library/pose-estimation/hooks';
 import Camera from '../../library/camera/Camera';
-import { loadPoseEstimator, sendFrameToPoseEstimator } from '../../library/pose-estimation/poseEstimator';
+import drawPose from '../../library/pose-estimation/drawPose';
 
 function WorkoutDebug() {
   // 表示設定
@@ -11,37 +18,46 @@ function WorkoutDebug() {
   const canvasWidth = 480 * scale;
   const canvasHeight = 720 * scale;
 
-  // レストとトレーニングの状態
-  // const workoutState = useRef(resetWorkoutState());
+  // ワークアウトの状態。値を描画しないものはuseRefで保持する。
+  // REF: https://zenn.dev/so_nishimura/articles/c7ebfade970bcc
+  const workoutState = useRef(getDefaultWorkoutState());
+  const repCountState = useRef(getDefaultRepCountState());
+  const exerciseEstimationState = useRef(getDefaultExerciseEstimationState());
 
   // pose estimation models
   const poseCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [poseEstimator, setPoseEstimator] = useState<PoseMediapipe>();
-  const estimatePose = useCallback(
-    async (canvas: HTMLCanvasElement) => sendFrameToPoseEstimator(poseEstimator, canvas),
-    [poseEstimator],
-  );
-  // TODO: 外れ値処理
+  const poseOptions: Options = {
+    modelComplexity: 1,
+    smoothLandmarks: true,
+    enableSegmentation: false,
+    smoothSegmentation: false,
+    minDetectionConfidence: 0.3,
+    minTrackingConfidence: 0.8,
+  };
   const onResults = useCallback((results: Results) => {
-    drawPose(poseCanvasRef.current, results, 'limegreen');
-  }, []);
-
-  // Activate ML models
-  useEffect(() => {
-    // Pose Estimator
-    const poseOptions: Options = {
-      modelComplexity: 1,
-      smoothLandmarks: true,
-      enableSegmentation: false,
-      smoothSegmentation: false,
-      minDetectionConfidence: 0.3,
-      minTrackingConfidence: 0.8,
+    if (!('poseLandmarks' in results)) return;
+    const pose: Pose = {
+      imageLandmarks: results.poseLandmarks,
+      worldLandmarks: rotateWorldLandmarks(results.poseWorldLandmarks, { roll: 180, pitch: 0, yaw: 0 }),
+      timestamp: new Date().getTime(),
     };
-    setPoseEstimator(loadPoseEstimator(poseOptions, onResults));
-  }, [onResults]);
+    // TODO: 外れ値処理
+    drawPose(poseCanvasRef.current, pose, 'limegreen');
+    exerciseEstimationState.current = updateExerciseEstimationState(exerciseEstimationState.current, pose);
+    repCountState.current = updateRepCountState(repCountState.current, pose);
+
+    // 種目が確定した後はワークアウトの状態を更新する
+    if (!exerciseEstimationState.current.determined) return;
+    workoutState.current = updateWorkoutState(
+      workoutState.current,
+      repCountState.current,
+      exerciseEstimationState.current,
+    );
+  }, []);
+  const estimatePose = usePoseEstimator(poseOptions, onResults);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <Box sx={{ position: 'relative' }}>
       <Camera
         onFrame={estimatePose}
         originalSize={{ width: canvasHeight, height: canvasWidth }}
@@ -64,7 +80,7 @@ function WorkoutDebug() {
           left: 0,
         }}
       />
-    </div>
+    </Box>
   );
 }
 
