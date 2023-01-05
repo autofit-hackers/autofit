@@ -87,8 +87,8 @@
   "todo-tree.highlights.customHighlight": {
     "TODO": {
       "icon": "bell-fill",
-      "foreground": "#00bfff",
-      "iconColour": "#00bfff"
+      "foreground": "#2cd681",
+      "iconColour": "#2cd681"
     },
     "DISCUSS": {
       "icon": "comment-discussion",
@@ -97,13 +97,13 @@
     },
     "REF": {
       "icon": "link",
-      "foreground": "#00ff00",
-      "iconColour": "#00ff00"
+      "foreground": "#2988e7",
+      "iconColour": "#2988e7"
     },
     "WARN": {
       "icon": "alert",
-      "foreground": "#ff9800",
-      "iconColour": "#ff9800"
+      "foreground": "#ffd500",
+      "iconColour": "#ffd500"
     }
   },
   "editor.tabSize": 2,
