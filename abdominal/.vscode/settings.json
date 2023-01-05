@@ -1,112 +1,4 @@
 {
-  "files.associations": {
-    ".eslintignore": "ignore"
-  },
-
-  "eslint.validate": ["javascript", "javascriptreact", "html", "typescriptreact", "typescript"],
-
-  "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.preferences.importModuleSpecifier": "non-relative",
-  "javascript.validate.enable": false,
-  "javascript.format.enable": false,
-  "typescript.format.enable": false,
-  "editor.codeActionsOnSave": [
-    "source.organizeImports",
-    "source.fixAll.eslint",
-    "source.fixAll.tslint",
-    "source.fixAll"
-  ],
-  "eslint.format.enable": false,
-
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "editor.formatOnPaste": true,
-  "editor.formatOnType": true,
-
-  "editor.wordWrap": "on",
-  "eslint.packageManager": "yarn",
-  "files.insertFinalNewline": true,
-  "files.trimTrailingWhitespace": true,
-  "npm.packageManager": "yarn",
-
-  "files.autoSave": "onFocusChange",
-
-  // to reduce cpu usage of code helper
-  "files.watcherExclude": {
-    // Default Settings
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/node_modules/**": true,
-
-    // Cache用のディレクトリやファイル
-    "**/.cache": true,
-
-    // Buildディレクトリやファイル
-    "**/dist": true,
-    "**/build": true,
-
-    // 画像や動画用のディレクトリやファイル
-    "**/images": true,
-    "**/movies": true
-  },
-  // File Explorerの非表示項目を指定
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
-    "**/.cache": true,
-    "**/*.meta": true,
-    "**/.DS_Store": true,
-    "node_modules": false,
-    "**/*.exe": true,
-    "**/*.dll": true,
-    "**/*.onnx": true
-  },
-  // ワークスペース検索から除外
-  "search.exclude": {
-    ".git": true,
-    ".eslintcache": true,
-    ".erb/dll": true,
-    "release/{build,app/dist}": true,
-    "node_modules": true,
-    "npm-debug.log.*": true,
-    "test/**/__snapshots__": true,
-    "package-lock.json": true,
-    "*.{css,sass,scss}.d.ts": true,
-    "yarn.lock": true,
-    "**/resources/**": true,
-    "**/public/**": true
-  },
-
-  // todo-tree
-  "todo-tree.general.tags": ["TODO", "DISCUSS", "REF", "WARN"],
-  "todo-tree.highlights.defaultHighlight": {
-    "gutterIcon": true
-  },
-  "todo-tree.highlights.customHighlight": {
-    "TODO": {
-      "icon": "bell-fill",
-      "foreground": "#2cd681",
-      "iconColour": "#2cd681"
-    },
-    "DISCUSS": {
-      "icon": "comment-discussion",
-      "foreground": "#af69ef",
-      "iconColour": "#af69ef"
-    },
-    "REF": {
-      "icon": "link",
-      "foreground": "#2988e7",
-      "iconColour": "#2988e7"
-    },
-    "WARN": {
-      "icon": "alert",
-      "foreground": "#ffd500",
-      "iconColour": "#ffd500"
-    }
-  },
-  "editor.tabSize": 2,
   "cSpell.words": [
     "autofit",
     "BGRA",
@@ -131,5 +23,103 @@
     "uttr",
     "yolov"
   ],
-  "color-picker.languages": ["typescript"]
+  "color-picker.languages": ["typescript"],
+  "editor.codeActionsOnSave": [
+    "source.organizeImports",
+    "source.fixAll.eslint",
+    "source.fixAll.tslint",
+    "source.fixAll"
+  ],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "on",
+  "eslint.format.enable": false,
+  "eslint.packageManager": "yarn",
+  "eslint.validate": ["javascript", "javascriptreact", "html", "typescriptreact", "typescript"],
+  "files.associations": {
+    ".eslintignore": "ignore"
+  },
+  "files.autoSave": "onFocusChange",
+  // File Explorerの非表示項目を指定
+  "files.exclude": {
+    "**/*.dll": true,
+    "**/*.exe": true,
+    "**/*.meta": true,
+    "**/*.onnx": true,
+    "**/.DS_Store": true,
+    "**/.cache": true,
+    "**/.git": true,
+    "**/.hg": true,
+    "**/.svn": true,
+    "**/CVS": true,
+    "node_modules": false
+  },
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  // to reduce cpu usage of code helper
+  "files.watcherExclude": {
+    // Cache用のディレクトリやファイル
+    "**/.cache": true,
+    // Default Settings
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/build": true,
+    // Buildディレクトリやファイル
+    "**/dist": true,
+    // 画像や動画用のディレクトリやファイル
+    "**/images": true,
+    "**/movies": true,
+    "**/node_modules/**": true
+  },
+  "javascript.format.enable": false,
+  "javascript.validate.enable": false,
+  "npm.packageManager": "yarn",
+  // ワークスペース検索から除外
+  "search.exclude": {
+    "**/public/**": true,
+    "**/resources/**": true,
+    "*.{css,sass,scss}.d.ts": true,
+    ".erb/dll": true,
+    ".eslintcache": true,
+    ".git": true,
+    "node_modules": true,
+    "npm-debug.log.*": true,
+    "package-lock.json": true,
+    "release/{build,app/dist}": true,
+    "test/**/__snapshots__": true,
+    "yarn.lock": true
+  },
+  // todo-tree
+  "todo-tree.general.tags": ["TODO", "DISCUSS", "REF", "WARN"],
+  "todo-tree.highlights.customHighlight": {
+    "DISCUSS": {
+      "foreground": "#af69ef",
+      "icon": "comment-discussion",
+      "iconColour": "#af69ef"
+    },
+    "REF": {
+      "foreground": "#2988e7",
+      "icon": "link",
+      "iconColour": "#2988e7"
+    },
+    "TODO": {
+      "foreground": "#2cd681",
+      "icon": "bell-fill",
+      "iconColour": "#2cd681"
+    },
+    "WARN": {
+      "foreground": "#ffd500",
+      "icon": "alert",
+      "iconColour": "#ffd500"
+    }
+  },
+  "todo-tree.highlights.defaultHighlight": {
+    "gutterIcon": true
+  },
+  "typescript.format.enable": false,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.tsdk": "./node_modules/typescript/lib"
 }
