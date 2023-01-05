@@ -8,7 +8,7 @@ import {
   getDefaultExerciseEstimationState,
   updateExerciseEstimationState,
 } from 'src/core/workout-analysis/identifyExercise';
-import usePoseEstimator from 'src/library/pose-estimation/hooks';
+import usePoseEstimation from 'src/library/pose-estimation/hooks';
 import Camera from '../../library/camera/Camera';
 import drawPose from '../../library/pose-estimation/drawPose';
 
@@ -54,7 +54,7 @@ function WorkoutDebug() {
       exerciseEstimationState.current,
     );
   }, []);
-  const estimatePose = usePoseEstimator(poseOptions, onResults);
+  const estimatePose = usePoseEstimation(poseOptions, onResults);
 
   return (
     <Box sx={{ position: 'relative' }}>
