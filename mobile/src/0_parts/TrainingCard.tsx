@@ -17,7 +17,7 @@ export default function SessionCard({ session }: SessionCardProps) {
       component={Link}
       to="/detail"
       state={{
-        sets: dummySets,
+        sets: dummySets.filter((set) => set.sessionId === session.id),
         comments: dummyComments,
       }}
     >
