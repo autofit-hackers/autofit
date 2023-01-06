@@ -2,6 +2,7 @@ import { Card, CardMedia, Stack, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Session } from '../utils/training';
 import SummaryCommentCard from './SummaryCommentCard';
+import WorkoutNameChip from './WorkoutNameChip';
 
 interface SessionCardProps {
   session: Session;
@@ -17,7 +18,11 @@ export default function SessionCard({ session }: SessionCardProps) {
           sx={{ width: '300px', objectFit: 'fill', borderRadius: 2 }}
         />
         <Typography>{session.date}</Typography>
-        <Typography>{session.workoutNames}</Typography>
+        <Stack direction="row" spacing={0.5}>
+          {session.workoutNames.map((workoutName) => (
+            <WorkoutNameChip key={workoutName} workoutName={workoutName} />
+          ))}
+        </Stack>
         <SummaryCommentCard />
       </Stack>
     </Card>

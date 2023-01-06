@@ -7,6 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   title: string;
@@ -30,7 +31,7 @@ export default function Header(headerProps: HeaderProps) {
         <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography component="div" sx={{ flexGrow: 1 }} fontWeight={600}>
           {title}
         </Typography>
         <div>
@@ -59,8 +60,12 @@ export default function Header(headerProps: HeaderProps) {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={handleClose}>My account</MenuItem>
+            <Link to="/profile/">
+              <MenuItem onClick={handleClose}>Profile</MenuItem>
+            </Link>
+            <Link to="/sign-in/">
+              <MenuItem onClick={handleClose}>My account</MenuItem>
+            </Link>
           </Menu>
         </div>
       </Toolbar>
