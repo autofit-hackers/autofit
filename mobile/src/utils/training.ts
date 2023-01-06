@@ -23,6 +23,7 @@ export type Set = {
   reps: number;
   rest: number;
   weight: number;
+  workoutName: string;
   videoUrl: string;
 };
 
@@ -32,3 +33,13 @@ export type Comment = {
   setId: string;
   comment: string;
 };
+
+export function getOneRepMax(weight: number, reps: number): number {
+  return weight * (1 + reps / 30);
+}
+
+export function getOneRepMaxFromSets(sets: Set[]): number {
+  const oneRepMaxes = sets.map((set) => getOneRepMax(set.weight, set.reps));
+
+  return Math.max(...oneRepMaxes);
+}

@@ -1,9 +1,14 @@
 import List from '@mui/material/List';
 import { useState } from 'react';
 import TrainingLogListItem from '../0_parts/TrainingLogListItem';
+import { Set } from '../utils/training';
 
-export default function TrainingLogList() {
-  const [checked, setChecked] = useState([0]);
+interface TrainingLogListProps {
+  sets: Set[];
+}
+
+export default function TrainingLogList({ sets }: TrainingLogListProps) {
+  const [checked, setChecked] = useState<number[]>([]);
 
   const handleToggle = (value: number) => {
     const currentIndex = checked.indexOf(value);
@@ -20,8 +25,8 @@ export default function TrainingLogList() {
 
   return (
     <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-      {[0, 1, 2, 3].map((value) => (
-        <TrainingLogListItem itemId={value} selectedItemIds={checked} setItemSelected={handleToggle} />
+      {sets.map((set, index) => (
+        <TrainingLogListItem itemId={index} selectedItemIds={checked} setItemSelected={handleToggle} set={set} />
       ))}
     </List>
   );

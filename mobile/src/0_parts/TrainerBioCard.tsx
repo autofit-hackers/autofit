@@ -1,6 +1,10 @@
 import { CardMedia, Stack, Typography } from '@mui/material';
 
-export default function TrainerBioCard() {
+interface TrainerBioCardProps {
+  trainerId: string;
+}
+
+export default function TrainerBioCard({ trainerId }: TrainerBioCardProps) {
   return (
     <Stack
       direction="row"
@@ -18,6 +22,9 @@ export default function TrainerBioCard() {
         </Typography>
         <Typography fontSize="small" fontWeight={600}>
           東京大学ボディビル＆ウェイトリフティング部
+        </Typography>
+        <Typography fontSize="small" fontWeight={600}>
+          ID: {trainerId}
         </Typography>
       </Stack>
     </Stack>

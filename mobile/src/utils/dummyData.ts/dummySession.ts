@@ -22,7 +22,7 @@ export const dummySessions: Session[] = [
     time: '10:00',
     duration: 60,
     thumbnailUrl: 'https://picsum.photos/200/300',
-    workoutNames: ['Workout 1', 'Workout 2'],
+    workoutNames: ['ベンチプレス', 'スクワット'],
     bodyPartNames: ['Chest', 'Back'],
   },
   {
@@ -32,8 +32,8 @@ export const dummySessions: Session[] = [
     date: '2020-01-02',
     time: '11:00',
     duration: 60,
-    thumbnailUrl: 'https://picsum.photos/200/300',
-    workoutNames: ['Workout 3', 'Workout 4'],
+    thumbnailUrl: 'https://picsum.photos/200/300/',
+    workoutNames: ['スクワット'],
     bodyPartNames: ['Legs', 'Shoulders'],
   },
   {
@@ -43,8 +43,8 @@ export const dummySessions: Session[] = [
     date: '2020-01-03',
     time: '12:00',
     duration: 60,
-    thumbnailUrl: 'https://picsum.photos/200/300',
-    workoutNames: ['Workout 5', 'Workout 6'],
+    thumbnailUrl: 'https://picsum.photos/200/300//',
+    workoutNames: ['デッドリフト'],
     bodyPartNames: ['Arms', 'Abs'],
   },
 ];

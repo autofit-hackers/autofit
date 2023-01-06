@@ -1,5 +1,7 @@
 import { Card, CardMedia, Stack, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { dummyComments } from '../utils/dummyData.ts/dummyComment';
+import { dummySets } from '../utils/dummyData.ts/dummySet';
 import { Session } from '../utils/training';
 import SummaryCommentCard from './SummaryCommentCard';
 import WorkoutNameChip from './WorkoutNameChip';
@@ -10,7 +12,15 @@ interface SessionCardProps {
 
 export default function SessionCard({ session }: SessionCardProps) {
   return (
-    <Card sx={{ p: 2, boxShadow: 'none', borderRadius: 2, textDecoration: 'none' }} component={Link} to="/detail">
+    <Card
+      sx={{ p: 2, boxShadow: 'none', borderRadius: 2, textDecoration: 'none' }}
+      component={Link}
+      to="/detail"
+      state={{
+        sets: dummySets,
+        comments: dummyComments,
+      }}
+    >
       <Stack spacing={0.5}>
         <CardMedia
           component="img"
