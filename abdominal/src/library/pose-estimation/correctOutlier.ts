@@ -1,18 +1,16 @@
 import { NormalizedLandmark } from '@mediapipe/pose';
 
-function zip<T, U>(a: T[], b: U[]): [T, U][] {
-  return a.map((k, i) => [k, b[i]]);
-}
+const zip = <T, U>(a: T[], b: U[]): [T, U][] => a.map((k, i) => [k, b[i]]);
 
 // calculate exponential moving average (EMA)
 // the bigger alpha is, the more dominant current value is
-function calcEMA(alpha: number, prev: number, curr: number) {
+const calcEMA = (alpha: number, prev: number, curr: number) => {
   if (alpha <= 0 || alpha >= 1) {
     throw new Error('alpha must be between 0 and 1');
   }
 
   return alpha * curr + (1 - alpha) * prev;
-}
+};
 
 type FixOutlierOfValueReturn = {
   isOutlier: boolean;
