@@ -25,7 +25,7 @@ function RestDebug() {
         {sessionState.current.isWorkingOut ? 'WORKOUT' : 'REST'}
       </Typography>
       <Typography>Weight: {sessionState.current.totalWeight}kg</Typography>
-      <Typography>Plates: {sessionState.current.detectedPlates.map((p) => `${p} `)}</Typography>
+      <Typography>Equipment: {sessionState.current.detectedEquipment.map((p) => `${p} `)}</Typography>
     </>
   );
 }

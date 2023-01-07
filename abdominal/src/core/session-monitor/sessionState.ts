@@ -4,43 +4,43 @@ import labels from '../../library/object-detection/labels.json';
 export type SessionState = {
   isWorkingOut: boolean;
   totalWeight: number;
-  detectedPlates: string[];
+  detectedEquipment: string[];
 };
 
 export const getDefaultSessionState = (): SessionState => ({
   isWorkingOut: false,
   totalWeight: 0,
-  detectedPlates: [],
+  detectedEquipment: [],
 });
 
 export const getDetectedEquipment = (result: DetectionResult, threshold: number) => {
   const { boxesData, scoresData, categoryData } = result;
   let weight = 0;
-  const plates = [];
+  const equipment = [];
   let barbellCenterZ = 0;
   for (let i = 0; i < scoresData.length; i += 1) {
     if (scoresData[i] > threshold) {
       const category = labels[categoryData[i]];
       if (category === '20kg-bar') {
         weight += 20;
-        plates.push('バーベル');
+        equipment.push('バーベル');
         barbellCenterZ = (boxesData[i * 4] + boxesData[i * 4 + 2]) / 2;
       } else if (category === '10kg-plate') {
         weight += 20;
-        plates.push('10kg');
+        equipment.push('10kg');
       } else if (category === '5kg-plate') {
         weight += 10;
-        plates.push('5kg');
+        equipment.push('5kg');
       } else if (category === '2.5kg-plate') {
         weight += 5;
-        plates.push('2.5kg');
+        equipment.push('2.5kg');
       } else {
         throw new Error(`Unknown category: ${category}`);
       }
     }
   }
 
-  return { weight, plates, barbellCenterZ };
+  return { weight, equipment, barbellCenterZ };
 };
 
 export const updateSessionState = (
@@ -48,14 +48,14 @@ export const updateSessionState = (
   result: DetectionResult,
   confidenceThre: number,
 ): SessionState => {
-  const { weight, plates, barbellCenterZ } = getDetectedEquipment(result, confidenceThre);
+  const { weight, equipment, barbellCenterZ } = getDetectedEquipment(result, confidenceThre);
   if (barbellCenterZ !== 0 && !prevState.isWorkingOut) {
     return {
       isWorkingOut: true,
       totalWeight: weight,
-      detectedPlates: plates,
+      detectedEquipment: equipment,
     };
   }
 
-  return { isWorkingOut: false, totalWeight: weight, detectedPlates: plates };
+  return { isWorkingOut: false, totalWeight: weight, detectedEquipment: equipment };
 };
