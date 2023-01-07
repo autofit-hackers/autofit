@@ -5,7 +5,7 @@ import { Pose, rotateWorldLandmarks } from 'src/core/training-data/pose';
 import { updateRepCountState, getDefaultRepCountState } from 'src/core/workout-analysis/countReps';
 import { updateExerciseEstimationState } from 'src/core/workout-analysis/identifyExercise';
 import drawPose from 'src/library/pose-estimation/drawPose';
-import usePoseEstimation from 'src/library/pose-estimation/hooks';
+import usePoseEstimation from 'src/library/pose-estimation/hook';
 import { getDefaultExerciseEstimationState } from './workout-analysis/identifyExercise';
 
 const useWorkoutAnalysis = (

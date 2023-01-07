@@ -2,7 +2,7 @@ import { useCallback, RefObject } from 'react';
 import { SessionState, updateSessionState } from 'src/core/global-state/sessionState';
 import { DetectionResult } from 'src/library/object-detection/detector';
 import drawBoundingBox from 'src/library/object-detection/drawBoundingBox';
-import useObjectDetection from 'src/library/object-detection/hooks';
+import useObjectDetection from 'src/library/object-detection/hook';
 
 const useSessionMonitor = (
   sessionState: SessionState,
