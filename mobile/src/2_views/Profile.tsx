@@ -1,6 +1,7 @@
 import { CardMedia, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import AlertDialog from '../0_parts/AlertDialog';
+import JsonExporter from './JsonExporter';
 
 export default function Profile() {
   return (
@@ -12,6 +13,7 @@ export default function Profile() {
       />
       <AlertDialog />
       <Link to="/">ホームに戻る</Link>
+      <JsonExporter />
     </Stack>
   );
 }

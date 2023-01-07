@@ -14,7 +14,7 @@ export default function TrainerCommentCard({ set, comments }: TrainerCommentCard
     <>
       <CardMedia
         component="video"
-        src="https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
+        src={set.videoUrl}
         autoPlay
         controls
         muted

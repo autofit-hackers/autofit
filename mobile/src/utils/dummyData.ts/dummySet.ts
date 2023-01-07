@@ -6,7 +6,7 @@ export const dummySet = {
   reps: 10,
   rest: 60,
   weight: 100,
-  videoUrl: 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
+  videoUrl: 'https://abdominal-development.s3.us-west-2.amazonaws.com/ueno/squat.mov',
 };
 
 export const dummySets: Set[] = [
@@ -17,7 +17,7 @@ export const dummySets: Set[] = [
     rest: 60,
     weight: 50,
     workoutName: 'ベンチプレス',
-    videoUrl: 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
+    videoUrl: 'https://abdominal-development.s3.us-west-2.amazonaws.com/ueno/squat.mov',
   },
   {
     id: '2',
@@ -26,7 +26,7 @@ export const dummySets: Set[] = [
     rest: 60,
     weight: 60,
     workoutName: 'ベンチプレス',
-    videoUrl: 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
+    videoUrl: 'https://abdominal-development.s3.us-west-2.amazonaws.com/ueno/squat.mov',
   },
   {
     id: '3',
@@ -44,7 +44,7 @@ export const dummySets: Set[] = [
     rest: 60,
     weight: 50,
     workoutName: 'ベンチプレス',
-    videoUrl: 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
+    videoUrl: 'https://abdominal-development.s3.us-west-2.amazonaws.com/ueno/squat.mov',
   },
   {
     id: '5',

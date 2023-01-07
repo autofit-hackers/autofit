@@ -8,11 +8,12 @@ import { Comment, Set } from '../utils/training';
 interface DetailProps {
   sets: Set[];
   comments: Comment[];
+  date: string;
 }
 
 export default function Detail() {
   const location = useLocation();
-  const { sets, comments } = location.state as DetailProps;
+  const { sets, comments, date } = location.state as DetailProps;
 
   return (
     <Stack spacing={1} sx={{ p: 2 }}>
@@ -20,7 +21,7 @@ export default function Detail() {
         <IconButton size="small" component={Link} to="/">
           <ArrowBackIosIcon />
         </IconButton>
-        <Typography fontWeight={600}>トレーニングの感想</Typography>
+        <Typography fontWeight={600}>{date}</Typography>
       </Stack>
       <Typography fontWeight={600}>ハイライト動画</Typography>
       <TrainerCommentCard set={sets[0]} comments={comments} />

@@ -19,12 +19,14 @@ export const dummyComments: Comment[] = [
     id: '2',
     trainerId: '1',
     setId: '1',
-    comment: 'Comment 2',
+    comment:
+      'ナイスですねぇ。上野さんの腹筋が強いのが伝わってきます。腹筋の強さは、腰痛の予防にもなります。腹筋を鍛えていきましょう。腹筋の鍛え方は、こちらの動画を見てみてください。',
   },
   {
     id: '3',
     trainerId: '1',
     setId: '1',
-    comment: 'Comment 3',
+    comment:
+      '素晴らしい。継続できていて偉いです。大胸筋の強さは、胸の大きさにもつながります。大胸筋の鍛え方は、こちらの動画を見てみてください。',
   },
 ];
