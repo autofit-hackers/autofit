@@ -4,7 +4,10 @@ import { DetectionResult } from 'src/library/object-detection/detector';
 import drawBoundingBox from 'src/library/object-detection/drawBoundingBox';
 import useObjectDetection from 'src/library/object-detection/hooks';
 
-const useSessionMonitor = (sessionState: SessionState, canvasRef: RefObject<HTMLCanvasElement>) => {
+const useSessionMonitor = (
+  sessionState: SessionState,
+  canvasRef: RefObject<HTMLCanvasElement>,
+): ((canvas: HTMLCanvasElement) => Promise<void>) => {
   // detection model
   const detectorConfig = {
     modelName: 'yolov5',

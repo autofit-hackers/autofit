@@ -2,10 +2,15 @@ import { Options, Results, Pose as PoseMediapipe } from '@mediapipe/pose';
 import { useCallback, useEffect, useState } from 'react';
 import { loadPoseEstimator, sendFrameToPoseEstimator } from 'src/library/pose-estimation/poseEstimator';
 
-const usePoseEstimation = (
-  options: Options,
-  onResults: (results: Results) => void,
-): ((canvas: HTMLCanvasElement) => Promise<void>) => {
+export type PoseEstimationConfig = {
+  options: Options;
+  onResults: (results: Results) => void;
+};
+
+const usePoseEstimation = ({
+  options,
+  onResults,
+}: PoseEstimationConfig): ((canvas: HTMLCanvasElement) => Promise<void>) => {
   const [poseEstimator, setPoseEstimator] = useState<PoseMediapipe>();
   const estimatePose = useCallback(
     async (canvas: HTMLCanvasElement) => sendFrameToPoseEstimator(poseEstimator, canvas),
