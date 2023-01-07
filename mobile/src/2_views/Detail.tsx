@@ -38,8 +38,8 @@ export default function Detail() {
   }
 
   useEffect(() => {
-    void fetchSets('https://abdominal-development.s3.us-west-2.amazonaws.com/api/v0/sets');
-    void fetchComments('https://abdominal-development.s3.us-west-2.amazonaws.com/api/v0/comments');
+    void fetchSets('https://abdominal-development.s3.us-west-2.amazonaws.com/api/v1/sets');
+    void fetchComments('https://abdominal-development.s3.us-west-2.amazonaws.com/api/v1/comments');
   }, []);
 
   return (

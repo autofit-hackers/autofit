@@ -38,8 +38,8 @@ export default function TrainingLogListItem({
             component="video"
             src={set.videoUrl}
             autoPlay
-            controls
             muted
+            loop
             playsInline
             sx={{ width: '100%', objectFit: 'contain' }}
           />

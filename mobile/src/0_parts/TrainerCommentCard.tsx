@@ -16,8 +16,8 @@ export default function TrainerCommentCard({ set, comments }: TrainerCommentCard
         component="video"
         src={set.videoUrl}
         autoPlay
-        controls
         muted
+        loop
         playsInline
         sx={{ width: '100%', objectFit: 'contain' }}
       />
