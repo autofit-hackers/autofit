@@ -18,6 +18,7 @@ export default function TrainerCommentCard({ set, comments }: TrainerCommentCard
         autoPlay
         controls
         muted
+        playsInline
         sx={{ width: '100%', objectFit: 'contain' }}
       />
       <Typography fontWeight={600}>トレーナーからのコメント</Typography>

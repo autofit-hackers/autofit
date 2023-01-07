@@ -40,6 +40,7 @@ export default function TrainingLogListItem({
             autoPlay
             controls
             muted
+            playsInline
             sx={{ width: '100%', objectFit: 'contain' }}
           />
         </Collapse>

@@ -13,6 +13,9 @@ export type Session = {
   time: string;
   duration: number;
   summaryComment?: string;
+  trainerId?: string;
+  maxWeight: number;
+  reps: number;
   workoutNames: string[];
   bodyPartNames: string[];
 };
@@ -32,6 +35,13 @@ export type Comment = {
   trainerId: string;
   setId: string;
   comment: string;
+};
+
+export type Trainer = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  bio: string;
 };
 
 export function getOneRepMax(weight: number, reps: number): number {

@@ -1,8 +1,9 @@
 import { Button } from '@mui/material';
-import { dummyComments } from '../utils/dummyData.ts/dummyComment';
+import { dummyTrainers } from '../utils/dummyData.ts/dummyTrainer';
 
 export default function JsonExporter() {
-  const exportJson = dummyComments;
+  const exportJson = dummyTrainers;
+
   const onClickExport = () => {
     const fileName = 'finename.json';
     const data = new Blob([JSON.stringify(exportJson, null, 2)], { type: 'text/json' });

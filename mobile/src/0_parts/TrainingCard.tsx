@@ -1,6 +1,5 @@
 import { Card, CardMedia, Stack, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { dummyComments } from '../utils/dummyData.ts/dummyComment';
 import { dummySets } from '../utils/dummyData.ts/dummySet';
 import { getOneRepMaxFromSets, Session } from '../utils/training';
 import SummaryCommentCard from './SummaryCommentCard';
@@ -20,8 +19,6 @@ export default function SessionCard({ session }: SessionCardProps) {
       component={Link}
       to="/detail"
       state={{
-        sets: correspondingSets,
-        comments: dummyComments,
         date: session.date,
       }}
     >
