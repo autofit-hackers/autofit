@@ -16,21 +16,11 @@ export type Detector = {
 export const loadDetectionModel = (
   modelName: string,
   setDetector: Dispatch<SetStateAction<Detector | undefined>>,
-  setLoading: Dispatch<
-    SetStateAction<{
-      loading: boolean;
-      progress: number;
-    }>
-  >,
 ): Detector | void => {
   tf.ready()
     .then(async () => {
       // load model
-      const model = await tf.loadGraphModel(`${window.location.origin}/${modelName}_web_model/model.json`, {
-        onProgress: (fractions) => {
-          setLoading({ loading: true, progress: fractions }); // set loading fractions
-        },
-      });
+      const model = await tf.loadGraphModel(`${window.location.origin}/${modelName}_web_model/model.json`, {});
 
       if (model.inputs[0].shape == null) {
         throw new Error('Invalid model input shape');
@@ -40,8 +30,6 @@ export const loadDetectionModel = (
       const warmupResult = await model.executeAsync(dummyInput);
       tf.dispose(warmupResult); // cleanup memory
       tf.dispose(dummyInput); // cleanup memory
-
-      setLoading({ loading: false, progress: 1 });
 
       setDetector({
         model,
