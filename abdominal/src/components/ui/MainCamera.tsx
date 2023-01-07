@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import { CSSProperties, useRef } from 'react';
-import { WorkoutState } from 'src/core/global-state/workoutState';
-import useWorkoutAnalysis from 'src/core/hook';
+import useWorkoutAnalysis from 'src/core/workout-analysis/hook';
+import { WorkoutState } from 'src/core/workout-analysis/workoutState';
 import Camera, { CameraProps } from 'src/library/camera/Camera';
 
 type Props = CameraProps & { style?: CSSProperties } & { workoutState: WorkoutState };

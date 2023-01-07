@@ -1,12 +1,12 @@
 import { Options, Results } from '@mediapipe/pose';
 import { useCallback, RefObject, useRef } from 'react';
-import { updateWorkoutState, WorkoutState } from 'src/core/global-state/workoutState';
-import { Pose, rotateWorldLandmarks } from 'src/core/training-data/pose';
-import { updateRepCountState, getDefaultRepCountState } from 'src/core/workout-analysis/countReps';
-import { updateExerciseEstimationState } from 'src/core/workout-analysis/identifyExercise';
+import { updateWorkoutState, WorkoutState } from 'src/core/workout-analysis/workoutState';
+import { Pose, rotateWorldLandmarks } from 'src/library/pose-estimation/pose';
+import { updateRepCountState, getDefaultRepCountState } from 'src/core/workout-analysis/modules/countReps';
+import { updateExerciseEstimationState } from 'src/core/workout-analysis/modules/identifyExercise';
 import drawPose from 'src/library/pose-estimation/drawPose';
 import usePoseEstimation from 'src/library/pose-estimation/hook';
-import { getDefaultExerciseEstimationState } from './workout-analysis/identifyExercise';
+import { getDefaultExerciseEstimationState } from './modules/identifyExercise';
 
 const useWorkoutAnalysis = (
   workoutState: WorkoutState,

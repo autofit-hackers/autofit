@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import MainCamera from 'src/components/ui/MainCamera';
-import { getDefaultWorkoutState } from 'src/core/global-state/workoutState';
+import { getDefaultWorkoutState } from 'src/core/workout-analysis/workoutState';
 
 function WorkoutDebug() {
   const workoutState = useRef(getDefaultWorkoutState());

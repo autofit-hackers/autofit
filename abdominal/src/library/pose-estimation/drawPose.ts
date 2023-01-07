@@ -1,6 +1,6 @@
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { POSE_CONNECTIONS } from '@mediapipe/pose';
-import { Pose } from 'src/core/training-data/pose';
+import { Pose } from 'src/library/pose-estimation/pose';
 
 const drawPose = (canvas: HTMLCanvasElement | null, pose: Pose, color: string) => {
   if (canvas === null || pose === null) return;

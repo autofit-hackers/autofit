@@ -1,5 +1,5 @@
 import { useCallback, RefObject } from 'react';
-import { SessionState, updateSessionState } from 'src/core/global-state/sessionState';
+import { SessionState, updateSessionState } from 'src/core/session-monitor/sessionState';
 import { DetectionResult } from 'src/library/object-detection/detector';
 import drawBoundingBox from 'src/library/object-detection/drawBoundingBox';
 import useObjectDetection from 'src/library/object-detection/hook';

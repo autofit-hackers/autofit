@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import { CSSProperties, useRef } from 'react';
-import { SessionState } from 'src/core/global-state/sessionState';
-import useSessionMonitor from 'src/core/hooks';
+import useSessionMonitor from 'src/core/session-monitor/hook';
+import { SessionState } from 'src/core/session-monitor/sessionState';
 import Camera, { CameraProps } from 'src/library/camera/Camera';
 
 type Props = CameraProps & { style?: CSSProperties } & { sessionState: SessionState };

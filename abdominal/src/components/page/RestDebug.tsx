@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import { useRef } from 'react';
 import WeightCamera from 'src/components/ui/WeightCamera';
-import { getDefaultSessionState } from '../../core/global-state/sessionState';
+import { getDefaultSessionState } from '../../core/session-monitor/sessionState';
 
 function RestDebug() {
   // 表示設定

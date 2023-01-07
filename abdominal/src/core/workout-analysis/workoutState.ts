@@ -1,6 +1,6 @@
-import { RepCountState } from 'src/core/workout-analysis/countReps';
-import { ExerciseEstimationState } from '../workout-analysis/identifyExercise';
-import { Exercise } from '../training-data/exercise';
+import { RepCountState } from 'src/core/workout-analysis/modules/countReps';
+import { ExerciseEstimationState } from './modules/identifyExercise';
+import { Exercise } from './knowledge/exercise';
 
 export type WorkoutState = {
   exercise: Exercise | undefined;
