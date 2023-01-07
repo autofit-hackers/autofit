@@ -1,16 +1,10 @@
-import { Box, Typography } from '@mui/material';
-import { useCallback, useRef } from 'react';
-import drawBoundingBox from 'src/library/object-detection/drawBoundingBox';
-import useObjectDetection from 'src/library/object-detection/hooks';
-import { getDefaultSessionState, updateSessionState } from '../../core/global-state/sessionState';
-import Camera from '../../library/camera/Camera';
-import { DetectionResult } from '../../library/object-detection/detector';
+import { Typography } from '@mui/material';
+import { useRef } from 'react';
+import WeightCamera from 'src/components/ui/WeightCamera';
+import { getDefaultSessionState } from '../../core/global-state/sessionState';
 
 function RestDebug() {
   // 表示設定
-  const scale = 1;
-  const canvasWidth = 480 * scale;
-  const canvasHeight = 720 * scale;
   const labelSx = {
     position: 'fixed',
     right: '5vw',
@@ -24,47 +18,9 @@ function RestDebug() {
   // レストとトレーニングの状態
   const sessionState = useRef(getDefaultSessionState());
 
-  // detection model
-  const detectorConfig = {
-    modelName: 'yolov5',
-    threshold: 0.5,
-  };
-  const BoxCanvasRef = useRef<HTMLCanvasElement>(null);
-  const onResults = useCallback(
-    (result: DetectionResult) => {
-      updateSessionState(sessionState.current, result, detectorConfig.threshold);
-      drawBoundingBox(BoxCanvasRef.current, result, detectorConfig.threshold);
-    },
-    [detectorConfig.threshold],
-  );
-  const detectEquipment = useObjectDetection(detectorConfig, onResults);
-
   return (
     <>
-      <Box sx={{ position: 'relative' }}>
-        <Camera
-          onFrame={detectEquipment}
-          originalSize={{ width: canvasHeight, height: canvasWidth }}
-          rotation="left"
-          style={{
-            zIndex: 1,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-          }}
-        />
-        <canvas
-          ref={BoxCanvasRef}
-          width={canvasWidth}
-          height={canvasHeight}
-          style={{
-            zIndex: 2,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-          }}
-        />
-      </Box>
+      <WeightCamera originalSize={{ width: 720, height: 480 }} sessionState={sessionState.current} />
       <Typography variant="h3" sx={labelSx}>
         {sessionState.current.isWorkingOut ? 'WORKOUT' : 'REST'}
       </Typography>

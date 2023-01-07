@@ -14,7 +14,7 @@ type RecordingConfig = {
   setURL: Dispatch<SetStateAction<string>>;
 };
 
-type Props = {
+export type CameraProps = {
   originalSize: ImageSize;
   rotation?: 'left' | 'right' | 'v-flip';
   recordingConfig?: RecordingConfig;
@@ -22,7 +22,7 @@ type Props = {
   style?: React.CSSProperties;
 };
 
-function Camera(props: Props) {
+function Camera(props: CameraProps) {
   const { originalSize, rotation, recordingConfig, onFrame, style } = props;
   const { width: originalWidth, height: originalHeight } = originalSize;
   const webcamRef = useRef<Webcam>(null);

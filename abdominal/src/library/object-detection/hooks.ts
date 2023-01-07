@@ -3,7 +3,7 @@ import { Detector, detectOnFrame, loadDetectionModel, DetectionResult } from 'sr
 
 type Config = {
   modelName: string;
-  confidenceThreshold: number;
+  threshold: number;
 };
 
 const useObjectDetection = (
