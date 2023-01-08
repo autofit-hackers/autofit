@@ -1,4 +1,5 @@
 import { Card, CardMedia, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { WorkoutMenu } from '../utils/training';
 
 interface MenuCardProps {
@@ -7,7 +8,12 @@ interface MenuCardProps {
 
 export default function MenuCard({ workoutMenu }: MenuCardProps) {
   return (
-    <Card sx={{ p: 1, boxShadow: 'none', borderRadius: 3 }}>
+    <Card
+      sx={{ p: 1, boxShadow: 'none', borderRadius: 3, textDecoration: 'none' }}
+      component={Link}
+      to="/by-workout"
+      state={{ workoutName: workoutMenu.name }}
+    >
       <CardMedia
         component="img"
         image={workoutMenu.imageUrl}

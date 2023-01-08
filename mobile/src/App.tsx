@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import ByWorkout from './2_views/ByWorkout';
 import Detail from './2_views/Detail';
 import Profile from './2_views/Profile';
 import Top from './2_views/Top';
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Top />} />
         <Route path="/detail/" element={<Detail />} />
+        <Route path="/by-workout/" element={<ByWorkout />} />
         <Route path="/sign-in/" element={<SignIn />} />
         <Route path="/profile/" element={<Profile />} />
         <Route path="/*" element={<NotFound />} />

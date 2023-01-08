@@ -19,7 +19,7 @@ export default function TrainerCommentCard({ set, comments }: TrainerCommentCard
         muted
         loop
         playsInline
-        sx={{ width: '100%', objectFit: 'contain' }}
+        sx={{ width: '100%', objectFit: 'cover', height: '400px' }}
       />
       <Typography fontWeight={600}>トレーナーからのコメント</Typography>
       <Typography fontSize="small">{commentToDisplay?.comment}</Typography>
