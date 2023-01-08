@@ -7,9 +7,15 @@ import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 
-export default function Header() {
+interface HeaderProps {
+  title: string;
+}
+
+export default function Header(headerProps: HeaderProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { title } = headerProps;
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -25,8 +31,8 @@ export default function Header() {
         <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Photos
+        <Typography component="div" sx={{ flexGrow: 1 }} fontWeight={600}>
+          {title}
         </Typography>
         <div>
           <IconButton
@@ -54,8 +60,12 @@ export default function Header() {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={handleClose}>My account</MenuItem>
+            <Link to="/profile/">
+              <MenuItem onClick={handleClose}>Profile</MenuItem>
+            </Link>
+            <Link to="/sign-in/">
+              <MenuItem onClick={handleClose}>My account</MenuItem>
+            </Link>
           </Menu>
         </div>
       </Toolbar>
